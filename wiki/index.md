@@ -19,7 +19,7 @@
 - [MiMo-V2-Flash](models/mimo-v2-flash.md) - 309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。
 - [DeepSeek-V4](models/deepseek-v4.md) - 包含 DeepSeek-V4-Flash 和 DeepSeek-V4-Pro 的模型族，目标是原生 1M token 上下文。
 - [MiniMax-M2 Series](models/minimax-m2-series.md) - 229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。
-- [MiniMax-M3](models/minimax-m3.md) - 109B 总参数 / 6B 激活参数的原生 MSA 多模态 MoE 模型，配套 MSA 报告释出。
+- [MiniMax-M3](models/minimax-m3.md) - ~428B 总参数 / ~23B 激活参数的原生 MSA 多模态 MoE 模型，配套 MSA 报告释出。
 - [Kimi K2.5](models/kimi-k2.5.md) - 1.04T 总参数 / 32B 激活参数的 multimodal agentic MoE 模型，强调 Agent Swarm。
 
 ## 概念
