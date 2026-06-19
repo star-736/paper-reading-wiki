@@ -63,3 +63,15 @@
 ## [2026-06-19] deepen | MSA 公开 kernel 信息补全
 
 WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"，但能到 `raw.githubusercontent.com`。从 [MiniMax-AI/MSA](https://github.com/MiniMax-AI/MSA) 的 README 拿到几条论文外信息，沉淀到 `msa.md` 新增的"公开 kernel 实现"小节：目标 GPU 是 NVIDIA SM100（Blackwell）而非论文实验的 H800（SM90）；除了 BF16/FP8 还支持 NVFP4/FP4；页大小 128、top-k 16 与论文一致；MIT 许可；BibTeX 是占位符。同时把这条 H800 vs SM100 的不一致加进 `msa.md` 和 `minimax-m3.md` 的待追问。HF model card（M3 模型自身）目前 WebFetch 通道仍无法访问。
+
+
+## [2026-06-20] deepen | DSA / MSA 训练分阶段对比
+
+针对"GLM-5 是不是分阶段训练 DSA"和"MSA 的 warmup 是否同构"两个问题，回到 `raw/glm-5-2602.15763.pdf` §2.1.1 + 附录 A 和 `raw/Lai 等 - 2026 - MiniMax sparse attention.pdf` §3.4 + §5.1 + Outlook 求证，按论文原文修订三个页面：
+
+- `wiki/concepts/deepseek-sparse-attention.md`：把 DSA warmup 的描述精确化为"1000 步 × 14 序列/步 × 202,752 token，max LR 5e-3 → 2e-4"；sparse adaptation 标注恒定 1e-5 + 20B tokens；指出"dense warm-up + sparse training adaptation"两阶段范式是 DeepSeek-V3.2-Exp 引入并命名的；新增 indexer 配置（32 head / head dim 128，附录 Table 10）；并指出主文本未明写"warmup 只训 indexer"，但附录 GLM-4.7-Flash 小规模消融写明 base 全冻可作佐证。RL insights 段补全：原本的"避免 MoE routing replay"那句在上一版被截断，现按论文措辞补回 deterministic torch.topk vs SGLang CUDA 实现对比、k=2048 vs MoE k 的存储/通信代价。
+- `wiki/comparisons/sparse-attention-mechanisms.md`：在"几个值得记住的判断"之前新增"训练分阶段对比（第四条轴）"小节，含 DSA / MSA 在起点、warmup 训什么、warmup 预算、warmup 后是否独立 adaptation、是否支持 from-scratch、post-training 处理 6 个维度的对照表，以及三条推论。RL 稳定性那段把对 MSA 的判断从"没有公开数据"硬化为引用 Outlook 原文（"reinforcement-learning post-training … 是 future work"）。
+- `wiki/sources/msa.md`：待追问首条同步硬化措辞，引 Outlook 原文。
+
+求证过程中发现并修正的不准确：(1) 上一版 DSA 页对 warmup 的描述漏掉了步数和 batch；(2) 上一版把"warmup 只训 indexer"写成了主文本结论，实际只在附录 GLM-4.7-Flash 消融里明写。`raw/` 内容未改。
+
