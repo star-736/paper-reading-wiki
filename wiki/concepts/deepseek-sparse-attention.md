@@ -34,9 +34,25 @@ GLM-5 的处理方式是：
 
 [DeepSeek-V4](../models/deepseek-v4.md) 的 CSA 可以看作“压缩后的 DSA”：先把多个 token 的 KV 压缩成一个 entry，再用 lightning indexer 做 top-k selection。这样 DSA 的选择对象从原始 token 变成压缩块，进一步降低百万 token 场景下的 KV 和 attention 成本。
 
+## 与 MSA 的对比
+
+[MSA](../sources/msa.md) 是同代另一种 natively trained 稀疏注意力。两者关键区别：
+
+- **选择粒度**：DSA 是 token-level，MSA 是 block-level（B=128，n=16）。
+- **跨头共享**：DSA 让所有 query head 共享一个 top-k；MSA 让每个 GQA group 独立选 top-k，组间不共享。
+- **底层 attention**：DSA 嵌入 MLA（其 MQA 模式）；MSA 嵌入 GQA。
+- **训练目标**：DSA 用 lightning indexer 对 full attention 蒸馏；MSA 同样用 KL 对齐，但额外证明了多层 KL 与对均值分布单 KL 等价（在 [IndexCache](../sources/indexcache.md) 的多层蒸馏里被独立用到）。
+
+## indexer 自身仍是 O(L²) 的瓶颈
+
+DSA 的 lightning indexer 虽然每层比主注意力便宜一个数量级，但每层都得对所有历史 token 打分，N 层叠加成 O(NL²)。在 30B-A3B DSA 模型上，它在 prefill 阶段占总延迟 50–81%、decode 阶段占 27–41%。
+
+[IndexCache](../sources/indexcache.md) 发现相邻层 indexer 的 top-k 重合率高达 70–100%，因此可以让多数层跳过 indexer 直接复用前一个 Full 层的索引，并通过贪心搜索或多层蒸馏决定哪些层保留 indexer。在 GLM-5 上 1/4 retention 仍能接近原始长上下文表现，端到端 1.3× 起步。这条线的上下文见 [跨层索引复用](cross-layer-index-reuse.md)。
+
 ## 复现风险
 
 - DSA 的收益依赖 indexer 训练是否稳定。
 - top-k selection 的确定性是 RL 复现的关键细节。
 - 只看检索 benchmark 不够，还要看 noisy long-context reasoning 和 agentic rollout。
+- 部署时 indexer 自身的 O(NL²) 不可忽略；要把"主注意力变稀疏"和"indexer 跨层复用"看成两件互补、必须一起算账的事情。
 
