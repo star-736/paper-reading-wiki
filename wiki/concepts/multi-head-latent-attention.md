@@ -22,8 +22,8 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 - **query 也低秩压缩，但目的与 KV 完全不同——省的是「训练激活显存」，不是 cache，也不主要是 compute**：hidden 先下投影成 query latent $c^Q_t$（V2 中 $d_c'=1536$），再上投影回 per-head query。原文 §2.1.2 明说这是「为减少训练时的 activation memory，即便它压不了 KV cache」（"in order to reduce the activation memory during training, we also perform low-rank compression for the queries, **even if it cannot reduce the KV cache**"）。
   - **激活显存 ≠ 计算量**：activation memory 是训练时为反向传播必须**常驻显存的前向中间张量**，是和权重显存、KV cache 并列的第三块开销；低秩分解顺带也让这条路 FLOPs 小一点，但那不是论文卖点。
   - **为什么 query 在 V2 里特别吃显存**：128 head × 128 = **16384 维**的展开 query，比 hidden（5120）还大 3.2×；这一大坨中间张量训练时要一直留到 backward。
-  - **机制**：1536 维 latent 是个「细腰」，配合 recomputation（V2 训练框架明说「重算部分算子以省激活显存」），只把小的 $c^Q$ 常驻显存、backward 时再从它重算出大 query，常驻激活从 16384 降到 1536（~10×）。
   - **旁证**：V2-Lite 干脆**不压缩 query**（原文 "it does not compress the queries"，小模型激活显存压力小），反证 query 压缩纯为显存、与能力/cache 都无关。
+  - **「具体怎么省的」论文没展开**——它只给「压缩 → 省显存」这个结论，中间机制留白。一个合理推测见[待追问](#待追问)，但未坐实。
 - **Decoupled RoPE**：RoPE 与低秩压缩不兼容（位置敏感的 RoPE 矩阵会卡在 $W^{UK}$ 中间、破坏吸收）。解法是额外引入 multi-head decoupled query $q^R$ + 一个**全 head 共享的 decoupled key** $k^R$ 专门承载 RoPE，K/Q = 压缩部分（可吸收）+ decoupled 部分（带 RoPE）拼接；decoupled key 也进 cache，故每 token KV cache = $(d_c + d_R)$ 元素。
 - **KV cache 等效 GQA-2.25 组**：Table 1 给出 $(d_c + d_R) \approx \tfrac{9}{2} d_h$，等于只有 2.25 组的 GQA，但性能 **> MHA**。附录 D.1 用 7B dense 消融证明 MHA 显著优于 GQA/MQA，正是 MLA「压低秩而非减头数」这条轴的动机。
 - **效率数字**：KV cache −93.3%，最大生成吞吐 5.76×（vs DeepSeek 67B MHA）。
@@ -44,6 +44,7 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 
 ## 待追问
 
+- **query 压缩「具体怎么省激活显存」论文未展开，待坐实**。一个合理推测：1536 维 latent 当「细腰」checkpoint，只常驻它、backward 时从它重算出 16384 维大 query（~10× 节省）。依据是 V2 训练框架确实用了 recomputation（§ 训练："a portion of the operators are recomputed to save activation memory"），但这句是**块级通用技巧**，论文**没把它专门挂到 query 压缩上**——所以「存细腰+重算 query」是推断，非原文机制。且实际工程中 gradient checkpointing 多在 transformer block 级别整体包，未必是 query 专属。求证难点：博客讲解多为同款二手推断（会循环），官方 modeling 代码大概率只见块级重算；要硬坐实需 DeepSeek 自己的训练代码或作者澄清。
 - MLA 的 $d_c$、$d_c'$、$d_R$ 具体取值与各上/下投影维度，[V2 来源页](../sources/deepseek-v2.md) 也未抄全；如需精确复现可回原文 §2.1.2–2.1.3 与配置表补。
 - 附录 D.2「MLA vs MHA」的具体对比数字未沉淀，可作为「MLA 真的 > MHA」这一主张的直接证据补充。
 - DeepSeek-V2 → V3 → V3.2（DSA）→ V4（CSA）这条演进链上「每一步在 MLA 上加了什么」，值得做一张演进表（V3 的 MLA 改动、V3.2 加 DSA、V4 加 token 压缩 + Shared-KV MQA）。

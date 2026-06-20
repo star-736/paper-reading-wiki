@@ -161,3 +161,14 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - `wiki/sources/deepseek-v2.md`：query 压缩 bullet 补 §2.1.2 原文引用、16384 维细节、V2-Lite 旁证，并把 $d_c'$ 标实为 1536。
 
 求证副产物：确认 Read 工具其实能按页读 PDF（`pages` 参数），此前一直用 pdftotext 是工作流选择而非能力限制；表格/公式保真场景该优先 Read 按页读。`raw/` 未改。
+
+## [2026-06-20] maintenance | 降级 MLA query 压缩的「重算」机制为推测
+
+承接上一条 deepen。用户质疑「重计算是论文写的还是推断的」，复核后确认是**我表述过头**：line 412 只给「query 压缩 → 省 activation memory」结论、未给机制；line 1118 的 recomputation 是**块级通用训练技巧**，论文**没把它专门挂到 query 压缩上**。「存细腰 latent + backward 重算大 query」是我补的因果链接，非原文机制，且实际工程中 gradient checkpointing 多在 transformer block 级别整体包、未必 query 专属。
+
+又确认此环境 WebSearch 返回空（US-only，不可用），且即便可用，第三方博客讲解对「作者意图」是二手推断、易循环，不能升级证据等级；官方 modeling 代码也大概率只见块级重算。故不强凑佐证，改为如实标注：
+
+- `wiki/concepts/multi-head-latent-attention.md`：机制细节里删掉「**机制**：…重算大 query」那条，改为一句「具体怎么省论文没展开，推测见待追问」；待追问首条新增完整说明（推测内容 + 为何只是推测 + 求证难点）。
+- `wiki/sources/deepseek-v2.md`：query 压缩 bullet 删去「1536 latent 作细腰 + recomputation…重算大 query」断言，改为只留原文确证部分（结论 + 16384 维 + V2-Lite 旁证），机制以括注形式指向概念页待追问。
+
+教训：把「论文结论」与「我对机制的推断」混写成同一句，是这页「已据原文核实」标题下不该有的。`raw/` 未改。
