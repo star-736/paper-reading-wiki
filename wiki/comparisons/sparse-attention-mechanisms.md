@@ -23,7 +23,7 @@
 | NSA（DeepSeek 早期） | MQA / MHA | 三分支：compressed / selected block / sliding window | 共享 | 每层独立 | 端到端 with LM loss | 用三个并行分支同时覆盖粗、细、局部 |
 | MoBA | GQA | 极大 KV block，块均值 key 打分 | 共享 | 每层独立 | 仅 LM loss，无显式 indexer 蒸馏 | 训练简单，indexer 直接靠主任务梯度学 |
 | InfLLM-V2 | — | 块级，无参数选择 + sliding window | 共享 | 每层独立 | 无（参数自由） | 零样本 dense→sparse 切换 |
-| CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享 | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
+| CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
 | [IndexCache](../sources/indexcache.md)（叠加在 DSA 上） | MLA + DSA | token（继承 DSA） | 共享（继承 DSA） | **F 层算、S 层复用 anchor top-k**（1/4 retention 起步） | 无新训练（training-free 贪心搜索）/ 多层 KL 蒸馏（training-aware） | 干掉 indexer 自己的 O(NL²) 项 |
 | 推理时稀疏化（H2O / SnapKV / Quest / MInference / FlexPrefill） | 任意 dense 模型 | 视方法而定 | 视方法而定 | 视方法而定 | 无（基于注意力统计或启发式） | 不改训练、只改 serving；在长 prefill 上还能保留近 dense 速度的至少一支 |
 
