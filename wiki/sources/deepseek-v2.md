@@ -24,7 +24,7 @@ DeepSeek-V2 是 236B 总参 / 21B 激活的 MoE 模型，128K 上下文，预训
 
 - 把输入 hidden $h_t$ 下投影成一个**压缩 latent 向量** $c^{KV}_t$（维度 $d_c$，远小于 $n_h d_h$），**cache 里只存这个 latent**。用时再通过上投影 $W^{UK}$、$W^{UV}$ 恢复出 per-head 的 K、V。
 - **矩阵吸收**：推理时 $W^{UK}$ 可吸进 query 投影 $W^Q$、$W^{UV}$ 可吸进输出投影 $W^O$，于是不必显式还原 per-head K/V，直接对 latent 算注意力——这正是 [V3.2 所说的「MQA mode」](deepseek-v32.md)的来源。
-- query 侧也做**低秩压缩**（latent $c^Q_t$，维度 $d_c'$）。这一步不减 KV cache，但减小训练时的 activation 显存。
+- query 侧也做**低秩压缩**（latent $c^Q_t$，维度 $d_c'=1536$），但目的与 KV 那条**完全不同**：原文明说是「为减少训练时的 activation memory，即便压不了 KV cache」（§2.1.2："in order to reduce the activation memory during training … **even if it cannot reduce the KV cache**"）。机制上，V2 的展开 query 是 128 head × 128 = **16384 维**（比 hidden 5120 还大 3.2×），1536 维 latent 作「细腰」+ recomputation（训练框架「重算部分算子省激活显存」），只常驻小 latent、backward 时重算大 query。**旁证**：V2-Lite「it does not compress the queries」——小模型激活压力小就不压，反证此步纯为训练显存、与 cache / 能力无关。
 
 ### Decoupled RoPE（§2.1.3）
 

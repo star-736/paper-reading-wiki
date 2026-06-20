@@ -148,3 +148,16 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - **`wiki/index.md`**：来源栏新增 DeepSeek-V2 条目。
 
 核实结论：上一轮按通识写的几条（低秩压缩、矩阵吸收→MQA、decoupled RoPE、等效 GQA-2.25、性能 > MHA）全部与原文一致，无需订正。`raw/` 仅新增 V2 PDF（用户提供），未改其他。
+
+## [2026-06-20] deepen | 讲清 MLA query 下投影为何只为训练显存
+
+用户连环追问 MLA 的两种 mode 与维度细节，落点在「Q 不用省 cache，那 Q 下投影到底图什么、是不是减计算量、何以见得」。回 `raw/DeepSeek-V2 ...pdf`（pdftotext 抽取后 grep）核实 §2.1.2 原文 line 412–416：
+
+> "Moreover, in order to reduce the activation memory during training, we also perform low-rank compression for the queries, **even if it cannot reduce the KV cache**."
+
+据此修订两页，把「Q 压缩省 activation 显存」从一句带过升级为可追溯的解释：
+
+- `wiki/concepts/multi-head-latent-attention.md`「机制细节」：原单行 bullet 扩成带四条子项的说明——(1) 纠正「激活显存 ≠ 计算量」（论文盯的是 memory 非 FLOPs，低秩顺带省 FLOPs 但非卖点）；(2) V2 展开 query = 128×128 = 16384 维，比 hidden 5120 大 3.2×，故特别吃显存；(3) 机制 = 1536 维 latent 作「细腰」+ recomputation，只常驻小 latent、backward 重算大 query（~10×）；(4) 旁证 V2-Lite「does not compress the queries」。
+- `wiki/sources/deepseek-v2.md`：query 压缩 bullet 补 §2.1.2 原文引用、16384 维细节、V2-Lite 旁证，并把 $d_c'$ 标实为 1536。
+
+求证副产物：确认 Read 工具其实能按页读 PDF（`pages` 参数），此前一直用 pdftotext 是工作流选择而非能力限制；表格/公式保真场景该优先 Read 按页读。`raw/` 未改。

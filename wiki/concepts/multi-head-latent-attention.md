@@ -19,7 +19,11 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 
 - **低秩 KV 联合压缩**：把 hidden $h_t$ 下投影成压缩 latent $c^{KV}_t$（维度 $d_c \ll n_h d_h$），**cache 只存 latent**；用时上投影 $W^{UK}/W^{UV}$ 恢复 per-head K/V。
 - **矩阵吸收**：推理时 $W^{UK}$ 吸进 $W^Q$、$W^{UV}$ 吸进 $W^O$，无需显式还原 per-head K/V，直接对 latent 算——这就是「MQA mode」的数学来源。
-- **query 也低秩压缩**（latent $c^Q_t$）：不减 KV cache，但减训练 activation 显存。
+- **query 也低秩压缩，但目的与 KV 完全不同——省的是「训练激活显存」，不是 cache，也不主要是 compute**：hidden 先下投影成 query latent $c^Q_t$（V2 中 $d_c'=1536$），再上投影回 per-head query。原文 §2.1.2 明说这是「为减少训练时的 activation memory，即便它压不了 KV cache」（"in order to reduce the activation memory during training, we also perform low-rank compression for the queries, **even if it cannot reduce the KV cache**"）。
+  - **激活显存 ≠ 计算量**：activation memory 是训练时为反向传播必须**常驻显存的前向中间张量**，是和权重显存、KV cache 并列的第三块开销；低秩分解顺带也让这条路 FLOPs 小一点，但那不是论文卖点。
+  - **为什么 query 在 V2 里特别吃显存**：128 head × 128 = **16384 维**的展开 query，比 hidden（5120）还大 3.2×；这一大坨中间张量训练时要一直留到 backward。
+  - **机制**：1536 维 latent 是个「细腰」，配合 recomputation（V2 训练框架明说「重算部分算子以省激活显存」），只把小的 $c^Q$ 常驻显存、backward 时再从它重算出大 query，常驻激活从 16384 降到 1536（~10×）。
+  - **旁证**：V2-Lite 干脆**不压缩 query**（原文 "it does not compress the queries"，小模型激活显存压力小），反证 query 压缩纯为显存、与能力/cache 都无关。
 - **Decoupled RoPE**：RoPE 与低秩压缩不兼容（位置敏感的 RoPE 矩阵会卡在 $W^{UK}$ 中间、破坏吸收）。解法是额外引入 multi-head decoupled query $q^R$ + 一个**全 head 共享的 decoupled key** $k^R$ 专门承载 RoPE，K/Q = 压缩部分（可吸收）+ decoupled 部分（带 RoPE）拼接；decoupled key 也进 cache，故每 token KV cache = $(d_c + d_R)$ 元素。
 - **KV cache 等效 GQA-2.25 组**：Table 1 给出 $(d_c + d_R) \approx \tfrac{9}{2} d_h$，等于只有 2.25 组的 GQA，但性能 **> MHA**。附录 D.1 用 7B dense 消融证明 MHA 显著优于 GQA/MQA，正是 MLA「压低秩而非减头数」这条轴的动机。
 - **效率数字**：KV cache −93.3%，最大生成吞吐 5.76×（vs DeepSeek 67B MHA）。
