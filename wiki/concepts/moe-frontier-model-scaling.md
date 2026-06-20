@@ -13,7 +13,7 @@
 | [DeepSeek-V4-Flash](../models/deepseek-v4.md) | 284B | 13B | 256 routed experts + 1 shared expert；6 routed active。 |
 | [DeepSeek-V4-Pro](../models/deepseek-v4.md) | 1.6T | 49B | 384 routed experts + 1 shared expert；6 routed active。 |
 | [MiniMax-M2](../models/minimax-m2-series.md) | 229.9B | 9.8B | 256 fine-grained experts，8 active，sigmoid gating。 |
-| [MiniMax-M3](../models/minimax-m3.md) | ~428B | ~23B | 128 routed + 1 shared experts，top-4 |
+| [MiniMax-M3](../models/minimax-m3.md) | 428B | 22B (+ 600M visual encoder) | 128 routed experts，每 token 激活 4 个（NVIDIA blog）。 |
 | [Kimi K2.5](../models/kimi-k2.5.md) | 1.04T | 32B | 384 experts，8 active，继承 Kimi K2 MoE backbone。 |
 
 ## 解释
