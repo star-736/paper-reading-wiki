@@ -13,11 +13,14 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 
 所以若在「GQA vs MQA」里硬找 MLA 的近亲，是 **MQA**：两者都让所有 query head 共享一份 KV；区别是纯 MQA 共享的是**原始 KV**（丢表达力），MLA 共享的是**压缩 latent** 再 per-head 上投影（带低秩补偿）。可以理解为「带低秩补偿的 MQA」。
 
-**「MQA mode」一词横跨两条轴，别混（已据 V3.2 原文核实）**。V3.2 里这个词被用在两处不同的事上，是「DSA 到底是不是在 MQA mode 上训练」这类困惑的根源：
+**「MQA mode」一词横跨两条轴，别混（已据 V3.2 原文逐句复查；行号据 `pdftotext -layout` 抽取）**。V3.2 里这个词被用在两处不同的事上，是「DSA 到底是不是在 MQA mode 上训练」这类困惑的根源：
 
-- **轴一 · compute form**：MHA mode 与 MQA mode 是**同一注意力的两种等价算法形态**（矩阵吸收，可互相变换）。分工是「训练 / prefill 用 MHA mode、decode 用 MQA mode」——但 Figure 7 的 caption 把这句**限定在 DeepSeek-V3.1-Terminus（dense 基座）**。
-- **轴二 · selection 结构**：「we implement DSA based on the MQA mode of MLA」（§ Instantiate DSA Under MLA）指的是 **KV entry（latent）跨所有 query head 共享**，故 DSA 的 top-k **所有 head 选同一组 token**；理由是 kernel 效率——「each key-value entry **must be shared across multiple queries**」。这是**共享 / 选择结构**的陈述，**不是**「训练前向用 MQA 算术」。
-- **两条轴正交的铁证**：DSA 下，短上下文 prefill 仍**「specially implement a masked MHA mode to simulate DSA」**（§ 效率讨论）——compute form 是 MHA、selection 是 DSA，同时成立。所以「训练/prefill 走 MHA 形态」与「DSA 基于 MQA mode」并不矛盾，前者是算术形态、后者是 latent 跨头共享。
+- **轴一 · compute form**：MHA mode 与 MQA mode 是**同一注意力的两种等价算法形态**（矩阵吸收，可互相变换）。分工是「训练 / prefill 用 MHA mode、decode 用 MQA mode」——但 Figure 7 的 caption（line 1071–1072）把这句**限定在 DeepSeek-V3.1-Terminus（dense 基座）**：\"For DeepSeek-V3.1-Terminus, the MHA mode is used for training and prefilling, while the MQA mode is used for decoding.\" 正文 line 1074–1075 进一步说 Figure 7 展示的是 MLA 的「two aspects … as well as the transformation between them」。
+  - **这条分工不是 V3.1-Terminus 独创，而是 MLA 自 DeepSeek-V2 起的通用工程惯例**（外部交叉验证）。论文把 caption 写成「For DeepSeek-V3.1-Terminus」只是因为 V3.1-Terminus 是 V3.2 的 dense 训练起点、论文拿手头这个基座举例；V3.1-Terminus 本身是 V3.1 的一次 update（增强语言一致性 / agent 能力，**非新基座、架构未变**），其注意力就是不带 DSA 的标准 MLA。第三方讲解明确指出吸收是**推理专属**：\"the weight matrices can be multiplied to produce a single weight matrix. This can only be done **during inference** because **during training they need to be kept separate so that the gradients flow** prop[erly]\"——这正是下文「训练展开第二动因」（梯度分别回流）的独立旁证，且讲的是 MLA 本身而非某个版本。^[https://liorsinai.github.io/machine-learning/2025/02/22/mla.html Lior Sinai, DeepSeek's Multi-Head Latent Attention] ^[https://api-docs.deepseek.com/news/news250922 DeepSeek-V3.1-Terminus 官方公告]
+- **轴二 · selection 结构**：「we implement DSA based on the MQA mode of MLA」（line 150–152，§ Instantiate DSA Under MLA）指的是 **KV entry（latent）跨所有 query head 共享**——原文 \"each latent vector (the key-value entry of MLA) will be **shared across all query heads of the query token**\"，故 DSA 的 top-k **所有 head 选同一组 token**。原文的因果是**先给 kernel 约束再推出 MQA mode**：line 149 \"at the kernel level, each key-value entry **must be shared across multiple queries** for computational efficiency\" → line 150 \"**Therefore**, we implement DSA based on the MQA … mode of MLA\"。这是**共享 / 选择结构**的陈述，**不是**「训练前向用 MQA 算术」。
+- **两条轴正交的铁证**：DSA 下，短上下文 prefill 仍**「specially implement a masked MHA mode to simulate DSA」**（line 264–265，§ 效率讨论）——compute form 是 MHA、selection 是 DSA，同时成立。所以「训练/prefill 走 MHA 形态」与「DSA 基于 MQA mode」并不矛盾，前者是算术形态、后者是 latent 跨头共享。
+
+> **交叉检验结论（2026-06-20）**：上述三处引述均已回 `raw/DeepSeek-V3.2.pdf` 原文逐句核对，准确无误；「两条轴」这个切分本身建立在 line 149–152（selection）、line 1071–1072（compute form）、line 264（masked MHA）三处不同语境之上，是**论文支撑的合理拆分而非臆测**。需注意：中文技术博客层面**未见有人这样明确区分两条轴**（多数文章只讲「MLA 矩阵吸收→MQA」这条 compute-form 轴），故这一拆分的**外部佐证仅到论文一手原文为止**，是本页的原创综合。
 
 **落到最具体一问——「DSA 训练时那份 latent 是展开还是吸收？」**：
 
@@ -28,7 +31,30 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 
 即：**「选哪些 token」恒共享（一份 latent）；「latent 怎么参与计算」训练展开、decode 吸收**——选择共享和计算展开是两件事，可同时成立。训练展开有两个动因：(1) compute-bound 下展开后每对点积 128 维 < 吸收的 512 维；(2) 训练要让 $W^{UQ}/W^{UK}/W^{UV}/W^O$ 各自 live、梯度分别回流，而吸收是推理期预合并固定权重的优化。
 
+> **展开 vs 吸收的算力对比不是非黑即白，而是 $seq\_len$ 的函数（外部实测交叉验证）**。第三方按 DeepSeek-V3 配置画计算流图实测：**decode（$seq\_len=1$）下吸收版（MQA mode）算力恒更低**；但 prefill 场景随 $seq\_len$ 增长，「非吸收（展开）算力 − 吸收算力」的差值**由正转负**——即存在一个临界序列长度，超过它后**展开版反而比吸收版更省算力**。直觉：吸收把上投影预合并进 Q/O，省掉的是「逐 token 重复展开 K/V」的开销，这在 cache 长、新 query 少（decode）时划算；而 prefill 一次要算 $seq\_len \times seq\_len$ 个注意力对，展开后每对点积只在 128 维 head_dim 上做、吸收后却在 512 维 latent 上做，序列一长，点积维度的劣势盖过省下的展开开销。所以「训练/prefill 用 MHA 展开、decode 用 MQA 吸收」不只是工程惯例，而是有算力 crossover 支撑的取舍。^[https://www.cnblogs.com/wujianming-110117/p/19112429 「MLA计算流全图解&吸收矩阵对比分析」实测 Tflops 对比]
+
 （仍留白：论文没有一句直说 V3.2 **长上下文**训练前向用哪种算术形态——长上下文走 DSA 稀疏路径，「展开 / 吸收」此时的取舍论文未展开，要坐实需翻开源 inference/训练代码。短上下文 / prefill 用 MHA 展开形态有原文（Figure 7 caption + masked MHA mode）确证。）
+
+### 定量：crossover ≈ 341 token（用 DeepSeek-V2 真实配置推导）
+
+上面 blockquote 说「展开 vs 吸收的算力是 $seq\_len$ 的函数、有 crossover」是定性结论。用 [DeepSeek-V2](../sources/deepseek-v2.md) 原文配置（$d=5120,\ n_h=128,\ d_h=128,\ d_c=512,\ d_R=64$）数一遍 prefill 主导 FLOPs，可把临界点定量到 **≈341 token**：
+
+把「展开算力 − 吸收算力」写成 $\text{diff}(L) = A\cdot L + B\cdot L^2 = L\,(A + BL)$，两项性质相反，crossover 在 $L^* = -A/B$：
+
+| 项 | 系数（V2 配置） | 来源 | 谁吃亏 |
+| --- | --- | --- | --- |
+| 线性项 $A$ | $+1.68\times10^7$ | **展开独有**：把 latent 上投影成 per-head K/V，每 token 固定一次（$d_c \cdot n_h \cdot d_h \cdot 2$） | 展开 |
+| 二次项 $B$ | $-4.9\times10^4$ | **展开省**：QK/AV 每对点积维度更小——展开 $d_h{+}d_R=192$、$d_h=128$ vs 吸收 $d_c{+}d_R=576$、$d_c=512$；attention 对数 $\propto L^2$ | 吸收 |
+
+$$L^* = -A/B \approx 341\ \text{token}$$
+
+- **$L < 341$**：线性项（上投影固定成本）主导 → **吸收赢**（它根本不上投影）。
+- **$L > 341$**：二次项（注意力对数 $\propto L^2$、展开每对维度仅吸收的 $\approx 1/3$）主导 → **展开赢**。
+- **decode**（query=1 对长 cache）：退化到 $L\approx1$ 一侧，**吸收恒省** ✓——这就是「decode 用 MQA mode」的算力依据。
+
+> **这把 V3.2「短序列 prefill 用 masked MHA mode」（[来源页](../sources/deepseek-v32.md)，原文 line 264）从工程惯例升级成可解释的取舍**：几百 token 以内，DSA 稀疏选择没收益、吸收又因上投影开销不划算，**稠密 MHA 展开最省**；序列再长才轮到 DSA 稀疏路径接管。理论临界点（~341）与工程决策（短 prefill 走稠密 MHA）对得上。
+>
+> **诚实限定**：(1) 341 是**数量级而非精确值**——只数了 KV 上投影 + QK score + AV 三个主导项，省略两条路径共有的下投影 / softmax / RoPE apply 与访存、kernel 实际开销；真实 crossover 受实现影响会偏移，外部实测（吴建明文）曲线形状吻合但临界点不必相同。(2) 这是 **V2 配置**；V3/V3.2 的 $n_h,d_c$ 沿用 MLA 不变故量级一致，但 V3.2 长序列实际走 **DSA 稀疏**（只 attend top-k=2048），score 项不再是满 $L^2$，crossover 的语义被 DSA 改写。
 
 ## 机制细节（已据 DeepSeek-V2 原文核实）
 

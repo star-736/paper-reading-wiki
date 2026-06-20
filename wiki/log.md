@@ -191,3 +191,49 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 发现的不准确：上一版 `deepseek-v32.md` 与 MLA 概念页都写了「DSA 选 MQA mode 因长上下文友好」，属臆测；真实理由是 kernel 级 KV 跨头共享，且「选 MQA mode」本身是 selection 结构而非 compute form 取舍。`raw/` 未改。
 
 补充（同一追问线收尾）：用户把问题收窄到最具体一问「DSA 训练时那份 latent 是展开还是吸收」。在 MLA 概念页「两条轴」小节后补一张训练/decode × compute-form/selection 的 2×2 表，钉死结论：**选哪些 token 恒共享（一份 latent）；latent 怎么算 → 训练展开（MHA mode）、decode 吸收（MQA mode）**。训练展开两动因：compute-bound 下 128 维点积 < 吸收 512 维；训练需 $W^{UQ}/W^{UK}/W^{UV}/W^O$ 各自 live 让梯度分别回流（吸收是推理期预合并固定权重的优化）。短 prefill 展开形态有原文确证，长上下文训练形态仍留白。
+
+## [2026-06-20] verify | 交叉检验 MLA「MQA mode / MHA mode」两条轴
+
+用户要求对 MLA 概念页最新两段（MQA mode / MHA mode）做外部交叉检验，再回 V3.2 原文复查。检验通道说明：本会话 `web_search` 工具不存在（仅 `delegate_task` 的 `web` toolset 有，但 glm-5.2 子代理反复在首次工具调用前空返回，不可用）；改用 `terminal + curl`，DuckDuckGo/HF 不可达，**搜狗 + cn.bing 可达**。命中并抓取的中文技术源：博客园「罗西的思考《探秘Transformer(28)—DeepSeek MLA》」(cnblogs/rossiXYZ/18827618)、吴建明「MLA计算流全图解&吸收矩阵对比分析」(cnblogs/wujianming-110117/19112429)。
+
+外部交叉检验结论（5 条论断）：
+
+- ① MLA vs GQA/MQA 正交两条轴（减头 vs 压秩）— ✅ 支持。
+- ② 矩阵吸收 $W^{UK}→Q$、$W^{UV}→O$，吸收后退化 MQA — ✅ 支持（罗西文目录 2.2 权重吸收 / KQ 合并 / VO 合并 / 3.3.3 MQA形式）。
+- ③ 训练/prefill 用 MHA 展开、decode 用 MQA 吸收 — ✅ 支持（罗西文「2.2.4 训练 MHA 不合并」）。
+- ④ 展开 vs 吸收的算力权衡 — ✅ 支持，且外部资料更精确：吴建明实测 decode 吸收恒省，prefill 随 $seq\_len$ 增长「展开−吸收」差值由正转负，存在 crossover。**据此补进 MLA 页**（原本只写成 128 维 < 512 维的静态二分）。
+- ⑤ 「MQA mode」横跨两条轴 + DSA top-k 跨 head 共享 — 博客层面 **NOT-FOUND**（无人这样区分），但回 `raw/DeepSeek-V3.2.pdf` 逐句复查 **全部坐实**：line 149–152（kernel 约束→MQA mode，latent shared across all query heads）、line 1071–1072（MHA train/prefill、MQA decode，限 V3.1-Terminus）、line 264（masked MHA mode simulate DSA）。
+
+修订（仅 `wiki/concepts/multi-head-latent-attention.md`，`raw/` 未改）：
+
+- 第④点：2×2 表后新增一段 blockquote，讲清「展开 vs 吸收算力是 $seq\_len$ 的函数、有 crossover」，附吴建明文 provenance 链接。
+- 第⑤点：三条 bullet 补上 V3.2 原文行号锚点 + 补全「shared across all query heads of the query token」整句 + 点明「先 kernel 约束 → Therefore MQA mode」的因果；小节末加 blockquote 标注「论文一手坐实，但博客层面无人这样拆分，属本页原创综合」。结论：第⑤点**无需订正**，原标注「已据原文核实」名副其实。
+
+## [2026-06-20] verify | V3.2 训练形态追问 + V3.1-Terminus 背景（Tavily 交叉验证）
+
+承接 MLA 两条轴。用户先问「V3.2 是不是也用 MHA mode 训练」，再问「要不要搜 V3.1」。
+
+回 `raw/DeepSeek-V3.2.pdf` 复查训练形态：论文**从未直接陈述 V3.2 训练用 MHA mode**——Figure 7 caption（line 1071–1072）主语是 V3.1-Terminus；V3.2 自身只写了 selection 结构（DSA based on MQA mode = latent 跨头共享）+ 两阶段配方（dense warm-up 2.1B「keep dense attention」只训 indexer / sparse training 943.7B 全参 adapt）+ 推理侧短 prefill 用 masked MHA mode（line 264）。结论：「V3.2 训练走 MHA 展开」是**合理强推断而非明文**，page line 31 的留白成立、不填死。
+
+本会话**新增 Tavily 搜索 API**（key 在 `~/AppData/Local/hermes/.env` 的 `TAVILY_API_KEY`，curl POST api.tavily.com/search 即可，国外源可达），取代此前不可用的 web_search / 子代理 web。两个问题用 Tavily 坐实：
+
+- **V3.1-Terminus 定位**：官方公告（api-docs.deepseek.com/news/news250922）+ OpenRouter/Fireworks/SambaNova/Medium 一致——它是 V3.1 的 update（语言一致性 + agent 能力），**非新基座、架构未变**，沿用 hybrid reasoning。与论文 line 115–116「the only architectural modification of V3.2 is DSA」咬合：V3.1-Terminus 注意力 = 不带 DSA 的标准 MLA。
+- **MHA/MQA mode 通用性**：Lior Sinai 博客明确「吸收只能推理期做，训练必须各权重分开让梯度回流」（讲 MLA 本身、V2 起），TransMLA 确认 MLA「introduced with DeepSeek V2」。→ mode 分工**不是 V3.1 独创，是 MLA 通用惯例**，论文只是拿 dense 训练起点 V3.1-Terminus 举例。
+
+落盘（`raw/` 未改）：
+
+- `wiki/concepts/multi-head-latent-attention.md` 轴一 bullet 下新增子项：mode 分工是 MLA 自 V2 的通用惯例、非 V3.1 独创 + Lior Sinai「训练权重分开让梯度回流」外部印证（独立佐证既有第二动因）+ V3.1-Terminus 定位 + 两条 provenance 链接。
+- `wiki/sources/deepseek-v32.md` 核心结论段新增 blockquote：交代训练起点 V3.1-Terminus 是什么（官方公告口径）+ 论文 line 115–116「唯一架构改动是 DSA」+ Figure 7 caption 写成「For V3.1-Terminus」实为 MLA 通用 compute-form 惯例。
+- 未新建 V3.1-Terminus 来源页/模型页：它不在 `raw/`、非本库主线模型，仅作为 V3.2 训练起点在 V3.2 来源页注明定位即可。
+
+## [2026-06-20] deepen | MLA 展开/吸收 crossover 定量推导 + V3.2 masked-MHA 解释
+
+承接前一条对话。用户问「crossover 是什么」「V3.2 在 V3.1-Terminus 上训了什么」，并要求沉淀定量推导与短-prefill masked-MHA 的因果。
+
+回 `raw/DeepSeek-V2 ...pdf` line 670–676 坐实 MLA 配置：$d=5120,\ n_h=128,\ d_h=128,\ d_c=512,\ d_c'=1536,\ d_R=64$。用 execute_code 数 prefill 主导 FLOPs（KV 上投影 + QK score + AV 三项），把「展开算力−吸收算力」写成 $\text{diff}(L)=A L+B L^2=L(A+BL)$：$A=+1.68\times10^7$（展开独有的 latent 上投影固定开销，线性）、$B=-4.9\times10^4$（展开 score/AV 每对维度 192/128 < 吸收 576/512，二次）。解出 **crossover $L^*=-A/B\approx341$ token**：短于它吸收省、长于它展开省、decode（L≈1）恒吸收省。这定量解释了 V3.2 为何对短序列 prefill 专门用 masked MHA（line 264）——几百 token 内 DSA 无收益、吸收上投影不划算，稠密 MHA 展开最省。
+
+落盘（`raw/` 未改）：
+
+- `wiki/concepts/multi-head-latent-attention.md`：留白段后新增「定量：crossover ≈ 341 token」小节——$A/B$ 系数表 + $L^*=-A/B$ + decode 恒吸收 + 一段把 V3.2 masked-MHA 升级为可解释取舍的 blockquote + 诚实限定（341 是数量级、只数三主导项；V2 配置，V3.2 长序列走 DSA 稀疏后语义改写）。
+- `wiki/sources/deepseek-v32.md`：「短上下文优化」补 blockquote 解释「为什么短 prefill 走稠密 MHA 而非 DSA/吸收」+ 反链 MLA 页 crossover 小节。
+- V3.2 两阶段训练（dense warmup 2.1B 只训 indexer / sparse training 943.7B 全参，含步数/LR/stop-gradient/masked-MHA）此前已在 `deepseek-v32.md` § 训练方案完整沉淀，本轮未重复，仅补 crossover 因果。
