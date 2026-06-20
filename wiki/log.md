@@ -117,3 +117,34 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - 索引页之前已经是 ~428B / ~23B 的描述，与新口径在 round-up 意义上一致，未再动。
 
 `raw/` 未改。这次的来源是 NVIDIA blog，独立于 MiniMax 自己的 README，置信度比之前一档来源高。
+
+## [2026-06-20] deepen | CSA core attention = Shared-KV MQA
+
+用户提问"DeepSeek-V4 的 CSA 是个 MQA 吗"。回 `raw/deepseek-v4-hf-technical-report.pdf` §2.3.1 核实：CSA 的 core attention 确实是 MQA，原文 "Shared Key-Value MQA … performs core attention in a Multi-Query Attention (MQA) (Shazeer, 2019) manner, where each compressed KV entry … serves as both attention key and value"。即稀疏选出 top-k 压缩 entry 后所有 query head 共享同一份 entry，且 K=V（比普通 MQA 共享度更高）；query 侧仍是 MLA 式 latent 上投影（latent 与 indexer query 共享），head 数大故用 grouped output projection。
+
+修订两处此前不够精确的记录：
+
+- `wiki/sources/deepseek-v4.md`：架构段补一段，明确 CSA = 「MLA 式 latent query +（token 压缩 → DSA 稀疏选择）→ Shared-KV MQA core」，不是单纯 MLA。
+- `wiki/comparisons/sparse-attention-mechanisms.md`：CSA/HCA 行的「底层」从 `MLA` 改为 `MLA query + Shared-KV MQA core`，「跨头共享」从「共享」细化为「MQA：所有 query head 共用一份 K=V 压缩 entry」。
+
+`raw/` 未改。
+
+## [2026-06-20] deepen | 新增 MLA 概念页，理清 DSA/CSA 的注意力血统
+
+用户追问"DSA 是从 MLA 进化的吗、MLA 又是从 GQA 还是 MQA 进化的"。回 `raw/DeepSeek-V3.2.pdf` §（"Instantiate DSA Under MLA"）+ 附录 A（MHA/MQA modes of MLA）核实后沉淀：
+
+- **新增 `wiki/concepts/multi-head-latent-attention.md`**：讲清 MLA 与 GQA/MQA 是「正交两条轴」——GQA/MQA 减 KV head 数，MLA 压低秩 latent；MLA 在 decode 做矩阵吸收后退化成 MQA（即 V3.2 附录 A 的「MQA mode」），故近亲是 MQA 但带低秩补偿。跨报告信号串起 V3.2（DSA 架在 MLA-MQA mode）、V4（CSA 继承 latent query + Shared-KV MQA）、GLM-5。MLA 内部机制（下/上投影、decoupled RoPE、矩阵吸收、KV cache 等效 GQA-2.25）按通识写，明确标注 DeepSeek-V2 原文不在 `raw/`、待补后逐条核实。
+- 反链补齐：`deepseek-sparse-attention.md` line 20（MLA-MQA mode 处）、`sources/deepseek-v32.md`（DSA 实例化处 + 附录 A mode 说明）、`sources/deepseek-v4.md`（CSA latent query 处）各加 MLA 页链接。
+- `wiki/index.md`：细讲模块新增 MLA 条目。
+
+待补来源：用户表示可提供 DeepSeek-V2（MLA 首次提出）原论文。补入 `raw/` 后应回原文核实 MLA 内部机制那几条，并把本页「待追问」逐条消化。`raw/` 本轮未改。
+
+## [2026-06-20] ingest | DeepSeek-V2（MLA 原始论文），核实并升级 MLA 概念页
+
+用户把 DeepSeek-V2 原论文放进 `raw/`（`DeepSeek-AI 等 - 2024 - DeepSeek-V2 ...pdf`，arXiv:2405.04434）。回原文 §2.1.1–2.1.3 + Table 1 + 附录 D.1 核实，把上一条 deepen 里按通识写的 MLA 内部机制逐条坐实：
+
+- **新增 `wiki/sources/deepseek-v2.md`**：来源页。236B/21B MoE、128K、8.1T tokens；MLA 低秩 KV 联合压缩（只 cache latent $c^{KV}$）、矩阵吸收（$W^{UK}→W^Q$、$W^{UV}→W^O$，即「MQA mode」数学来源）、query 也低秩压缩、decoupled RoPE（额外 multi-head decoupled query + 全 head 共享 decoupled key 承载 RoPE，因 RoPE 阻断吸收）、KV cache Table 1（MLA = $d_c+d_R\approx\tfrac{9}{2}d_h$，等效 GQA-2.25 组但性能 > MHA）、附录 D.1（MHA>GQA/MQA 消融 = MLA 走压低秩而非减头数的动机）、KV −93.3% / 吞吐 5.76×。
+- **升级 `wiki/concepts/multi-head-latent-attention.md`**：删掉「内部机制按通识写、待核实」caveat，新增「机制细节（已据 DeepSeek-V2 原文核实）」小节；跨报告信号补 V2 起源行；待追问从「V2 不在 raw」改为更细的复现追问（$d_c/d_c'/d_R$ 取值、附录 D.2 数字、V2→V3→V3.2→V4 演进表）。
+- **`wiki/index.md`**：来源栏新增 DeepSeek-V2 条目。
+
+核实结论：上一轮按通识写的几条（低秩压缩、矩阵吸收→MQA、decoupled RoPE、等效 GQA-2.25、性能 > MHA）全部与原文一致，无需订正。`raw/` 仅新增 V2 PDF（用户提供），未改其他。
