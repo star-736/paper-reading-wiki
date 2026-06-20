@@ -172,3 +172,22 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - `wiki/sources/deepseek-v2.md`：query 压缩 bullet 删去「1536 latent 作细腰 + recomputation…重算大 query」断言，改为只留原文确证部分（结论 + 16384 维 + V2-Lite 旁证），机制以括注形式指向概念页待追问。
 
 教训：把「论文结论」与「我对机制的推断」混写成同一句，是这页「已据原文核实」标题下不该有的。`raw/` 未改。
+
+## [2026-06-20] deepen | 厘清 V3.2「MQA mode」的两条轴，订正「DSA 选 MQA 因长上下文友好」
+
+用户顺着 MHA/MQA mode 追问到「MQA mode 适合哪个训练阶段」「DSA 训练到底用哪种 mode」。回 `raw/DeepSeek-V3.2.pdf` 核实（pdftotext 抽取后 grep + sed 读附录 A），定位三条原文：
+
+- **line 147**（Instantiate DSA Under MLA）："we implement DSA based on the **MQA mode of MLA**, where each latent vector … shared across **all query heads** … At the kernel level, each key-value entry **must be shared across multiple queries** for computational efficiency."
+- **line 1045**（Figure 7 caption）："For **DeepSeek-V3.1-Terminus**, the MHA mode is used for training and prefilling, while the MQA mode is used for decoding."（限定 dense 基座）
+- **line 248**："for short-sequence prefilling, we specially implement a **masked MHA mode to simulate DSA**."
+
+核实结论：「MQA mode」在 V3.2 里横跨两条**不该混的轴**——(轴一·compute form) MHA/MQA 是同一注意力的等价算法形态，训练/prefill 用 MHA、decode 用 MQA；(轴二·selection 结构) 「DSA based on MQA mode」指 latent 跨所有 query head 共享、top-k 所有 head 选同一组，是 kernel 效率要求，**非训练算术**。line 248 的 masked-MHA-mode 是铁证：DSA 下 prefill 的 compute form 仍是 MHA，与 selection（DSA/MQA 共享）正交。
+
+订正与修订：
+
+- `wiki/concepts/multi-head-latent-attention.md`：在「两种 mode」段后新增「『MQA mode』一词横跨两条轴」小节（三 bullet + 长上下文训练形态的留白）；跨报告信号 V3.2 行把旧表述明确归到「轴二·selection 结构」。
+- `wiki/sources/deepseek-v32.md`：line 29 **订正**原「DSA 选 MQA mode 因其长上下文效率更友好」——此说把两条轴混了、无原文支撑；改为 kernel 效率（KV 跨头共享）+ 两条轴正交（masked MHA mode 佐证）。
+
+发现的不准确：上一版 `deepseek-v32.md` 与 MLA 概念页都写了「DSA 选 MQA mode 因长上下文友好」，属臆测；真实理由是 kernel 级 KV 跨头共享，且「选 MQA mode」本身是 selection 结构而非 compute form 取舍。`raw/` 未改。
+
+补充（同一追问线收尾）：用户把问题收窄到最具体一问「DSA 训练时那份 latent 是展开还是吸收」。在 MLA 概念页「两条轴」小节后补一张训练/decode × compute-form/selection 的 2×2 表，钉死结论：**选哪些 token 恒共享（一份 latent）；latent 怎么算 → 训练展开（MHA mode）、decode 吸收（MQA mode）**。训练展开两动因：compute-bound 下 128 维点积 < 吸收 512 维；训练需 $W^{UQ}/W^{UK}/W^{UV}/W^O$ 各自 live 让梯度分别回流（吸收是推理期预合并固定权重的优化）。短 prefill 展开形态有原文确证，长上下文训练形态仍留白。

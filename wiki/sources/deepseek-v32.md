@@ -26,7 +26,7 @@ DSA 由两个核心组件构成：
 1. **Lightning Indexer**：对每个 query token h_q 与历史 token h_s，通过少量 attention head 计算 index score $A_{q,s} = \sum_j w_{q,j}^{idx} \cdot \text{ReLU}(q_{q,j}^{idx} \cdot k_{s,j}^{idx})$，使用 ReLU 激活以适配 FP8 部署。
 2. **Fine-grained Token Selection**：对每个 query 位置取 index score 的 **top-k**（k=2048）个历史 KV entry 做精确 softmax 注意力。
 
-DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模式**下——latent vector（KV entry）被同一 query token 的所有 query head 共享（附录 A：MLA 有 MHA / MQA 两种 mode，V3.1-Terminus 训练/prefill 用 MHA mode、decode 用 MQA mode，DSA 选 MQA mode 因其长上下文效率更友好）。推理代码已开源（Hugging Face `deepseek-ai/DeepSeek-V3.2-Exp`）。
+DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模式**下——latent vector（KV entry）被同一 query token 的所有 query head 共享，理由是 kernel 效率：原文「each key-value entry **must be shared across multiple queries**」。注意这里的「MQA mode」是 **selection 结构**（KV 跨头共享、top-k 所有 head 选同一组），**不等于训练前向用 MQA 算术**——附录 A（Figure 7）的「训练/prefill 用 MHA mode、decode 用 MQA mode」是 **compute form** 那条轴、且 caption 限定在 V3.1-Terminus（dense 基座）；DSA 下短上下文 prefill 仍「specially implement a masked MHA mode to simulate DSA」，正说明 compute form（MHA）与 selection（DSA/MQA 共享）是两条正交的轴。推理代码已开源（Hugging Face `deepseek-ai/DeepSeek-V3.2-Exp`）。
 
 ### 训练方案
 
