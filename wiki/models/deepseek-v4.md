@@ -13,6 +13,8 @@ DeepSeek-V4 是 DeepSeek-AI 发布的模型族，核心目标是高效原生 1M 
 | DeepSeek-V4-Flash | 284B | 13B | 32T | 1M tokens |
 | DeepSeek-V4-Pro | 1.6T | 49B | 33T | 1M tokens |
 
+**模态**：纯文本（已据报告原文核实，两个变体均为长上下文文本模型；报告 Outlook 明确把"incorporating multimodal capabilities"列为未来方向，即当前尚无视觉/视频输入）。
+
 ## 技术身份
 
 DeepSeek-V4 的定义性特征是混合压缩注意力：

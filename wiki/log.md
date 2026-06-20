@@ -64,6 +64,22 @@
 
 WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"，但能到 `raw.githubusercontent.com`。从 [MiniMax-AI/MSA](https://github.com/MiniMax-AI/MSA) 的 README 拿到几条论文外信息，沉淀到 `msa.md` 新增的"公开 kernel 实现"小节：目标 GPU 是 NVIDIA SM100（Blackwell）而非论文实验的 H800（SM90）；除了 BF16/FP8 还支持 NVFP4/FP4；页大小 128、top-k 16 与论文一致；MIT 许可；BibTeX 是占位符。同时把这条 H800 vs SM100 的不一致加进 `msa.md` 和 `minimax-m3.md` 的待追问。HF model card（M3 模型自身）目前 WebFetch 通道仍无法访问。
 
+## [2026-06-20] maintenance | 模型页统一补齐"模态"字段
+
+用户提出模型页应统一标注模态。核对 6 个模型页并回 `raw/` 原始 PDF 逐一求证后补齐：
+
+- GLM-5：回 `raw/glm-5-2602.15763.pdf` 核实为纯文本（ARC + 长上下文，无视觉/视频输入）。报告里出现的 "Multimodal LM"（Figure 10）是 Agent-as-a-Judge 评测管线用的外部判官，不是 GLM-5 自身输入。
+- MiMo-V2-Flash：回 PDF 核实纯文本；报告里的 "multimodal verifier / vision-based verifier" 是 RL 数据管线给渲染视频打分的判别器，非模型本体。
+- MiniMax-M2 Series：回 PDF 核实纯文本；"MM Claw multi-modal" 是评测名、VIBE-Pro 的 visual 判分是外部 verifier，均非模型输入。
+- DeepSeek-V4：回 PDF 核实纯文本；Outlook 明确把 "incorporating multimodal capabilities" 列为未来方向，即当前尚无多模态。
+- Kimi K2.5：关键事实表补上 `模态 = 多模态（文本 + 图像 + 视频）`，与正文一致。
+- MiniMax-M3：此前已有 `模态` 行（原生多模态），作为统一字段的样式参考。
+
+字段名统一为 `模态`，放进各模型页"关键事实"表（DeepSeek-V4 为变体表，改放表下一行说明）。CLAUDE.md 补了模型页 skeleton，把"关键事实表必须含模态字段"写进约定。
+
+附带订正：本轮先前一次误记 "raw/ 已无 GLM-5 PDF"。实际 `raw/` 8 个源 PDF 全部在位（一次 `ls` 异常所致，疑似 OneDrive 占位符），各 source 页的 `raw/...pdf` 引用与磁盘文件名逐一对应、无失链。
+
+
 
 ## [2026-06-20] deepen | DSA / MSA 训练分阶段对比
 
