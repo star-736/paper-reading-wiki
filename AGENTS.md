@@ -38,6 +38,8 @@ There are no automated tests. Validate contributions manually by checking:
 
 No meaningful commit-message convention is available in the root workspace history. Use short, imperative messages with a scope when helpful, such as `docs: add wiki index` or `raw: add transformer survey`.
 
+After a turn has produced substantive on-disk changes (an ingest, a deepen, a correction — anything that edited `wiki/` and appended to `wiki/log.md`), proactively offer in one short line to commit and push before ending the turn; don't wait to be asked. Keep it a lightweight offer: skip it for pure read/query turns, and when the user is still mid-discussion, batch the edits and offer once at a natural stopping point rather than after every individual change.
+
 Pull requests should describe what changed, list added or processed sources, note updated wiki pages, and call out unresolved contradictions or follow-up research. Include screenshots only when changes affect rendered diagrams, slides, or visual assets.
 
 ## Agent-Specific Instructions
