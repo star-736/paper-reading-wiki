@@ -66,30 +66,24 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 
 ## [2026-06-20] maintenance | 模型页统一补齐"模态"字段
 
-用户提出模型页应统一标注模态。核对 6 个模型页并回 `raw/` 原始 PDF 逐一求证后补齐：
+用户提出模型页应统一标注模态。回 `raw/` 原始 PDF 逐一求证 6 个模型页后补齐 `模态` 字段：GLM-5 / MiMo-V2-Flash / MiniMax-M2 / DeepSeek-V4 均核实为**纯文本**（报告里的 "multimodal verifier / MM-Claw / Multimodal LM" 都是 RL 管线判官或评测名，非模型自身输入；DeepSeek-V4 把多模态列为 Outlook 未来方向）；Kimi K2.5 = 多模态（文本+图像+视频）；MiniMax-M3 原生多模态（作样式参考）。
 
-- GLM-5：回 `raw/glm-5-2602.15763.pdf` 核实为纯文本（ARC + 长上下文，无视觉/视频输入）。报告里出现的 "Multimodal LM"（Figure 10）是 Agent-as-a-Judge 评测管线用的外部判官，不是 GLM-5 自身输入。
-- MiMo-V2-Flash：回 PDF 核实纯文本；报告里的 "multimodal verifier / vision-based verifier" 是 RL 数据管线给渲染视频打分的判别器，非模型本体。
-- MiniMax-M2 Series：回 PDF 核实纯文本；"MM Claw multi-modal" 是评测名、VIBE-Pro 的 visual 判分是外部 verifier，均非模型输入。
-- DeepSeek-V4：回 PDF 核实纯文本；Outlook 明确把 "incorporating multimodal capabilities" 列为未来方向，即当前尚无多模态。
-- Kimi K2.5：关键事实表补上 `模态 = 多模态（文本 + 图像 + 视频）`，与正文一致。
-- MiniMax-M3：此前已有 `模态` 行（原生多模态），作为统一字段的样式参考。
+- 各模型页「关键事实」表加 `模态` 行（DeepSeek-V4 为变体表，改放表下说明）。
+- CLAUDE.md 补模型页 skeleton：「关键事实表必须含模态字段」。
 
-字段名统一为 `模态`，放进各模型页"关键事实"表（DeepSeek-V4 为变体表，改放表下一行说明）。CLAUDE.md 补了模型页 skeleton，把"关键事实表必须含模态字段"写进约定。
-
-附带订正：本轮先前一次误记 "raw/ 已无 GLM-5 PDF"。实际 `raw/` 8 个源 PDF 全部在位（一次 `ls` 异常所致，疑似 OneDrive 占位符），各 source 页的 `raw/...pdf` 引用与磁盘文件名逐一对应、无失链。
+附带订正：本轮先前误记 "raw/ 已无 GLM-5 PDF"（疑 OneDrive 占位符致 `ls` 异常），实际 8 个源 PDF 全在位、各 source 页引用无失链。`raw/` 未改。
 
 
 
 ## [2026-06-20] deepen | DSA / MSA 训练分阶段对比
 
-针对"GLM-5 是不是分阶段训练 DSA"和"MSA 的 warmup 是否同构"两个问题，回到 `raw/glm-5-2602.15763.pdf` §2.1.1 + 附录 A 和 `raw/Lai 等 - 2026 - MiniMax sparse attention.pdf` §3.4 + §5.1 + Outlook 求证，按论文原文修订三个页面：
+针对"GLM-5 是否分阶段训练 DSA""MSA warmup 是否同构"两问，回 `raw/glm-5-2602.15763.pdf` 与 `raw/Lai 等 - 2026 - MiniMax sparse attention.pdf` 求证，按原文修订三页：
 
-- `wiki/concepts/deepseek-sparse-attention.md`：把 DSA warmup 的描述精确化为"1000 步 × 14 序列/步 × 202,752 token，max LR 5e-3 → 2e-4"；sparse adaptation 标注恒定 1e-5 + 20B tokens；指出"dense warm-up + sparse training adaptation"两阶段范式是 DeepSeek-V3.2-Exp 引入并命名的；新增 indexer 配置（32 head / head dim 128，附录 Table 10）；并指出主文本未明写"warmup 只训 indexer"，但附录 GLM-4.7-Flash 小规模消融写明 base 全冻可作佐证。RL insights 段补全：原本的"避免 MoE routing replay"那句在上一版被截断，现按论文措辞补回 deterministic torch.topk vs SGLang CUDA 实现对比、k=2048 vs MoE k 的存储/通信代价。
-- `wiki/comparisons/sparse-attention-mechanisms.md`：在"几个值得记住的判断"之前新增"训练分阶段对比（第四条轴）"小节，含 DSA / MSA 在起点、warmup 训什么、warmup 预算、warmup 后是否独立 adaptation、是否支持 from-scratch、post-training 处理 6 个维度的对照表，以及三条推论。RL 稳定性那段把对 MSA 的判断从"没有公开数据"硬化为引用 Outlook 原文（"reinforcement-learning post-training … 是 future work"）。
-- `wiki/sources/msa.md`：待追问首条同步硬化措辞，引 Outlook 原文。
+- `wiki/concepts/deepseek-sparse-attention.md`：DSA warmup 精确化（1000 步 × 14 序列 × 202,752 token，LR 5e-3→2e-4）+ sparse adaptation（恒定 1e-5 + 20B tokens）+ indexer 配置（32 head/dim 128）+ RL insights 段补全 deterministic torch.topk 对比。
+- `wiki/comparisons/sparse-attention-mechanisms.md`：新增「训练分阶段对比（第四条轴）」小节，DSA/MSA 沿 6 维度对照 + 三条推论；MSA RL 判断硬化为引 Outlook 原文。
+- `wiki/sources/msa.md`：待追问首条同步硬化措辞。
 
-求证过程中发现并修正的不准确：(1) 上一版 DSA 页对 warmup 的描述漏掉了步数和 batch；(2) 上一版把"warmup 只训 indexer"写成了主文本结论，实际只在附录 GLM-4.7-Flash 消融里明写。`raw/` 内容未改。
+订正：上一版 DSA 页 warmup 漏步数/batch，且把"warmup 只训 indexer"误写成主文本结论（实际只在附录 GLM-4.7-Flash 消融明写）。`raw/` 未改。
 
 
 ## [2026-06-20] ingest | DeepSeek-V3.2 技术报告
@@ -175,56 +169,29 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 
 ## [2026-06-20] deepen | 厘清 V3.2「MQA mode」的两条轴，订正「DSA 选 MQA 因长上下文友好」
 
-用户顺着 MHA/MQA mode 追问到「MQA mode 适合哪个训练阶段」「DSA 训练到底用哪种 mode」。回 `raw/DeepSeek-V3.2.pdf` 核实（pdftotext 抽取后 grep + sed 读附录 A），定位三条原文：
+用户追问 DSA 训练用哪种 mode。回 `raw/DeepSeek-V3.2.pdf` 核实后定论：「MQA mode」横跨两条不该混的轴——compute form（MHA/MQA 等价算法形态，训练/prefill 走 MHA、decode 走 MQA）与 selection 结构（DSA 让 latent 跨所有 query head 共享，是 kernel 效率要求）；masked-MHA-mode simulate DSA 是两轴正交的铁证。
 
-- **line 147**（Instantiate DSA Under MLA）："we implement DSA based on the **MQA mode of MLA**, where each latent vector … shared across **all query heads** … At the kernel level, each key-value entry **must be shared across multiple queries** for computational efficiency."
-- **line 1045**（Figure 7 caption）："For **DeepSeek-V3.1-Terminus**, the MHA mode is used for training and prefilling, while the MQA mode is used for decoding."（限定 dense 基座）
-- **line 248**："for short-sequence prefilling, we specially implement a **masked MHA mode to simulate DSA**."
+- `wiki/concepts/multi-head-latent-attention.md`：新增「『MQA mode』一词横跨两条轴」小节 + 训练/decode × compute-form/selection 的 2×2 表（钉死：选哪些 token 恒共享一份 latent；latent 怎么算 → 训练展开、decode 吸收）。
+- `wiki/sources/deepseek-v32.md`：**订正**原「DSA 选 MQA mode 因长上下文友好」——属臆测、无原文支撑；真实理由是 kernel 级 KV 跨头共享。
 
-核实结论：「MQA mode」在 V3.2 里横跨两条**不该混的轴**——(轴一·compute form) MHA/MQA 是同一注意力的等价算法形态，训练/prefill 用 MHA、decode 用 MQA；(轴二·selection 结构) 「DSA based on MQA mode」指 latent 跨所有 query head 共享、top-k 所有 head 选同一组，是 kernel 效率要求，**非训练算术**。line 248 的 masked-MHA-mode 是铁证：DSA 下 prefill 的 compute form 仍是 MHA，与 selection（DSA/MQA 共享）正交。
-
-订正与修订：
-
-- `wiki/concepts/multi-head-latent-attention.md`：在「两种 mode」段后新增「『MQA mode』一词横跨两条轴」小节（三 bullet + 长上下文训练形态的留白）；跨报告信号 V3.2 行把旧表述明确归到「轴二·selection 结构」。
-- `wiki/sources/deepseek-v32.md`：line 29 **订正**原「DSA 选 MQA mode 因其长上下文效率更友好」——此说把两条轴混了、无原文支撑；改为 kernel 效率（KV 跨头共享）+ 两条轴正交（masked MHA mode 佐证）。
-
-发现的不准确：上一版 `deepseek-v32.md` 与 MLA 概念页都写了「DSA 选 MQA mode 因长上下文友好」，属臆测；真实理由是 kernel 级 KV 跨头共享，且「选 MQA mode」本身是 selection 结构而非 compute form 取舍。`raw/` 未改。
-
-补充（同一追问线收尾）：用户把问题收窄到最具体一问「DSA 训练时那份 latent 是展开还是吸收」。在 MLA 概念页「两条轴」小节后补一张训练/decode × compute-form/selection 的 2×2 表，钉死结论：**选哪些 token 恒共享（一份 latent）；latent 怎么算 → 训练展开（MHA mode）、decode 吸收（MQA mode）**。训练展开两动因：compute-bound 下 128 维点积 < 吸收 512 维；训练需 $W^{UQ}/W^{UK}/W^{UV}/W^O$ 各自 live 让梯度分别回流（吸收是推理期预合并固定权重的优化）。短 prefill 展开形态有原文确证，长上下文训练形态仍留白。
+详细推导与原文锚点见两页正文。短 prefill 展开形态有原文确证，长上下文训练形态留白。`raw/` 未改。
 
 ## [2026-06-20] verify | 交叉检验 MLA「MQA mode / MHA mode」两条轴
 
-用户要求对 MLA 概念页最新两段（MQA mode / MHA mode）做外部交叉检验，再回 V3.2 原文复查。检验通道说明：本会话 `web_search` 工具不存在（仅 `delegate_task` 的 `web` toolset 有，但 glm-5.2 子代理反复在首次工具调用前空返回，不可用）；改用 `terminal + curl`，DuckDuckGo/HF 不可达，**搜狗 + cn.bing 可达**。命中并抓取的中文技术源：博客园「罗西的思考《探秘Transformer(28)—DeepSeek MLA》」(cnblogs/rossiXYZ/18827618)、吴建明「MLA计算流全图解&吸收矩阵对比分析」(cnblogs/wujianming-110117/19112429)。
+用户要求对 MLA 页的两条轴论述做外部交叉检验，再回 V3.2 原文复查。外部源（中文技术博客，provenance 链接已落到 MLA 页正文）支持 5 条论断中的前 4 条：①正交两条轴、②矩阵吸收后退化 MQA、③训练展开/decode 吸收、④展开 vs 吸收算力随 seq_len 有 crossover（外部资料更精确，据此把原静态二分升级为 crossover 描述）。第⑤条（「MQA mode」横跨两条轴 + DSA top-k 跨头共享）博客层面无人这样拆分，但回 `raw/DeepSeek-V3.2.pdf` 逐句复查**全部坐实**，属本页原创综合、无需订正。
 
-外部交叉检验结论（5 条论断）：
+- `wiki/concepts/multi-head-latent-attention.md`：crossover 段补 blockquote（算力是 seq_len 函数）+ 第⑤点补原文锚点和「kernel 约束 → MQA mode」因果，并标注「论文一手坐实、博客层面原创综合」。
 
-- ① MLA vs GQA/MQA 正交两条轴（减头 vs 压秩）— ✅ 支持。
-- ② 矩阵吸收 $W^{UK}→Q$、$W^{UV}→O$，吸收后退化 MQA — ✅ 支持（罗西文目录 2.2 权重吸收 / KQ 合并 / VO 合并 / 3.3.3 MQA形式）。
-- ③ 训练/prefill 用 MHA 展开、decode 用 MQA 吸收 — ✅ 支持（罗西文「2.2.4 训练 MHA 不合并」）。
-- ④ 展开 vs 吸收的算力权衡 — ✅ 支持，且外部资料更精确：吴建明实测 decode 吸收恒省，prefill 随 $seq\_len$ 增长「展开−吸收」差值由正转负，存在 crossover。**据此补进 MLA 页**（原本只写成 128 维 < 512 维的静态二分）。
-- ⑤ 「MQA mode」横跨两条轴 + DSA top-k 跨 head 共享 — 博客层面 **NOT-FOUND**（无人这样区分），但回 `raw/DeepSeek-V3.2.pdf` 逐句复查 **全部坐实**：line 149–152（kernel 约束→MQA mode，latent shared across all query heads）、line 1071–1072（MHA train/prefill、MQA decode，限 V3.1-Terminus）、line 264（masked MHA mode simulate DSA）。
-
-修订（仅 `wiki/concepts/multi-head-latent-attention.md`，`raw/` 未改）：
-
-- 第④点：2×2 表后新增一段 blockquote，讲清「展开 vs 吸收算力是 $seq\_len$ 的函数、有 crossover」，附吴建明文 provenance 链接。
-- 第⑤点：三条 bullet 补上 V3.2 原文行号锚点 + 补全「shared across all query heads of the query token」整句 + 点明「先 kernel 约束 → Therefore MQA mode」的因果；小节末加 blockquote 标注「论文一手坐实，但博客层面无人这样拆分，属本页原创综合」。结论：第⑤点**无需订正**，原标注「已据原文核实」名副其实。
+`raw/` 未改。
 
 ## [2026-06-20] verify | V3.2 训练形态追问 + V3.1-Terminus 背景（Tavily 交叉验证）
 
-承接 MLA 两条轴。用户先问「V3.2 是不是也用 MHA mode 训练」，再问「要不要搜 V3.1」。
+承接 MLA 两条轴。用户问「V3.2 是不是也用 MHA mode 训练」「要不要搜 V3.1」。回 `raw/DeepSeek-V3.2.pdf` 复查：论文**从未直接陈述** V3.2 训练用 MHA mode（Figure 7 caption 主语是 V3.1-Terminus），故「V3.2 训练走 MHA 展开」是合理强推断而非明文，MLA 页留白成立、不填死。本会话新增 Tavily 搜索 API（key 在 `~/AppData/Local/hermes/.env`，国外源可达），坐实两点：V3.1-Terminus 是 V3.1 的 update、非新基座、架构未变（与论文「唯一架构改动是 DSA」咬合）；MHA/MQA mode 分工是 MLA 自 V2 的通用惯例、非 V3.1 独创。
 
-回 `raw/DeepSeek-V3.2.pdf` 复查训练形态：论文**从未直接陈述 V3.2 训练用 MHA mode**——Figure 7 caption（line 1071–1072）主语是 V3.1-Terminus；V3.2 自身只写了 selection 结构（DSA based on MQA mode = latent 跨头共享）+ 两阶段配方（dense warm-up 2.1B「keep dense attention」只训 indexer / sparse training 943.7B 全参 adapt）+ 推理侧短 prefill 用 masked MHA mode（line 264）。结论：「V3.2 训练走 MHA 展开」是**合理强推断而非明文**，page line 31 的留白成立、不填死。
+- `wiki/concepts/multi-head-latent-attention.md`：轴一补「mode 分工是 MLA 通用惯例」+ 外部佐证 + V3.1-Terminus 定位（provenance 链接落正文）。
+- `wiki/sources/deepseek-v32.md`：核心结论段补 blockquote 交代训练起点 V3.1-Terminus + 「唯一架构改动是 DSA」。
 
-本会话**新增 Tavily 搜索 API**（key 在 `~/AppData/Local/hermes/.env` 的 `TAVILY_API_KEY`，curl POST api.tavily.com/search 即可，国外源可达），取代此前不可用的 web_search / 子代理 web。两个问题用 Tavily 坐实：
-
-- **V3.1-Terminus 定位**：官方公告（api-docs.deepseek.com/news/news250922）+ OpenRouter/Fireworks/SambaNova/Medium 一致——它是 V3.1 的 update（语言一致性 + agent 能力），**非新基座、架构未变**，沿用 hybrid reasoning。与论文 line 115–116「the only architectural modification of V3.2 is DSA」咬合：V3.1-Terminus 注意力 = 不带 DSA 的标准 MLA。
-- **MHA/MQA mode 通用性**：Lior Sinai 博客明确「吸收只能推理期做，训练必须各权重分开让梯度回流」（讲 MLA 本身、V2 起），TransMLA 确认 MLA「introduced with DeepSeek V2」。→ mode 分工**不是 V3.1 独创，是 MLA 通用惯例**，论文只是拿 dense 训练起点 V3.1-Terminus 举例。
-
-落盘（`raw/` 未改）：
-
-- `wiki/concepts/multi-head-latent-attention.md` 轴一 bullet 下新增子项：mode 分工是 MLA 自 V2 的通用惯例、非 V3.1 独创 + Lior Sinai「训练权重分开让梯度回流」外部印证（独立佐证既有第二动因）+ V3.1-Terminus 定位 + 两条 provenance 链接。
-- `wiki/sources/deepseek-v32.md` 核心结论段新增 blockquote：交代训练起点 V3.1-Terminus 是什么（官方公告口径）+ 论文 line 115–116「唯一架构改动是 DSA」+ Figure 7 caption 写成「For V3.1-Terminus」实为 MLA 通用 compute-form 惯例。
-- 未新建 V3.1-Terminus 来源页/模型页：它不在 `raw/`、非本库主线模型，仅作为 V3.2 训练起点在 V3.2 来源页注明定位即可。
+未建 V3.1-Terminus 页（不在 `raw/`、非主线模型）。`raw/` 未改。
 
 ## [2026-06-20] deepen | MLA 展开/吸收 crossover 定量推导 + V3.2 masked-MHA 解释
 
@@ -251,23 +218,13 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 
 ## [2026-06-21] deepen | wiki 图文化试点：MLA 页内嵌 Figure 7 原图
 
-用户提出纯文字 wiki 能否进化到图文交错，并先做效果试点。结论：图表信息密度最高却恰是单模态 LLM 的盲区，且全库此前 `![` 图片语法为 0、却密集引用 `Figure/Table` 这类看不见的视觉锚点。
+用户提出纯文字 wiki 能否进化到图文交错并先做效果试点（全库此前 `![` 图片语法为 0，却密集引用看不见的 `Figure/Table`）。新引入 PyMuPDF 抽图，把 MLA 页一次图文化到位，跑齐三种素材类型：
 
-试点管线（新引入 PyMuPDF=1.27.2）：
+- **矢量图（Fig 7，MHA/MQA mode 互转）**：切到 `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`，内嵌「两种 mode」节。
+- **概念示意图（V2 Fig 3，四种注意力对比）**：切到 `wiki/assets/deepseek-v2/fig3-mha-gqa-mqa-mla.png`，内嵌定义节「正交两条轴」处，直接图证「只 cache latent / KV −93.3%」。
+- **表格（V2 Table 1）**：判定走 Markdown 重排而非截图（可 `rg`、公式 LaTeX、零体积），置于 Table 1 引用处。
 
-- **切图**：`raw/DeepSeek-V3.2.pdf` p20 的 Figure 7（MHA/MQA mode 互转图）是**纯矢量绘制**（`get_images()` 空），故按页面区域 `get_pixmap(clip)` 300 DPI 渲染裁剪，存到新目录 `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`。用 `get_textbox(clip)` 抽图内文字层验证裁剪边界精确（含 (a)/(b) 子标题，排除上方附录标题与下方 caption）。
-- **视觉核对**：`vision_analyze` 读图（首个 provider 拒图片格式不可用，换模型后可用、读图质量高）逐方框/箭头/变量复述，与 MLA 页现有论述交叉核对——矩阵吸收（$W^{UK}$ 移 query 侧、$W^{UV}$ 移 attention 输出后）、MHA per-head 展开 vs MQA latent 跨头共享、四处 `apply RoPE` 只在 $q^R/k^R$ 分量——**全部一致**，反而比原文字更精确，属回一手图的 tier-1 确证。
-
-落盘：`wiki/concepts/multi-head-latent-attention.md`「两种 mode」节内嵌 Figure 7（图 + 原文 caption 引文），alt 文本即高质量图注（视觉模型读图 + 回原文核对）。事实/引用零改动，仅新增图片。`wiki/assets/` 不在 `.gitignore`（图需随 wiki 进版本控制，`raw/` PDF 仍被忽略）。`raw/` 未改。
-
-待定（试点性质）：是否把图文化升级为正式约定（assets 目录规范、`![]` alt 文本与证据 tier 标注规则、写回检查单增「引用的 Figure 是否已内嵌」），以及是否批量回填其他页的关键图——待用户拍板后再动 AGENTS.md / CLAUDE.md。
-
-补充（同日，效果获认可后续推）：在正式立约定前先多跑两种素材类型，把 MLA 页一次图文化到位：
-
-- **概念示意图（矢量）**：`raw/DeepSeek-V2 ...pdf` p7 Figure 3（MHA/GQA/MQA/MLA 四种注意力对比，纯矢量）切到 `wiki/assets/deepseek-v2/fig3-mha-gqa-mqa-mla.png`，内嵌进 MLA 页**定义节**「正交两条轴」处。视觉模型核对：四子图完整、图例「Cached During Inference」= 斜线填充编码、MLA 唯一缓存 Compressed Latent KV、projection 上投影——直接图证 line 26-27 的「只 cache latent / KV −93.3%」。
-- **表格（纯文字）**：V2 Table 1（每 token KV cache 对比）drawings 仅 2 条线，判定**走 Markdown 重排而非截图**——可被 `rg` 检索、公式 LaTeX 渲染、零图片体积。从原文 § 2.1.4 重排成 4 行 md 表，置于 line 26 Table 1 引用处下方。
-
-至此三种素材类型跑齐：矢量图（Fig 7）、概念示意图（Fig 3）、表格重排（Table 1）。**经验沉淀**：(1) 矢量图 `get_images()` 为空、必须 `get_pixmap(clip)` 区域裁剪，边界靠 `get_textbox(clip)` 文字层校验；(2) `get_drawings()` 的 bbox 可能含页面外辅助路径、不可直接信，以图内文字块定边界；(3) 纯文字表格优先重排 md，不截图；(4) alt 文本写成完整图注（视觉模型读图 + 回原文核对），即使图失链也有 tier-1 文字降级。落盘仅 `wiki/concepts/multi-head-latent-attention.md` + 新增 2 图，事实/引用零改动，`raw/` 未改。
+每张图均经视觉模型逐框核对、与现有论述一致，属回一手图的 tier-1 确证；alt 文本写成完整图注以备失链降级。`wiki/assets/` 进版本控制（`raw/` PDF 仍忽略）。事实/引用零改动，`raw/` 未改。抽图方法已沉淀为 schema 约定（见下条 maintenance + CLAUDE.md「Figures」节）。
 
 ## [2026-06-21] maintenance | 图文化升级为正式约定（AGENTS.md / CLAUDE.md / skill 同步）
 
