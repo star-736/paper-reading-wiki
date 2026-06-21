@@ -315,3 +315,12 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - **新增来源页 `sources/qwen3-next-blog.md` + raw 材料**：Qwen3-Next 无技术报告，提取 **Alibaba Cloud 官方博客镜像**（qwenlm.github.io 原页已 404 重定向 qwen.ai JS 站）正文存入 `raw/Qwen Team - 2025 - Qwen3-Next blog ….md`（清理导航噪音、正文逐字保留、文件头标注来源/日期）。博客坐实三件此前只 config 推断的事，升级为 tier-2 官方外部佐证：**3:1 = 官方原话「75% GDN / 25% standard」**、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层 output gating 去 Attention Sink/Massive Activation；另记 Zero-Centered RMSNorm + norm weight decay、512-expert（10+1）MoE、native MTP。注意区分：博客讲「Qwen 怎么组装架构」，**不是 GDN 机制本身**（机制 tier-1 仍在 GDN/Gated Attention 原论文，GDN 具体实现 tier-1 在 transformers modeling + HF config）。
 
 - **双向引用**：`linear-attention-and-delta-rule.md` 跨报告信号、`attention-gating.md` 采用谱系、`models/qwen3.5.md`、`models/qwen3-coder-next.md`、`sources/qwen3.5-omni.md`、`sources/qwen3-coder-next.md` 均链向新博客页；`index.md` 来源区加 1 条。新博客页 `## 相关页面` 反向链回上游论文与两个模型页。`raw/` 仅新增博客 md（git-ignored，与 PDF 同性质），未改任何已有源。
+
+## [2026-06-21] deepen | delta rule 命名溯源 + 「Qwen 机制沿用 GDN」钉一笔
+
+承接上一条的连续追问，给 `concepts/linear-attention-and-delta-rule.md` 演进链补两段（均不改既有事实，仅澄清/溯源）：
+
+- **演进链表格上方加「delta rule 名字的来历」blockquote**：delta = 误差项 $\delta=y-\hat y$（Widrow-Hoff 1960 / LMS，GDN § 2.2 引），更新量正比于误差（错多少改多少，区别于 perceptron 定步长）；搬到线性注意力即 fast-weight/test-time SGD，$(S_{t-1}k_t-v_t)$ 就是那个 delta，$\beta_t$=学习率、$\alpha_t$=weight decay。tier-1（GDN § 2.2/3.1 + Widrow et al. 1960）。
+- **表格下方加「Qwen 停在 GDN 这一环」blockquote**：澄清用户问的「机制沿用」——Qwen3-Next/3.5 线性层用 GDN 原版 gated delta rule（head-wise 标量门，**未升级到 KDA 的 channel-wise 门**），Mamba2 式 α 是 GDN 原文自定（非 Qwen 改动）。同时钉一句「机制沿用 ≠ 模块实现无改动」，把 value-head 2×、投影/输出门融合等实现层改动归到 transformers modeling 那一层，与机制演进链分开。判据=HF config + 代码（tier-1，非 Qwen 架构论文——那不存在）。
+
+`raw/` 未改，无事实变动。

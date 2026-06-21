@@ -14,12 +14,16 @@ $$S_t = S_{t-1} + k_t v_t^\top,\qquad o_t = S_t q_t$$
 
 朴素线性注意力只会累加、从不遗忘，状态无界增长 → 长上下文里互相干扰。后续工作沿两个方向补救——**遗忘门 / decay** 和 **delta rule**——一步步把质量追回来：
 
+> **「delta rule」名字的来历。** 它是一条 1960 年的经典学习规则（Widrow & Hoff，GDN 原文 § 2.2 引 `Widrow et al., 1960`，亦称 Widrow-Hoff rule / LMS）。其中的 **delta 指误差项 $\delta = y-\hat y$（目标减预测）**——希腊字母 Δ/δ 历来表示「差」，规则的更新量正比于这个误差（**错得越多改得越多**，区别于只看对错符号、定步长改的 perceptron rule），本质是对最小二乘做梯度下降。搬到线性注意力里（GDN § 3.1 的 fast-weight / test-time SGD 视角）：把状态 $S$ 看成快速权重，目标是从 key 重建 value，损失 $L=\tfrac12\lVert Sk_t-v_t\rVert^2$，对它走一步 SGD 就得到 $S_t = S_{t-1}(I-\beta_t k_tk_t^\top)+\beta_t v_tk_t^\top$。括号里的 $(S_{t-1}k_t-v_t)$ 正是 **delta**：「用旧状态查 key 得到的旧 value」与「要写入的新 value」之差。所以 delta rule = 「按当前 key 的重建误差去**定向**擦旧写新、误差为零就不动」；这里 $\beta_t$ 就是学习率 $\eta$，GDN 后来加的 $\alpha_t$ 则相当于给这步 SGD 加 **weight decay**。
+
 | 阶段 | 状态更新（简化） | 关键改动 | 解决的问题 |
 | --- | --- | --- | --- |
 | 朴素线性注意力 | $S_t = S_{t-1} + k_t v_t^\top$ | 无遗忘 | 复杂度从 $O(L^2)$ 降到 $O(L)$ |
 | DeltaNet | $S_t = (I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 把递推看成对重构损失 $\tfrac12\lVert S k_t - v_t\rVert^2$ 做在线梯度下降（经典 **delta rule**）；rank-1 更新等价于广义 Householder 变换，可 chunkwise 并行 | 让记忆「自我纠错」，但旧关联仍永久保留 |
 | Gated DeltaNet（GDN） | $S_t = \alpha_t(I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 加一个 **head-wise 标量遗忘门** $\alpha_t\in[0,1]$（作用类似对快速权重的 weight decay / 数据相关 L2 正则）。GDN 原文（[来源页](../sources/gated-delta-net.md)）的洞察：门控负责「快速整块清空」、delta rule 负责「定向精确更新」，两者互补——$\alpha_t\to0$ 瞬间清空记忆，$\alpha_t\to1$ 退化成纯 delta rule | 可控的记忆寿命，缓解干扰，改善稳定性与长上下文泛化 |
 | **KDA**（Kimi Linear） | $S_t = (I-\beta_t k_t k_t^\top)\mathrm{Diag}(\alpha_t)S_{t-1} + \beta_t k_t v_t^\top$ | 把 GDN 的标量门换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维独立遗忘速率（思路承自 GLA） | 更精细地调度有限状态记忆，在合成检索任务上超过 GDN、Mamba2 |
+
+> **Qwen3-Next / Qwen3.5 停在 GDN 这一环，机制上未升级到 KDA。** 它们的线性层用的就是 GDN 原版的 gated delta rule（$\alpha_t$ 是 **head-wise 标量门**，不是 KDA 的 channel-wise 向量门），且 $\alpha_t$ 沿用 GDN 自己规定的 Mamba2 式参数化（原文脚注「We use Mamba2's parameterization for α」）——所以「用 Mamba2 式 α」恰恰是忠实沿用 GDN、不是 Qwen 的改动。判据：HF `config.json` 的 `linear_num_*_heads` + 每 head 一个 `A_log`/`dt_bias` 坐实标量门（代码/config tier-1）。机制沿用 ≠ 模块实现无改动——Qwen 在 block 实现层有工程化改动（value head 2× key head、投影与输出门融合等），那是另一层，见官方 `transformers` modeling，不在本机制演进链内。
 
 GDN 的一个有趣视角（报告 § 2.2）：标量遗忘门可被解读成一种**数据相关、可学习的乘性位置编码**，放松了 RoPE 的正交性约束——这也是 Kimi Linear 敢于在全局 MLA 层用 NoPE、把位置编码责任全交给 KDA 层的依据。
 
