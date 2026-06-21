@@ -59,6 +59,8 @@ GDN 的一个有趣视角（报告 § 2.2）：标量遗忘门可被解读成一
 
 ## KDA 的硬件效率（已据 Kimi Linear 原文核实）
 
+**先厘清「KDA 比 GDN 多存什么」——多的不是状态 cache。** 把 GDN 的 head-wise 标量门换成 channel-wise 向量门，常被误解成「状态变大了」。其实需要**长期 cache 的 recurrent 状态** $S_t$（$d_v\times d_k$ per head）GDN 与 KDA **完全一样**——遗忘门不管标量还是向量都只是**乘在状态上的衰减系数**（$\mathrm{Diag}(\alpha_t)$ 是每步临时算、用完即弃的对角缩放），不进入也不撑大 $S_t$。channel-wise 门真正多出来的是三处、且都不是状态显存：(a) **每步瞬时的门值**从「每 head 1 个数」变成「每 head $d_k$ 个数」（激活/寄存器里的临时量，非持久 cache）；(b) **门投影的参数**从 `hidden→num_heads` 变成 `hidden→num_heads×d_k`，报告强调用**低秩投影**压住这个增量；(c) **算子复杂度**——细粒度门要求 DPLR 转移矩阵，通用 DPLR 很贵，这才是主要成本，KDA 用下述专门化算子去抵消。一句话：KDA 靠「把门做细」而非「把状态撑大」来提升有限状态的利用率。
+
 细粒度门理论上要求用 **Diagonal-Plus-Low-Rank（DPLR）** 转移矩阵 $S_t=(D-a_t b_t^\top)S_{t-1}+k_t v_t^\top$，但通用 DPLR 算力贵、且细粒度衰减的除法在 intra-chunk 计算里有数值精度问题（GLA 为此要在对数域 + 二级 full-precision chunking，牺牲半精度 matmul）。
 
 KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**绑定到 $k$**。配合 WY representation（打包 rank-1 更新，借 Comba 的 $P$ 形式省一次矩阵求逆）和 UT transform（减少 non-matmul FLOPs），把二级 chunk 矩阵计算从 4 次降到 2 次，再省掉 3 次额外矩阵乘。结果：算子效率比通用 DPLR 提升约 **100%**（报告 § 3.2，Figure 2 实测 2K–64K 输入长度 KDA 显著快于 DPLR）。
@@ -87,7 +89,7 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
 ## 待追问
 
-- KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？报告强调低秩投影控制，精确数字需查配置表。
+- KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？**已部分厘清**（见「KDA 的硬件效率」开头）：需 cache 的状态 $S_t$ 大小不变，增量在「瞬时门值（×$d_k$，激活非持久）+ 门投影参数（低秩压住）+ DPLR 算子复杂度」三处。**仍待补的精确数字**：低秩门投影的秩与具体参数增量、相对 GDN 的端到端显存/吞吐差，需查配置表与实测。
 - 线性注意力在长 trajectory RL 上，固定状态会不会比 softmax 更易丢失关键中间信息？Kimi Linear 称 RL 阶段也追平，但机制层面的稳健性证据有限。
 - DeltaNet/GDN/KDA 之外，Mamba2、GLA、RWKV 等线性/SSM 变体与这条链的关系，值得补一张更全的谱系图（GDN 原文已把 Mamba2/DeltaNet 作为对照基线，可据其 § 2 补全 delta-rule 之外的一支）。
 - DPLR「把 $a,b$ 绑定到 $k$」是否损失了通用 DPLR 的某些表达力？报告说「representational capacity 与通用 DPLR 对齐」，但这是 KDA 自述，外部尚无独立验证。

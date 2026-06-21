@@ -324,3 +324,7 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - **表格下方加「Qwen 停在 GDN 这一环」blockquote**：澄清用户问的「机制沿用」——Qwen3-Next/3.5 线性层用 GDN 原版 gated delta rule（head-wise 标量门，**未升级到 KDA 的 channel-wise 门**），Mamba2 式 α 是 GDN 原文自定（非 Qwen 改动）。同时钉一句「机制沿用 ≠ 模块实现无改动」，把 value-head 2×、投影/输出门融合等实现层改动归到 transformers modeling 那一层，与机制演进链分开。判据=HF config + 代码（tier-1，非 Qwen 架构论文——那不存在）。
 
 `raw/` 未改，无事实变动。
+
+## [2026-06-21] deepen | 厘清「KDA 比 GDN 多存什么」（多的不是状态 cache）
+
+承接关于 KDA 门维度的追问，给 `concepts/linear-attention-and-delta-rule.md` 的「KDA 的硬件效率」小节开头加一段澄清（tier-1，据 Kimi Linear 报告 + 状态方程推证）：channel-wise 门常被误读成「状态变大」，但需长期 cache 的 $S_t$（$d_v\times d_k$ per head）GDN=KDA 不变——门只是乘在状态上的衰减系数，不进入状态。增量在三处且都非状态显存：瞬时门值（×$d_k$，激活）、门投影参数（低秩压住）、DPLR 算子复杂度（专门化算子抵消）。对应把待追问那条「参数/显存增量多少」从全开放标成「已部分厘清 + 仍待补精确数字」。`raw/` 未改。
