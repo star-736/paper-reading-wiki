@@ -298,4 +298,10 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `models/qwen3-coder-next.md`：79.7B 总参（HF safetensors 计 79,674,391,296）/ ~3B 激活，48 层，`full_attention_interval=4` 即 **3 GDN : 1 gated full-attention**，512 expert 选 10，hidden 2048，head_dim 256，上下文 262,144，纯文本（config 无 `vision_config`）。
 - `models/qwen3.5.md`：Qwen3.5 多模态 hybrid MoE 家族页（397B-A17B≈403B / 122B-A10B / 35B-A3B / 27B dense 等）。`layer_types` 字段**逐层列出** 3 linear_attention + 1 full_attention，坐实 3:1；config 含 `vision_config`/`video_token_id` → 多模态。Qwen3.5-Omni 即以此为基座。
 
-回填双向引用：两个 source 页（qwen3-coder-next / qwen3.5-omni）把「比例/模态待核实」的待追问降级为「已据 HF config 坐实」并加 `## 相关页面` 指向模型页；`attention-gating.md` 采用表、`linear-attention-and-delta-rule.md` 跨报告信号的 Qwen 提及改指模型页；index 模型区加 2 条。架构事实标注来源为 HF config（外部佐证，非 raw/ 报告原文——Qwen3.5 base 报告仍未入库，设计动机/消融的文字级 tier-1 仍缺，已在 source 页待追问保留）。`raw/` 未改。
+回填双向引用：两个 source 页（qwen3-coder-next / qwen3.5-omni）把「比例/模态待核实」的待追问降级为「已据 HF config 坐实」并加 `## 相关页面` 指向模型页；`attention-gating.md` 采用表、`linear-attention-and-delta-rule.md` 跨报告信号的 Qwen 提及改指模型页；index 模型区加 2 条。架构事实标注来源为 HF config（外部佐证，非 raw/ 报告原文）。注：当初这条曾写「需补 Qwen3.5 base 报告」，**事后核实该 base 报告并不存在**（Qwen3-Next 只有博客、Qwen3.5 只有 Omni 报告 + 权重）——见后一条 maintenance 修正。`raw/` 未改。
+
+## [2026-06-21] maintenance | 修正「Qwen3.5/Qwen3-Next base 报告」幻觉
+
+用户指出：所谓「Qwen3.5 base 报告」根本还没写、「Qwen3-Next base 报告」也不存在——前一条 ingest 把它们当成「待补的 tier-1 文献」是凭空臆想。Tavily 核实：Qwen3-Next 仅 2025-09 官方博客 + HF 权重（无独立 report）；Qwen3.5 系列目前只有 Qwen3.5-Omni（arXiv:2604.15804）+ HF 权重；arXiv:2603.00729 是 **Qwen3-Coder-Next**（已入库那篇），非 Qwen3-Next base。
+
+改两处死任务：`sources/qwen3.5-omni.md` 待追问从「需补 Qwen3.5 base 报告」改为「该 base 报告不存在，架构 tier-1 = HF config，文字级动机在 Gated Attention/GDN 原论文 + 博客」；`sources/qwen3-coder-next.md` 加一句澄清 Qwen3-Next 无独立报告、本篇是该家族首篇 report。前一条 ingest 日志补一句指向本修正。教训：标「待补某报告」前先确认该报告真的存在，别把模型名直接脑补成「应有同名技术报告」。`raw/` 未改，无内容事实变动（只改证据来源表述）。

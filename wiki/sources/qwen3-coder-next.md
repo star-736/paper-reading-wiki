@@ -12,6 +12,8 @@
 Qwen3-Coder-Next 是一个 **80B 总参 / 3B 激活** 的开源编码模型，明确「based on Qwen3-Next」——即沿用 Qwen3-Next 的 **hybrid attention + MoE** 架构（3 层 Gated DeltaNet 线性层配 1 层带输出门的 gated attention），面向 coding agent 和本地开发。报告主旨不是架构创新，而是**把 agentic training 推到小激活模型上能走多远**：通过大规模合成可验证编码任务 + 可执行环境，用 mid-training 和 RL 直接从环境反馈学习。在 SWE-Bench、Terminal-Bench 2.0、Aider 等 agent-centric benchmark 上，相对其激活参数量取得有竞争力的表现。
 
 > **这页对本 wiki 的价值是「采用证据」**：它确认 [Gated Attention](../concepts/attention-gating.md) 的 SDPA 输出门和 [GDN 线性注意力](../concepts/linear-attention-and-delta-rule.md) 已落到一个真实发布的生产编码模型上。架构细节它直接继承 Qwen3-Next、未重新推导，所以注意力机制的一手出处仍是 [Gated Attention 报告](gated-attention.md) 和 [GDN 报告](gated-delta-net.md)，本报告不构成机制层 tier-1 来源。
+>
+> 顺带澄清：**Qwen3-Next 本身没有独立技术报告**（只有 2025-09 官方博客 + HF 权重），本篇 Qwen3-Coder-Next（arXiv:2603.00729）是 Qwen3-Next 家族里第一篇正式 report。Qwen3-Next 的架构事实以 HF config 为 tier-1，别去找一篇不存在的「Qwen3-Next 技术报告」。
 
 ## 架构与训练
 
