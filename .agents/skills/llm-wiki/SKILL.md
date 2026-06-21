@@ -36,3 +36,14 @@ For questions about the knowledge base, read `index.md` first when it exists, th
 ## Lint Workflow
 
 When asked to audit or health-check the wiki, look for stale claims, contradictions, orphan pages, missing cross-references, missing source citations, important concepts without pages, and gaps that need new sources.
+
+## Figures (图文化)
+
+The wiki embeds source figures inline, not just text. When a page relies on a paper's diagram/table a reader can't reconstruct from prose, embed the image rather than only citing `Figure N`. Use **PyMuPDF (`fitz`)**:
+
+- Store at `wiki/assets/<source-slug>/<figure-slug>.png`; `wiki/assets/` is committed (only `raw/` is git-ignored). Don't orphan assets.
+- Paper diagrams are usually vector-drawn (`page.get_images()` empty) — render a clipped region via `page.get_pixmap(matrix=fitz.Matrix(300/72,300/72), clip=rect)` and verify the crop with `page.get_textbox(clip)`.
+- Plain-text tables: re-typeset as Markdown, don't screenshot.
+- Alt text = a full reader-facing caption; an embedded `raw/` figure is tier-1 原文确证. Keep vision-tool provenance out of reader-facing prose.
+
+See `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" for the full convention.

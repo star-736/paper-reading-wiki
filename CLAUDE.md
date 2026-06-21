@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-This repo is a **Markdown-only knowledge base**, not software. There is no build, lint, or test toolchain — `rg --files` lists tracked files and `rg "term" wiki/ raw/` searches notes. The repo is browsed as an Obsidian vault (`.obsidian/` is committed), so links must stay Obsidian-friendly.
+This repo is a **Markdown-only knowledge base**, not software. There is no build, lint, or test toolchain — `rg --files` lists tracked files and `rg "term" wiki/ raw/` searches notes. It can be browsed as an Obsidian vault, but `.obsidian/` is **git-ignored** (per the 2026-06-19 maintenance entry), so don't rely on vault settings being shared; links use relative Markdown paths, not Obsidian `[[wiki-links]]`. The one tooling dependency is **PyMuPDF (`fitz`)**, used to extract figures from `raw/` PDFs for embedding (see "Figures & visual material").
 
 ## Architecture: three layers
 
@@ -74,6 +74,7 @@ Before considering any `ingest`/`deepen`/`verify`/`refactor` turn done, confirm:
 - [ ] `wiki/log.md` appended with the correct `<kind>` and a title.
 - [ ] No orphan page (every new page has ≥1 inbound link), no broken relative links.
 - [ ] Internal tooling traces (raw line numbers, `pdftotext`, scratch dates) kept out of reader-facing prose.
+- [ ] Figures a page relies on are **embedded** (not just cited as `Figure N`) per "Figures & visual material"; every `wiki/assets/` file is referenced by ≥1 page.
 
 **Wrap-up — offer to commit & push:** this wiki is a git repo (`origin` on GitHub). After a turn has produced **substantive on-disk changes** (an ingest, a deepen, a correction, or any edit that touched `wiki/` and updated `log.md`), proactively offer — in one short line — to `git commit` and `git push` before ending the turn. Don't wait to be asked. Keep it a lightweight offer, not a forced step: skip it for pure read/query turns, and if the user is mid-discussion (still asking follow-ups, hasn't asked to wrap up), batch the changes and offer once at a natural stopping point rather than after every individual edit. When the user accepts, stage only the files changed this session, write an imperative `docs:`-scoped message, and push to `main`.
 
@@ -88,9 +89,19 @@ Before considering any `ingest`/`deepen`/`verify`/`refactor` turn done, confirm:
 - **Log discipline — keep the log a timeline, not a second copy of the page.** Each entry says *what changed, which files, and the headline reason* — a few lines, not the full argument. The detailed reasoning (a derivation, a quote-by-quote verification, a corrected misconception) belongs **on the page it concerns** (often in `## 待追问` or an inline blockquote), with the log pointing to it. If a log entry is growing past ~8 lines, that's a signal the substance should live on the page instead. Always note `raw/` 未改 when no source was touched.
 - **Section "待追问"** (open questions) is a real part of the schema, not boilerplate — populate it with concrete follow-ups when ingesting.
 
+## Figures & visual material (图文化)
+
+The wiki is **图文交错 (text + inline figures)**, not text-only. When a page leans on a paper's figure or table — especially a mechanism/architecture diagram a reader can't reconstruct from prose — embed the actual image, don't just cite `Figure N`. The tool for this is **PyMuPDF (`fitz`)** (pip-installed; it's the repo's one tooling dependency).
+
+- **Asset location:** `wiki/assets/<source-slug>/<figure-slug>.png` (e.g. `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`), English kebab-case slugs. `wiki/assets/` **is committed** — figures ship with the wiki; only `raw/` PDFs are git-ignored. Never orphan an asset: every file under `wiki/assets/` must be referenced by ≥1 page.
+- **Extraction:** paper diagrams are usually **vector-drawn**, so `page.get_images()` is empty — render a clipped region: `page.get_pixmap(matrix=fitz.Matrix(300/72,300/72), clip=rect)` at ~300 DPI. Derive the crop box from text-block coordinates (caption bottom, preceding paragraph) and **confirm it with `page.get_textbox(clip)`**: the in-figure labels it returns prove you grabbed the whole figure without bleeding the caption/body text. `page.get_drawings()` bbox can include off-page helper paths — don't trust it blindly.
+- **Tables:** plain-text tables (few/no vector lines) → **re-typeset as a Markdown table**, don't screenshot (keeps them `rg`-searchable, formulas render as LaTeX). Screenshot a table only when its visual layout itself carries meaning.
+- **Alt text = caption:** write the `![…]()` alt text as a full reader-facing caption (trace the diagram), so the page degrades gracefully if the image 404s. Follow with a blockquote carrying the paper's own caption + a reader-facing locator.
+- **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** — it *is* the primary source. A `vision_analyze` reading is only an aid to describe it; don't assert a mechanism the pixels don't show, and keep vision-tool provenance out of reader-facing prose (it's a tooling trace; mention in the log if useful).
+
 ## What not to do
 
 - Don't overwrite anything in `raw/`.
-- Don't introduce a build system, package manifest, or test runner — `AGENTS.md` says to document tooling exactly when it's added; today there is none.
+- Don't introduce a build system, package manifest, or test runner. The sole tooling dependency is PyMuPDF (`fitz`) for figure extraction; document any further tooling exactly when added.
 - Don't translate filenames to Chinese or rename existing English slugs (breaks links and `rg` workflows).
 - Don't add a wiki page in isolation: if you create a source page without updating `index.md`, `log.md`, and at least one concept/comparison cross-reference, the ingest is incomplete.

@@ -83,6 +83,7 @@ Before any `ingest`/`deepen`/`verify`/`refactor` turn is done, confirm:
 - [ ] `wiki/log.md` appended with the correct `<kind>` and a title; entry is a short timeline note, not a transcript — detailed derivations live on the page they concern.
 - [ ] No orphan page (every new page has ≥1 inbound link), no broken relative links.
 - [ ] Internal tooling traces (raw line numbers, `pdftotext`, scratch dates) kept out of reader-facing prose.
+- [ ] Figures a page relies on are **embedded** (not just cited as `Figure N`) per "Figures & visual material"; every `wiki/assets/` file is referenced by ≥1 page.
 
 ### Page skeletons
 
@@ -91,3 +92,14 @@ Before any `ingest`/`deepen`/`verify`/`refactor` turn is done, confirm:
 - **Models:** `## 身份` → `## 关键事实`（Markdown 表，**必须含 `模态` 行**，e.g. 纯文本 / 多模态（文本 + 图像 + 视频））→ explanation/技术身份 → `## 相关页面`. For a multi-variant family with a variant table (e.g. `deepseek-v4.md`), put modality as a `**模态**：…` line below the table. Mark modality 已核实 only after checking the source report — incidental "multimodal/vision" mentions are usually RL-pipeline verifiers, eval benchmarks, or future-work outlooks, not the model's own input.
 - **Language split:** page content in Chinese; filenames/dirs/slugs in English kebab-case; technical acronyms (MoE, DSA, MTP, RL) stay English inside Chinese prose. Don't re-translate or rename existing slugs.
 - **`## 待追问`** is real schema, not boilerplate — populate it with concrete follow-ups.
+
+### Figures & visual material (图文化)
+
+The wiki is **图文交错 (text + inline figures)**, not text-only. When a page leans on a paper's figure or table — especially a mechanism/architecture diagram a reader can't reconstruct from prose — embed the actual image instead of only citing `Figure N`. Tooling: **PyMuPDF (`fitz`)**, the one allowed dependency for this (installed via pip; document it like any tooling).
+
+- **Where images live:** `wiki/assets/<source-slug>/<figure-slug>.png` (e.g. `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`). Slugs in English kebab-case like everything else. `wiki/assets/` **is version-controlled** (images ship with the wiki); only `raw/` PDFs stay git-ignored.
+- **How to extract:** most paper diagrams are **vector-drawn**, so `page.get_images()` returns empty — render a clipped region with `page.get_pixmap(matrix=fitz.Matrix(300/72,300/72), clip=rect)` at ~300 DPI. Find the crop box from text-block positions (caption bottom, preceding paragraph), and **verify the box with `page.get_textbox(clip)`** — the returned in-figure labels confirm you captured the whole figure and didn't bleed the caption or neighbouring body text. Do **not** trust `page.get_drawings()` bbox blindly; it can include off-page helper paths.
+- **Tables:** if a table is plain text (few/no vector lines), **re-typeset it as a Markdown table**, don't screenshot it — keeps it `rg`-searchable and lets formulas render as LaTeX. Screenshot a table only when its layout itself carries meaning.
+- **Alt text = the caption.** Write the `![…]()` alt text as a full reader-facing caption (what the figure shows, traced through the diagram), so the page degrades gracefully if the image fails to load. Follow it with a blockquote giving the paper's own caption + a reader-facing locator (`§ A. MHA and MQA Modes of MLA`).
+- **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** (it *is* the primary source). If a vision model read the figure to help you describe it, that reading is an aid — the figure itself is the evidence, but don't assert a mechanism the pixels don't actually show. Keep `vision_analyze` provenance out of reader-facing prose (it's a tooling trace; note it in the log if relevant).
+- **Don't orphan assets:** every file under `wiki/assets/` must be referenced by ≥1 page; a page that cites a figure it could embed should embed it.

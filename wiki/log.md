@@ -268,3 +268,13 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - **表格（纯文字）**：V2 Table 1（每 token KV cache 对比）drawings 仅 2 条线，判定**走 Markdown 重排而非截图**——可被 `rg` 检索、公式 LaTeX 渲染、零图片体积。从原文 § 2.1.4 重排成 4 行 md 表，置于 line 26 Table 1 引用处下方。
 
 至此三种素材类型跑齐：矢量图（Fig 7）、概念示意图（Fig 3）、表格重排（Table 1）。**经验沉淀**：(1) 矢量图 `get_images()` 为空、必须 `get_pixmap(clip)` 区域裁剪，边界靠 `get_textbox(clip)` 文字层校验；(2) `get_drawings()` 的 bbox 可能含页面外辅助路径、不可直接信，以图内文字块定边界；(3) 纯文字表格优先重排 md，不截图；(4) alt 文本写成完整图注（视觉模型读图 + 回原文核对），即使图失链也有 tier-1 文字降级。落盘仅 `wiki/concepts/multi-head-latent-attention.md` + 新增 2 图，事实/引用零改动，`raw/` 未改。
+
+## [2026-06-21] maintenance | 图文化升级为正式约定（AGENTS.md / CLAUDE.md / skill 同步）
+
+试点（同日两条 deepen）效果获认可后，把图文化从一次性做法固化为 schema 约定：
+
+- **AGENTS.md + CLAUDE.md** 各新增「Figures & visual material (图文化)」小节（两文件同步、措辞对齐）：assets 目录规范（`wiki/assets/<source-slug>/<figure-slug>.png`、进版本控制、不留孤儿）、PyMuPDF 抽图方法（矢量图 `get_pixmap(clip)` 300 DPI + `get_textbox(clip)` 校验边界、不轻信 `get_drawings()` bbox）、纯文字表格走 md 重排、alt 文本即完整图注、内嵌 `raw/` 图为 tier-1 原文确证而 `vision_analyze` 仅为辅助且不入读者向正文。两边写回检查单各加一项「引用的图是否已内嵌 + assets 无孤儿」。
+- **`.agents/skills/llm-wiki/SKILL.md`** 加精简版「Figures」小节，指回两份 schema。
+- **顺手修订两处过期声明**：CLAUDE.md 原写「`.obsidian/` is committed / 浏览须 Obsidian-friendly」与 `[2026-06-19] maintenance`（`.obsidian/` 已 git-ignore）矛盾，改为「可作 Obsidian vault 浏览但 `.obsidian/` 已忽略、链接用相对 Markdown 路径」；「What not to do」里「today there is none（无任何 tooling 依赖）」更新为「唯一依赖 PyMuPDF」。
+
+PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 schema 文档与 skill，未动任何 `wiki/` 内容页，`raw/` 未改。
