@@ -77,6 +77,14 @@ This wiki's core value is that claims are traceable, not just plausible. Every n
 
 Rules: never blend a paper's conclusion with your inference of its mechanism in one sentence under a "confirmed" heading; when a past entry over-claimed, downgrade it honestly rather than propping it up with weak corroboration; re-reading the primary PDF beats trusting an earlier summary; `raw/` is never modified — say "`raw/` 未改" in the log when no source was touched.
 
+### 克制原则（检索负债优先）
+
+这套 wiki 的实际消费者是**检索它来答问的 agent**，不是回看 md 的人类。所以页面的敌人是**碎片化与冗余**，不是篇幅：
+
+- **开新页前先问它该不该存在（YAGNI 反射）。** 主题已有页 → `deepen` 它，别 fork 近亲页。同一主题散在多个近亲页 = 检索捞不全、答得有遗漏。这是动手前的第一反射，不只是 `distill` 流程里的一条注意事项。
+- **删冗余优于堆新段。** 维护时合并重复段落、删去与他页矛盾的旧表述（人类不回看，删旧表述无阅读损失，反而降噪）。注意与「证据分级」配合：过时**结论**按既有纪律**诚实降级**（park 到 待追问 / 标 推测），不是物理删除；这里删的是**重复与冗余表述**，不是可追溯的事实记录。
+- **但绝不为求简而砍机制解释与证据链。** 页面的解释密度与证据 tier 正是 agent 答题的弹药——把页面写薄等于自掏弹药库。克制针对的是「重复、占位、为一个判断反复辩护的散文」，不是「机制讲清楚」。`## 待追问` 没真内容就别留空壳。
+
 ### Write-back checklist
 
 Before any `ingest`/`deepen`/`verify`/`refactor` turn is done, confirm:
