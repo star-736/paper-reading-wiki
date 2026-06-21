@@ -258,3 +258,35 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - AGENTS.md（Project Structure）+ CLAUDE.md（three layers）各点明 `TODO.md` 用途、明确"计划写 TODO、不写 log"。
 
 `raw/` 未改，无内容页事实变动。
+
+## [2026-06-21] ingest | Kimi Linear、Gated Attention 技术报告
+
+新增两篇线性注意力 / 注意力门控论文到 `raw/`：
+
+- `raw/Team 等 - 2025 - Kimi linear An expressive, efficient attention architecture.pdf`（KDA，arXiv:2510.26692）
+- `raw/Qiu 等 - Gated attention for large language models...pdf`（Qwen 团队，NeurIPS 2025）
+
+这是知识库首次纳入**线性注意力（RNN-state）**与 softmax **注意力门控**两条与现有稀疏注意力正交的路线。新建：来源页 `sources/kimi-linear.md`、`sources/gated-attention.md`；模型页 `models/kimi-linear.md`（48B-A3B，纯文本研究模型）；概念页 `concepts/linear-attention-and-delta-rule.md`（朴素线性→DeltaNet→GDN→KDA 演进链）、`concepts/attention-gating.md`（门的五维设计空间、非线性 + 去 sink）。
+
+更新：`efficient-long-context-attention.md` 把「四条路线」扩成「五条」（新增线性/混合行）；`multi-head-latent-attention.md` 跨报告信号加 Kimi Linear（MLA 被稀释成 1/4 NoPE 全局层这一新用法）；index 加 2 来源 / 1 模型 / 2 概念。交叉引用双向补齐。机制均据两篇 PDF 原文核实；`raw/` 未改。
+
+## [2026-06-21] ingest | Gated DeltaNet 原文 + Qwen3-Next 系采用证据
+
+接上一条 ingest，补齐 Gated Attention / 线性注意力的**前身与下游采用谱系**。新增三篇到 `raw/`：
+
+- `raw/Yang 等 - 2025 - GATED DELTA NETWORKS...pdf`（GDN，ICLR 2025，KDA 与 Qwen3-Next 系线性层的一手前身）
+- `raw/Cao 等 - 2026 - Qwen3-coder-next technical report.pdf`（采用证据，编码 agent）
+- `raw/Team - 2026 - Qwen3.5-omni technical report.pdf`（采用证据，全模态）
+
+新建来源页 `sources/gated-delta-net.md`（gated delta rule = 门控快速清空 + delta 定向更新互补，tier-1 原文）、`sources/qwen3-coder-next.md`、`sources/qwen3.5-omni.md`（两者均「继承 Qwen3-Next/Qwen3.5 架构、未重新推导」，标为采用证据而非机制 tier-1 来源）。
+
+更新概念页：`linear-attention-and-delta-rule.md` 把 GDN 一环从二手转述升级为原文确证、跨报告信号加 Qwen3-Next 系（全局层用 gated attention 而非 MLA 的对照）；`attention-gating.md` 补 NeurIPS 2025 Best Paper、采用模型表（Qwen3-Next / Qwen3-Coder-Next / Qwen3.5-Omni / 非 Qwen 的 Trinity Large）、Kimi Linear=「换掉 gated-attention 全局层为 MLA」的第三方分析。`sources/gated-attention.md` 补 Best Paper 与采用谱系。index 加 3 来源。外部佐证（Sebastian Raschka 两篇）用行内链接标注，与「继承非重验」的限定一并写明；`raw/` 未改。
+
+## [2026-06-21] deepen | linear-attention 页图文化回填（嵌 4 图 + 1 表重排）
+
+按 `TODO.md` 的 linear-attention 回填清单，给该批纯文本页补图。新增 `wiki/assets/kimi-linear/`、`wiki/assets/gated-delta-net/` 两目录共 3 张 PNG（300 DPI，PyMuPDF 渲染页区裁剪，crop 框据 caption y0 + 图内标签位推导、`get_textbox` 验证、`vision_analyze` 核对像素）：
+
+- `concepts/linear-attention-and-delta-rule.md`：嵌 Kimi Linear Figure 3（模型架构 N×KDA+1×MLA）、Figure 2（KDA vs DPLR kernel 时间）、Gated Delta Figure 1（H1/H2 混合栈 + Gated Delta Rule block）。
+- `sources/kimi-linear.md`：嵌 Figure 1（Pareto 性能/加速图）；Table 1（3:1 hybrid ratio 消融）**重排为 Markdown 表**（含 output gate / conv 消融行，纯文字表不截图）。
+
+两处校正：原 TODO 把 Figure 3 记成「Neural Parameterization」——那是 p4 段落标题，真正 Figure 3 是 p5 模型架构图；图中只标 N×/1×，3:1 是正文 N=3（已在图注写明）。GDN Figure 1 经 vision 核实 H2 = Mamba2+GDN+SWA（非「Mamba2 替代 SWA」），图注照此写。`gated-delta-net.md` 的关键架构图即已嵌概念页（双向引用经该页链回满足）；两个 Qwen 采用页无一手机制架构图，跳过。事实/引用零改动，仅新增图片与表格重排；`raw/` 未改。

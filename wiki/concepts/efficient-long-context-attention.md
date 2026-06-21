@@ -2,9 +2,11 @@
 
 ## 问题
 
-长上下文模型的瓶颈不是单一的“能不能放下更多 token”，而是 attention FLOPs、KV-cache、prefill latency、decode latency、cache reuse 和训练稳定性共同构成的系统问题。首批三篇报告都在处理这个瓶颈，但路线不同。
+长上下文模型的瓶颈不是单一的“能不能放下更多 token”，而是 attention FLOPs、KV-cache、prefill latency、decode latency、cache reuse 和训练稳定性共同构成的系统问题。多篇报告都在处理这个瓶颈，但路线不同。
 
-## 四条路线
+## 五条路线
+
+前四条都仍在 softmax 注意力框架内（只是少看 token 或压缩 KV）；第五条「线性/混合」直接换掉 token mixer，是与前四条**正交**的另一条路线。
 
 | 路线 | 代表方案 / 模型 | 核心思想 | 主要收益 | 主要风险 |
 | --- | --- | --- | --- | --- |
@@ -12,6 +14,7 @@
 | 内容稀疏（block 级） | [MSA](../sources/msa.md) / MiniMax-M3 | 在 GQA 之上加 Index Branch，每个 GQA group 独立选 n 个 KV 块。 | 块级 IO 更规整，KV-outer kernel 易拿到 1M context 14× prefill / 7× decode；对 GQA 改动小。 | 评测仅在 109B-MoE 预训练上做过，RL 后训练阶段稳定性还没有公开数据。 |
 | 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) | 5 个 SWA 层配 1 个 GA 层。 | 架构简单，KV 和 attention 成本下降。 | 对需要任意长程交互的任务可能不如内容自适应。 |
 | 压缩注意力 | [DeepSeek-V4](../models/deepseek-v4.md) | CSA/HCA 先压缩 KV，再做稀疏或密集注意力。 | 支持 1M context，KV-cache 极大降低。 | 架构、kernel、cache 管理复杂。 |
+| 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md) | 大多数层用线性注意力（RNN 固定状态，无随长度增长的 KV），少数层（3:1）保留全局 [MLA](multi-head-latent-attention.md)。 | decode 时线性层无 KV cache，1M context KV 降 75%、吞吐 6.3×；首个公平对比下全面追平 full attention 的混合线性方案。 | 固定状态容量有限，长程精确检索靠那 1/4 全局层兜底；线性层在长 trajectory RL 上的稳健性证据仍有限。 |
 
 ## 机制层理解
 
@@ -35,6 +38,7 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 
 ## 进一步阅读
 
+- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
 - [跨层索引复用](cross-layer-index-reuse.md)
 - [百万 token 上下文服务](million-token-context-serving.md)

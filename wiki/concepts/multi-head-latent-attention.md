@@ -97,6 +97,7 @@ $$L^* = -A/B \approx 341\ \text{token}$$
 - **[DeepSeek-V3.2](../sources/deepseek-v32.md)**：把 [DSA](deepseek-sparse-attention.md) **实例化在 MLA 的 MQA mode 上**——latent vector（即 MLA 的 KV entry）被同一 query token 的所有 query head 共享，DSA 的 top-k 就在这些 latent entry 上选。原文："we implement DSA based on the MQA (Shazeer, 2019) mode of MLA"。这里的「MQA mode」是**轴二 · selection 结构**（见上文「两种 mode 与『MQA mode』歧义」），**不是说训练前向用 MQA 算术**——事实上短上下文 prefill 仍用「masked MHA mode to simulate DSA」。
 - **[DeepSeek-V4](../sources/deepseek-v4.md)**：CSA 进一步在 MLA 血统上叠压缩——core attention 是 **Shared-KV MQA**，query 仍由**压缩 latent 向量上投影**得到（且该 latent 与 indexer query 共享）。即 MLA 的 latent-query 结构被 CSA 继承，再在压缩 KV entry 上做 MQA。
 - **[GLM-5](../models/glm-5.md)**：同样在 MLA-DSA 基座上做长上下文稀疏，RL 阶段冻结 indexer + deterministic top-k（与 V3.2「post-training 继续训练 indexer」是两条路线）。
+- **[Kimi Linear](../sources/kimi-linear.md)（KDA，2025，非 DeepSeek 系）**：换了个用法——不是「在 MLA 上加稀疏选择」，而是把 MLA **稀释成 1/4 的全局层**（3 个 [KDA 线性注意力](linear-attention-and-delta-rule.md) 层配 1 个 Full MLA 层），其余层换成线性注意力。且这 1/4 的 MLA 层用 **NoPE**，推理时退化成纯 MQA。这说明 MLA 不仅是稀疏注意力的底座，也能当混合线性注意力里那一小撮「负责全局信息流」的全局层。
 - **横向**：见 [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)——DSA、CSA 的「底层」栏都落在 MLA / MLA-MQA 上，而 MSA 走的是 GQA 底座、NSA/MoBA 走 MQA/GQA 底座，构成「减头 vs 压秩」两种起点的分野。
 
 ## 为什么重要
@@ -117,6 +118,7 @@ $$L^* = -A/B \approx 341\ \text{token}$$
 
 - 来源：[DeepSeek-V2](../sources/deepseek-v2.md)（MLA 首次提出）、[DeepSeek-V3.2](../sources/deepseek-v32.md)、[DeepSeek-V4](../sources/deepseek-v4.md)
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
+- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（Kimi Linear 用 MLA 当 1/4 全局层）
 - [高效长上下文注意力](efficient-long-context-attention.md)
 - [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
 - 模型：[GLM-5](../models/glm-5.md)、[DeepSeek-V4](../models/deepseek-v4.md)
