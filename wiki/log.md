@@ -305,3 +305,13 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 用户指出：所谓「Qwen3.5 base 报告」根本还没写、「Qwen3-Next base 报告」也不存在——前一条 ingest 把它们当成「待补的 tier-1 文献」是凭空臆想。Tavily 核实：Qwen3-Next 仅 2025-09 官方博客 + HF 权重（无独立 report）；Qwen3.5 系列目前只有 Qwen3.5-Omni（arXiv:2604.15804）+ HF 权重；arXiv:2603.00729 是 **Qwen3-Coder-Next**（已入库那篇），非 Qwen3-Next base。
 
 改两处死任务：`sources/qwen3.5-omni.md` 待追问从「需补 Qwen3.5 base 报告」改为「该 base 报告不存在，架构 tier-1 = HF config，文字级动机在 Gated Attention/GDN 原论文 + 博客」；`sources/qwen3-coder-next.md` 加一句澄清 Qwen3-Next 无独立报告、本篇是该家族首篇 report。前一条 ingest 日志补一句指向本修正。教训：标「待补某报告」前先确认该报告真的存在，别把模型名直接脑补成「应有同名技术报告」。`raw/` 未改，无内容事实变动（只改证据来源表述）。
+
+## [2026-06-21] deepen | GDN block 读写状态拆解 + Qwen3-Next 官方博客入库
+
+源于一轮关于 Qwen3.5 用的 GDN 的连续追问（KV-cache 收益 → 状态维度 $d_v\times d_k$ → 输入接口 → q/k/v/α/β 五支投影 → conv 作用 → q/k 不做 softmax 乘法 → q 读更新后状态 → 训练并行/推理递推 → Qwen 怎么用 GDN）。重读 `raw/` 的 GDN 原文（Yang 等 2025，§ 2.1/3.1/3.3/3.4 + 附录 S.1 消融）逐条核实后回填。
+
+- **`concepts/linear-attention-and-delta-rule.md` 新增「GDN block 怎么读写那块状态」小节**（tier-1 原文确证）：固定矩阵 cache 与 $d_k/d_v$ 含义、outer-product 关联记忆的容量上限（memory collision）、输入即 hidden state（Llama macro architecture）、五支投影表（q/k/v 走 Linear→Conv→SiLU(→L2Norm)、α/β 仅 Linear）、short conv 是 depthwise causal 不升维（S.1 消融：去掉 ppl 27.35→28.95）、q/k 靠结合律换序不做 $QK^\top$、先写后读时序、训练 chunkwise 并行 vs decode 递推（SFT 同走并行路径）。
+
+- **新增来源页 `sources/qwen3-next-blog.md` + raw 材料**：Qwen3-Next 无技术报告，提取 **Alibaba Cloud 官方博客镜像**（qwenlm.github.io 原页已 404 重定向 qwen.ai JS 站）正文存入 `raw/Qwen Team - 2025 - Qwen3-Next blog ….md`（清理导航噪音、正文逐字保留、文件头标注来源/日期）。博客坐实三件此前只 config 推断的事，升级为 tier-2 官方外部佐证：**3:1 = 官方原话「75% GDN / 25% standard」**、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层 output gating 去 Attention Sink/Massive Activation；另记 Zero-Centered RMSNorm + norm weight decay、512-expert（10+1）MoE、native MTP。注意区分：博客讲「Qwen 怎么组装架构」，**不是 GDN 机制本身**（机制 tier-1 仍在 GDN/Gated Attention 原论文，GDN 具体实现 tier-1 在 transformers modeling + HF config）。
+
+- **双向引用**：`linear-attention-and-delta-rule.md` 跨报告信号、`attention-gating.md` 采用谱系、`models/qwen3.5.md`、`models/qwen3-coder-next.md`、`sources/qwen3.5-omni.md`、`sources/qwen3-coder-next.md` 均链向新博客页；`index.md` 来源区加 1 条。新博客页 `## 相关页面` 反向链回上游论文与两个模型页。`raw/` 仅新增博客 md（git-ignored，与 PDF 同性质），未改任何已有源。

@@ -37,7 +37,7 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
 
 - **[Gated Attention](../sources/gated-attention.md)（Qwen 团队，2025，NeurIPS 2025 Best Paper）**：本页主证据。系统消融 30 个门控变体，确立「SDPA 输出 head-specific sigmoid 门」为最优，归因到非线性 + 稀疏去 sink。该工作拿到 NeurIPS 2025 Best Paper Award（先获 Oral，top 1.5%），其 G1 输出门是 Qwen3-Next 系架构的组成部分。
 - **采用它的生产模型（G1 输出门已落地）**：
-  - **Qwen3-Next**（80B-A3B）：3:1 混合栈——3 层 [GDN 线性注意力](linear-attention-and-delta-rule.md) + 1 层带输出门的 gated full attention。
+  - **Qwen3-Next**（80B-A3B）：3:1 混合栈——3 层 [GDN 线性注意力](linear-attention-and-delta-rule.md) + 1 层带输出门的 gated full attention。[官方博客](../sources/qwen3-next-blog.md)明说全局层加 output gating 是为「eliminate Attention Sink and Massive Activation」。
   - **[Qwen3-Coder-Next](../models/qwen3-coder-next.md)**（79.7B-A3B，编码 agent）：基于 Qwen3-Next，HF config 坐实 `full_attention_interval=4`（3 GDN : 1 gated-attention）。
   - **[Qwen3.5](../models/qwen3.5.md) / Qwen3.5-Omni**（多模态，397B-A17B 旗舰）：Qwen3.5 hybrid MoE 的 `layer_types` 逐层坐实 3 线性 + 1 全注意力；Omni 把它延伸到长音视频序列。
   - **Trinity Large**（Arcee AI，400B MoE / 13B active，**非 Qwen**）：独立采用者，且用法不同——不在混合栈里，而是在更常规的 full-attention 栈里用「SDPA 输出后、输出投影前」的门。说明 gated attention 不是 Qwen 专属技巧。（来源：[Sebastian Raschka, Gated Attention](https://sebastianraschka.com/llm-architecture-gallery/gated-attention)）

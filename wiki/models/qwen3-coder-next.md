@@ -30,7 +30,7 @@ Qwen3-Coder-Next 是 Qwen 团队（Alibaba）面向 coding agent 的开源模型
 
 ## 相关页面
 
-- 来源：[Qwen3-Coder-Next 技术报告](../sources/qwen3-coder-next.md)
+- 来源：[Qwen3-Coder-Next 技术报告](../sources/qwen3-coder-next.md)、[Qwen3-Next 官方博客](../sources/qwen3-next-blog.md)（架构设计动机的一手出处）
 - 概念：[注意力门控](../concepts/attention-gating.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
 - 同思路对照：[Kimi Linear](kimi-linear.md)（全局层用 MLA）
 - 同家族：[Qwen3.5](qwen3.5.md)（共享 hybrid MoE 架构）

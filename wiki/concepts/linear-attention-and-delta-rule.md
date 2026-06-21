@@ -23,6 +23,32 @@ $$S_t = S_{t-1} + k_t v_t^\top,\qquad o_t = S_t q_t$$
 
 GDN 的一个有趣视角（报告 § 2.2）：标量遗忘门可被解读成一种**数据相关、可学习的乘性位置编码**，放松了 RoPE 的正交性约束——这也是 Kimi Linear 敢于在全局 MLA 层用 NoPE、把位置编码责任全交给 KDA 层的依据。
 
+## GDN block 怎么读写那块状态（已据 GDN 原文核实）
+
+把状态递推放回一个完整的 token mixer 层里看，几个常被问到的点：
+
+**状态就是一个固定大小的矩阵 cache。** GDN 层维护的不是随长度增长的 KV 列表，而是一个**矩阵值状态** $S_t\in\mathbb{R}^{d_v\times d_k}$（原文 § 2.1，"reframing as a linear RNN with **matrix-valued states**"）。两个维度的含义：$d_k$ 是 query/key 的（per-head）维度、$d_v$ 是 value 的维度。状态本质是 $\sum v\,k^\top$ 形式的 **outer-product 关联记忆**（一张「key→value」映射表），写入时把 $v_t k_t^\top$ 叠进去、读取时 $o_t=S_t q_t$ 用 query 去查。多 head 则每 head 各持一个 $d_v\times d_k$ 矩阵。关键：**它和序列长度 $L$ 无关**——decode 100 token 和 1M token 这块矩阵一样大，这正是 GDN 省 KV-cache 的根。代价是容量有限：原文 § 1 指出能存的正交 key-value 对数受限于维度，序列超过维度就发生 **memory collision**（信息叠加、精确检索崩坏）——这就是为什么生产模型不做纯 GDN、要保留少量全局层兜底长程检索。
+
+**输入和普通 attention 一样，是同一份 hidden state。** GDN「follows Llama's macro architecture ... replaces self-attention with gated delta rule token mixing」（原文 § 3.4）——宏观就是标准 Transformer 的 `Norm→token-mixer→残差→Norm→MLP→残差`，只是把 token-mixer 那一格的 self-attention 换成 gated delta rule。输入接口不变，所以才能和全局 attention 层在同一栈里交替堆叠。
+
+**hidden state 进来后分五支投影**（原文 § 3.4 + Figure 1 右）——比普通 attention 的 q/k/v 多两支门：
+
+| 支路 | 从 hidden state 怎么来 | 作用 |
+| --- | --- | --- |
+| **q** | Linear → ShortConv → SiLU → **L2Norm** | 读取：$o_t=S_t q_t$ |
+| **k** | Linear → ShortConv → SiLU → **L2Norm** | 寻址：构造 $k_tk_t^\top$、$v_tk_t^\top$ 写进状态 |
+| **v** | Linear → ShortConv → SiLU | 要写入的值 |
+| **α**（遗忘门 / decay） | **仅 Linear**（用 Mamba2 的参数化） | 控制旧状态忘多少（$\alpha_t\to0$ 整块清空，$\to1$ 全保留） |
+| **β**（写入强度 / 学习率） | **仅 Linear** | 控制当前 token 写多用力（test-time SGD 视角下就是 learning rate） |
+
+α、β 是 per-head 标量门，只用一个极小 Linear，没有 conv/SiLU/L2Norm——因为它们出的是数不是特征向量。**普通 attention 不产门**，这两支是 GDN 区别于 softmax attention 的关键：α 负责「整块忘」（gating），β + delta 负责「定向写」（delta rule），两者互补即 gated delta rule。
+
+**那个 short conv 不是升维，是逐通道因果短卷积。** 它是 depthwise causal convolution（典型 kernel size 3–4），沿**时间轴**对每个 channel 独立做小窗口加权，输入输出维度完全一致（不改特征维度，升维发生在前面那个 Linear）。作用是给 q/k/v 注入**局部上下文**，补线性注意力「modeling local shifts and comparisons」偏弱的短板（原文 § 3.4）。附录 S.1 消融坐实它是质量关键件：去掉 short conv，ppl 27.35→28.95、平均准确率 47.26→46.16。
+
+**q 不和 k 做 softmax 式两两点积。** 这是线性注意力和 softmax attention 的本质分叉：softmax 先算 $L\times L$ 的 $QK^\top$ 分数矩阵（$O(L^2)$、KV cache 随长增长），GDN 靠矩阵乘法**结合律换序**——$q^\top(k v^\top)$ 取代 $(q^\top k)v$，即 k 先和 v/自己结合写进状态 $S$、q 最后乘 $S$ 读出，永远只碰固定大小的 $S$。q 读的就是这块 cache，**不看任何原始历史 token**（原始 K/V 不留）。按原文 Eq. 10 的时序是**先写后读**：$o_t=S_t q_t$ 里的 $S_t$ 已经包含了当前 token 自己的 $v_tk_t^\top$ 贡献（对应 causal mask 含对角线、query 能 attend 到当前位置）。
+
+**训练并行、推理才递推。** 写成 $S_t$ 从 $S_{t-1}$ 滚来的递推只是数学形式；训练/prefill 走 **chunkwise parallel form**（原文 § 3.3：切块、块内 matmul 并行吃满 tensor core、块间传状态），只有 decode 才真正逐 token 更新 $S_t$、$q_t$ 读 $S_t$ 的 $O(1)$ 递推。两形态经 state space duality 等价。**teacher-forcing 训练（预训练 / SFT / 偏好优化）整条序列一次喂入，都走并行路径**——这点 GDN 原文按训练态描述、未区分预训练与 SFT（对算子是同一件事）；官方 `transformers` 的 `Qwen3NextGatedDeltaNet` 也确实持 `chunk_*`（训练/prefill）与 `recurrent_*`（decode）两套 kernel。
+
 ![Kimi Linear Figure 3：Kimi Linear 模型架构。左侧主干是「token mixing 层 + MoE channel-mixing 层」的堆叠——N× 块用 KDA 做 token mixing（Norm→KDA→残差，再 Norm→MoE→残差），每隔 N 个 KDA 层插 1× 块改用 MLA（Norm→MLA→残差，再 Norm→MoE）；论文取 N=3，即 3 KDA : 1 MLA。右上展开 MoE（shared expert + router 选 routed expert）；右下展开 KDA：q/k 走 Linear→Conv→L2Norm、v 走 Linear→Conv，配 σ 门，经 Kimi Delta Attention 后过 Norm、再被一个低秩 sigmoid 输出门逐元素相乘，最后 Linear 输出。](../assets/kimi-linear/fig3-model-architecture.png)
 
 > Figure 3（原文截图，§ 4 The Kimi Linear Model Architecture）：\"Illustration of our Kimi Linear model architecture, which consists of a stack of blocks containing a token mixing layer followed by a MoE channel-mixing layer. Specifically, we interleave N KDA layers with one MLA layer for token mixing, where N is set to 3 in our implementation.\"（图中只标注泛化的 N×/1×，3:1 是正文给定的 N=3）
@@ -45,7 +71,7 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
   > Figure 1（原文截图，§ 架构）：\"Visualization of the (hybrid) architecture and block design of Gated DeltaNet models. Gated DeltaNet-H1 and H2 use Gated DeltaNet + SWA and Mamba2 + Gated DeltaNet + SWA patterns, respectively.\"
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA，2025）**：本 wiki 首篇线性注意力路线报告。KDA 是 GDN 的细粒度门升级（head-wise 标量门 → channel-wise $\mathrm{Diag}(\alpha_t)$）；模型层面用 **3:1 layerwise 混合**（3 KDA : 1 Full MLA），首次让混合线性注意力在公平对比下全面追平/超过 full attention，1M context KV cache 降 75%、decode 吞吐 6.3×。
-- **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**——用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合（HF config 的 `layer_types` 逐层坐实 3 linear + 1 full）。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
+- **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**——用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合。Qwen3-Next 无技术报告，但[官方博客](../sources/qwen3-next-blog.md)把这条设计讲明白了：3:1 是「**75% layers use Gated DeltaNet, 25% keep standard attention**」的官方原话（不只是 HF config `layer_types` 推断），选 GDN 的理由是「systematic experiments」下它的 **in-context learning 强于 Sliding Window Attention 或 Mamba2**；全局 attention 层加 output gating 是为「eliminate Attention Sink and Massive Activation」。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
 - **混合而非纯线性**：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next 保留 1/4 的全局 gated attention 层维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。
 - **门的两种含义别混**：线性注意力里的「门」（GDN/KDA 的遗忘门 $\alpha_t$）控制 RNN 状态记忆寿命；softmax 注意力里的「门」（见 [注意力门控](attention-gating.md)）是给 SDPA 输出注入非线性 + 去 attention sink。同名不同事。
 
