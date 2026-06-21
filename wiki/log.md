@@ -278,3 +278,16 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - **顺手修订两处过期声明**：CLAUDE.md 原写「`.obsidian/` is committed / 浏览须 Obsidian-friendly」与 `[2026-06-19] maintenance`（`.obsidian/` 已 git-ignore）矛盾，改为「可作 Obsidian vault 浏览但 `.obsidian/` 已忽略、链接用相对 Markdown 路径」；「What not to do」里「today there is none（无任何 tooling 依赖）」更新为「唯一依赖 PyMuPDF」。
 
 PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 schema 文档与 skill，未动任何 `wiki/` 内容页，`raw/` 未改。
+
+## [2026-06-21] maintenance | 修复坏引用语法（`^[...]` → 行内链接）+ 清方括号雷
+
+用户发现引用渲染异常（`prop` 黑 / `erly` 紫断裂）。根因：本库此前用的 `^[url 标题]` / `[^url 标题]` **不是合法 Markdown**——`^[...]` 是 Pandoc 行内脚注扩展（GitHub/Obsidian 不认），`[^...]` 标准脚注需短标识符 + 文末配对定义，直接塞 URL+标题会乱渲染；叠加 `prop[erly]` 里的 `[erly]` 被当成链接文本染色。
+
+全库扫 `^[` / `[^`：读者向页面仅 3 处，全在最近 MLA 追问线。统一改为方案 A（正文行内链接 `（来源：[标题](url)）`，任何渲染器通用）：
+
+- `multi-head-latent-attention.md`：轴一 bullet 两条外链（Lior Sinai / V3.1-Terminus 公告）+ `prop[erly]` 还原为 `properly`；crossover 段吴建明博客外链。
+- `deepseek-v32.md`：V3.1-Terminus blockquote 末外链；顺手清掉同处方括号雷 `continued [training]` → `continued training`、去掉内部行号痕迹 `line 115–116`。
+
+`wiki/log.md` 历史条目里的 `line NNN` 是时间线追溯记录、非读者向正文，按惯例保留。事实/引用对象未变，仅修语法与表述，`raw/` 未改。
+
+防复发：在 AGENTS.md（Coding Style 段）+ CLAUDE.md（Conventions 段）各加一条约定——外部来源一律用行内链接 `（来源：[标题](url)）`，**禁用 `^[...]` / `[^...]`**，并禁止 `prop[erly]` / `continued [training]` 这类 prose 内裸方括号（会被当链接语法染色），省略词补全改用中文括注。这套坏语法最近三处出自同一追问线，立约定即为防下次 deepen 加引用时再写出来。

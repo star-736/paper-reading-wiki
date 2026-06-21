@@ -12,7 +12,7 @@
 
 DeepSeek-V3.2 在 DeepSeek-V3.1-Terminus 基础上引入 **DeepSeek Sparse Attention（DSA）**，在保持模型质量的同时大幅降低长上下文计算成本。核心结论：
 
-> **关于训练起点 DeepSeek-V3.1-Terminus**：它是 DeepSeek-V3.1 的一次 update（官方公告 2025-09-22），主打**语言一致性**（减少中英混杂与乱码）与 **agent / coding / 搜索能力**增强，**不是新基座、架构未变**，沿用 V3.1 的 hybrid reasoning。本论文原文 line 115–116 明确：「the **only architectural modification** of DeepSeek-V3.2 is the introduction of DSA through continued [training]」——即 V3.1-Terminus 的注意力就是**不带 DSA 的标准 [MLA](../concepts/multi-head-latent-attention.md)**，V3.2 = 在它的 128K checkpoint 上继续训练、唯一加了 DSA。附录 A Figure 7 那句「MHA mode 训练/prefill、MQA mode decode」虽写成「For V3.1-Terminus」，但实为 MLA 自 V2 起的**通用 compute-form 惯例**，非 V3.1 独有（详见 MLA 概念页轴一）。^[https://api-docs.deepseek.com/news/news250922 DeepSeek-V3.1-Terminus 官方公告]
+> **关于训练起点 DeepSeek-V3.1-Terminus**：它是 DeepSeek-V3.1 的一次 update（官方公告 2025-09-22），主打**语言一致性**（减少中英混杂与乱码）与 **agent / coding / 搜索能力**增强，**不是新基座、架构未变**，沿用 V3.1 的 hybrid reasoning。本论文原文明确：「the **only architectural modification** of DeepSeek-V3.2 is the introduction of DSA through continued training」——即 V3.1-Terminus 的注意力就是**不带 DSA 的标准 [MLA](../concepts/multi-head-latent-attention.md)**，V3.2 = 在它的 128K checkpoint 上继续训练、唯一加了 DSA。附录 A Figure 7 那句「MHA mode 训练/prefill、MQA mode decode」虽写成「For V3.1-Terminus」，但实为 MLA 自 V2 起的**通用 compute-form 惯例**，非 V3.1 独有（详见 MLA 概念页轴一）。（来源：[DeepSeek-V3.1-Terminus 官方公告](https://api-docs.deepseek.com/news/news250922)）
 
 - DSA 将核心注意力复杂度从 O(L²) 降至 O(L·k)（k ≪ L），lightning indexer 复杂度仍为 O(L²)，但计算量远小于原 MLA。
 - 128K 上下文下约 **90% attention entries 为冗余**；DSA 将 attention computation 降低约 **1.5–2 倍**。

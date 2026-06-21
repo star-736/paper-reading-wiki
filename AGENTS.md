@@ -24,6 +24,8 @@ If tooling is added later, document the exact command and expected output.
 
 Write Markdown in concise sections with descriptive headings. Prefer sentence-case headings for article pages unless a proper noun requires capitalization. Use kebab-case filenames, for example `retrieval-augmented-generation.md`. Cross-links use **relative Markdown paths** (e.g. `[GLM-5](../models/glm-5.md)`), not Obsidian `[[wiki-links]]` — the existing wiki uses Markdown links throughout (see `CLAUDE.md` → "Conventions").
 
+**External source citations use plain inline Markdown links**, written as `（来源：[标题](url)）` (or an inline `[标题](url)` mid-sentence). **Do not use `^[url 标题]` or `[^url 标题]`** — `^[...]` is a Pandoc-only inline-footnote extension GitHub/Obsidian don't render, and `[^...]` is a footnote *reference* requiring a short identifier plus a matching `[^id]: …` definition; either with a URL inside renders as garbled brackets (the 2026-06-21 maintenance fix). Likewise avoid bare brackets like `prop[erly]` / `continued [training]` in prose — `[…]` followed by text or parens is parsed as link syntax and bleeds link styling. Quote source text verbatim; gloss an elided word with a Chinese parenthetical （训练）, not `[brackets]`.
+
 For logs, use parseable dated headings such as `## [2026-06-06] ingest | Source Title`, where the kind comes from the fixed `<kind>` vocabulary (see "Agent-Specific Instructions" below).
 
 ## Testing Guidelines
