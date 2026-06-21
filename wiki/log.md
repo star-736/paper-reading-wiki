@@ -290,3 +290,12 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `sources/kimi-linear.md`：嵌 Figure 1（Pareto 性能/加速图）；Table 1（3:1 hybrid ratio 消融）**重排为 Markdown 表**（含 output gate / conv 消融行，纯文字表不截图）。
 
 两处校正：原 TODO 把 Figure 3 记成「Neural Parameterization」——那是 p4 段落标题，真正 Figure 3 是 p5 模型架构图；图中只标 N×/1×，3:1 是正文 N=3（已在图注写明）。GDN Figure 1 经 vision 核实 H2 = Mamba2+GDN+SWA（非「Mamba2 替代 SWA」），图注照此写。`gated-delta-net.md` 的关键架构图即已嵌概念页（双向引用经该页链回满足）；两个 Qwen 采用页无一手机制架构图，跳过。事实/引用零改动，仅新增图片与表格重排；`raw/` 未改。
+
+## [2026-06-21] ingest | 新建 Qwen3-Coder-Next、Qwen3.5 模型页（HF config 坐实架构）
+
+补上两个 Qwen 模型的模型页——此前只作为 source（采用证据）入库、缺关键架构事实。架构字段改由 **HuggingFace 官方 `config.json` 坐实**（域名可达，逐字段拉取）：
+
+- `models/qwen3-coder-next.md`：79.7B 总参（HF safetensors 计 79,674,391,296）/ ~3B 激活，48 层，`full_attention_interval=4` 即 **3 GDN : 1 gated full-attention**，512 expert 选 10，hidden 2048，head_dim 256，上下文 262,144，纯文本（config 无 `vision_config`）。
+- `models/qwen3.5.md`：Qwen3.5 多模态 hybrid MoE 家族页（397B-A17B≈403B / 122B-A10B / 35B-A3B / 27B dense 等）。`layer_types` 字段**逐层列出** 3 linear_attention + 1 full_attention，坐实 3:1；config 含 `vision_config`/`video_token_id` → 多模态。Qwen3.5-Omni 即以此为基座。
+
+回填双向引用：两个 source 页（qwen3-coder-next / qwen3.5-omni）把「比例/模态待核实」的待追问降级为「已据 HF config 坐实」并加 `## 相关页面` 指向模型页；`attention-gating.md` 采用表、`linear-attention-and-delta-rule.md` 跨报告信号的 Qwen 提及改指模型页；index 模型区加 2 条。架构事实标注来源为 HF config（外部佐证，非 raw/ 报告原文——Qwen3.5 base 报告仍未入库，设计动机/消融的文字级 tier-1 仍缺，已在 source 页待追问保留）。`raw/` 未改。
