@@ -2,6 +2,8 @@
 
 这是论文阅读知识库的入口页。后续查询先读这里，再进入相关的来源页、模型页、概念页或比较页。
 
+> 维护备忘：已完成动作记在 [log.md](log.md)（时间线）；未完成的工程待办记在 [TODO.md](TODO.md)。
+
 ## 来源
 
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。

@@ -5,7 +5,7 @@
 This repository is a lightweight Markdown knowledge-base workspace.
 
 - `raw/` stores source materials before they are processed. Treat these files as source-of-truth inputs and avoid modifying them during wiki maintenance.
-- `wiki/` contains generated knowledge-base pages. Start at `wiki/index.md`; append workflow history to `wiki/log.md`.
+- `wiki/` contains generated knowledge-base pages. Start at `wiki/index.md`; append workflow history to `wiki/log.md`. Unfinished engineering follow-ups go in `wiki/TODO.md` (a checklist), **not** in `log.md` — keep `log.md` a record of what already happened, not a plan of what's next.
 - `.agents/skills/llm-wiki/` contains the repo-scoped Codex skill; `references/llm-wiki.md` holds the original gist.
 - Generated wiki pages are grouped under `wiki/sources/`, `wiki/models/`, `wiki/concepts/`, and `wiki/comparisons/`.
 

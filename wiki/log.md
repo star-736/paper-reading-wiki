@@ -291,3 +291,13 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 `wiki/log.md` 历史条目里的 `line NNN` 是时间线追溯记录、非读者向正文，按惯例保留。事实/引用对象未变，仅修语法与表述，`raw/` 未改。
 
 防复发：在 AGENTS.md（Coding Style 段）+ CLAUDE.md（Conventions 段）各加一条约定——外部来源一律用行内链接 `（来源：[标题](url)）`，**禁用 `^[...]` / `[^...]`**，并禁止 `prop[erly]` / `continued [training]` 这类 prose 内裸方括号（会被当链接语法染色），省略词补全改用中文括注。这套坏语法最近三处出自同一追问线，立约定即为防下次 deepen 加引用时再写出来。
+
+## [2026-06-21] maintenance | 新增 wiki/TODO.md，分离"待办"与"时间线"
+
+把"未来批量回填其他页关键图"这类未完成工程待办从 log 里分离出去——log 是已完成动作的时间线，不该混进未做的计划。
+
+- 新增 `wiki/TODO.md`：图文化批量回填清单（已知引用待处理：V3.2 Figure 3 成本图、V3.2 Table 10 indexer 配置、MiMo Table 7 MOPD 对比、V2 附录 D.1 消融；待勘查：DSA / MSA / Agent-Swarm / MoonViT 等架构图是否值得内嵌），附回填规则与按页推进提醒。
+- `index.md` 顶部加维护备忘行，指向 log.md（时间线）与 TODO.md（待办）。
+- AGENTS.md（Project Structure）+ CLAUDE.md（three layers）各点明 `TODO.md` 用途、明确"计划写 TODO、不写 log"。
+
+`raw/` 未改，无内容页事实变动。

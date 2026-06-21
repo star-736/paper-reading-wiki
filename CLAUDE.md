@@ -15,7 +15,8 @@ The wiki implements the LLM-Wiki pattern documented in `.agents/skills/llm-wiki/
    - `wiki/concepts/<slug>.md` — topic / mechanism pages cited from multiple sources.
    - `wiki/comparisons/<slug>.md` — cross-source synthesis pages.
    - `wiki/index.md` — content-oriented catalog (read this first when answering queries).
-   - `wiki/log.md` — append-only chronological record.
+   - `wiki/log.md` — append-only chronological record (what already happened).
+   - `wiki/TODO.md` — checklist of unfinished engineering follow-ups (what's next). Keep planned work here, never in `log.md`; remove an item when done and log the completed action.
 3. **Schema** — `CLAUDE.md` (this file) and `AGENTS.md` (Codex-facing) carry the **same conventions** in tool-specific form; either is self-sufficient, so a tool reading only one still gets the full picture. When you change a shared convention, update **both** so they don't drift. The skill at `.agents/skills/llm-wiki/SKILL.md` condenses the same pattern for skill-triggered loading.
 
 A single ingest typically touches 5–15 wiki pages across these subdirectories in one pass — that fan-out is the point.
