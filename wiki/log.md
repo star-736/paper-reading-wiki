@@ -237,3 +237,14 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - `wiki/concepts/multi-head-latent-attention.md`：留白段后新增「定量：crossover ≈ 341 token」小节——$A/B$ 系数表 + $L^*=-A/B$ + decode 恒吸收 + 一段把 V3.2 masked-MHA 升级为可解释取舍的 blockquote + 诚实限定（341 是数量级、只数三主导项；V2 配置，V3.2 长序列走 DSA 稀疏后语义改写）。
 - `wiki/sources/deepseek-v32.md`：「短上下文优化」补 blockquote 解释「为什么短 prefill 走稠密 MHA 而非 DSA/吸收」+ 反链 MLA 页 crossover 小节。
 - V3.2 两阶段训练（dense warmup 2.1B 只训 indexer / sparse training 943.7B 全参，含步数/LR/stop-gradient/masked-MHA）此前已在 `deepseek-v32.md` § 训练方案完整沉淀，本轮未重复，仅补 crossover 因果。
+
+## [2026-06-21] refactor | MLA 页结构重排 + 回原文核对引用 + 去工具痕迹
+
+用户反馈 `multi-head-latent-attention.md` 结构杂乱，要求重构（保留全部事实/引用不动）；随后要求回对应 paper 核对引用并优化表述，去掉 `pdftotext`/行号等内部抽取痕迹。
+
+- **结构重排**：定义节瘦身（只留两条正交轴 + MLA≈带低秩补偿的 MQA）；机制细节（低秩压缩/矩阵吸收/query 压缩/Decoupled RoPE/等效 GQA-2.25/效率数字）上移到深水区之前；「两种 mode 与『MQA mode』歧义」独立成节、收拢原先散在定义节与跨报告信号里的重复论述；crossover 独立成节。读者梯度变为 是什么→怎么实现→易混点→算力取舍→跨报告/意义/待追问。
+- **回原文核对**：`pdftotext -layout` 抽取 `raw/DeepSeek-V3.2.pdf` 与 `raw/DeepSeek-V2 ...pdf`（临时 txt 用后即删，`raw/` 未改）。V3.2 五处英文引文逐字核对无误；V2 坐实章节号（MLA=§2.1、KV 压缩 §2.1.2、RoPE §2.1.3、cache 对比 §2.1.4）与维度 $d_c=512,\ d_c'=1536,\ d_R=64,\ n_h=d_h=128$、93.3%/5.76×。
+- **去工具痕迹**：删除「逐句复查 / pdftotext -layout 抽取」「(2026-06-20)」等内部说明；所有 `line NNN` 行号换成读者向定位（Figure 7 caption、§ Instantiate DSA Under MLA、效率讨论一节）；裸 `raw/DeepSeek-V3.2.pdf` 路径改为指向来源页的链接。
+- **顺手优化**：待追问里「$d_c'$ 未抄全」一条升级为「已据原文坐实 $d_c=512/d_c'=1536/d_R=64$、V2-Lite 不压缩 query」。
+
+落盘：`wiki/concepts/multi-head-latent-attention.md`（事实/引用零改动，仅重排 + 改出处标注方式）。
