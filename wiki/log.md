@@ -248,3 +248,23 @@ WebFetch 对 `huggingface.co` ECONNREFUSED、对 `github.com` "unable to verify"
 - **顺手优化**：待追问里「$d_c'$ 未抄全」一条升级为「已据原文坐实 $d_c=512/d_c'=1536/d_R=64$、V2-Lite 不压缩 query」。
 
 落盘：`wiki/concepts/multi-head-latent-attention.md`（事实/引用零改动，仅重排 + 改出处标注方式）。
+
+## [2026-06-21] deepen | wiki 图文化试点：MLA 页内嵌 Figure 7 原图
+
+用户提出纯文字 wiki 能否进化到图文交错，并先做效果试点。结论：图表信息密度最高却恰是单模态 LLM 的盲区，且全库此前 `![` 图片语法为 0、却密集引用 `Figure/Table` 这类看不见的视觉锚点。
+
+试点管线（新引入 PyMuPDF=1.27.2）：
+
+- **切图**：`raw/DeepSeek-V3.2.pdf` p20 的 Figure 7（MHA/MQA mode 互转图）是**纯矢量绘制**（`get_images()` 空），故按页面区域 `get_pixmap(clip)` 300 DPI 渲染裁剪，存到新目录 `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`。用 `get_textbox(clip)` 抽图内文字层验证裁剪边界精确（含 (a)/(b) 子标题，排除上方附录标题与下方 caption）。
+- **视觉核对**：`vision_analyze` 读图（首个 provider 拒图片格式不可用，换模型后可用、读图质量高）逐方框/箭头/变量复述，与 MLA 页现有论述交叉核对——矩阵吸收（$W^{UK}$ 移 query 侧、$W^{UV}$ 移 attention 输出后）、MHA per-head 展开 vs MQA latent 跨头共享、四处 `apply RoPE` 只在 $q^R/k^R$ 分量——**全部一致**，反而比原文字更精确，属回一手图的 tier-1 确证。
+
+落盘：`wiki/concepts/multi-head-latent-attention.md`「两种 mode」节内嵌 Figure 7（图 + 原文 caption 引文），alt 文本即高质量图注（视觉模型读图 + 回原文核对）。事实/引用零改动，仅新增图片。`wiki/assets/` 不在 `.gitignore`（图需随 wiki 进版本控制，`raw/` PDF 仍被忽略）。`raw/` 未改。
+
+待定（试点性质）：是否把图文化升级为正式约定（assets 目录规范、`![]` alt 文本与证据 tier 标注规则、写回检查单增「引用的 Figure 是否已内嵌」），以及是否批量回填其他页的关键图——待用户拍板后再动 AGENTS.md / CLAUDE.md。
+
+补充（同日，效果获认可后续推）：在正式立约定前先多跑两种素材类型，把 MLA 页一次图文化到位：
+
+- **概念示意图（矢量）**：`raw/DeepSeek-V2 ...pdf` p7 Figure 3（MHA/GQA/MQA/MLA 四种注意力对比，纯矢量）切到 `wiki/assets/deepseek-v2/fig3-mha-gqa-mqa-mla.png`，内嵌进 MLA 页**定义节**「正交两条轴」处。视觉模型核对：四子图完整、图例「Cached During Inference」= 斜线填充编码、MLA 唯一缓存 Compressed Latent KV、projection 上投影——直接图证 line 26-27 的「只 cache latent / KV −93.3%」。
+- **表格（纯文字）**：V2 Table 1（每 token KV cache 对比）drawings 仅 2 条线，判定**走 Markdown 重排而非截图**——可被 `rg` 检索、公式 LaTeX 渲染、零图片体积。从原文 § 2.1.4 重排成 4 行 md 表，置于 line 26 Table 1 引用处下方。
+
+至此三种素材类型跑齐：矢量图（Fig 7）、概念示意图（Fig 3）、表格重排（Table 1）。**经验沉淀**：(1) 矢量图 `get_images()` 为空、必须 `get_pixmap(clip)` 区域裁剪，边界靠 `get_textbox(clip)` 文字层校验；(2) `get_drawings()` 的 bbox 可能含页面外辅助路径、不可直接信，以图内文字块定边界；(3) 纯文字表格优先重排 md，不截图；(4) alt 文本写成完整图注（视觉模型读图 + 回原文核对），即使图失链也有 tier-1 文字降级。落盘仅 `wiki/concepts/multi-head-latent-attention.md` + 新增 2 图，事实/引用零改动，`raw/` 未改。

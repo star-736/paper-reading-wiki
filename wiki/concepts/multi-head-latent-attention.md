@@ -7,6 +7,10 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 - **MHA → GQA → MQA 这条轴：减 KV head 数**。MHA 每个 query head 配一份独立 KV；GQA 让若干 head 共享一组 KV；MQA 所有 head 共享 1 组 KV。head 数越减，KV cache 越小，但 KV 表达力也越弱。
 - **MLA 这条轴：低秩压缩**。不动 head 数，而是把每个 token 的 KV 联合**下投影成一个低维 latent 向量** $c^{KV}$ 存进 cache；用时再通过各 head 的**上投影**矩阵恢复出 per-head 的 K、V。cache 里只存 latent，所以比 GQA/MQA 还小，但因为上投影是 per-head 的，表达力能追回 MHA 级别。
 
+![DeepSeek-V2 Figure 3：MHA / GQA / MQA / MLA 四种注意力的对比。前三种沿「减 KV head 数」一条轴（MHA 每 head 一份 KV → GQA 分组共享 → MQA 全共享一份），推理时缓存的都是显式 K/V（图中斜线填充 = Cached During Inference）。MLA 走正交的另一条轴：把 K/V 联合压缩成一个 Compressed Latent KV，推理时**只缓存这个 latent**（图中唯一斜线填充处），用时再经 projection 上投影回 per-head K/V。](../assets/deepseek-v2/fig3-mha-gqa-mqa-mla.png)
+
+> Figure 3（原文截图，§ 2.1）：MHA、GQA、MQA、MLA 的简化对比。斜线填充表示推理时需缓存的部分——直观说明 MLA「只 cache 压缩 latent」相对前三种「cache 显式 K/V」的区别。
+
 **与 MQA 的关系——近亲但不同源**。MLA 在推理时可以做「矩阵吸收」：把上投影 $W_{UK}$ 吸进 query 投影、$W_{UV}$ 吸进输出投影，于是不必显式还原 per-head K/V，直接拿所有 query head 对那一个共享 latent 做注意力——计算形态就**退化成 MQA**。所以若在「GQA vs MQA」里硬找 MLA 的近亲，是 **MQA**：两者都让所有 query head 共享一份 KV；区别是纯 MQA 共享的是**原始 KV**（丢表达力），MLA 共享的是**压缩 latent** 再 per-head 上投影（带低秩补偿）。可以理解为「带低秩补偿的 MQA」。
 
 矩阵吸收带来的「两种 mode」（MHA mode / MQA mode）以及「MQA mode」一词在 V3.2 里横跨两条语义轴的歧义，是本页最易混淆处，单列在[下文「两种 mode 与『MQA mode』歧义」](#两种-mode-与mqa-mode歧义)详述。
@@ -24,13 +28,25 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
   - **「具体怎么省的」论文没展开**——它只给「压缩 → 省显存」这个结论，中间机制留白。一个合理推测见[待追问](#待追问)，但未坐实。
 - **Decoupled RoPE**：RoPE 与低秩压缩不兼容（位置敏感的 RoPE 矩阵会卡在 $W^{UK}$ 中间、破坏吸收）。解法是额外引入 multi-head decoupled query $q^R$ + 一个**全 head 共享的 decoupled key** $k^R$ 专门承载 RoPE，K/Q = 压缩部分（可吸收）+ decoupled 部分（带 RoPE）拼接；decoupled key 也进 cache，故每 token KV cache = $(d_c + d_R)$ 元素。
 - **KV cache 等效 GQA-2.25 组**：Table 1 给出 $(d_c + d_R) \approx \tfrac{9}{2} d_h$，等于只有 2.25 组的 GQA，但性能 **> MHA**。附录 D.1 用 7B dense 消融证明 MHA 显著优于 GQA/MQA，正是 MLA「压低秩而非减头数」这条轴的动机。
+
+  Table 1（原文 § 2.1.4 数据重排为 Markdown；$n_h$=head 数，$d_h$=每 head 维度，$l$=层数，$n_g$=GQA 组数，$d_c/d_R$=KV 压缩与 decoupled 维度）：
+
+  | 注意力机制 | 每 token KV cache（元素数） | 能力 |
+  | --- | --- | --- |
+  | MHA | $2 n_h d_h l$ | Strong |
+  | GQA | $2 n_g d_h l$ | Moderate |
+  | MQA | $2 d_h l$ | Weak |
+  | **MLA（本文）** | $(d_c + d_R) l \approx \tfrac{9}{2} d_h l$ | **Stronger** |
+
 - **效率数字**：KV cache −93.3%，最大生成吞吐 5.76×（vs DeepSeek 67B MHA）。
 
 ## 两种 mode 与「MQA mode」歧义
 
 矩阵吸收让同一套 MLA 权重有了两种等价算法形态，DeepSeek-V3.2 附录 A 的 Figure 7 把它们命名为 **MHA mode** 和 **MQA mode**：
 
-> Figure 7：MLA 有 **MHA mode** 和 **MQA mode**，两者之间可相互变换。DeepSeek-V3.1-Terminus **训练 / prefill 用 MHA mode，decode 用 MQA mode**。
+![DeepSeek-V3.2 Figure 7：MLA 的两种等价算法形态。左 (a) MHA mode——latent c_KV 经 W^UK / W^UV 按 head 展开成每个 head 的 K/V，进 Multi-Head Attention core；右 (b) MQA mode——W^UK 吸收到 query 侧（q^A = W^UK q^C）、W^UV 移到 attention 输出之后（o = W^UV o^C），latent c_KV 作共享 KV 进 Multi-Query Attention core。两处 apply RoPE 只作用在带 R 上标的位置分量 q^R / k^R 上。](../assets/deepseek-v32/fig7-mha-mqa-mode.png)
+
+> Figure 7（原文截图，§ A. MHA and MQA Modes of MLA）：MLA 有 **MHA mode** 和 **MQA mode**，两者之间可相互变换。DeepSeek-V3.1-Terminus **训练 / prefill 用 MHA mode，decode 用 MQA mode**。
 
 **「MQA mode」一词在 V3.2 里横跨两条轴，别混**。它被用在两处不同的事上，是「DSA 到底是不是在 MQA mode 上训练」这类困惑的根源：
 
