@@ -25,13 +25,14 @@ A single ingest typically touches 5–15 wiki pages across these subdirectories 
 
 Each workflow ends by appending a `## [YYYY-MM-DD] <kind> | <title>` entry to `wiki/log.md`. The `<kind>` vocabulary is fixed — see "Log discipline" below.
 
-**Ingest (`ingest`) — a new PDF landed in `raw/`:**
-1. Read the PDF, identify model entities, key claims, mechanisms, contradictions.
+**Ingest (`ingest`) — a new PDF landed in `raw/`:** the output is **图文交错 (text + inline figures)** pages, not a text-only summary.
+1. Read the PDF, identify model entities, key claims, mechanisms, contradictions, **and the figures/tables that carry mechanism or headline-result content**.
 2. Create `wiki/sources/<slug>.md` and (if a new model) `wiki/models/<slug>.md`.
 3. Update or create relevant `wiki/concepts/*.md` pages — append cross-source signals to existing concept pages rather than forking new ones when the topic already exists.
-4. Update `wiki/comparisons/*.md` if the new source belongs in an existing comparison.
-5. Add the new pages to `wiki/index.md` under the right section, with a one-line Chinese summary.
-6. Run the **write-back checklist** (below), then append the `ingest` log entry.
+4. **Embed the key figures** (per "Figures & visual material"): extract each mechanism/architecture/headline diagram with PyMuPDF into `wiki/assets/<source-slug>/` and embed it on the page that argues it; re-typeset plain-text tables as Markdown. Every ingest should embed ≥1 figure unless the paper has no diagram worth showing — if so, say so explicitly in the log.
+5. Update `wiki/comparisons/*.md` if the new source belongs in an existing comparison.
+6. Add the new pages to `wiki/index.md` under the right section, with a one-line Chinese summary.
+7. Run the **write-back checklist** (below), then append the `ingest` log entry.
 
 Prefer one source at a time unless the user asks for batch ingest.
 
