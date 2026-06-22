@@ -430,3 +430,38 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `index.md` MOPD 行摘要加锚点跳转，让"数学依据"在索引层就露出。
 
 证据：第一、四层（reverse-KL likelihood-ratio gradient + 下界为 0）是 KL 散度的标准结果；第二层引 Bishop PRML §10.1.2 与 Minka 2005 MSR-TR-2005-173；第三层引 Ross et al. 2011 DAgger（AISTATS）。四层结论是公认数学事实，「四层合力解释 OPD 为什么 work」与「多 teacher 混采没闭合的边界」是本页原创综合（推断 / 本页原创综合 tier 3），但每条子论证均有 tier 1 / tier 2 支撑。`raw/` 未改。
+
+## [2026-06-23] ingest | Thinking Machines Lab On-Policy Distillation 博客（Kevin Lu 2025-10-27）
+
+提问驱动: 验证"Thinking Machines Lab on-policy distillation 博客"是否可达,以巩固之前 distill 数学依据节里的"reference [28]"。Tavily extract 抓回 46.6 KB 全文,远超之前推断的密度,且内容直接对接已收录 5 家技术报告(GLM-5 §3.5 ref [28]、MiMo §4 引用)。
+
+落点选择: 独立成 `wiki/sources/thinking-machines-on-policy-distillation.md` (而非塞进 MOPD 概念页),因为它是 5 家技术报告共同引用的奠基性文献,独立成页能让对比页与机制讨论有共同祖宗页可指,长期复用价值大。raw markdown 全文存到 `raw/thinking-machines-on-policy-distillation-2025-10-27.md`(已 git-ignored,与 PDF 一致处理)。
+
+新增 `wiki/sources/thinking-machines-on-policy-distillation.md`:
+
+- 来源元数据: Kevin Lu 与 Thinking Machines Lab, 2025-10-27, DOI 10.64434/tml.20251026, Tinker cookbook 仓库链接。
+- 核心结论 6 点: (1) 三方对照表(SFT off-policy+dense / RL on-policy+sparse / OPD on-policy+dense); (2) per-token reverse KL 公式 + reverse-KL 三性质(unhackable / mode-seeking / 降 exposure bias); (3) `O(1)` vs `O(N)` bits/episode 信息论效率, 7-10× steps / 50-100× compute; (4) Qwen3 Table 21 复现(60→70% AIME'24 约 150 步,RL 17920 GPU·h vs distill 1800 GPU·h); (5) Personalization 实验 = GLM-5 cross-stage 召回的直接 setup(Qwen3-8B + 内部文档 SFT → IF-eval 85→45% → 用原版 Qwen3-8B teacher distill → 召回到 83%); (6) phase-alternating 框架(Cobbe 2020 PPG)作 continual learning recipe。
+- Pseudocode 4 步原文复刻(teacher sampling client / student rollout / `advantages = -reverse_kl` / 走标准 RL `forward_backward(loss_fn="importance_sampling")`)。
+- 三个关键洞察整理: RL 在语义策略空间 search(类比科研发现 vs distill 类比论文宣讲)、RL 子网络脆弱(Mukherjee 2025)、forking tokens 实例(Wang 2025 高熵少数 token 主导有效 RL,teacher 罚分叉而非已注定错误答案)。
+- 学术血脉钉死: DAGGER(Ross 2010)、Process Reward Modeling(Lightman 2023)、Agarwal 2023、MiniLLM(Gu 2023)、Qwen3(2025) 5 篇直接祖先;后向影响 GLM-5/MiMo 共两份。
+- 待追问 4 条: discount factor 之争、同尺寸 teacher 反而更适合的边界、博客没涉及的多 teacher 路由、forking tokens 与 entropy bonus 的关系。
+
+## [2026-06-23] deepen | OPD 数学依据扩展为 7 层论证
+
+提问驱动: 上一轮 distill 的"数学依据"4 层是基于推断;拿到博客全文后发现可以补 3 层一手出处证据,把推断升级成原文确证。
+
+`wiki/concepts/multi-teacher-on-policy-distillation.md` § 数学依据 OPD 为什么 work 扩展:
+
+- 第二层(reverse-KL)补"unhackable"性质——博客原文「low KL always corresponds to a high probability of desirable behavior」, RL reward model 是学出来的 scalar 估计可能被 hack, reverse-KL 直接以 teacher 输出分布为锚没有学习中介。
+- 新增第五层「`O(1)` vs `O(N)` bits/episode」——博客 § Discussion · Dense supervision 给的信息论解释, 7-10× steps / 50-100× compute 自蒸馏实验; 解释 Qwen3 Table 21 的 1/10 GPU·h 不是工程优化是 reward density 数量级差; 引 Lightman 2023 process reward modeling 作 RL 追上 distill 效率的对应路径。
+- 新增第六层「RL 子网络脆弱(Mukherjee 2025)」——这一层不是 OPD 本身的数学性质,但回答"为什么 cross-stage 召回是必要而非可选"。引 Mukherjee 2025 (RL 只调小子网络) + 博客 personalization 实验 (IF-eval 85→45→83) 双重证据, 给出 GLM-5 流水线设计的完整数学/系统解释。
+- 新增第七层「phase-alternating(Cobbe 2020)」——博客 § Personalization 末段 fine-tune→distill 交替 recipe; GLM-5 单次实例 vs MiMo co-evolution 多次迭代都落在这个框架下。
+- "把四层拼起来"→"把七层拼起来"统一更新, 第二条增补 unhackable 性质。
+
+反向链接(8 处):
+
+- `index.md` 来源区第 26 条加新源页一行 + MOPD 概念页摘要更新为 7 层。
+- `comparisons/on-policy-distillation.md` 相关页面区加新源页一行 + MOPD 概念页跳转更新为 7 层。
+- 5 家源页(glm-5 / mimo-v2-flash / qwen3 / qwen3-vl / deepseek-v4)的 OPD 段落引用框各加一句"算法源头是 [Thinking Machines Lab On-Policy Distillation 博客]"; Qwen3 源页特别注明"Table 21 反过来被博客复现, 互为 inspiration"。
+
+证据: 7 层中第一、四层是 KL 散度标准结果, 第二、三层引 Bishop PRML / Minka 2005 / Ross 2011 DAgger 经典文献(tier 2), 第五、六、七层引博客原文(tier 1 一手出处)。本节"7 层合力解释 OPD 为什么 work"与"多 teacher 混采没闭合的边界"是本页原创综合(tier 3), 但每条子论证均有 tier 1/2 支撑。`raw/` 新增 1 个 markdown 快照(git-ignored)。

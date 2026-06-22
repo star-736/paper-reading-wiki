@@ -24,7 +24,7 @@ MiMo-V2-Flash 共有 48 层，其中 39 层 SWA、9 层 GA。每个 MoE 层有 2
 
 报告最重要的后训练贡献是 Multi-Teacher On-Policy Distillation（MOPD），见 [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)。MOPD 不采用模型权重合并，也不只依赖离线 teacher 数据；student 以 on-policy 方式采样，再从多个专门 teacher 获得 dense token-level supervision。
 
-> MOPD 走 token-level KL estimate + ORM advantage 加权混合（与 DeepSeek-V4 的 full-vocabulary logit distillation 是同一类目的下的两种 KL 形式取舍）；teacher 类型可以是 RL/SFT/Self 三种。详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴二。
+> MOPD 走 token-level KL estimate + ORM advantage 加权混合（与 DeepSeek-V4 的 full-vocabulary logit distillation 是同一类目的下的两种 KL 形式取舍）；teacher 类型可以是 RL/SFT/Self 三种。算法源头是 [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（MiMo §4 列举的 OPD 文献之一）。详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴二。
 
 MOPD 的目标是缓解能力之间的 "see-saw" 问题：一个能力提升时，另一个能力不应显著退化。报告把它作为融合 reasoning、coding、writing、long-context 和 tool-use 能力的统一框架。
 

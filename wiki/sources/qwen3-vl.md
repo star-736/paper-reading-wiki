@@ -100,7 +100,7 @@ Vision encoder 先做 dynamic-resolution continual training。整体训练 4 sta
 
 报告原文：「We adopt the Strong-to-Weak Distillation pipeline as described in Qwen3 to further improve the performance of lightweight models」——直接复用 [Qwen3](qwen3.md) 报告里 §4.5 的两阶段范式（off-policy 把多个 teacher 输出合并做 response distill 打底 → on-policy student 生成轨迹、与 teacher logits 对齐做 KL）。**关键设计：用 text-only 数据蒸馏 LLM backbone 部分**（论文 §4.1 强调："we perform this distillation using text-only data to fine-tune the LLM backbone. This method proves highly effective, yielding significant improvements in reasoning abilities across both text-centric and multimodal tasks"）——视觉模块不参与这一步。
 
-> 与 MiMo MOPD / DeepSeek-V4 OPD（多 teacher 融合）的对比详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第二类（强到弱迁移）。
+> 与 MiMo MOPD / DeepSeek-V4 OPD（多 teacher 融合）的对比详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第二类（强到弱迁移）。OPD 算法的奠基性介绍见 [Thinking Machines Lab On-Policy Distillation 博客源页](thinking-machines-on-policy-distillation.md)。
 
 ### Cold Start SFT（§ 4.2）
 

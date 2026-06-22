@@ -13,7 +13,7 @@
 1. **统一 thinking / non-thinking 模式**：Qwen3 把 chat 模型与推理模型（如 QwQ）合并到一个权重里，由 `/think`、`/no_think` flag 切换，并提供 **thinking budget** 让用户在推理时限定思考 token 数（达到阈值时由系统插入 `Considering the limited time by the user, I have to give the solution based on the thinking directly now.\n</think>` 截断思考、强制生成最终答案）。
 2. **强基座**：旗舰 Qwen3-235B-A22B（MoE，22B 激活）AIME'24 85.7 / AIME'25 81.5 / LiveCodeBench v5 70.7 / CodeForces 2056 / BFCL v3 70.8。
 3. **多语言扩到 119**：Qwen2.5 的 29 种 → Qwen3 的 119 种语言及方言，预训练数据从 18T → **36T tokens**。
-4. **Strong-to-Weak Distillation 完胜 RL**：小模型走「off-policy distillation → on-policy distillation」，相比直接走完整 4 阶段 RL，**性能更好且 GPU 时长仅 1/10**（Qwen3-8B 实验：RL 17,920 GPU·h vs on-policy distill 1,800 GPU·h，AIME'24 67.6 → 74.4、AIME'25 55.5 → 65.5、pass@64 90.0 → 93.3）。on-policy distill 的 teacher 是 **Qwen3-32B 或 Qwen3-235B-A22B**（单 teacher，§4.5 原文），与 MiMo/DeepSeek-V4 的多 teacher 融合派是不同用法——详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第二类。
+4. **Strong-to-Weak Distillation 完胜 RL**：小模型走「off-policy distillation → on-policy distillation」，相比直接走完整 4 阶段 RL，**性能更好且 GPU 时长仅 1/10**（Qwen3-8B 实验：RL 17,920 GPU·h vs on-policy distill 1,800 GPU·h，AIME'24 67.6 → 74.4、AIME'25 55.5 → 65.5、pass@64 90.0 → 93.3）。on-policy distill 的 teacher 是 **Qwen3-32B 或 Qwen3-235B-A22B**（单 teacher，§4.5 原文），与 MiMo/DeepSeek-V4 的多 teacher 融合派是不同用法——详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第二类。**注意 Table 21 这条数据反过来被 Thinking Machines Lab Kevin Lu 当作 OPD 算法解释的实验依据复现**——博客自承"served as inspiration for our work"，详见 [Thinking Machines Lab On-Policy Distillation 博客源页](thinking-machines-on-policy-distillation.md)。
 
 ## 架构
 

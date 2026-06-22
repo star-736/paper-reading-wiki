@@ -64,6 +64,8 @@ OPD 全家都选 reverse-KL `D_{KL}(\pi_\theta \,\|\, \pi_T)`，不是 forward-K
 
 对 GLM-5 这种「召回早期能力」的用法特别关键：reverse-KL 的 mode-seeking 性质让 student 能**强力把分布拉回**到 Reasoning_RL teacher 的某个 mode，而不是被强迫"同时覆盖 SFT + Reasoning_RL + General_RL 所有 mode 的并集"——后者在 student 容量受限时不可行。
 
+**额外性质：reverse-KL 是 "unhackable"。** [Thinking Machines Lab On-Policy Distillation 博客](../sources/thinking-machines-on-policy-distillation.md)（OPD 在 GLM-5 ref [28]、MiMo §4 的共同算法源头）指出，reverse-KL 比 RL 里常见的 reward model 更不易被 hack：「low KL always corresponds to a high probability of desirable behavior from the teacher model's point of view」。RL reward model 是个学出来的 scalar 估计，可能被 policy 找到漏洞（superficial pattern 拿高分），但 reverse-KL 直接以 teacher 输出分布为锚，没有学习出来的中介——低 KL 必然意味着 student 在该状态下选择 teacher 高概率的 token。这是 GLM-5 / MiMo 把 advantage 换成 KL log-ratio 而非保留 outcome reward 的一个工程动机。
+
 ### 第三层：on-policy 采样让梯度只作用在 student 实际访问的状态上
 
 OPD 的 KL 期望是对 **student 自己**的分布取的：`E_{y ∼ π_θ}[...]`。这和离线蒸馏（off-policy distill，用 teacher 生成的数据训 student）有根本差异：
@@ -81,14 +83,53 @@ $$D_{KL}(\pi_\theta \,\|\, \pi_T) \;\geq\; 0, \quad \text{下界 0 当且仅当 
 
 理论上 student 可以完全召回 teacher 的能力（容量足够、采样足够、step 足够）。这一点比 RL 干净得多——RL 的 reward landscape 可能有多个不一致的 mode、可能 reward hacking、没有干净的全局最优。所以 GLM-5 §3.5 才敢用 **"swiftly recover"** 这种自信措辞——OPD 的优化目标允许 swift，RL 的不允许。
 
-### 把四层拼起来
+### 第五层：信息论效率 —— `O(1)` vs `O(N)` bits per episode
 
-OPD 能 work（特别是 GLM-5 那种「召回早期能力」用法）建立在四个数学事实的合力上：
+[Thinking Machines Lab 博客](../sources/thinking-machines-on-policy-distillation.md)（§ Discussion · Dense supervision）给出了 OPD 比 RL 高效的信息论解释：
+
+- **RL** 每个 episode 只传递 `O(1)` bits 信息——最终对/错一个 scalar reward，与 token 数无关。
+- **Distillation** 每个 episode 传 `O(N)` bits，N 是 token 数——每个 token 都有 reverse-KL 信号，credit assignment 自然 dense。
+
+实验验证：同一目标下 distillation 比 RL 快 **7-10× gradient steps**、综合 compute 效率 **50-100×**（博客 § Discussion 自蒸馏实验：用同一 base model 跑 RL 训出 teacher，再 distill 回 base model，distillation 用 10 步达到 RL 70 步才到的水平）。
+
+这条信息论分析也解释了 [Qwen3 Table 21](../sources/qwen3.md) 的 1/10 GPU·h 数字：不是工程优化造成的差距，是**reward density 本身的数量级差**。要 RL 追上 distillation 的 compute 效率，理论上需要 process reward modeling（[Lightman et al. 2023](https://arxiv.org/abs/2305.20050)）把 reward 也做到 token 粒度——但博客指出"训 RL 用 process supervision 一般很难"，所以 OPD 是这一类的更可行 instantiation。
+
+### 第六层：RL 训练只动小子网络 —— 为什么"召回"是必须的
+
+这一层不是 OPD 本身的数学性质，但解释了**为什么 GLM-5 / Thinking Machines 把 OPD 用作"召回工具"是必要的，而不是可选的**。
+
+[Mukherjee et al. 2025 *Reinforcement Learning Finetunes Small Subnetworks in Large Language Models*](https://arxiv.org/abs/2505.11711) 证明：RL post-training **只调整 base model 的一小块子网络**，大部分参数保持原状。这有两个直接后果：
+
+1. RL 学到的能力**脆弱**——继续在大规模数据上 SFT/mid-training 时，这块子网络容易被冲掉。
+2. Catastrophic forgetting 不是数据脏，是子网络被覆盖。
+
+Thinking Machines 博客 § Personalization 给的实验直接证据：Qwen3-8B（已 RL）+ 内部公司文档 SFT → IF-eval **85% → 45%**（即使 SFT 数据混 30% chat 数据也救不回来）。然后用**原版 Qwen3-8B** 当 teacher 在 Tulu3 prompt 上做 on-policy distill → IF-eval **召回到 83%**，且新学的 internal QA 知识 36→41%（不退化）。
+
+**对 GLM-5 cross-stage distillation 的直接含义**：sequential RL 流水线（SFT → Reasoning RL → Agentic RL → General RL）每一段都在改造一小块子网络；到 General RL 末端时，Reasoning RL 阶段那块子网络很可能已经被冲淡。cross-stage distill 把 Reasoning RL 阶段的 checkpoint 当 teacher，相当于在 student 部署分布上**把那块子网络锚回去**——博客原文称作 *"re-invoke" capabilities lost during fine-tuning*。
+
+这一层和「第四层 teacher 固定 → 良定义目标」组合起来，给出 GLM-5 流水线设计的完整数学/系统解释：**RL 子网络脆弱（必须召回）+ teacher 固定（召回目标良定义）+ on-policy 采样（在 student 真实分布上召回）+ reverse-KL mode-seeking（强力拉回，不被迫加权所有阶段）= 流水线终点的 cross-stage distillation**。
+
+### 第七层：phase-alternating 框架 —— 连续学习的可行 recipe
+
+Thinking Machines 博客 § Personalization 末段：
+
+> fine-tune 学新知识 → on-policy distill 召回行为 → fine-tune 学新知识 → distill ……
+
+引 [Cobbe et al. 2020 *Phasic Policy Gradient*](https://arxiv.org/abs/2009.04416)。这是 continual learning 的可行 recipe——不需要把所有任务塞进同一次训练，而是**承认 SFT 会冲淡 post-training 行为、但 OPD 能在每次 SFT 后召回**，两者交替推进。
+
+GLM-5 是这条 recipe 的**单次实例**（只跑了一次 RL → distill 召回）。MiMo MOPD 的 "teacher-student co-evolution 循环"（§4.1 提到 distilled student 可再进 specialist RL 生成更强 teacher）是同一框架的**多次迭代版**，但目前两家都只跑了一轮。phase-alternating 是把这个循环跑多次的理论保证。
+
+### 把七层拼起来
+
+OPD 能 work（特别是 GLM-5 那种「召回早期能力」用法）建立在七个数学/系统事实的合力上：
 
 1. **loss = reverse-KL** —— likelihood-ratio gradient 给出 advantage = log(π_T/π_θ) 的干净代换，infra 与 RL 共用。
-2. **reverse-KL 的 mode-seeking 性质** —— student 在每个 mode 周围做选择，不被迫加权平均，容量利用率高。
+2. **reverse-KL 的 mode-seeking + unhackable 性质** —— student 在每个 mode 周围做选择不被迫加权平均，且 reward 锚定在 teacher 输出分布而非学出来的 scalar 估计，没有 hack 漏洞。
 3. **on-policy 消除 exposure bias** —— 梯度只作用在 student 部署时会访问的状态分布上，无 distribution shift（Ross 2011 的 O(T) vs O(T²) regret）。
 4. **teacher 固定 → 良定义优化** —— reverse-KL ≥ 0 且 0 当且仅当分布相等，单调收敛，没有 RL 的 reward landscape 问题。
+5. **`O(1)` vs `O(N)` bits/episode** —— dense reward 的信息论根源是 OPD 比 RL 快 7-10× steps、compute 省 50-100× 的解释，不是工程优化的功劳。
+6. **RL 子网络脆弱（Mukherjee 2025）** —— sequential RL 阶段间互相冲掉对方子网络是真实现象，cross-stage distill 召回的就是这些子网络；这是 GLM-5 cross-stage distillation 必要性的数学依据。
+7. **phase-alternating 框架（Cobbe 2020）** —— fine-tune 与 distill 交替是 continual learning 的可行 recipe；GLM-5 单次实例 / MiMo co-evolution 多次迭代都落在这个框架下。
 
 ### 数学上没闭合的地方：多 teacher 混采
 

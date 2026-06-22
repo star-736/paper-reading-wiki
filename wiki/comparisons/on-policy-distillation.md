@@ -101,7 +101,8 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 
 ## 相关页面
 
-- [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 单家深入（公式、Table 7、与 V4 OPD 的差异），并含跨家共用的 [OPD 数学依据](../concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（四层论证 + 多 teacher 混采的边界）。
+- [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 单家深入（公式、Table 7、与 V4 OPD 的差异），并含跨家共用的 [OPD 数学依据](../concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（七层论证 + 多 teacher 混采的边界）。
+- [Thinking Machines Lab On-Policy Distillation 博客](../sources/thinking-machines-on-policy-distillation.md)：GLM-5/MiMo 共同引用的 OPD 算法源头页（Kevin Lu 2025-10-27），含 reverse-KL "unhackable"、O(1) vs O(N) bits/episode、phase-alternating 框架、personalization 召回实验等本数学依据节多处引用的一手出处。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：5 家后训练范式总览，OPD 是其中一支。
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)：GLM-5 在 cross-stage distillation 之前的 RL 阶段。
 - [MiMo-V2-Flash 技术报告](../sources/mimo-v2-flash.md) / [DeepSeek-V4 技术报告](../sources/deepseek-v4.md) / [Qwen3 技术报告](../sources/qwen3.md) / [Qwen3-VL 技术报告](../sources/qwen3-vl.md) / [GLM-5 技术报告](../sources/glm-5.md)：源页。

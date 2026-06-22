@@ -30,7 +30,7 @@ V4 的后训练流水线"largely mirrored that of DeepSeek-V3.2, [but] a critica
 
 V4 OPD 选择**full-vocabulary logit distillation**而非 token-level KL estimate，因为后者"leads to high variance in gradient estimation and often causes training instability"（§5.1.2 原文）。代价是工程极重：要在 >10 个 teacher × 万亿参数 × |V|>100k 词表的规模下做完整 KL，V4 用 **teacher hidden-state caching**（只缓存最后层 hidden state，训练时过 prediction head 重建 logits）+ **按 teacher 排序调度**（每个 teacher head 一个 mini-batch 内只 load 一次）+ **TileLang KL kernel** + **FP4 量化**所有 inference-only forward + **ZeRO 式 teacher 权重分片**从中心化存储按需加载，才把 full-vocab OPD 做到可执行。
 
-> 与 MiMo MOPD（token-level KL）和 Qwen3 Strong-to-Weak（单 teacher）的对比详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)。
+> 与 MiMo MOPD（token-level KL）和 Qwen3 Strong-to-Weak（单 teacher）的对比详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)。OPD 算法的奠基性介绍见 [Thinking Machines Lab On-Policy Distillation 博客源页](thinking-machines-on-policy-distillation.md)。
 
 ## 效率主张
 
