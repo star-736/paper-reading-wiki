@@ -62,7 +62,11 @@ DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模
 
 - **Parity Evaluation**：V3.2-Exp 与 V3.1-Terminus 在短/长上下文 benchmark 上性能持平，人类偏好 Elo 分数接近。
 - **Long Context**：AA-LCR +4 分；Fiction.liveBench 全面优于 V3.1-Terminus。
-- **推理成本**：在 H800 GPU 上实测，DSA 相比 V3.1-Terminus 在长序列上 token 成本显著下降（Figure 3，$2/GPU-hour 估算）。
+- **推理成本**：在 H800 GPU 上实测，DSA 相比 V3.1-Terminus 在长序列上 token 成本显著下降（$2/GPU-hour 估算）。
+
+  ![DeepSeek-V3.2 Figure 3：推理成本对比。(a) Prefilling——V3.1-Terminus（蓝线）成本随 token 位置线性增长，到 128K 约 $0.67/M tokens；V3.2（橙线）斜率极缓，128K 仅约 $0.19/M。(b) Decoding——V3.1-Terminus 到 128K 约 $2.15/M tokens，V3.2 仅约 $0.25/M。两阶段 V3.2 的成本增长都远慢于 V3.1-Terminus。](../assets/deepseek-v32/fig3-inference-cost.png)
+
+  > Figure 3（原文截图，§ 推理成本）：H800 集群上 DeepSeek-V3.1-Terminus 与 V3.2 的推理成本，按 token 位置（0K–128K）绘制。成本按 $2/GPU-hour 估算。短序列 prefill 走 masked MHA mode 模拟 DSA 以提高效率。
 - **竞赛表现**（V3.2-Speciale）：IMO 2025 Gold（35/42）、CMO 2025 Gold（102/126）、IOI 2025 Gold（492/600）、ICPC WF 2025 Gold（10/12）。
 - **Agentic 评测**：SWE-bench Verified 73.1、Terminal Bench 2.0 46.4（Claude Code 框架）、BrowseComp 67.6（带 context management）。
 

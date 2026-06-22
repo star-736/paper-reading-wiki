@@ -357,3 +357,20 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `wiki/index.md`：来源区加 2 条（Qwen3 / Qwen3-VL），模型区加 2 条。
 
 写回清单：双向反链已通；2 张图均经 vision_analyze 核对，alt 文本写成完整图注备失链；assets 无孤儿（fig1 在源页与模型页均被指）；待追问均为真问题（QK-Norm 实现细节、DeepStack 选哪 3 ViT 层、Qwen3-VL/Omni 为何 backbone 不统一、Thinking Budget 自然涌现机制）。`raw/` 未改。
+
+## [2026-06-22] deepen | 图文化批量回填：4 项已知引用 + 3 项勘查内嵌
+
+按 `TODO.md` 清单逐项推进，共新增 7 张图片到 `wiki/assets/`、6 个页面被修改：
+
+**已知引用回填（4 项）**：
+- `sources/deepseek-v32.md`：嵌 **Figure 3**（H800 推理成本，prefilling+decoding 双子图，PyMuPDF p6 clip + textbox 校验 + vision 核对 V3.2 成本斜率远缓于 V3.1-Terminus）。
+- `concepts/deepseek-sparse-attention.md`：**Table 10**（GLM-5 附录，indexer 32 head / dim 128）从单行文字重排为 Markdown 表，含 GLM-4.5 对照列。
+- `concepts/multi-teacher-on-policy-distillation.md`：**Table 7**（MOPD 前后 student vs. best teacher）重排为 12 行 Markdown 表，含 teacher 类型标注（RL/SFT/Self）。修正 BrowseComp student 数字 45.4→44.9（原文 44.9）。
+- `concepts/multi-head-latent-attention.md`：**附录 D.1**（DeepSeek-V2 Table 8，7B dense MHA>GQA>MQA 消融）重排为 Markdown 表，补在「压低秩而非减头数」论据处。
+
+**勘查内嵌（3 项）**：
+- `concepts/deepseek-sparse-attention.md`：勘查 V3.2 PDF → **Figure 2**（DSA 注意力架构，lightning indexer + top-k selector + MLA MQA mode 完整数据流）值得内嵌，已截图嵌架构概览段。
+- `comparisons/sparse-attention-mechanisms.md`：勘查 MSA/IndexCache PDF → 嵌 **MSA Figure 1**（Index Branch + Main Branch + attention mask 可视化）到 MSA 行下；嵌 **IndexCache Figure 2**（标准 DSA vs IndexCache 伪代码对比）到 IndexCache 行下。
+- `concepts/agent-swarm.md` + `concepts/multimodal-agentic-training.md`：勘查 Kimi K2.5 报告 → 嵌 **Figure 3**（Agent Swarm orchestrator + frozen subagents 并行架构）到 agent-swarm.md 定义段；嵌 **Figure 10**（agentic RL framework: Rollout Manager / Core Agent Loop / Inference+Training Engine）到 multimodal-agentic-training.md 的 Joint multimodal RL 段。
+
+每张图均经 PyMuPDF 300 DPI 渲染 + `get_textbox(clip)` 校验边界 + `vision_analyze` 核对像素内容与描述一致。`TODO.md` 全部 7 项标记完成。`raw/` 未改。

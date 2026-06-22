@@ -20,11 +20,21 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | [DSA](../concepts/deepseek-sparse-attention.md) | MLA / MQA 模式 | token | **所有 query head 共享** 1 个 top-k | 每层独立 | KL 蒸馏 vs full attention，dense warmup + sparse 训练 | "lightning indexer + 共享 top-k"是 production 友好的稀疏 |
 | [MSA](../sources/msa.md) | GQA | **block**（B=128, n=16） | 每 GQA group 独立 top-k | 每层独立 | KL 对齐 vs Main Branch group-averaged 分布 | block 让 IO 规整、KV-outer kernel 拿满 tensor core |
+
+![MSA Figure 1：MiniMax Sparse Attention 架构概览。左侧 Index Branch——Hidden States 经 Linear Projection + Norm&RoPE 生成轻量 Q_idx / K_idx，block-level 打分（Score = Q_idx K_idx^T）→ Block Max Pooling → Top-K Index 选出最相关的 key block。右侧 Main Branch——独立的 Linear Projection + Norm&RoPE 生成完整 Q/K/V，根据 Top-K Index 只取选中的 KV block 做 Sparse Attention。右侧还展示了稀疏因果 attention mask 可视化（紫色/棕色 = 选中，白色 = 剪枝）。](../assets/msa/fig1-overview.png)
+
+> Figure 1（原文截图，§ Overview）：MSA 的两路结构——Index Branch（轻量选择）和 Main Branch（完整注意力）。block-level 选择（B=128）让 IO 规整、KV-outer kernel 拿满 tensor core。
+
 | NSA（DeepSeek 早期） | MQA / MHA | 三分支：compressed / selected block / sliding window | 共享 | 每层独立 | 端到端 with LM loss | 用三个并行分支同时覆盖粗、细、局部 |
 | MoBA | GQA | 极大 KV block，块均值 key 打分 | 共享 | 每层独立 | 仅 LM loss，无显式 indexer 蒸馏 | 训练简单，indexer 直接靠主任务梯度学 |
 | InfLLM-V2 | — | 块级，无参数选择 + sliding window | 共享 | 每层独立 | 无（参数自由） | 零样本 dense→sparse 切换 |
 | CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
 | [IndexCache](../sources/indexcache.md)（叠加在 DSA 上） | MLA + DSA | token（继承 DSA） | 共享（继承 DSA） | **F 层算、S 层复用 anchor top-k**（1/4 retention 起步） | 无新训练（training-free 贪心搜索）/ 多层 KL 蒸馏（training-aware） | 干掉 indexer 自己的 O(NL²) 项 |
+
+![IndexCache Figure 2：标准 DSA 与 IndexCache 推理循环对比。(a) Standard DSA——每层都跑 INDEXER → Top-k → SparseAttn，N 层 N 次 indexer 调用。(b) IndexCache——引入 pattern c：F 层正常算 indexer 并把结果存入 T_cache，S 层直接复用 T_cache（▷ reuse），只需一个临时缓冲存一份 index tensor，无额外 GPU 显存。](../assets/indexcache/fig2-inference-loop-comparison.png)
+
+> Figure 2（原文截图，§ Inference Loop）：IndexCache 仅在标准 DSA 循环中加一个条件分支——F 层算 + 缓存，S 层复用。T_cache 只存当前一份 index tensor，零额外显存。1/4 retention 即可保质量、端到端 1.3× 起步。
+
 | 推理时稀疏化（H2O / SnapKV / Quest / MInference / FlexPrefill） | 任意 dense 模型 | 视方法而定 | 视方法而定 | 视方法而定 | 无（基于注意力统计或启发式） | 不改训练、只改 serving；在长 prefill 上还能保留近 dense 速度的至少一支 |
 
 ## 训练分阶段对比（第四条轴）

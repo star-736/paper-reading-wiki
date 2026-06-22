@@ -8,10 +8,12 @@
 
 ### 已知引用、待处理
 
-- [ ] `sources/deepseek-v32.md`（§ 推理成本）引用 **Figure 3**（H800 上 DSA vs V3.1-Terminus 长序列 token 成本对比）——成本曲线图，宜截图内嵌。
-- [ ] `concepts/deepseek-sparse-attention.md` 引用 **附录 Table 10**（indexer 配置：32 head / head dim 128）——纯文字表，宜重排为 md。
-- [ ] `concepts/multi-teacher-on-policy-distillation.md` 引用 **Table 7**（MOPD 师生 benchmark 对比，AIME/HMMT/LiveCodeBench/SWE-Bench）——纯文字表，宜重排为 md。
-- [ ] `concepts/multi-head-latent-attention.md` 引用 **附录 D.1**（7B dense MHA>GQA/MQA 消融）——若原文是表，可重排补在「压低秩而非减头数」论据处。
+（全部完成，2026-06-22。）
+
+- [x] `sources/deepseek-v32.md` 引用 **Figure 3**（H800 上 DSA vs V3.1-Terminus token 成本对比）→ 已截图内嵌（prefilling + decoding 双子图）。
+- [x] `concepts/deepseek-sparse-attention.md` 引用 **附录 Table 10**（indexer 配置：32 head / head dim 128）→ 已重排为 md（GLM-5 报告附录，含 GLM-4.5 对照）。
+- [x] `concepts/multi-teacher-on-policy-distillation.md` 引用 **Table 7**（MOPD 师生 benchmark 对比）→ 已重排为 md（12 项 benchmark，含 teacher 类型标注）。注：修正 BrowseComp student 数字 45.4→44.9。
+- [x] `concepts/multi-head-latent-attention.md` 引用 **附录 D.1**（7B dense MHA>GQA/MQA 消融）→ 已据 DeepSeek-V2 Table 8 重排为 md（BBH/MMLU/C-Eval/CMMLU 四项）。
 
 ### Linear-attention 页回填（2026-06-21 ingest 产出纯文本，已勘查图清单）
 
@@ -28,9 +30,11 @@
 
 ### 待勘查（页面未显式引用 Figure，但 PDF 里可能有值得内嵌的架构图）
 
-- [ ] `concepts/deepseek-sparse-attention.md` — 翻 `raw/DeepSeek-V3.2.pdf` 看 DSA 架构图（lightning indexer + token selection）是否值得内嵌。
-- [ ] `comparisons/sparse-attention-mechanisms.md` — 翻 `raw/` 的 MSA、IndexCache PDF，看 MSA / NSA / 跨层索引复用的机制示意图。
-- [ ] `concepts/agent-swarm.md`、`concepts/multimodal-agentic-training.md` — Kimi K2.5 报告里的 Agent Swarm / MoonViT 架构图。
+（全部勘查完成，2026-06-22。）
+
+- [x] `concepts/deepseek-sparse-attention.md` — 翻 `raw/DeepSeek-V3.2.pdf` 看 DSA 架构图 → **Figure 2 值得内嵌**（lightning indexer + top-k selector + MLA MQA mode 完整数据流），已截图嵌架构概览段。
+- [x] `comparisons/sparse-attention-mechanisms.md` — 翻 `raw/` 的 MSA、IndexCache PDF → **MSA Figure 1**（Index Branch + Main Branch + attention mask 可视化）已嵌对比表 MSA 行下；**IndexCache Figure 2**（标准 DSA vs IndexCache 伪代码对比）已嵌对比表 IndexCache 行下。
+- [x] `concepts/agent-swarm.md`、`concepts/multimodal-agentic-training.md` — Kimi K2.5 报告 → **Figure 3**（Agent Swarm orchestrator + frozen subagents 并行架构）已嵌 agent-swarm.md 定义段；**Figure 10**（agentic RL framework overview: Rollout Manager / Core Agent Loop / Inference+Training Engine）已嵌 multimodal-agentic-training.md 的 Joint multimodal RL 段。
 
 ### 备注
 

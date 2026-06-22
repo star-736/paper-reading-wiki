@@ -29,6 +29,17 @@ MLA 是 DeepSeek 在 DeepSeek-V2（2024）提出的注意力变体，目标和 G
 - **Decoupled RoPE**：RoPE 与低秩压缩不兼容（位置敏感的 RoPE 矩阵会卡在 $W^{UK}$ 中间、破坏吸收）。解法是额外引入 multi-head decoupled query $q^R$ + 一个**全 head 共享的 decoupled key** $k^R$ 专门承载 RoPE，K/Q = 压缩部分（可吸收）+ decoupled 部分（带 RoPE）拼接；decoupled key 也进 cache，故每 token KV cache = $(d_c + d_R)$ 元素。
 - **KV cache 等效 GQA-2.25 组**：Table 1 给出 $(d_c + d_R) \approx \tfrac{9}{2} d_h$，等于只有 2.25 组的 GQA，但性能 **> MHA**。附录 D.1 用 7B dense 消融证明 MHA 显著优于 GQA/MQA，正是 MLA「压低秩而非减头数」这条轴的动机。
 
+  附录 D.1 消融（Table 8，7B dense 模型，1.33T tokens，仅注意力机制不同、参数对齐 ~7B）：
+
+  | Benchmark (Metric) | # Shots | Dense 7B w/ MQA (7.1B) | Dense 7B w/ GQA-8 (6.9B) | Dense 7B w/ MHA (6.9B) |
+  | --- | --- | --- | --- | --- |
+  | BBH (EM) | 3-shot | 33.2 | 35.6 | **37.0** |
+  | MMLU (Acc.) | 5-shot | 37.9 | 41.2 | **45.2** |
+  | C-Eval (Acc.) | 5-shot | 30.0 | 37.7 | **42.9** |
+  | CMMLU (Acc.) | 5-shot | 34.6 | 38.4 | **43.5** |
+
+  > Table 8（原文附录 D.1）：MHA 在四项 hard benchmark 上全面优于 GQA 和 MQA——MQA 虽参数最多（7.1B vs 6.9B）却分数最低。这说明「减 KV head 数」有显著质量代价，MLA 因此选择正交的「压低秩」轴来压缩 cache。
+
   Table 1（原文 § 2.1.4 数据重排为 Markdown；$n_h$=head 数，$d_h$=每 head 维度，$l$=层数，$n_g$=GQA 组数，$d_c/d_R$=KV 压缩与 decoupled 维度）：
 
   | 注意力机制 | 每 token KV cache（元素数） | 能力 |

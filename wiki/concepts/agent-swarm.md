@@ -4,6 +4,10 @@
 
 Agent Swarm 是 [Kimi K2.5](../models/kimi-k2.5.md) 的并行 agent 编排框架。核心思想是：复杂任务不一定要由一个 agent 顺序执行所有工具调用，而可以由一个 trainable orchestrator 动态创建多个 frozen sub-agents，把任务拆成并行子任务。
 
+![Kimi K2.5 Figure 3：Agent Swarm 架构。Orchestrator（左侧蓝色框，内置 create_subagent / assign_task / search / browser 等工具）动态创建专业化 frozen subagents（AI Researcher、Physics Researcher、Life Sciences Researcher、Anthropology Researcher、Fact Checker、Web Developer 等），每个 subagent 配备 search / code / browser 能力。Orchestrator 将复杂任务拆解为并行子任务批量（最多 100 并发）分配给 subagents，各 subagent 返回结果后由 Orchestrator 聚合为最终输出。](../assets/kimi-k2.5/fig3-agent-swarm.png)
+
+> Figure 3（原文截图，§ Agent Swarm）：trainable orchestrator 动态创建 frozen subagents 并并行分配任务。subagents 来自固定策略 checkpoint、保持冻结，只返回结果给 orchestrator。
+
 ## PARL 训练方式
 
 Kimi K2.5 使用 Parallel-Agent Reinforcement Learning（PARL）训练 orchestrator。训练时 sub-agents 来自固定策略 checkpoint，并保持冻结；它们的轨迹不进入优化目标，只作为环境观察返回给 orchestrator。这样做的原因是减少多 agent 端到端训练中的 credit assignment 歧义：最终答案成功或失败，很难判断是 orchestrator 拆解错了，还是某个 sub-agent 执行差。

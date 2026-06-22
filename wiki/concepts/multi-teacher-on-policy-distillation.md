@@ -24,9 +24,26 @@ MOPD 的目标是让 student 同时学习多个 teacher 的专门能力，并尽
 
 ## 报告中的结果
 
-MiMo-V2-Flash 报告的 Table 7 显示，MOPD 后 student 在多个 benchmark 上接近或超过 best teacher。例如 AIME 2025 从 89.3 提升到 94.1，HMMT Feb. 2025 从 76.9 到 84.4，LiveCodeBench 从 77.5 到 83.2，SWE-Bench Verified 从 67.8 到 73.4。
+MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）：
 
-但不是所有项都超过 teacher，例如 BrowseComp 的 best teacher 是 51.7，MOPD 后 student 为 45.4。这说明 MOPD 不是自动合并所有峰值能力，teacher 选择、领域路由和 reward 设计仍然关键。
+| Benchmark | Student Before MOPD | Best Teacher | Student After MOPD | Δ(Student−Teacher) |
+| --- | --- | --- | --- | --- |
+| AIME 2025 | 89.3 | 93.9 (RL) | 94.1 | +0.2 |
+| HMMT Feb. 2025 | 76.9 | 82.6 (RL) | 84.4 | +1.8 |
+| LiveCodeBench | 77.5 | 82.6 (RL) | 83.2 | +0.6 |
+| MMLU-Pro | 84.7 | 84.7 (Self) | 84.9 | +0.2 |
+| GPQA-Diamond | 84.9 | 84.9 (Self) | 83.7 | −1.2 |
+| HLE (w/o Tool) | 21.2 | 21.2 (Self) | 22.8 | +1.6 |
+| Arena-Hard (Hard Prompt) | 50.0 | 50.0 (Self) | 54.1 | +4.1 |
+| Arena-Hard (Creative Writing) | 90.1 | 90.1 (Self) | 86.2 | −3.9 |
+| SWE-Bench Verified | 67.8 | 74.2 (RL) | 73.4 | −0.8 |
+| Tau2-Bench | 75.9 | 79.6 (RL) | 80.3 | +0.7 |
+| Tau2-Bench (Telecom) | 92.7 | 95.0 (RL) | 95.3 | +0.3 |
+| BrowseComp | 42.5 | 51.7 (SFT) | 44.9 | −6.8 |
+
+> Table 7（原文 §4.1）：Best Teacher 列括号标注其类型——RL（领域专项 RL teacher）、SFT（SFT teacher）、Self（student 自身即最强）。MOPD 后 student 在多数项上接近或超过 best teacher，但在 BrowseComp（−6.8）、Arena-Hard Creative Writing（−3.9）、GPQA-Diamond（−1.2）、SWE-Bench Verified（−0.8）上落后。
+
+这说明 MOPD 不是自动合并所有峰值能力，teacher 选择、领域路由和 reward 设计仍然关键。
 
 ## 与 DeepSeek-V4 OPD 的关系
 
