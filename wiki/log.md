@@ -396,3 +396,16 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 证据：5 处机制结论全部在 PyMuPDF 重读 raw/ PDF 后据原文 §/Table 校验——MiMo §4.1+§4.4 公式 5-9、DeepSeek-V4 §5.1+§5.1.2+§5.2.2、Qwen3 §4.5+Table 21、Qwen3-VL §4.3+§4.1、GLM-5 §3.5（含 reference [28] = Thinking Machines Lab on-policy distillation 博客，与 MOPD 同源）。`raw/` 未改。
 
 写回清单：5 家源页反向链接全部双向通（对比页 → 各源页 ✓，各源页 → 对比页 ✓）；MOPD 概念页与对比页互引；index.md 比较区已加；无新增图（对比页主体是表与文，不依赖 raw 图）。
+
+## [2026-06-23] deepen | 修正 GLM-5 在 OPD 对比页里的归类：多 teacher（纵向）而非单 teacher
+
+提问驱动："GLM-5 不也是多个教师模型吗？" 重读 raw/glm-5-2602.15763.pdf §3.5 第一段确认：原文 "the final checkpoints from the preceding training stages serve as teacher models, where the training prompts are sampled from the corresponding teachers' RL training sets and mixed in appropriate proportions"——**teachers 复数，且 prompt 按归属阶段路由**。前一日 distill 条目里把 GLM-5 笼统写成"teacher 是上游 checkpoint"会让人误读为单 teacher，事实上它和 MiMo MOPD 一样是多 teacher × prompt 路由 × KL 当 advantage 的完整 OPD 结构。
+
+修正：
+
+- `comparisons/on-policy-distillation.md` 顶表 GLM-5 行：把 teacher 列从模糊的"上游 checkpoint"改成"**多 teacher**：SFT / Reasoning RL / General RL 各阶段 final checkpoint，prompt 按归属阶段路由"，KL 形式列写明"token-level KL log-ratio 当 advantage（§3.5 公式 2），GRPO group size = 1"。
+- 同页轴一第三类正文：删掉"teacher 不是其他模型，而是自己流水线上游的 checkpoint"这种把"非外部"歧义读成"单 teacher"的表述；补充"GLM-5 同样是多 teacher × prompt 路由 × KL 当 advantage，差别不在 teacher **数量**，在 teacher **性质**"，引入「横向 teacher（领域专家，平行专长）vs 纵向 teacher（同一血脉不同代快照）」的精确区分——这才是 GLM-5 与 A 类的真正分歧。
+- 同页轴三 GLM-5 段：补"多 teacher / 按 prompt 归属路由"、"GRPO group size = 1（因 advantage 直接来自 teacher gap，单 prompt 不再需要多 rollout）"的工程细节。
+- `sources/glm-5.md`：同步把对比页引用框的措辞替换为"算法形式与 MiMo MOPD 高度相似，多 teacher × prompt 路由 × KL 当 loss"。
+
+也额外修正了相关的两处认知误差（仅记录、不改页面，因页面里没出现）：(a) GLM-5 cross-stage distillation 更新的不是 SFT model，而是 General RL 末端 checkpoint（§3.5 原文 "as the final stage"）；(b) MOPD 等 OPD 的 KL loss 不是直接写 KL，而是把 reverse-KL log-ratio 当 advantage 塞回 GRPO 框架——数学上等价于最小化 KL(student ∥ teacher)，但 infra 上能完全复用 RL 训练栈，这是 GLM-5/MiMo 选择 token-level KL 路线的关键原因。`raw/` 未改。

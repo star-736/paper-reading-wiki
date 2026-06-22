@@ -20,7 +20,7 @@
 | **[DeepSeek-V4](../models/deepseek-v4.md)** | 多专家**融合**（OPD **完全替代了 mixed RL 阶段**） | >10 个 domain teacher（覆盖各领域），加权 reverse KL | **full-vocabulary** reverse KL（不简化成 token-level estimate） | 分领域 specialist 训练（SFT+GRPO）→ OPD |
 | **[Qwen3](../models/qwen3.md)** lightweight | 把 flagship **压到小模型**（替代小模型的 RL） | **单 teacher**（Qwen3-32B 或 Qwen3-235B-A22B）；只用在 8/14B + 30B-A3B + 4/1.7/0.6B | logit-level reverse KL（off-policy distill 打底 → on-policy distill） | flagship 走完 4 阶段后，lightweight 只跑两阶段 distill |
 | **[Qwen3-VL](../sources/qwen3-vl.md)** lightweight | 同 Qwen3，把 flagship VL 压到小 VL | 单 teacher（flagship Qwen3-VL）；off-policy + on-policy 两阶段 | logit-level reverse KL | long-CoT SFT 之后、RL 之前 |
-| **[GLM-5](../models/glm-5.md)** | RL 阶段间**能力召回**（"swiftly recover the skills acquired in earlier SFT and RL stages"） | 上游 SFT / Reasoning RL / General RL checkpoint 作为 teacher | on-policy distillation algorithm（报告引 Thinking Machines Lab on-policy distillation 博客） | **整个后训练的最终阶段**——agentic RL 之后用 distillation 召回早期能力 |
+| **[GLM-5](../models/glm-5.md)** | RL 阶段间**能力召回**（"swiftly recover the skills acquired in earlier SFT and RL stages"） | **多 teacher**：上游 SFT / Reasoning RL / General RL 各阶段的 final checkpoint 都作为 teacher，prompt 按其归属阶段路由到对应 teacher（§3.5 原文：teachers 复数，"training prompts are sampled from the corresponding teachers' RL training sets and mixed in appropriate proportions"） | token-level KL log-ratio 当 advantage（§3.5 公式 2）；GRPO group size = 1，因 advantage 不再来自 group 内对比而直接来自 teacher gap | **整个后训练的最终阶段**——SFT → Reasoning RL → Agentic RL → General RL → cross-stage distillation，更新 General RL 末端 checkpoint |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear。
 
@@ -34,7 +34,14 @@
 
 **B. 强到弱迁移（capacity transfer）**——典型代表 **Qwen3 Strong-to-Weak** 和 **Qwen3-VL Strong-to-Weak**。问题是 lightweight 模型走完整 4 阶段后训练（long-CoT SFT → reasoning RL → mode fusion → general RL）成本高，且 RL 在小模型上 pass@64 不涨（只 sharpen 已有能力，不扩探索空间）。Qwen3 的回答是**单 teacher**（flagship 32B 或 235B-A22B）→ off-policy distill 打底 → on-policy distill 微调，**仅 1/10 GPU·h** 拿到比 RL 更好的 pass@1，**而且 pass@64 也涨**（详见下文 Table 21 复刻）。
 
-**C. 阶段间能力召回（capability recovery）**——只见于 **GLM-5**。报告原话："continuously optimizing on different RL stages with distinct objectives can lead to the cumulative degradation of previously acquired capabilities. To mitigate this issue, we perform on-policy cross-stage distillation as the final stage"。teacher 不是其他模型，而是**自己流水线上游的 checkpoint**——让最终 checkpoint 在统一模式下"召回"前几个 RL 阶段学到、但被后续阶段冲淡的能力。这和 A/B 类不是一个目的。
+**C. 阶段间能力召回（capability recovery）**——只见于 **GLM-5**。报告原话："continuously optimizing on different RL stages with distinct objectives can lead to the cumulative degradation of previously acquired capabilities. To mitigate this issue, we perform on-policy cross-stage distillation as the final stage"。
+
+GLM-5 **同样是多 teacher**——SFT / Reasoning RL / General RL 三个阶段的 final checkpoint 都当 teacher，prompt 按其归属阶段路由到对应 teacher 算 KL（§3.5 公式 2）。算法形式与 MiMo MOPD 高度相似（都是 reverse-KL log-ratio 当 advantage 塞进 GRPO 框架），共用一套 RL 训练栈。差别**不在 teacher 数量**，在 teacher 的**性质**：
+
+- **MiMo / DeepSeek-V4 的 teacher 是横向的**——专门为了当 teacher 而独立训出来的领域专家（数学/代码/搜索/工具…），互相之间是平行专长；融合的是「不同方向的能力」，对应问题是 sequential RL 的 capability see-saw。
+- **GLM-5 的 teacher 是纵向的**——student 自己流水线上**之前各阶段**留下的快照，互相之间是同一血脉的不同代；融合的是「同一个 student 不同时间点的能力」，对应问题是 General RL 之后 Reasoning RL 阶段学到的东西被冲淡。
+
+这是 GLM-5 与 A 类的真正分歧，也是它独立成第三类的理由。把它归入 OPD 家族合理（算法形式一致、引同一篇 Thinking Machines Lab 博客），但它解的不是 A 类那个问题。
 
 ### 轴二：KL 形式的工程权衡
 
@@ -60,7 +67,7 @@ Qwen3 / Qwen3-VL 的 logit-level KL 介于两者之间：**单 teacher + 单 stu
 
 **Qwen3 Strong-to-Weak = 替代 lightweight 模型的 4 阶段后训练**。原文："This approach eliminates the necessity of performing an exhaustive four-stage training process individually for every small-scale model"。flagship 仍走完整 4 阶段，lightweight 只走 off-policy distill + on-policy distill 两阶段。**这是把蒸馏从"补丁"提升到了"小模型的主后训练方式"**。
 
-**GLM-5 cross-stage distillation = RL 流水线的最终阶段，目的是恢复而非合并**。前面是 SFT → Reasoning RL → Agentic RL → General RL，最后用 on-policy distillation 把上游 checkpoint 的能力召回。
+**GLM-5 cross-stage distillation = RL 流水线的最终阶段，目的是召回而非合并**。前面是 SFT → Reasoning RL → Agentic RL → General RL，最后用 on-policy distillation 把上游**各阶段** checkpoint（多 teacher）的能力按 prompt 归属路由召回。一个工程后果：因为 advantage 直接来自 teacher gap 而非 group 内对比，**GRPO group size 可降到 1**（§3.5 原文），单 prompt 不再需要多 rollout，吞吐翻倍——这是把 OPD 套进 RL 框架后才出现的便利。
 
 ## 关键数据：on-policy distill vs RL（Qwen3-8B）
 
