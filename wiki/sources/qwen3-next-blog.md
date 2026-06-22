@@ -6,6 +6,7 @@
 - 标题：Qwen3-Next: Towards Ultimate Training & Inference Efficiency
 - 团队：Qwen Team（Alibaba），2025-09-11
 - 提取来源：Alibaba Cloud 官方博客镜像（来源：[Qwen3-Next: Towards Ultimate Training & Inference Efficiency](https://www.alibabacloud.com/blog/602580)）。原 `qwenlm.github.io/blog/qwen3_next/` 已 404 重定向至 qwen.ai 的 JS 站；qwen.ai 原链见博客末 References。
+- 前作：[Qwen3 技术报告](qwen3.md) / [Qwen3 模型页](../models/qwen3.md) ——本博客与之的关键差异是把标准 GQA 栈换成 3:1 GDN+gated-attention hybrid，并把 MoE 从 128/8 routed 扩到 512/10+1 shared、加 Zero-Centered RMSNorm 替代 QK-Norm。
 - 模型：[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)
 
 ## 这页在本 wiki 的定位（重要）

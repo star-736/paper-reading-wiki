@@ -37,5 +37,6 @@ Qwen3-Coder-Next 是一个 **80B 总参 / 3B 激活** 的开源编码模型，�
 ## 相关页面
 
 - 模型：[Qwen3-Coder-Next](../models/qwen3-coder-next.md)
+- 前作：[Qwen3 技术报告](qwen3.md)（Qwen3-Next 系是其改用 3:1 hybrid 栈的下一代）
 - 概念：[注意力门控](../concepts/attention-gating.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
 - 同家族来源：[Qwen3.5-Omni](qwen3.5-omni.md)、[Gated Attention](gated-attention.md)、[Gated DeltaNet](gated-delta-net.md)

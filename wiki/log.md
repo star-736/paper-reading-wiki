@@ -328,3 +328,32 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 ## [2026-06-21] deepen | 厘清「KDA 比 GDN 多存什么」（多的不是状态 cache）
 
 承接关于 KDA 门维度的追问，给 `concepts/linear-attention-and-delta-rule.md` 的「KDA 的硬件效率」小节开头加一段澄清（tier-1，据 Kimi Linear 报告 + 状态方程推证）：channel-wise 门常被误读成「状态变大」，但需长期 cache 的 $S_t$（$d_v\times d_k$ per head）GDN=KDA 不变——门只是乘在状态上的衰减系数，不进入状态。增量在三处且都非状态显存：瞬时门值（×$d_k$，激活）、门投影参数（低秩压住）、DPLR 算子复杂度（专门化算子抵消）。对应把待追问那条「参数/显存增量多少」从全开放标成「已部分厘清 + 仍待补精确数字」。`raw/` 未改。
+
+
+## [2026-06-22] ingest | Qwen3、Qwen3-VL 技术报告
+
+新增两份到 `raw/`：
+
+- `raw/Yang 等 - 2025 - Qwen3 technical report.pdf`（arXiv:2505.09388，2025-05）——Qwen 系基座前作。
+- `raw/Bai 等 - 2025 - Qwen3-VL Technical Report.pdf`（arXiv:2511.21631，2025-11）——Qwen3-VL 多模态。
+
+**关键澄清（影响家族谱系）**：
+
+- **Qwen3 是标准 GQA + RoPE + RMSNorm + SwiGLU 一脉**——hybrid linear attention / gated full attention 那一套是 [Qwen3-Next 博客](sources/qwen3-next-blog.md) 引入的下一代。此前 wiki 里 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni 都暗指"在 Qwen3 基础上换 hybrid 栈"，但没有 Qwen3 基座页可指——这条 ingest 把这个空缺补上。
+- **Qwen3-VL backbone 用的是 Qwen3 标准 GQA，不是 Qwen3-Next/3.5 hybrid**。这意味着 Qwen 系多模态有两条独立线：[Qwen3-VL](sources/qwen3-vl.md)（Qwen3 backbone，文本+图像+视频，256K）vs [Qwen3.5-Omni](sources/qwen3.5-omni.md)（Qwen3.5 hybrid backbone，加音频）——LLM backbone 不同。Qwen3-VL 摘要原文 "Built on the Qwen3 series" 已坐实。
+
+新增 4 页：
+
+- `wiki/sources/qwen3.md`：3 阶段 36T pretrain（30T+5T STEM+长上下文 4K→32K，RoPE ABF + YARN+DCA 推理 4×）、4 阶段后训练（Long-CoT cold start → Reasoning RL 仅 3995 query/170 步 → **Thinking Mode Fusion**（/think /no_think + budget 自然涌现）→ General RL），小模型走 Strong-to-Weak Distillation 完胜 RL（Table 21：Qwen3-8B on-policy distill 1800 GPU·h vs RL 17920 GPU·h，AIME'24 67.6→74.4，且 pass@64 也涨——RL 不涨）。Figure 1 后训练 pipeline 已嵌图（`wiki/assets/qwen3/fig1-post-training-pipeline.png`，PyMuPDF p9 clip + textbox 校验 + vision_analyze 核对四阶段顺序与轻量模型分支）。
+- `wiki/models/qwen3.md`：8 个变体表（layers / Q/KV head / tie embed / context）逐行据 Table 1/2 核实；唯二注意力侧改动 = 去 QKV-bias + 加 QK-Norm；MoE 去 shared expert + global-batch load balancing loss + 128/8 routed。
+- `wiki/sources/qwen3-vl.md`：三块架构升级——**Interleaved MRoPE**（t/h/w 跨频段交错，修 Qwen2.5-VL 的 spectral imbalance）、**DeepStack**（ViT 3 个层级 → 经 3 个独立 merger → residual add 到 LLM **前 3 层**，§ 2.2 原文"first three LLM layers"，不是每层都注）、**文本时间戳**（`<3.0 seconds>` token 替换 T-RoPE 的绝对时间 position id）。Vision encoder = SigLIP-2 SO-400M（小模型 SigLIP-2 Large 300M）+ 2D-RoPE + CoMP。4 阶段 pretrain（S0 67B align-merger / S1 ~1T@8K 全参 / S2 ~1T@32K / S3 100B@262144）。3 阶段后训练（long-CoT SFT + 知识蒸馏 + RL），agentic 走两阶段（10k cold-start SFT 在 Qwen2.5-VL-32B → 蒸到 120k → tool-integrated RL），三 reward = Answer Accuracy + Multi-Turn Reasoning + Tool-Calling（防 reward hacking 偷懒一次 tool call）。Figure 1 整体架构图已嵌（`wiki/assets/qwen3-vl/fig1-framework.png`，p3 上半 clip，vision 核对 DeepStack 注入到 Block 1/2/3 与文本时间戳 token 标注位）。
+- `wiki/models/qwen3-vl.md`：6 变体（2B/4B/8B/32B dense + 30B-A3B/235B-A22B MoE）映射回 Qwen3 backbone 同名变体（注意 Qwen3-VL-2B 用的是 Qwen3-1.7B，2B 是含 vision encoder 总参）。每尺寸释 Instruct + Thinking 两份独立权重（与 Qwen3 base 的单权重双模式不同）。
+
+反链与索引：
+
+- `wiki/sources/qwen3-next-blog.md`：来源块加"前作 = Qwen3 报告 + 模型页"链接，钉死"本博客差异 = 标准 GQA → 3:1 hybrid + MoE 128/8 → 512/10+1 + QK-Norm → Zero-Centered RMSNorm"。
+- `wiki/sources/qwen3-coder-next.md` + `wiki/models/qwen3-coder-next.md`：相关页面加 Qwen3 前作链接。
+- `wiki/sources/qwen3.5-omni.md` + `wiki/models/qwen3.5.md`：相关页面加 Qwen3 前作 + Qwen3-VL 横向（两条多模态线 backbone 不同）链接。
+- `wiki/index.md`：来源区加 2 条（Qwen3 / Qwen3-VL），模型区加 2 条。
+
+写回清单：双向反链已通；2 张图均经 vision_analyze 核对，alt 文本写成完整图注备失链；assets 无孤儿（fig1 在源页与模型页均被指）；待追问均为真问题（QK-Norm 实现细节、DeepStack 选哪 3 ViT 层、Qwen3-VL/Omni 为何 backbone 不统一、Thinking Budget 自然涌现机制）。`raw/` 未改。
