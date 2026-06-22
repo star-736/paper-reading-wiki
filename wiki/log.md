@@ -409,3 +409,24 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `sources/glm-5.md`：同步把对比页引用框的措辞替换为"算法形式与 MiMo MOPD 高度相似，多 teacher × prompt 路由 × KL 当 loss"。
 
 也额外修正了相关的两处认知误差（仅记录、不改页面，因页面里没出现）：(a) GLM-5 cross-stage distillation 更新的不是 SFT model，而是 General RL 末端 checkpoint（§3.5 原文 "as the final stage"）；(b) MOPD 等 OPD 的 KL loss 不是直接写 KL，而是把 reverse-KL log-ratio 当 advantage 塞回 GRPO 框架——数学上等价于最小化 KL(student ∥ teacher)，但 infra 上能完全复用 RL 训练栈，这是 GLM-5/MiMo 选择 token-level KL 路线的关键原因。`raw/` 未改。
+
+## [2026-06-23] distill | OPD 数学依据：4 层论证 + 多 teacher 混采的边界
+
+提问驱动："有没有什么数学依据？"——5 家报告里 OPD 的 loss 形式各异（MiMo 公式 7-8 token-level surrogate / GLM-5 公式 2 advantage 代换 / V4 公式 29 full-vocab weighted KL / Qwen3 §4.5 logit KL），但都落在同一个数学骨架下。这层共用骨架在任何单份报告里都没明写，对比页里也只提了"reverse KL"一笔，是典型 distill 候选。
+
+落点选择：放进 `concepts/multi-teacher-on-policy-distillation.md` 新增「数学依据」一节（不是对比页——对比页讲分歧，不该塞共用基础），并修改概念页头部引导框为"本页以 MiMo 为骨架但数学依据一节适用所有家"。对比页轴二开头 + 相关页面区、index.md MOPD 行加跳转到该锚点。
+
+新增章节结构（4 层 + 1 边界）：
+
+1. **OPD loss = 最小化 reverse-KL** —— likelihood-ratio gradient 推导，给出 advantage = log(π_T/π_θ) 的代换；这是 GLM-5 公式 (2) 和 MiMo 公式 (8) 的来源，infra 与 RL 共用。V4 full-vocab KL 是同目标的精确版本（不简化为 token-level 估计）。
+2. **reverse-KL 的 mode-seeking 性质** —— 与 forward-KL mass-covering 对比表；为什么对 GLM-5"召回早期能力"特别关键（student 不被强迫覆盖三阶段 mode 并集）；引 Bishop PRML §10.1.2、Minka 2005 α-divergence TR。
+3. **on-policy 消除 exposure bias** —— 引 Ross et al. 2011 DAgger 的 O(T) vs O(T²) regret 证明；同时给出 Qwen3 Table 21 pass@64 涨（distill 拓宽分布）vs RL 不涨（只 sharpen）的数学解释。
+4. **teacher 固定 → 良定义收敛** —— D_KL ≥ 0 单调有界，下界 0 当且仅当分布相等；这是 GLM-5 §3.5 敢用 "swiftly recover" 措辞的依据（RL 的 reward landscape 不允许 swift）。
+5. **数学没闭合的边界：多 teacher 混采** —— 上述四层只论证「逼近一个固定 teacher」，不直接论证「多 teacher 同时召回不互相覆盖」。在 prompt 集不重叠的假设下退化为条件混合分布 π* = π_{T_k(x)}，前述论证逐 teacher 成立；prompt 集重叠时 routing 错位无数学保证（MiMo Table 7 里 BrowseComp −6.8、Arena-Hard Creative Writing −3.9 落后 best teacher 的可能来源）——这一步外包给数据 curation。
+
+反向链接：
+
+- `comparisons/on-policy-distillation.md` 轴二开头 + 相关页面区指向锚点。
+- `index.md` MOPD 行摘要加锚点跳转，让"数学依据"在索引层就露出。
+
+证据：第一、四层（reverse-KL likelihood-ratio gradient + 下界为 0）是 KL 散度的标准结果；第二层引 Bishop PRML §10.1.2 与 Minka 2005 MSR-TR-2005-173；第三层引 Ross et al. 2011 DAgger（AISTATS）。四层结论是公认数学事实，「四层合力解释 OPD 为什么 work」与「多 teacher 混采没闭合的边界」是本页原创综合（推断 / 本页原创综合 tier 3），但每条子论证均有 tier 1 / tier 2 支撑。`raw/` 未改。
