@@ -96,6 +96,12 @@ Vision encoder 先做 dynamic-resolution continual training。整体训练 4 sta
 
 3 阶段（§ 4）：① **SFT on long-CoT data**（cold start）→ ② **Knowledge distillation from stronger teachers** → ③ **Reinforcement Learning**。
 
+### Strong-to-Weak Distillation（§ 4.3）
+
+报告原文：「We adopt the Strong-to-Weak Distillation pipeline as described in Qwen3 to further improve the performance of lightweight models」——直接复用 [Qwen3](qwen3.md) 报告里 §4.5 的两阶段范式（off-policy 把多个 teacher 输出合并做 response distill 打底 → on-policy student 生成轨迹、与 teacher logits 对齐做 KL）。**关键设计：用 text-only 数据蒸馏 LLM backbone 部分**（论文 §4.1 强调："we perform this distillation using text-only data to fine-tune the LLM backbone. This method proves highly effective, yielding significant improvements in reasoning abilities across both text-centric and multimodal tasks"）——视觉模块不参与这一步。
+
+> 与 MiMo MOPD / DeepSeek-V4 OPD（多 teacher 融合）的对比详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第二类（强到弱迁移）。
+
 ### Cold Start SFT（§ 4.2）
 
 - 约 **1.2M 样本**：1/3 text-only + 2/3 多模态（图文 / 视频）。

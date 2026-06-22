@@ -374,3 +374,25 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `concepts/agent-swarm.md` + `concepts/multimodal-agentic-training.md`：勘查 Kimi K2.5 报告 → 嵌 **Figure 3**（Agent Swarm orchestrator + frozen subagents 并行架构）到 agent-swarm.md 定义段；嵌 **Figure 10**（agentic RL framework: Rollout Manager / Core Agent Loop / Inference+Training Engine）到 multimodal-agentic-training.md 的 Joint multimodal RL 段。
 
 每张图均经 PyMuPDF 300 DPI 渲染 + `get_textbox(clip)` 校验边界 + `vision_analyze` 核对像素内容与描述一致。`TODO.md` 全部 7 项标记完成。`raw/` 未改。
+
+## [2026-06-23] distill | On-Policy Distillation 5 家跨报告对比
+
+提问驱动：「OPD / 在线策略蒸馏在已收录的哪些 LLM 里用到了」。回答时发现同名 OPD 在 5 家报告里分叉成三类截然不同的用法（融合多 teacher / 强到弱迁移 / RL 阶段间能力召回），且这层综合在已有页面里没有归属——是典型 distill 候选。
+
+新增：
+
+- `wiki/comparisons/on-policy-distillation.md`：5 家（MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage）沿三轴对比——OPD 目的（融合 / 强到弱 / 召回）/ KL 形式（token-level vs full-vocab vs logit-level）/ pipeline 位置（替代 mixed RL / 替代 small-model 4 阶段 / 流水线最终阶段）。附 Qwen3-8B Table 21（off-policy → +RL vs +on-policy distill）完整复刻，论证 on-policy distill 1/10 GPU·h 同时 pass@64 涨（RL 不涨）。
+
+源页回填反向链接（5 处）：
+
+- `concepts/multi-teacher-on-policy-distillation.md`：页首加引用框指向对比页（"本页只覆盖 MiMo MOPD 单家"）。
+- `sources/mimo-v2-flash.md`：MOPD 段下加 token-level KL + ORM 加权混合 + teacher 类型（RL/SFT/Self）的指针。
+- `sources/deepseek-v4.md`：新增"后训练：OPD 替代 mixed RL"完整章节（之前只在 comparisons 顶表里一句话），写明 full-vocab vs token-level 取舍、hidden-state caching / teacher 排序调度 / TileLang kernel / FP4 / ZeRO 分片五项工程支撑。
+- `sources/qwen3.md`：第 4 条核心结论后补 teacher 是 Qwen3-32B / Qwen3-235B-A22B（单 teacher）的关键事实。
+- `sources/qwen3-vl.md`：后训练章节补 §4.3 Strong-to-Weak 小节，钉住"text-only data fine-tune LLM backbone（视觉模块不参与）"原文细节。
+- `sources/glm-5.md`：on-policy cross-stage distillation 段下钉住"目的是 swiftly recover earlier stages 而非融合 teacher"，与另外两家划界。
+- `index.md`：比较区第三条。
+
+证据：5 处机制结论全部在 PyMuPDF 重读 raw/ PDF 后据原文 §/Table 校验——MiMo §4.1+§4.4 公式 5-9、DeepSeek-V4 §5.1+§5.1.2+§5.2.2、Qwen3 §4.5+Table 21、Qwen3-VL §4.3+§4.1、GLM-5 §3.5（含 reference [28] = Thinking Machines Lab on-policy distillation 博客，与 MOPD 同源）。`raw/` 未改。
+
+写回清单：5 家源页反向链接全部双向通（对比页 → 各源页 ✓，各源页 → 对比页 ✓）；MOPD 概念页与对比页互引；index.md 比较区已加；无新增图（对比页主体是表与文，不依赖 raw 图）。
