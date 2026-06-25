@@ -45,6 +45,10 @@ DeepSeek-V4 使用 on-disk KV cache 处理 shared-prefix requests，减少重复
 
 GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregation 也服务于长上下文 agent 推理。DP-aware routing 让同一 rollout 固定到同一 DP rank，避免多轮工具调用时重复 prefill；PD disaggregation 把 prefill 和 decode 分开，避免长前缀 prefill 干扰正在 decode 的 rollout。
 
+## 与 vLLM-Omni 的关系
+
+[vLLM-Omni](../sources/vllm-omni.md) 把 disaggregation 从本页的「长上下文 KV / prefix / state cache」推广到 [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)：stage 间不只传 KV cache，还传 multimodal embeddings、Thinker hidden states、Talker codec tokens、audio/image tensors。两者共用的系统直觉是：模型能力越依赖长上下文或多阶段流水线，serving 就越不能是单个 monolithic generate loop。
+
 ## 关键判断
 
 百万 token 能力最终是模型架构和服务系统共同决定的。只看 benchmark 上“支持 1M context”不够，还要看：

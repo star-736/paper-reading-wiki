@@ -499,3 +499,14 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - 更新 `wiki/concepts/post-training-for-agentic-models.md`、`agentic-evaluation-benchmarks.md`、`wiki/sources/qwen3.md`、`wiki/models/qwen3.md`、`wiki/sources/qwen3-vl.md`、`wiki/models/qwen3-vl.md`、`wiki/index.md`：补 RL optimizer 谱系、Qwen/Qwen3-VL 的外部方法论文反链，并明确这些不是原模型报告正文事实。
 
 图文化：新增 `wiki/assets/dapo/`、`wiki/assets/gspo/`、`wiki/assets/sapo/` 共 13 张图，覆盖 DAPO Figure 1/2/4/5/6、GSPO Figure 1/2/3、SAPO Figure 1/2-3/4/5/6；均用 PyMuPDF clip 渲染并经 `get_textbox(clip)` + vision_analyze 核对。`raw/` 未改。
+
+## [2026-06-25] ingest | vLLM-Omni 技术报告
+
+新增 `raw/vllm-omni-2602.02204.pdf`（arXiv:2602.02204v1）与官方博客快照 `raw/vllm-omni-blog-2025-11-30.md`，把 infra 论文作为「模型能力落地 infra」纳入 wiki：
+
+- 新增 `wiki/sources/vllm-omni.md`：覆盖 stage graph 抽象、每 stage 独立 execution engine、AR / DiT stage support、streaming stage output、unified connector、Qwen-Omni / BAGEL / MiMo-Audio / DiT 结果。
+- 新增 `wiki/concepts/any-to-any-multimodal-serving.md`：把 Qwen-Omni / Qwen3.5-Omni 这类 Thinker / Talker / Vocoder 多阶段模型的 serving 问题抽成概念页，并与 Qwen3-VL（multimodal input→text output）和百万 token serving（KV/state cache disaggregation）区分。
+- 更新 `wiki/sources/qwen3.5-omni.md`、`wiki/models/qwen3.5.md`、`wiki/concepts/million-token-context-serving.md`、`wiki/concepts/multimodal-agentic-training.md`、`wiki/index.md` 加双向引用。
+- 图文化：从原 PDF 裁出并嵌入 Figure 3（vLLM-Omni architecture）、Figure 4（Qwen2.5-Omni stage graph）、Figure 5（unified connector）、Figure 6（Qwen-Omni end-to-end results）、Figure 8（DiT-based results），均经 `get_textbox(clip)` 与 vision_analyze 核对。
+
+`raw/` 新增 1 个 PDF + 1 个博客快照；既有 raw 未改。

@@ -23,6 +23,7 @@
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
 - [Qwen3 技术报告](sources/qwen3.md) - Qwen 系列 2025-05 基座报告（arXiv:2505.09388），标准 GQA + RoPE + RMSNorm + MoE，36T tokens / 119 语言；后训练核心 = 统一 thinking/non-thinking 双模式 + thinking budget + Strong-to-Weak Distillation 完胜 RL（1/10 GPU 时长）。Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的基座前作。
 - [Qwen3-VL 技术报告](sources/qwen3-vl.md) - Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。
+- [vLLM-Omni 技术报告](sources/vllm-omni.md) - 面向 any-to-any 多模态模型的 fully disaggregated serving 系统：stage graph 拆分 AR / DiT / encoder 等阶段，独立批处理、资源配置与 unified connector 传输，Qwen3-Omni JCT 最高降 91.4%。
 - [Thinking Machines Lab On-Policy Distillation 博客](sources/thinking-machines-on-policy-distillation.md) - Kevin Lu 2025-10-27 发表，GLM-5（ref [28]）/ MiMo MOPD 共同引用的 OPD 算法源头。Per-token reverse KL、三方对照表（SFT / RL / OPD = off-policy+dense / on-policy+sparse / on-policy+dense）、`O(1)` vs `O(N)` bits/episode 信息论分析、personalization 召回实验是 GLM-5 cross-stage distillation 思路的直接来源。
 - [Agentic Reinforced Policy Optimization](sources/agentic-reinforced-policy-optimization.md) - 人大 + 快手的 agentic RL 算法论文：发现工具反馈后 token entropy spike，用 entropy-based adaptive rollout 在高熵工具调用步分叉 partial rollouts，并用 advantage attribution 学 step-level tool-use 行为。
 - [DAPO 技术报告](sources/dapo.md) - ByteDance Seed + 清华 AIR 等开源大规模 LLM RL 系统，四件套（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）把 Qwen2.5-32B AIME24 avg@32 从 naive GRPO 30 提到 50。
@@ -50,6 +51,7 @@
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization 与 ARPO 这类 step-level rollout 采样模式。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
+- [Any-to-any 多模态 serving](concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 代表的 omni-modal serving 范式：Thinker / Talker / Vocoder、AR LLM / DiT / encoder 等多阶段模型拆成 stage graph 独立调度与传输。
 
 ## 细讲模块
 
