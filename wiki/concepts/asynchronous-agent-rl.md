@@ -39,3 +39,5 @@ GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Pyth
 
 异步 Agent RL 的本质不是“换一个 RL 算法”，而是把 RL 训练变成一个分布式系统问题：调度、容错、token 对齐、KV-cache locality、环境质量都会影响最终模型能力。
 
+[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是互补的算法层问题：在一个 agent 轨迹内部，工具反馈后的高熵 step 是否应该追加 partial rollout 探索。前者解决长尾 rollout 怎么跑得动，后者解决有限 rollout 预算投到轨迹哪里。
+

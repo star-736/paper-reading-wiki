@@ -154,3 +154,4 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 - 模型：[Qwen3](../models/qwen3.md)
 - 同家族后续：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Qwen3.5](../models/qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
+- 外部后训练算法：[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)（用 Qwen3-8B/14B 做 deep search RL backbone，但不是 Qwen3 官方报告的一部分）

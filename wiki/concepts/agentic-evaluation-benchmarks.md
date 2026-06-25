@@ -2,7 +2,7 @@
 
 ## 为什么单一 benchmark 不够
 
-Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、终端操作、网页搜索、工具调用、长周期规划、经济任务和多轮环境反馈。三篇报告都在强调 agentic benchmark，但每个 benchmark 衡量的能力不同。
+Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、终端操作、网页搜索、工具调用、长周期规划、经济任务和多轮环境反馈。已沉淀的模型报告与 agentic RL 算法论文都在强调 agentic benchmark，但每个 benchmark 衡量的能力不同。
 
 ## 常见 benchmark
 
@@ -20,6 +20,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | Toolathlon | 长周期异构工具任务 | 测试多工具、多步骤任务完成。 |
 | Vending-Bench 2 | 模拟经营任务 | 测试长期规划和资源管理。 |
 | GDPval-AA | 办公与经济价值任务的 Artificial Analysis 子集 | MiniMax-M2、Kimi K2.5 用来测试 office/cowork agent 能力。 |
+| XBench / xbench-DeepSearch | 中文 deep search / deep research split | ARPO、WebSailor 等用来测试深搜索；读分数时要看中文 prompt、judge 和浏览器设置。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
 
@@ -41,8 +42,8 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 - timeout 和 step budget：Terminal-Bench、MCP-Atlas、BrowseComp 的最大步数和超时会改变结果。
 - verified subset：Terminal-Bench 2.0 Verified 与原始 Terminal-Bench 2.0 结果不可直接混用。
 
-## 对三篇报告的影响
+## 对已沉淀报告的影响
 
-GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 context management。MiMo-V2-Flash 更强调在较小模型规模下 SWE-bench 与 BrowseComp 的提升。DeepSeek-V4 则把 agent benchmark 放在 512K context、内部 harness 和 1M context 能力背景下理解。MiniMax-M2 更强调统一 scaffold、verifiable reward 和 self-evolution 工作流。Kimi K2.5 则把 Agent Swarm 作为 benchmark 变量，直接比较单 agent、context management 和并行 agent 编排。
+GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 context management。MiMo-V2-Flash 更强调在较小模型规模下 SWE-bench 与 BrowseComp 的提升。DeepSeek-V4 则把 agent benchmark 放在 512K context、内部 harness 和 1M context 能力背景下理解。MiniMax-M2 更强调统一 scaffold、verifiable reward 和 self-evolution 工作流。Kimi K2.5 则把 Agent Swarm 作为 benchmark 变量，直接比较单 agent、context management 和并行 agent 编排。ARPO 不是发布新模型，而是把 GAIA / WebWalkerQA / HLE / XBench 作为算法测试床，强调同一个 backbone 下 rollout 采样结构也会显著改变 tool-use 分数。
 
-因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy 和 judge 设置分别是什么。
+因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy、rollout / sampling 策略和 judge 设置分别是什么。

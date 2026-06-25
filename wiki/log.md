@@ -465,3 +465,16 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - 5 家源页(glm-5 / mimo-v2-flash / qwen3 / qwen3-vl / deepseek-v4)的 OPD 段落引用框各加一句"算法源头是 [Thinking Machines Lab On-Policy Distillation 博客]"; Qwen3 源页特别注明"Table 21 反过来被博客复现, 互为 inspiration"。
 
 证据: 7 层中第一、四层是 KL 散度标准结果, 第二、三层引 Bishop PRML / Minka 2005 / Ross 2011 DAgger 经典文献(tier 2), 第五、六、七层引博客原文(tier 1 一手出处)。本节"7 层合力解释 OPD 为什么 work"与"多 teacher 混采没闭合的边界"是本页原创综合(tier 3), 但每条子论证均有 tier 1/2 支撑。`raw/` 新增 1 个 markdown 快照(git-ignored)。
+
+
+## [2026-06-25] ingest | Agentic Reinforced Policy Optimization
+
+新增 `raw/Dong 等 - 2025 - Agentic reinforced policy optimization.pdf`（arXiv:2507.19849v1，人大 + 快手）沉淀为 agentic RL 算法页：
+
+- 新增 `wiki/sources/agentic-reinforced-policy-optimization.md`：覆盖 entropy spike 观察、entropy-based adaptive rollout、advantage attribution estimation、GPG theorem、Table 1/2/3 结果、Figure 7 tool-call efficiency 与 Figure 8 scaling 边界。
+- 新增 `wiki/concepts/agentic-reinforced-policy-optimization.md`：把 ARPO 放进 agentic 后训练谱系，明确它不是 reward/harness/system，而是「高熵工具反馈步的 rollout 采样结构」。
+- 更新 `wiki/concepts/post-training-for-agentic-models.md`、`agentic-engineering.md`、`agentic-evaluation-benchmarks.md`、`asynchronous-agent-rl.md`、`forge-agent-native-rl.md`：补 ARPO 与 GLM-5 异步 RL / Forge / Agent Swarm / benchmark 设置的层级关系。
+- 更新 `wiki/sources/qwen3.md`、`wiki/models/qwen3.md`：说明 Qwen3-8B/14B 在 ARPO 论文中只是外部后训练算法的 backbone，非 Qwen3 官方报告新增内容。
+- 更新 `wiki/index.md`：来源区与细讲模块新增 ARPO，后训练概念摘要同步。
+
+图文化：用 PyMuPDF 从原 PDF 裁出并嵌入 4 张图：Figure 3（ARPO overview）、Figure 4（adaptive rollout + advantage attribution）、Figure 7（tool-call efficiency）、Figure 8（hyperparameter scaling），均经 `get_textbox(clip)` 和 vision_analyze 核对。`raw/` 未改。

@@ -43,7 +43,7 @@ Forge 的工程优化集中解决 straggler 和重复前缀计算：
 
 ## 与其他路线的关系
 
-Forge 更像训练和系统基础设施；[Agent Swarm](agent-swarm.md) 更像模型学到的并行编排策略。两者都承认 agent 的瓶颈不只在模型参数，也在上下文、工具、轨迹调度和反馈质量。
+Forge 更像训练和系统基础设施；[Agent Swarm](agent-swarm.md) 更像模型学到的并行编排策略；[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是 rollout 采样算法，专门把探索预算投到工具反馈后的高熵 step。三者都承认 agent 的瓶颈不只在模型参数，也在上下文、工具、轨迹调度、采样结构和反馈质量。
 
 ## 待追问
 

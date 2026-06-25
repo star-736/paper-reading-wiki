@@ -34,19 +34,27 @@ RL 阶段由 [Forge](forge-agent-native-rl.md) 承载。Forge 把工具、contex
 
 PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随后退火到 0，让最终策略回到任务质量。这相当于把“是否并行、怎样并行”也变成 RL 可学习的 agent 行为。
 
+## ARPO：高熵工具调用步的 partial rollout
+
+[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 不是新模型报告，而是把 Qwen2.5 / Llama3.1 / Qwen3 等 backbone 放进多轮工具环境里比较 RL 算法。它的关键观察是：模型收到外部工具反馈后，后续前 10–50 个 token entropy 会显著上升，搜索反馈的不确定性又高于 Python 反馈。因此 ARPO 不再只做完整 trajectory-level sampling，而是在高熵工具调用步从当前节点分叉 partial rollouts，并用 advantage attribution 区分共享前缀与分叉段。
+
+这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里。
+
 ## 综合框架
 
-可以把这些报告的后训练看成五种互补能力：
+可以把这些报告的后训练看成六种互补能力：
 
 - GLM-5：如何让 agent 在真实环境中高吞吐学习。
 - MiMo-V2-Flash：如何把多个专门 teacher 的能力合成到一个 student。
 - DeepSeek-V4：如何在超长上下文和多 reasoning mode 下做稳定蒸馏与 RL。
 - MiniMax-M2：如何把 agent harness、reward、rollout、training 和 serving 组织成可扩展系统。
 - Kimi K2.5：如何把视觉、文本和并行 agent orchestration 纳入同一后训练框架。
+- ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 
 ## 待追问
 
 - 异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
+- ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
 - Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
 - “保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
 - Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
