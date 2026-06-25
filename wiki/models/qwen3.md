@@ -63,3 +63,4 @@ Qwen3 的两个**真正卖点**不在架构而在后训练：
 - 后续家族：[Qwen3-VL](qwen3-vl.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)（ARPO 用 Qwen3-8B/14B 做 deep search RL backbone；不是 Qwen3 官方报告的一部分）
+- 后续 RL optimizer：[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)（Qwen 团队后续方法论文；不是 Qwen3 2025-05 报告正文）

@@ -487,3 +487,15 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `sources/*.md` frontmatter 补 `resource` 指向对应 `raw/` PDF/博客快照；`TODO.md` 保留在 bundle 内，类型定为 `TodoList`，并移除已执行的 OKF 待办段。
 - `AGENTS.md` / `CLAUDE.md` 同步新增 OKF frontmatter 约定。
 - 体检通过：frontmatter 类型映射无缺失，Markdown 相对链接 0 断链，`wiki/assets/` 18 个文件 0 孤儿，所有 concept 文件 frontmatter 后仍有 H1。
+
+## [2026-06-25] ingest | DAPO、GSPO、SAPO policy optimization 论文
+
+新增三篇 LLM RL policy optimization 方法论文到 wiki：
+
+- `wiki/sources/dapo.md`：ByteDance Seed + 清华 AIR 的 DAPO，沉淀 Clip-Higher / Dynamic Sampling / token-level loss / Overlong Reward Shaping / DAPO-Math-17K；重排 Table 1 progressive ablation（Qwen2.5-32B AIME24 avg@32：naive GRPO 30 → DAPO 50）。
+- `wiki/sources/group-sequence-policy-optimization.md`：Qwen GSPO，把 GRPO token-level importance ratio 改为 sequence likelihood ratio / sequence-level clipping，说明 MoE expert routing 波动与 Routing Replay 负担。
+- `wiki/sources/soft-adaptive-policy-optimization.md`：Qwen SAPO，用 temperature-controlled soft gate 替代 hard clipping，说明 $\tau_{neg}>\tau_{pos}$ 与 Qwen3-VL-30B-A3B preliminary cold-start 训练结果。
+- 新增 `wiki/comparisons/llm-rl-policy-optimization.md`：按抽象层级对比 DAPO（GRPO recipe）、GSPO（sequence-level ratio）、SAPO（soft trust region）、ARPO（agentic partial rollout），避免把四者都粗糙归成“比 GRPO 好”。
+- 更新 `wiki/concepts/post-training-for-agentic-models.md`、`agentic-evaluation-benchmarks.md`、`wiki/sources/qwen3.md`、`wiki/models/qwen3.md`、`wiki/sources/qwen3-vl.md`、`wiki/models/qwen3-vl.md`、`wiki/index.md`：补 RL optimizer 谱系、Qwen/Qwen3-VL 的外部方法论文反链，并明确这些不是原模型报告正文事实。
+
+图文化：新增 `wiki/assets/dapo/`、`wiki/assets/gspo/`、`wiki/assets/sapo/` 共 13 张图，覆盖 DAPO Figure 1/2/4/5/6、GSPO Figure 1/2/3、SAPO Figure 1/2-3/4/5/6；均用 PyMuPDF clip 渲染并经 `get_textbox(clip)` + vision_analyze 核对。`raw/` 未改。

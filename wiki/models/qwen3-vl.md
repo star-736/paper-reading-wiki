@@ -52,3 +52,4 @@ LLM backbone **直接复用 [Qwen3 base 报告](../sources/qwen3.md) 释出的 8
 - LLM backbone：[Qwen3](qwen3.md)、[Qwen3 技术报告](../sources/qwen3.md)
 - 同家族多模态：[Qwen3.5-Omni 来源页](../sources/qwen3.5-omni.md)
 - 概念：[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- 后续 RL optimizer：[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)（外部方法论文，用 Qwen3-VL-30B-A3B preliminary cold-start 展示 SAPO > GSPO / GRPO-R2；不替换本模型页的源报告事实）

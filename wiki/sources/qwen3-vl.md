@@ -165,3 +165,4 @@ RL 用 3 个互补 reward：
 - LLM backbone：[Qwen3 技术报告](qwen3.md)、[Qwen3 模型页](../models/qwen3.md)
 - 同家族其他多模态：[Qwen3.5-Omni](qwen3.5-omni.md)
 - 概念：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)
+- 后续 RL optimizer：[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)（Qwen 团队后续方法论文，用 Qwen3-VL-30B-A3B preliminary cold-start 展示 SAPO > GSPO / GRPO-R2；不是本报告正文 pipeline）
