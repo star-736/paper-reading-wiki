@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Qwen3（家族基座）"
+description: "Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的 LLM 前作。"
+tags: ["model", "qwen3"]
+timestamp: 2026-06-22
+---
+
 # Qwen3（家族基座）
 
 ## 身份

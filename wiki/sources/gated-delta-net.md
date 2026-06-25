@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Gated DeltaNet 技术报告"
+description: "NVIDIA + MIT 的 ICLR 2025 论文，提出 gated delta rule（门控快速清空 + delta 定向更新互补），KDA 与 Qwen3-Next 系线性层的直接前身。"
+tags: ["source", "gated-delta-net"]
+timestamp: 2026-06-21
+resource: "../../raw/Yang%20%E7%AD%89%20-%202025%20-%20GATED%20DELTA%20NETWORKS%20IMPROVING%20MAMBA2%20WITH%20DELTA%20RULE.pdf"
+---
+
 # Gated DeltaNet 技术报告
 
 ## 来源

@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Multi-Teacher On-Policy Distillation"
+description: "MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 OPD 数学依据（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。"
+tags: ["concept", "multi-teacher-on-policy-distillation"]
+timestamp: 2026-06-06
+---
+
 # Multi-Teacher On-Policy Distillation
 
 > 想看 5 家技术报告里 OPD 的目的 / KL 形式 / pipeline 位置怎么分叉，请直接看 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)。本页以 MiMo MOPD 为骨架讲机制细节，但「数学依据」一节适用于所有走 on-policy distillation 路线的家族（MiMo / DeepSeek-V4 / Qwen3 / Qwen3-VL / GLM-5）。

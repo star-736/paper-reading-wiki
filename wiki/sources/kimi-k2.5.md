@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Kimi K2.5 技术报告"
+description: "Kimi K2.5 的 arXiv 技术报告，重点是视觉 agentic intelligence、zero-vision SFT 和 Agent Swarm。"
+tags: ["source", "kimi-k2-5"]
+timestamp: 2026-06-06
+resource: "../../raw/kimi-k2.5-2602.02276.pdf"
+---
+
 # Kimi K2.5 技术报告
 
 ## 来源

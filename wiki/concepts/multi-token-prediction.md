@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "多 Token 预测"
+description: "MTP 作为训练目标和 speculative decoding 机制。"
+tags: ["concept", "multi-token-prediction"]
+timestamp: 2026-06-06
+---
+
 # 多 Token 预测
 
 ## 定义

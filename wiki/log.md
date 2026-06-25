@@ -478,3 +478,12 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - 更新 `wiki/index.md`：来源区与细讲模块新增 ARPO，后训练概念摘要同步。
 
 图文化：用 PyMuPDF 从原 PDF 裁出并嵌入 4 张图：Figure 3（ARPO overview）、Figure 4（adaptive rollout + advantage attribution）、Figure 7（tool-call efficiency）、Figure 8（hyperparameter scaling），均经 `get_textbox(clip)` 和 vision_analyze 核对。`raw/` 未改。
+
+## [2026-06-25] refactor | 全库切到 OKF v0.1 frontmatter
+
+按 `TODO.md` 的 OKF v0.1 待办做结构性改造，正文事实不变、`raw/` 未改：
+
+- 为 52 个非保留 Markdown 文件补 OKF frontmatter：`Source` 19、`Model` 11、`Concept` 18、`Comparison` 3、`TodoList` 1；`index.md` / `log.md` 保持 OKF 保留文件形态。
+- `sources/*.md` frontmatter 补 `resource` 指向对应 `raw/` PDF/博客快照；`TODO.md` 保留在 bundle 内，类型定为 `TodoList`，并移除已执行的 OKF 待办段。
+- `AGENTS.md` / `CLAUDE.md` 同步新增 OKF frontmatter 约定。
+- 体检通过：frontmatter 类型映射无缺失，Markdown 相对链接 0 断链，`wiki/assets/` 18 个文件 0 孤儿，所有 concept 文件 frontmatter 后仍有 H1。

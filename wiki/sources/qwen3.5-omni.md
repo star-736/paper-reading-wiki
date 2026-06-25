@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Qwen3.5-Omni 技术报告"
+description: "Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。"
+tags: ["source", "qwen3-5-omni"]
+timestamp: 2026-06-21
+resource: "../../raw/Team%20-%202026%20-%20Qwen3.5-omni%20technical%20report.pdf"
+---
+
 # Qwen3.5-Omni 技术报告
 
 ## 来源

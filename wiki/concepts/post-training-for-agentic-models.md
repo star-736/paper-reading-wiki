@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Agentic 模型的后训练"
+description: "面向 agent 的 RL、MOPD、蒸馏与 ARPO 这类 step-level rollout 采样模式。"
+tags: ["concept", "post-training-for-agentic-models"]
+timestamp: 2026-06-06
+---
+
 # Agentic 模型的后训练
 
 ## 为什么后训练成为主战场

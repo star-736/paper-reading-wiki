@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Thinking Machines Lab On-Policy Distillation 博客"
+description: "Kevin Lu 2025-10-27 发表，GLM-5（ref [28]）/ MiMo MOPD 共同引用的 OPD 算法源头。Per-token reverse KL、三方对照表（SFT / RL / OPD = off-policy+dense / on-policy+sparse / on-policy+dense）、`O(1)` vs `O(N)` bits/episode 信息论分析、personalization 召回实验是 GLM-5 cross-stage distillation 思路的直接来源。"
+tags: ["source", "thinking-machines-on-policy-distillation"]
+timestamp: 2026-06-23
+resource: "../../raw/thinking-machines-on-policy-distillation-2025-10-27.md"
+---
+
 # Thinking Machines Lab On-Policy Distillation 博客
 
 ## 来源

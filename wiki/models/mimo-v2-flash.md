@@ -1,3 +1,11 @@
+---
+type: Model
+title: "MiMo-V2-Flash"
+description: "309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。"
+tags: ["model", "mimo-v2-flash"]
+timestamp: 2026-06-06
+---
+
 # MiMo-V2-Flash
 
 ## 身份

@@ -1,3 +1,11 @@
+---
+type: Comparison
+title: "On-Policy Distillation 跨报告对比"
+description: "MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage 的\"目的 / KL 形式 / pipeline 位置\"三轴对比，附 Qwen3-8B Table 21 OPD vs RL 对照。"
+tags: ["comparison", "on-policy-distillation"]
+timestamp: 2026-06-23
+---
+
 # On-Policy Distillation 跨报告对比
 
 ## 为什么开这一页

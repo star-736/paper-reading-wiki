@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "百万 Token 上下文服务"
+description: "DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse。"
+tags: ["concept", "million-token-context-serving"]
+timestamp: 2026-06-06
+---
+
 # 百万 Token 上下文服务
 
 ## 一句话定义

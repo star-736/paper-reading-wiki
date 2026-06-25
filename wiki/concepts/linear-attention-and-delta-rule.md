@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "线性注意力与 delta rule"
+description: "朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。"
+tags: ["concept", "linear-attention-and-delta-rule"]
+timestamp: 2026-06-21
+---
+
 # 线性注意力与 delta rule
 
 ## 定义

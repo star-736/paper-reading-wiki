@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Qwen3-VL 技术报告"
+description: "Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。"
+tags: ["source", "qwen3-vl"]
+timestamp: 2026-06-22
+resource: "../../raw/Bai 等 - 2025 - Qwen3-VL Technical Report.pdf"
+---
+
 # Qwen3-VL 技术报告
 
 ## 来源

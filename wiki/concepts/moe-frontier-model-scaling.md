@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "MoE 前沿模型扩展"
+description: "多篇报告中的总参数、激活参数和系统成本对比。"
+tags: ["concept", "moe-frontier-model-scaling"]
+timestamp: 2026-06-06
+---
+
 # MoE 前沿模型扩展
 
 ## 概览

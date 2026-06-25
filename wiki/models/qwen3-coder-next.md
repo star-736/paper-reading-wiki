@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Qwen3-Coder-Next"
+description: "79.7B 总参 / ~3B 激活的编码 agent 模型，基于 Qwen3-Next，3 GDN : 1 gated-attention 混合栈（已据 HF config 核实），纯文本。"
+tags: ["model", "qwen3-coder-next"]
+timestamp: 2026-06-21
+---
+
 # Qwen3-Coder-Next
 
 ## 身份

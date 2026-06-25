@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Multi-Head Latent Attention (MLA)"
+description: "MLA 的「减头 vs 压秩」定位、MHA/MQA 两种 mode，以及 DSA / CSA 为何架在它的 MQA mode 上。"
+tags: ["concept", "multi-head-latent-attention"]
+timestamp: 2026-06-20
+---
+
 # Multi-Head Latent Attention (MLA)
 
 ## 定义

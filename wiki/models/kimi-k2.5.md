@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Kimi K2.5"
+description: "1.04T 总参数 / 32B 激活参数的 multimodal agentic MoE 模型，强调 Agent Swarm。"
+tags: ["model", "kimi-k2-5"]
+timestamp: 2026-06-06
+---
+
 # Kimi K2.5
 
 ## 身份

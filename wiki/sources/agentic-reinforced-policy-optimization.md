@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Agentic Reinforced Policy Optimization（ARPO）"
+description: "人大 + 快手的 agentic RL 算法论文：发现工具反馈后 token entropy spike，用 entropy-based adaptive rollout 在高熵工具调用步分叉 partial rollouts，并用 advantage attribution 学 step-level tool-use 行为。"
+tags: ["source", "agentic-reinforced-policy-optimization"]
+timestamp: 2026-06-25
+resource: "../../raw/Dong 等 - 2025 - Agentic reinforced policy optimization.pdf"
+---
+
 # Agentic Reinforced Policy Optimization（ARPO）
 
 ## 来源

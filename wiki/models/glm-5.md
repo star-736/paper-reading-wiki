@@ -1,3 +1,11 @@
+---
+type: Model
+title: "GLM-5"
+description: "744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。"
+tags: ["model", "glm-5"]
+timestamp: 2026-06-06
+---
+
 # GLM-5
 
 ## 身份

@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Kimi Linear 技术报告"
+description: "Moonshot AI 的混合线性注意力，KDA（细粒度门 delta rule）3:1 配 Full MLA，首次在公平对比下全面追平 full attention，1M context KV 降 75%、decode 6.3×。"
+tags: ["source", "kimi-linear"]
+timestamp: 2026-06-21
+resource: "../../raw/Team%20%E7%AD%89%20-%202025%20-%20Kimi%20linear%20An%20expressive%2C%20efficient%20attention%20architecture.pdf"
+---
+
 # Kimi Linear 技术报告
 
 ## 来源

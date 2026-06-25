@@ -1,3 +1,12 @@
+---
+type: Source
+title: "MiMo-V2-Flash 技术报告"
+description: "MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。"
+tags: ["source", "mimo-v2-flash"]
+timestamp: 2026-06-06
+resource: "../../raw/mimo-v2-flash-2601.02780.pdf"
+---
+
 # MiMo-V2-Flash 技术报告
 
 ## 来源

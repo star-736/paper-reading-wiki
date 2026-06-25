@@ -1,3 +1,11 @@
+---
+type: Comparison
+title: "稀疏注意力机制对比"
+description: "DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache 等沿\"粒度 / 跨头共享 / 跨层共享\"三轴的对比。"
+tags: ["comparison", "sparse-attention-mechanisms"]
+timestamp: 2026-06-19
+---
+
 # 稀疏注意力机制对比
 
 把 2025–2026 出现的几种"natively trainable 稀疏注意力 + 推理优化"放在一起看。各方案不是相互替代，而是在三条独立的优化轴上分别下注：**选择粒度、跨头共享、跨层共享**。理解了这三条轴，再看具体方案就只是组合问题。

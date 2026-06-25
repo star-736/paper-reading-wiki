@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "高效长上下文注意力"
+description: "DSA、混合 SWA/GA、CSA 和 HCA 的对比。"
+tags: ["concept", "efficient-long-context-attention"]
+timestamp: 2026-06-06
+---
+
 # 高效长上下文注意力
 
 ## 问题

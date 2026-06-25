@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "多模态 Agentic 训练"
+description: "Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。"
+tags: ["concept", "multimodal-agentic-training"]
+timestamp: 2026-06-06
+---
+
 # 多模态 Agentic 训练
 
 ## 定义

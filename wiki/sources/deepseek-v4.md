@@ -1,3 +1,12 @@
+---
+type: Source
+title: "DeepSeek-V4 技术报告"
+description: "DeepSeek-V4 的 Hugging Face 官方 PDF，重点是百万 token 上下文效率。"
+tags: ["source", "deepseek-v4"]
+timestamp: 2026-06-06
+resource: "../../raw/deepseek-v4-hf-technical-report.pdf"
+---
+
 # DeepSeek-V4 技术报告
 
 ## 来源

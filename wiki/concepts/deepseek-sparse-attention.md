@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "DeepSeek Sparse Attention"
+description: "DSA 的长上下文稀疏选择、GLM-5 中的训练方式和 RL 稳定性问题。"
+tags: ["concept", "deepseek-sparse-attention"]
+timestamp: 2026-06-06
+---
+
 # DeepSeek Sparse Attention
 
 ## 一句话定义

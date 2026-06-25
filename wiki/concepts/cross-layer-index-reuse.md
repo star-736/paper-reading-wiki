@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "跨层索引复用"
+description: "IndexCache、Kascade、HySparse 等如何让多数层共用 anchor 层选好的 top-k 索引。"
+tags: ["concept", "cross-layer-index-reuse"]
+timestamp: 2026-06-19
+---
+
 # 跨层索引复用
 
 ## 一句话定义

@@ -1,3 +1,12 @@
+---
+type: Source
+title: "MiniMax-M2 Series 技术报告"
+description: "MiniMax-M2/M2.7 的 arXiv 技术报告，重点是低激活 MoE、Forge RL 和 self-evolution。"
+tags: ["source", "minimax-m2-series"]
+timestamp: 2026-06-06
+resource: "../../raw/minimax-m2-series-2605.26494.pdf"
+---
+
 # MiniMax-M2 Series 技术报告
 
 ## 来源

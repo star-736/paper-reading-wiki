@@ -1,3 +1,11 @@
+---
+type: Model
+title: "MiniMax-M3"
+description: "428B 总参数 / 22B 激活参数（+ 600M visual encoder）的原生 MSA 多模态 MoE 模型，配套 MSA 报告释出。"
+tags: ["model", "minimax-m3"]
+timestamp: 2026-06-19
+---
+
 # MiniMax-M3
 
 ## 身份

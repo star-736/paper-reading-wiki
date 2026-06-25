@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Agent Swarm"
+description: "Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。"
+tags: ["concept", "agent-swarm"]
+timestamp: 2026-06-06
+---
+
 # Agent Swarm
 
 ## 定义

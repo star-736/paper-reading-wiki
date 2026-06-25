@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Gated Attention 技术报告"
+description: "Qwen 团队系统消融 30 个门控变体，SDPA 输出 head-specific sigmoid 门最优（注入非线性 + 消除 attention sink），NeurIPS 2025 Best Paper，已用于 Qwen3-Next 系与 Trinity Large。"
+tags: ["source", "gated-attention"]
+timestamp: 2026-06-21
+resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20language%20models%20Non-linearity%2C%20sparsity%2C%20and%20attention-sink-free.pdf"
+---
+
 # Gated Attention 技术报告
 
 ## 来源

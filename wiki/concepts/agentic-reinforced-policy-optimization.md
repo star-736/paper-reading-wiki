@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Agentic Reinforced Policy Optimization"
+description: "ARPO 如何用工具反馈后的 entropy spike 指导 partial rollout 分叉，并做共享/分叉段 advantage attribution。"
+tags: ["concept", "agentic-reinforced-policy-optimization"]
+timestamp: 2026-06-25
+---
+
 # Agentic Reinforced Policy Optimization
 
 ## 定义

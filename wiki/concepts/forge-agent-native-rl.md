@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Forge Agent-Native RL"
+description: "MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。"
+tags: ["concept", "forge-agent-native-rl"]
+timestamp: 2026-06-06
+---
+
 # Forge Agent-Native RL
 
 ## 定义

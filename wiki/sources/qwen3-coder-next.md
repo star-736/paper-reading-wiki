@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Qwen3-Coder-Next 技术报告"
+description: "基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。"
+tags: ["source", "qwen3-coder-next"]
+timestamp: 2026-06-21
+resource: "../../raw/Cao%20%E7%AD%89%20-%202026%20-%20Qwen3-coder-next%20technical%20report.pdf"
+---
+
 # Qwen3-Coder-Next 技术报告
 
 ## 来源

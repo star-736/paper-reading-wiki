@@ -1,3 +1,12 @@
+---
+type: Source
+title: "DeepSeek-V2 技术报告"
+description: "DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。"
+tags: ["source", "deepseek-v2"]
+timestamp: 2026-06-20
+resource: "../../raw/DeepSeek-AI%20%E7%AD%89%20-%202024%20-%20DeepSeek-V2%20A%20strong%2C%20economical%2C%20and%20efficient%20mixture-of-experts%20language%20model.pdf"
+---
+
 # DeepSeek-V2 技术报告
 
 ## 来源

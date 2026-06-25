@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Qwen3-Next 官方博客"
+description: "Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。"
+tags: ["source", "qwen3-next-blog"]
+timestamp: 2026-06-21
+resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards%20Ultimate%20Training%20and%20Inference%20Efficiency%29.md"
+---
+
 # Qwen3-Next 官方博客
 
 ## 来源

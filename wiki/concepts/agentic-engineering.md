@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Agentic Engineering"
+description: "这些报告如何定义长周期软件工程和工具使用任务。"
+tags: ["concept", "agentic-engineering"]
+timestamp: 2026-06-06
+---
+
 # Agentic Engineering
 
 ## 定义

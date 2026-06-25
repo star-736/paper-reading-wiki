@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "注意力门控"
+description: "softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。"
+tags: ["concept", "attention-gating"]
+timestamp: 2026-06-21
+---
+
 # 注意力门控
 
 ## 定义

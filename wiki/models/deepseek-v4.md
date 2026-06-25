@@ -1,3 +1,11 @@
+---
+type: Model
+title: "DeepSeek-V4"
+description: "包含 DeepSeek-V4-Flash 和 DeepSeek-V4-Pro 的模型族，目标是原生 1M token 上下文。"
+tags: ["model", "deepseek-v4"]
+timestamp: 2026-06-06
+---
+
 # DeepSeek-V4
 
 ## 身份

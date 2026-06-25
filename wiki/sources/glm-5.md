@@ -1,3 +1,12 @@
+---
+type: Source
+title: "GLM-5 技术报告"
+description: "GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。"
+tags: ["source", "glm-5"]
+timestamp: 2026-06-06
+resource: "../../raw/glm-5-2602.15763.pdf"
+---
+
 # GLM-5 技术报告
 
 ## 来源

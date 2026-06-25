@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "异步 Agent RL"
+description: "GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent。"
+tags: ["concept", "asynchronous-agent-rl"]
+timestamp: 2026-06-06
+---
+
 # 异步 Agent RL
 
 ## 一句话定义

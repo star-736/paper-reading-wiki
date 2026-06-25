@@ -1,3 +1,12 @@
+---
+type: Source
+title: "DeepSeek-V3.2 技术报告"
+description: "DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。"
+tags: ["source", "deepseek-v32"]
+timestamp: 2026-06-20
+resource: "../../raw/DeepSeek-V3.2.pdf"
+---
+
 # DeepSeek-V3.2 技术报告
 
 ## 来源

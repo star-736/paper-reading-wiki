@@ -1,3 +1,11 @@
+---
+type: Concept
+title: "Agentic 评测体系"
+description: "SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas 等 benchmark 的作用和可比性风险。"
+tags: ["concept", "agentic-evaluation-benchmarks"]
+timestamp: 2026-06-06
+---
+
 # Agentic 评测体系
 
 ## 为什么单一 benchmark 不够

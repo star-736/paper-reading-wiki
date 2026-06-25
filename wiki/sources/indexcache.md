@@ -1,3 +1,12 @@
+---
+type: Source
+title: "IndexCache 技术报告"
+description: "清华 + Z.ai 在 DSA 上做跨层索引复用，1/4 retention 即可在 30B 和 GLM-5 上保留质量并拿到端到端加速。"
+tags: ["source", "indexcache"]
+timestamp: 2026-06-19
+resource: "../../raw/Bai%20%E7%AD%89%20-%202026%20-%20IndexCache%20Accelerating%20sparse%20attention%20via%20cross-layer%20index%20reuse.pdf"
+---
+
 # IndexCache 技术报告
 
 ## 来源

@@ -1,3 +1,12 @@
+---
+type: Source
+title: "Qwen3 技术报告"
+description: "Qwen 系列 2025-05 基座报告（arXiv:2505.09388），标准 GQA + RoPE + RMSNorm + MoE，36T tokens / 119 语言；后训练核心 = 统一 thinking/non-thinking 双模式 + thinking budget + Strong-to-Weak Distillation 完胜 RL（1/10 GPU 时长）。Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的基座前作。"
+tags: ["source", "qwen3"]
+timestamp: 2026-06-22
+resource: "../../raw/Yang 等 - 2025 - Qwen3 technical report.pdf"
+---
+
 # Qwen3 技术报告
 
 ## 来源

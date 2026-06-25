@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Kimi Linear"
+description: "48B 总参数 / 3B 激活参数的混合线性注意力 MoE 研究模型，KDA:MLA = 3:1，验证线性注意力可 drop-in 替换 full attention。"
+tags: ["model", "kimi-linear"]
+timestamp: 2026-06-21
+---
+
 # Kimi Linear
 
 ## 身份

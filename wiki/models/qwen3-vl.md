@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Qwen3-VL（家族）"
+description: "Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。"
+tags: ["model", "qwen3-vl"]
+timestamp: 2026-06-22
+---
+
 # Qwen3-VL（家族）
 
 ## 身份

@@ -1,3 +1,12 @@
+---
+type: Source
+title: "MiniMax Sparse Attention 技术报告"
+description: "MiniMax Sparse Attention 的 arXiv 报告，GQA-block 级稀疏 + 每个 group 独立 top-k，1M context 下 14× prefill / 7× decode。"
+tags: ["source", "msa"]
+timestamp: 2026-06-19
+resource: "../../raw/Lai%20%E7%AD%89%20-%202026%20-%20MiniMax%20sparse%20attention.pdf"
+---
+
 # MiniMax Sparse Attention 技术报告
 
 ## 来源

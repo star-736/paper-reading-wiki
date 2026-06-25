@@ -1,3 +1,11 @@
+---
+type: Comparison
+title: "2026 前沿模型技术报告对比"
+description: "GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2 和 Kimi K2.5 的横向比较。"
+tags: ["comparison", "2026-open-model-technical-reports"]
+timestamp: 2026-06-06
+---
+
 # 2026 前沿模型技术报告对比
 
 ## 范围

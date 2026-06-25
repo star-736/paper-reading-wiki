@@ -1,3 +1,11 @@
+---
+type: Model
+title: "Qwen3.5（家族）"
+description: "Qwen3.5 多模态 Hybrid MoE 家族（397B-A17B 旗舰到 0.8B dense），3 GDN : 1 gated-attention，Qwen3.5-Omni 的架构基座。"
+tags: ["model", "qwen3-5"]
+timestamp: 2026-06-21
+---
+
 # Qwen3.5（家族）
 
 ## 身份

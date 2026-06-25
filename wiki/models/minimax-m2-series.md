@@ -1,3 +1,11 @@
+---
+type: Model
+title: "MiniMax-M2 Series"
+description: "229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。"
+tags: ["model", "minimax-m2-series"]
+timestamp: 2026-06-06
+---
+
 # MiniMax-M2 Series
 
 ## 身份
