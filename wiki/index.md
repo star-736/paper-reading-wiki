@@ -29,6 +29,7 @@
 - [DAPO 技术报告](sources/dapo.md) - ByteDance Seed + 清华 AIR 等开源大规模 LLM RL 系统，四件套（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）把 Qwen2.5-32B AIME24 avg@32 从 naive GRPO 30 提到 50。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
+- [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
 
 ## 模型
 
@@ -49,7 +50,7 @@
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization 与 ARPO 这类 step-level rollout 采样模式。
-- [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制。
+- [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
 - [Any-to-any 多模态 serving](concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 代表的 omni-modal serving 范式：Thinker / Talker / Vocoder、AR LLM / DiT / encoder 等多阶段模型拆成 stage graph 独立调度与传输。
 

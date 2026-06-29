@@ -53,4 +53,5 @@ V4 OPD 选择**full-vocabulary logit distillation**而非 token-level KL estimat
 
 - 架构能力强但复杂；报告本身也把架构简化列为未来方向。
 - 当前来源不是 arXiv，后续如果出现 arXiv 版本或新 revision，需要更新来源页和日志。
+- **生产 serving 的 speculative decoding 已被 DSpark 替换**：报告原文写 MTP depth=1，但 V4 preview 上线两周后 [DSpark](dspark.md)（semi-AR drafter + confidence-scheduled verification，PKU + DeepSeek-AI 后续论文）整体取代了 MTP-1，V4-Flash per-user 速度 +60–85%、V4-Pro +57–78%。当前 deepseek.com 服务背后跑的就是 DSpark，不是 V4 本报告里的 MTP-1。
 

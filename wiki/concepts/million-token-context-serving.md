@@ -57,5 +57,6 @@ GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregatio
 - shared prefix 是否能避免重复 prefill；
 - SWA/CSA/HCA 的 cache policy 是否一致；
 - 长上下文 RL 和 OPD 是否能承受数据与内存压力；
-- 推理中断后是否能正确恢复，而不引入 length bias。
+- 推理中断后是否能正确恢复，而不引入 length bias；
+- **speculative decoding 是否能承受高并发**：[DSpark](../sources/dspark.md) 在 V4 生产端替换 MTP-1 显示，静态多 token drafter 在长 context + 高并发下反而拖垮吞吐；需要 confidence-scheduled、随负载在线截断的 verification 才能把"长 draft block 的高 acceptance"翻译成实际加速。这一档是 1M context 主张能落到用户感知速度的最后一公里。
 

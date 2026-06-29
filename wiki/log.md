@@ -510,3 +510,13 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - 图文化：从原 PDF 裁出并嵌入 Figure 3（vLLM-Omni architecture）、Figure 4（Qwen2.5-Omni stage graph）、Figure 5（unified connector）、Figure 6（Qwen-Omni end-to-end results）、Figure 8（DiT-based results），均经 `get_textbox(clip)` 与 vision_analyze 核对。
 
 `raw/` 新增 1 个 PDF + 1 个博客快照；既有 raw 未改。
+
+## [2026-06-29] ingest | DSpark 技术报告
+
+新增 `raw/DSpark_paper.pdf`（PKU + DeepSeek-AI，5 人共同一作，提出 DSpark = semi-AR drafter + confidence-scheduled verification）沉淀为 speculative decoding / 生产 serving 主题页：
+
+- 新增 `wiki/sources/dspark.md`：覆盖 (a) semi-AR 结构（DFlash parallel backbone + Markov/RNN head 注入 intra-block 转移，保留 per-token exact softmax 以满足 lossless rejection sampling），(b) confidence head + Sequential Temperature Scaling（用累积乘积的 ECE 做位置 1→γ 顺序校准），(c) hardware-aware prefix scheduler（按 profile 出的 SPS(B) 表把"验多长"做成全局吞吐最大化，配合早停保 lossless），(d) 训练目标（w_k=exp(-(k-1)/γ) 位置权 + L_tv 直接最小化总变差 ≡ 最大化期望接受率），(e) 生产部署对照 MTP-1 的 +60–85% / +57–78% per-user 速度 + 严格 SLA 下 Pareto 外推（论文自己也对"6.6×/5.0×"这类极端比值做了诚实降级解读），(f) HAI-LLM 工程细节（hidden-state-only target 通信、anchor-bounded sequence packing、异步 scheduler 顺便放开全局贪心 early stop、变长 verification 只需改 index-attention/compress kernel）。
+- 关键反向链接：DSpark 是 [DeepSeek-V4](models/deepseek-v4.md) 生产端 MTP-1 的实际替代品，V4 preview 上线两周后切换——`sources/deepseek-v4.md` 待追问、`models/deepseek-v4.md` 架构段与相关页面、`concepts/multi-token-prediction.md` 新增「当 MTP-1 不够：DSpark 接管」段 + V4 行重写、`concepts/million-token-context-serving.md` 关键判断加 speculative decoding 一档全部接上。
+- 图文化：用 PyMuPDF 裁出并嵌入 3 张图，全部经 `page.get_textbox(clip)` 核对：Figure 1（架构 + 解码循环：A B C → D anchor → parallel backbone EFGH + sequential block + confidence c1-c4 → scheduler keep EFG/drop H → target 验证）、Figure 2（position-wise conditional acceptance：揭示"parallel drafter 反胜 autoregressive drafter"的反直觉现象 = 位置 1 容量优势 + DFlash suffix decay + DSpark 同时拿到两边）、Figure 7（V4-Flash/V4-Pro live traffic 下 throughput-TPS Pareto 前沿外推）。
+- `wiki/index.md` 来源区第 33 条新增 DSpark；概念区 MTP 行摘要更新。
+- 证据：所有机制结论均按 `raw/DSpark_paper.pdf` § 标号校验——semi-AR (§3.1 公式 4-6)、confidence + STS (§3.2.1 公式 7-8 + Figure 6)、scheduler (§3.2.2 Algorithm 1 + 附录 A 因果性反例)、训练 (§3.3 公式 9-12)、生产 (§5.1-5.4 + Figure 7-8)。"DSpark 替换 MTP-1"出自 §5.4 原文 "MTP-1 represents the former production setup, having been superseded by DSpark two weeks following the DeepSeek-V4-preview release."。`raw/` 未改。
