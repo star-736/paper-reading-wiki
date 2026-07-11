@@ -10,7 +10,7 @@ timestamp: 2026-06-06
 
 ## 范围
 
-本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Gemma 4](../sources/gemma-4.md) 和 [Seed2.0](../sources/seed2.md)。
+本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[GLM-5V-Turbo](../sources/glm-5v-turbo.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Gemma 4](../sources/gemma-4.md) 和 [Seed2.0](../sources/seed2.md)。
 
 注：Seed2.0 是 Model Card 而非技术报告，不含架构/训练/参数量信息，因此下表对应列为空白。其价值在部署洞察和评测框架，见 [Seed2.0 Model Card](../sources/seed2.md)。
 
@@ -19,12 +19,14 @@ timestamp: 2026-06-06
 | 模型 | 主要目标 | 规模 | 上下文 | 注意力策略 | 后训练重点 |
 | --- | --- | --- | --- | --- | --- |
 | GLM-5 | Agentic engineering 与 ARC 能力 | 744B / 40B active | SFT 到 202,752 tokens | MLA backbone 上的 DSA | 异步 agent RL、reasoning RL、general RL、cross-stage distillation |
+| GLM-5V-Turbo | Native multimodal agent（感知即推理） | 未披露 | 未披露 | CogViT + MMTP + GLM-5-Turbo backbone | 30+ 类别多模态联合 RL、agent 框架集成（Claude Code / AutoClaw） |
 | MiMo-V2-Flash | 在紧凑激活规模下获得快速 reasoning 与 agentic 能力 | 309B / 15B active | 32K native，256K extended | 128-token SWA 的 5:1 hybrid SWA/GA | MOPD multi-teacher on-policy distillation |
 | DeepSeek-V4 | 高效百万 token 上下文智能 | Flash 284B / 13B active；Pro 1.6T / 49B active | 1M native target | hybrid CSA/HCA compressed attention | reasoning modes、tool-use formats、超长上下文 RL/OPD 基础设施 |
 | MiniMax-M2 / M2.7 | 低激活 MoE 的真实 agent 任务能力 | 229.9B / 9.8B active | 192K native | full attention with GQA | Forge agent-native RL、interleaved thinking、self-evolution |
 | Kimi K2.5 | 视觉 agentic intelligence 与并行 agent 编排 | 1.04T / 32B active | 评测常用 256K | Kimi K2 MoE + MoonViT-3D | zero-vision SFT、joint multimodal RL、PARL Agent Swarm |
 | Gemma 4 | 效率导向的多模态 dense + MoE | E2B 2.3B / E4B 4.5B / 12B / 26B-A4B / 31B | 128K+ | 5:1 hybrid SWA/GA + key-as-value + p-RoPE + KV Sharing | thinking mode、QAT 量化、MTP drafter |
 | Seed2.0 | 面向大规模生产部署的多模态模型族 | 未披露（Pro/Lite/Mini 三档） | 未披露 | 未披露 | 未披露（Model Card 不含训练细节） |
+| Ling-2.6 / Ring-2.6 | 万亿参数 agentic 双线（instant + thinking） | flash ~104B/~5B；1T ~1T/~8B | 256K | 7:1 Lightning Attention + MLA（retrofit from GQA） | Ling: specialization-then-distillation + token efficiency；Ring: KPop RL + 异步 RL |
 
 ## 主综合
 
@@ -59,6 +61,8 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 - Kimi K2.5 认为视觉-文本联合训练与并行 sub-agent 编排可以共同提升 agentic 工作流。
 - Gemma 4 认为效率优先于规模--用 SWA/GA 混合 + KV 侧压缩（而非内容稀疏）即可在 128K 级上下文达到竞争力，用 encoder-free 架构消除多模态的编码器开销，用 QAT + MTP drafter 把部署成本压到端侧可承受。
 - Seed2.0 认为 model card 的价值在于真实部署洞察和评测框架而非架构披露--MaaS 使用分布揭示前端开发和 bug fixing 占 agentic coding 主导，四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）把"real-world complexity"操作化，定价比 frontier 模型低一个数量级以推动大规模企业部署。
+- GLM-5V-Turbo 认为多模态感知是 agent 能力的核心组件而非辅助接口--CogViT + MMTP + 30+ 类别多模态联合 RL，配合三个 design lens（感知是天花板 / 分层优化 / 清晰规格+可靠验证+受控评测），把 agentic engineering 从文本扩展到图像、视频、GUI、文档、网页。加视觉未侵蚀文本 coding（CC-Backend/CC-RepoExploration 反超纯文本基座 GLM-5-Turbo）。
+- Ling-2.6 / Ring-2.6 认为**不必从头训练也能换架构**——从已投入 20T tokens 的 GQA checkpoint 经四阶段 smooth retrofit 迁移到 7:1 hybrid linear attention + MLA，配合 token efficiency 后训练（~4× token efficiency）和 KPop 异步 agentic RL，在万亿参数规模同时拿下效率、token 质量和 agentic 能力。其双线设计（Ling instant / Ring thinking）把"快速响应"和"深度推理"解耦为两个优化目标。
 
 这意味着后续比较不应只看 SWE-bench 或 HLE 分数，而要比较“模型 + agent harness + context strategy + serving system”的整体能力。
 

@@ -21,11 +21,13 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | 模型 | MTP 角色 | 细节 |
 | --- | --- | --- |
 | [GLM-5](../models/glm-5.md) | 训练 + speculative decoding + RL rollout 加速 | 使用参数共享的 MTP 层，报告称在私有 prompt 集上 acceptance length 为 2.76。 |
+| [GLM-5V-Turbo](../models/glm-5v-turbo.md) | 多模态 MTP（MMTP） | 扩展到图像 token：用共享 learnable `<\|image\|>` token 替代视觉 embedding 传入 MTP head，避免跨 pipeline-parallel 阶段传播视觉 embedding。0.5B 消融显示比直接传视觉 embedding 训练 loss 更低、收敛更稳（MTP head 轻量，难以吸收与文本 embedding 分布差异大的视觉表示）。 |
 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) | 明确作为部署加速模块 | 每个 MTP block 0.33B；3-layer MTP 在 16K 输入 / 1K 输出测试中约 1.86-2.70x 加速。 |
 | [DeepSeek-V4](../models/deepseek-v4.md) | 继承 DeepSeek 系列设计 + 生产端已被 DSpark 替换 | Flash 和 Pro 的报告原文 MTP depth=1（即沿用 V3/V3.2 single-token MTP）；但 V4 preview 上线**两周后**，生产 serving 引擎里 MTP-1 已被 **[DSpark](../sources/dspark.md)**（semi-AR drafter + confidence-scheduled verification）替换，per-user 生成速度 +60–85%。MTP-1 之所以一直没扩到 MTP-3/5，是因为静态多 token drafter 在高并发下吞吐严格下降--这正是 DSpark hardware-aware scheduler 解决的问题。 |
 | [MiniMax-M2 Series](../models/minimax-m2-series.md) | 预训练信号 + speculative decoding + Forge rollout 加速 | 预训练先用单 MTP module，继续预训练阶段通过权重复制扩展到 3 个 MTP modules。 |
 | [Gemma 4](../models/gemma-4.md) | Speculative decoding drafter | 4 层小 Transformer drafter，通过 **cross-attention 复用主模型 KV cache**（而非复制 KV），无需 MTP prefill，支持任意 draft 长度。E2B/E4B 用 top-k on token clusters 把最终投影从 d×262k 降到 d×4k。dim 256（小模型）/ 1024（大模型）。 |
 | [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) | 推测解码（block-diffusion drafter） | DFlash：~90.7M / 5 层 draft model（从 target 最后 5 层初始化），block size B=16，用 joint FlexAttention block-diagonal mask 一次 forward 训练 K=16 个 draft block。Transformers 6.37× / vLLM 2.14× 加速。输出越长加速越明显（表格 > 公式 > 文本），因结构化 OCR 输出局部规律性强、draft 接受率高。 |
+| [Ling-2.6](../models/ling-2.6.md) | 继续训练 MTP + 参数共享 | post-training 阶段引入两个额外 MTP 层继续训练。MTP-3-share（参数共享 + 仅第一层梯度回传 base model）accept length 从 MTP-1 的 2.71 提升到 3.31。发现仅第一层 MTP 预测所有后续 token 也有改善，说明新引入的 MTP 层训练不足，参数共享 + 梯度隔离是有效的补偿。配合 linghe fused-kernel，FP8 BS=1 下 MTP+linghe 比 baseline +119%。 |
 
 ## MiMo 的经验
 

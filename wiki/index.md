@@ -7,6 +7,7 @@
 ## 来源
 
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。
+- [GLM-5V-Turbo 技术报告](sources/glm-5v-turbo.md) - GLM-5V-Turbo 的 arXiv 报告，重点是 CogViT 视觉编码器、MMTP、30+ 类别多模态 RL 和 agent 框架集成（Claude Code / AutoClaw）。
 - [MiMo-V2-Flash 技术报告](sources/mimo-v2-flash.md) - MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。
 - [DeepSeek-V2 技术报告](sources/deepseek-v2.md) - DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。
@@ -48,6 +49,7 @@
 ## 模型
 
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
+- [GLM-5V-Turbo](models/glm-5v-turbo.md) - GLM-5 家族的多模态 agent 基座模型，CogViT + MMTP + 30+ 类别多模态联合 RL，多模态（文本 + 图像 + 视频 + GUI + 文档 + 网页）。
 - [MiMo-V2-Flash](models/mimo-v2-flash.md) - 309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。
 - [DeepSeek-V4](models/deepseek-v4.md) - 包含 DeepSeek-V4-Flash 和 DeepSeek-V4-Pro 的模型族，目标是原生 1M token 上下文。
 - [MiniMax-M2 Series](models/minimax-m2-series.md) - 229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。

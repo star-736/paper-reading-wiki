@@ -40,4 +40,5 @@ GLM-5 的差异点不只是模型规模，而是完整 agent stack：长上下�
 - [DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
+- [GLM-5V-Turbo](glm-5v-turbo.md) - GLM-5 家族的多模态扩展
 - [2026 开放模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

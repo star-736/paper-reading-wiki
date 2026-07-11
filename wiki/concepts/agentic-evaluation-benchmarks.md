@@ -41,6 +41,13 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | PinchBench | OpenClaw 框架下的 agentic tool-use benchmark | KAT-Coder-V2/V2.5、GLM-5、MiniMax M2.7 等用来测真实 agent 任务执行效率。 |
 | Claw-Eval | autonomous agent 评测 | KAT-Coder-V2 用来测 OpenClaw 框架下的 pass@3 和 average score。 |
 | NL2Repo-Bench | 从自然语言规范端到端构建完整软件仓库，测试长周期 repository 构建、跨文件一致性和依赖管理 | Seed2.0 Model Card 新建，归入 Vibe Coding 评测维度。Seed2.0 Pro 仅 27.9，落后 GPT-5.2（49.3）和 Claude-Opus-4.5（43.2），被报告列为优先改进方向。 |
+| ImageMining | 视觉中心深度搜索，要求多步工具调用主动挖掘视觉输入（局部裁剪放大再搜索） | GLM-5V-Turbo 自建，217 测试用例 / 7 领域 / 5 类推理，核心约束 \"Visual Jump\" 强制中间推理涉及视觉转换。GLM-5V-Turbo 30.7 vs Kimi K2.5 24.4。 |
+| BrowseComp-VL | 视觉版网页浏览深度搜索 | GLM-5V-Turbo 51.9 vs Kimi K2.5 42.9 vs Claude Opus 4.6 35.9。 |
+| Design2Code | 从设计图生成前端代码 | GLM-5V-Turbo 94.8，超过 Kimi K2.5（91.3）和 Claude Opus 4.6（77.3）。 |
+| Vision2Web | 端到端视觉网站开发，任务规格含 PRD/mockup/reference page，用 workflow-based verification | GLM-5V-Turbo 31.0，弱于 Claude Opus 4.6（43.5）和 Kimi K2.5（33.2）——报告将此归因于 Claude 的更强代码生成能力。 |
+| MMSearch / MMSearch-Plus | 多模态搜索 / 带来源溯源的多模态搜索 | GLM-5V-Turbo MMSearch 72.9 / MMSearch-Plus 30.0，前者较 GLM-4.6V 近八倍提升。 |
+| AndroidWorld | Android GUI 环境中的动态 agent 任务 | GLM-5V-Turbo 75.7 vs Kimi K2.5 43.1 vs Claude Opus 4.6 62.0。 |
+| WebVoyager | 端到端 web agent | GLM-5V-Turbo 88.5 vs Kimi K2.5 84.3 vs Claude Opus 4.6 88.0。 |
 | Ainstain Bench | 科学计算编程，测试模型能否实现和操控科研工作流中的计算程序 | Seed2.0 Model Card 新建，归入 Science Discovery 评测维度。Seed2.0 Pro 47.7，超过 GPT-5.2（41.3）和 Claude-Sonnet-4.5（33.7）。 |
 | GDPVal-Verified | GDPVal 的可靠子集 + rubric 自动评测，面向端到端真实世界任务 | Seed2.0 Model Card 新建，归入 Real-World Tasks 评测维度。 |
 
@@ -83,4 +90,6 @@ GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 c
 
 因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy、rollout / sampling 策略、policy optimization 算法、reward / judge 设置分别是什么。
 
-LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%——loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。
+LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%--loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。
+
+JoyAI-VL-Interaction 则展示了另一种评测思路：**不跑 offline benchmark，直接与真实部署产品做 head-to-head 人工盲评**。它选了 Doubao 和 Gemini 的视频通话功能作为 baseline，在 6 个 event-driven 场景（监控告警 / 实时计数 / 实时翻译 / 时间感知 / 实时解说 / 长程记忆）58 个 case 上让 5 名 LLM 研究者盲评 quality + timing 两轴。这种方法的核心论点是：流式交互场景的关键维度（是否在正确时刻行动）无法被 offline video-understanding benchmark 捕捉，只有与真实 turn-based 产品在 live event-driven 设置中对打才能暴露"turn-based 结构性缺陷"这一范式差距。详见 [JoyAI-VL-Interaction 来源页](../sources/joyai-vl-interaction.md)。

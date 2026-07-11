@@ -724,3 +724,25 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：MiniCPM-o 4.5 是首个全双工全模态 LLM（9B），核心创新在交互范式而非单模态能力。Omni-Flow 框架用时分复用式时间窗口（1.0s chunk，LS 控制 + explicit boundary 最优）把感知与生成在 token-level 持续耦合。关键架构决策：LLM 只生成文本 token（3-4 step/s），语音 token 委托给 ~0.3B speech decoder。TAIL 策略考虑累积播放进度做自适应文本-语音交错。四阶段渐进训练（冻结→联合→SFT→RL）。9B 接近 Gemini 2.5 Flash，全模态超 Qwen3-Omni-30B-A3B，INT4 端侧 < 12GB。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验。
+
+## [2026-07-11] ingest | GLM-5V-Turbo 技术报告
+
+`raw/2604.26752v3.pdf`（arXiv:2604.26752v3, Z.ai & Tsinghua University, 2026-04）。
+
+新增：
+
+- `wiki/sources/glm-5v-turbo.md`：来源页（图文交错）。嵌入 Figure 1（CogViT 与 SigLIP2-SO / DFN-H / MetaCLIP2-H 零样本对比，403M 超 427M–632M 竞品）、Figure 4（多模态 coding / tool-use / GUI agent benchmark 对比 GLM-5V-Turbo / Kimi K2.5 / Claude Opus 4.6）、Figure 5（文本 coding / Claw agent benchmark 对比，含纯文本基座 GLM-5-Turbo）。Table 1 工具集 + Table 2 官方 skill 转散文。评测数据两表转 Markdown。待追问 6 条（参数量/backbone 架构未披露、CogViT-projector 连接方式、MMTP 与 GLM-5 参数共享 MTP 关系、relative visual policy optimization 算法形式、RL 任务清单、ImageMining 开源状态）。
+- `wiki/models/glm-5v-turbo.md`：模型页。关键事实表含模态=多模态（已据报告原文 Abstract + § 1 核实）。总参数/激活参数/训练量标注"报告未披露"。
+- `wiki/assets/glm-5v-turbo/`：fig1-cogvit-performance.png, fig4-multimodal-eval.png, fig5-coding-claw-eval.png
+
+更新：
+
+- `wiki/concepts/multimodal-agentic-training.md`：新增「跨报告信号」段，加 GLM-5V-Turbo 行（CogViT + 30+ 类别多模态 RL + RL 跨域干扰弱于 SFT + 三个 design lens + RL 基础设施与 GLM-5 异步 agent RL 的传承关系）。
+- `wiki/concepts/multi-token-prediction.md`：MTP 表加 GLM-5V-Turbo 行（MMTP：共享 learnable `<|image|>` token 方案，避免跨 pipeline-parallel 传播视觉 embedding，0.5B 消融更稳）。
+- `wiki/concepts/agentic-engineering.md`：跨报告信号加 GLM-5V-Turbo 行（多模态 agentic engineering + 三个 design lens + Vision2Web 规格扩展 + workflow-based verification）。
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表加 7 行（ImageMining / BrowseComp-VL / Design2Code / Vision2Web / MMSearch-Plus / AndroidWorld / WebVoyager）。
+- `wiki/comparisons/2026-open-model-technical-reports.md`：范围段 + 对比表 + 二版综合各加 GLM-5V-Turbo。
+- `wiki/models/glm-5.md`：相关页面加 GLM-5V-Turbo 反向链接。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：GLM-5V-Turbo 是 GLM-5 家族的多模态扩展（基座 GLM-5-Turbo），定位 native multimodal agent。报告刻意不披露参数量/训练量，主轴是五条线（模型设计 / 多模态训练 / RL / 工具链 / agent 框架集成）+ 三个 design lens（感知是天花板 / 分层优化 / 清晰规格+可靠验证+受控评测）。CogViT 两阶段预训练（distillation MIM + contrastive IT）以 403M 超 427M–632M 竞品。MMTP 用共享 `<|image|>` token 解决多模态 MTP 的图像 token 传递问题。30+ 类别多模态联合 RL 观察到 RL 跨域干扰弱于 SFT。加视觉未侵蚀文本 coding（CC-Backend/CC-RepoExploration 反超 GLM-5-Turbo）。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验 + `vision_analyze` 交叉确认。
