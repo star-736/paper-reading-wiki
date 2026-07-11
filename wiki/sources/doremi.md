@@ -124,4 +124,5 @@ $$\min_\theta \max_{\alpha \in \Delta^k} L(\theta, \alpha) := \sum_{i=1}^k \alph
 ## 相关页面
 
 - [Qwen3 技术报告](../sources/qwen3.md) — Qwen3 的 instance-level data mixture（用轻量标注器按 instance 而非 domain 优化数据混合）是 DoReMi domain-level reweighting 的更细粒度演进路线。
-- [数据混合优化](../concepts/data-mixture-optimization.md) — DoReMi 所属的方法论谱系：从启发式 → Group DRO → 回归预测 → bi-level optimization。
+- [TANDEM 技术报告](tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进：动态 reference model 替代静态 reference，$O(T^{-1/4})$ 收敛保证，在 data-restricted 和 SFT 场景显著优于 DoReMi。
+- [数据混合优化](../concepts/data-mixture-optimization.md) — 方法论谱系：从启发式 → Group DRO → 回归预测 → bi-level optimization。

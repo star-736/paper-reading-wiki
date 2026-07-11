@@ -44,7 +44,9 @@ RegMix（ICLR 2025，Sea AI Lab）彻底改变了优化策略：训练 512 个 1
 
 ### TANDEM：twin network 的 bi-level 路线
 
-TANDEM（NeurIPS 2025）把 bi-level optimization 简化为 single-level penalized form，用 twin network（proxy model + 动态更新的 reference model）测量 data efficacy：两个模型的差值反映 domain 的边际收益，upweight 收益高的 domain。理论上比 DoReMi 更通用，还能处理 data-restricted 和 SFT 场景。
+[TANDEM](../sources/tandem.md)（NeurIPS 2025，JD.com + Oxford + 人大）把 bi-level optimization 简化为 single-level penalized form，用 twin network（proxy model + 动态 reference model）测量 domain 的边际收益。关键创新是每个 episode 同步初始化 twin model（$w_0 = u_0$），然后各自 probing $K$ 步，用 loss 差更新 domain weights。理论上比 DoReMi 更通用（$O(T^{-1/4})$ 收敛保证），还能处理 data-restricted 和 SFT 场景。
+
+TANDEM 的核心洞察是：数据充足时 uniform weighting 已近最优（Proposition 1：generalization gap 趋零时 uniform 是 bi-level 问题的有效解），reweighting 的价值在 data-restricted（小 domain 过拟合）和 SFT（样本多次访问导致泛化 gap）场景才凸显。在 data-restricted 实验中，DoReMi 反而恶化（36.91 vs Uniform 31.53），TANDEM 显著改善（28.07）。
 
 ### 产业实践：instance-level 超越 domain-level
 
@@ -64,4 +66,5 @@ TANDEM（NeurIPS 2025）把 bi-level optimization 简化为 single-level penaliz
 ## 相关页面
 
 - [DoReMi](../sources/doremi.md) — Group DRO 路线的开创性工作
+- [TANDEM](../sources/tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进
 - [Qwen3 技术报告](../sources/qwen3.md) — instance-level data mixture 的产业实践

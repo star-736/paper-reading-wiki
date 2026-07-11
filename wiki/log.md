@@ -531,3 +531,14 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `wiki/index.md` 来源区 +1 条、概念区 +1 条。
 
 图文化：用 PyMuPDF 从原 PDF 裁出并嵌入 7 张图：Figure 1（三步流程）、Figure 2（加速效果）、Figure 3（下游准确率）、Figure 4（per-domain perplexity）、Figure 5（跨尺度）、Figure 6（消融）、Figure 8（domain weight 轨迹），均经 `get_textbox(clip)` + vision_analyze 核对。`raw/` 未改。
+
+## [2026-07-11] ingest | TANDEM 论文
+
+新增 `raw/TANDEM-bi-level-data-mixture-2606.04401.pdf`（arXiv:2606.04401, NeurIPS 2025, JD.com + Oxford + 人大）：
+
+- 新增 `wiki/sources/tandem.md`：覆盖 bi-level formulation -> penalized single-level form -> twin network 更新规则、与 DoReMi/DoGE 的 hyper-gradient 对比（Table 1）、三场景实验（data-abundant / data-restricted / SFT）、Proposition 1（数据充足时 uniform 是最优解）、收敛定理 O(T^{-1/4})、synchronization 与 probing K 的消融。
+- 更新 `wiki/concepts/data-mixture-optimization.md`：TANDEM 段从概述升级为详细描述，加 source 链接。
+- 更新 `wiki/sources/doremi.md`：相关页面加 TANDEM 反向链接。
+- `wiki/index.md` 来源区 +1 条。
+
+图文化：原 PDF 嵌入字体损坏（MuPDF `FT_New_Memory_Face: broken file`），Figure 1/3/5 的文字标签渲染为乱码，无法嵌入可用图。页面以 prose + Markdown table 代替（Table 1 hyper-gradient 对比、Table 3 实验结果、Table 2 复杂度对比均 re-typeset 为 Markdown table）。`raw/` 未改。
