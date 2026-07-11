@@ -85,7 +85,8 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
   > Figure 1（原文截图，§ 架构）：\"Visualization of the (hybrid) architecture and block design of Gated DeltaNet models. Gated DeltaNet-H1 and H2 use Gated DeltaNet + SWA and Mamba2 + Gated DeltaNet + SWA patterns, respectively.\"
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA，2025）**：本 wiki 首篇线性注意力路线报告。KDA 是 GDN 的细粒度门升级（head-wise 标量门 → channel-wise $\mathrm{Diag}(\alpha_t)$）；模型层面用 **3:1 layerwise 混合**（3 KDA : 1 Full MLA），首次让混合线性注意力在公平对比下全面追平/超过 full attention，1M context KV cache 降 75%、decode 吞吐 6.3×。
-- **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**——用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合。Qwen3-Next 无技术报告，但[官方博客](../sources/qwen3-next-blog.md)把这条设计讲明白了：3:1 是「**75% layers use Gated DeltaNet, 25% keep standard attention**」的官方原话（不只是 HF config `layer_types` 推断），选 GDN 的理由是「systematic experiments」下它的 **in-context learning 强于 Sliding Window Attention 或 Mamba2**；全局 attention 层加 output gating 是为「eliminate Attention Sink and Massive Activation」。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
+- **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**--用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合。Qwen3-Next 无技术报告，但[官方博客](../sources/qwen3-next-blog.md)把这条设计讲明白了：3:1 是「**75% layers use Gated DeltaNet, 25% keep standard attention**」的官方原话（不只是 HF config `layer_types` 推断），选 GDN 的理由是「systematic experiments」下它的 **in-context learning 强于 Sliding Window Attention 或 Mamba2**；全局 attention 层加 output gating 是为「eliminate Attention Sink and Massive Activation」。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
+- **[InternVLA-A1.5](../models/internvla-a1.5.md)（上海 AI Lab，2026-07，VLA 机器人操作）**：GDN 混合注意力跨出语言/多模态对话、进入**机器人实时控制**领域的采用证据。该模型用 Qwen3.5 2B（3:1 GDN:full attention）做 VLM backbone，处理多视角图像 token 序列做机器人操作决策。GDN 降 KV-cache I/O 的价值在实时控制的多视角图像序列场景同样成立。论文明写 backbone "employs an efficient hybrid attention mechanism that interleaves 3 Gated DeltaNet linear attention layers with 1 standard full attention layer"（§ 2，原文确证）。这是 GDN 作为通用 token mixer（不只服务于语言模型）的信号。
 - **混合而非纯线性**：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next 保留 1/4 的全局 gated attention 层维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。
 - **门的两种含义别混**：线性注意力里的「门」（GDN/KDA 的遗忘门 $\alpha_t$）控制 RNN 状态记忆寿命；softmax 注意力里的「门」（见 [注意力门控](attention-gating.md)）是给 SDPA 输出注入非线性 + 去 attention sink。同名不同事。
 
@@ -104,9 +105,9 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
 ## 相关页面
 
-- 来源：[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)
+- 来源：[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）
 - [注意力门控](attention-gating.md)
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（Kimi Linear 的全局层底座）
 - [高效长上下文注意力](efficient-long-context-attention.md)
 - [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)（正交的另一条路线）
-- 模型：[Kimi Linear](../models/kimi-linear.md)
+- 模型：[Kimi Linear](../models/kimi-linear.md)、[InternVLA-A1.5](../models/internvla-a1.5.md)（VLA 机器人，用 Qwen3.5 backbone）

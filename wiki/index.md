@@ -33,6 +33,9 @@
 - [DoReMi](sources/doremi.md) - Google DeepMind + Stanford 的 NeurIPS 2023 论文：用 280M proxy model 跑 Group DRO 优化 domain weights（仅 8% 额外 FLOPs），让 8B 模型预训练加速 2.6x，所有 domain perplexity 改善，不需下游任务知识。
 - [TANDEM](sources/tandem.md) - JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy + 动态 reference）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。
 - [Gemma 4 技术报告](sources/gemma-4.md) - Google DeepMind 的 Gemma 4 arXiv 报告，原生多模态 dense + MoE 家族（E2B~31B），重点是 encoder-free 12B、5:1 SWA/GA + key-as-value + p-RoPE 长上下文、MTP drafter 和 QAT 量化。
+- [InternVLA-A1.5 技术报告](sources/internvla-a1.5.md) - 上海 AI Lab 的统一 VLA 机器人模型，Qwen-3.5 2B backbone + 460M unified expert + latent foresight（frozen WAN2.2 蒸馏），6 项仿真 benchmark 全部最优。
+- [HunyuanOCR-1.5 技术报告](sources/hunyuan-ocr-1.5.md) - 腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，DFlash block-diffusion 推测解码（Transformers 6.37× / vLLM 2.14×）+ Agentic Data Flow 数据构造 + 三组件 reward RL。
+- [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
 
 ## 模型
 
@@ -48,6 +51,8 @@
 - [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的 LLM 前作。
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
+- [InternVLA-A1.5](models/internvla-a1.5.md) - 上海 AI Lab 统一 VLA 机器人模型，Qwen-3.5 2B（3:1 GDN:full attention）做 backbone + 460M unified expert + latent foresight，GDN 混合注意力在机器人控制领域的采用。
+- [HunyuanOCR-1.5](models/hunyuan-ocr-1.5.md) - 腾讯轻量端到端 OCR VLM（1B），DFlash block-diffusion 推测解码 + Agentic Data Flow 数据构造，OmniDocBench v1.6 总分 94.74。
 
 ## 概念
 
@@ -66,7 +71,7 @@
 - [Agentic Reinforced Policy Optimization](concepts/agentic-reinforced-policy-optimization.md) - ARPO 如何用工具反馈后的 entropy spike 指导 partial rollout 分叉，并做共享/分叉段 advantage attribution。
 - [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。
 - [百万 token 上下文服务](concepts/million-token-context-serving.md) - DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse。
-- [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas 等 benchmark 的作用和可比性风险。
+- [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、UniClawBench 等 benchmark 的作用和可比性风险；含 UniClawBench 的 capability-driven / 三角色闭环差异化定位。
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
 - [Agent Swarm](concepts/agent-swarm.md) - Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。
 - [多模态 Agentic 训练](concepts/multimodal-agentic-training.md) - Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。

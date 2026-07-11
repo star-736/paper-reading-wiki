@@ -43,3 +43,4 @@ Qwen3.5 把 Qwen3-Next 引入的「3 GDN : 1 gated-attention」混合栈推到�
 - 概念：[注意力门控](../concepts/attention-gating.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)
 - 同家族：[Qwen3-Coder-Next](qwen3-coder-next.md)（Qwen3-Next 的编码变体）
 - 同思路对照：[Kimi Linear](kimi-linear.md)（全局层用 MLA）
+- 作为 backbone 被采用：[InternVLA-A1.5](internvla-a1.5.md)（VLA 机器人模型，用 Qwen-3.5 2B 做 VLM backbone）

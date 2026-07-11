@@ -565,3 +565,49 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `index.md`：来源段和模型段各加一条
 
 核心发现：Gemma 4 走效率优先路线，长上下文用 SWA/GA 混合 + KV 侧压缩（而非内容稀疏/线性注意力），128K 级足够有效（RULER 128k 31B=96.4）。12B encoder-free 证明可去掉独立 ViT/USM 编码器。MTP drafter 用 cross-attention 复用主模型 KV，消除 MTP prefill。31B 以 Elo 1451 居 Arena Text open dense 首位。`raw/` 未改。
+
+## [2026-07-11] ingest | UniClawBench
+
+新增 proactive agent 评测基准论文：
+
+- `raw/2607.08768v1.pdf`（arXiv:2607.08768v1）
+
+UniClawBench（HKU MMLab + Meituan）是 capability-driven 的 proactive agent benchmark：400 双语真实世界任务，按 5 维能力（Multimodal / Long Context / Skill Usage / Exploration / Cross-Platform）组织而非场景分类；三角色闭环评测（executor in Docker + hidden supervisor with rubric + user simulator with coarse signal），Information Firewall 隔离评分标准。
+
+新增/更新文件：
+
+- 新增 `wiki/sources/uniclawbench.md`：来源页，含 Figure 1（overview）和 Figure 2（三角色闭环评测流程）嵌入，Table 1/2 跨模型与跨框架结果转写为 Markdown 表。
+- 新增 `wiki/assets/uniclawbench/fig1-overview.png`、`fig2-evaluation-pipeline.png`。
+- 更新 `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表新增 UniClawBench 行，新增"UniClawBench 的差异化定位"段（capability-driven / 三角色闭环 / 真实环境三点 + framework > model 和半途失败两个发现）。
+- 更新 `wiki/index.md`：来源栏新增条目，评测体系概念栏摘要更新。
+
+核心发现：最强模型 Overall PR < 50%；framework 选择对能力影响常超模型选择（GPT-5.4 在 OpenClaw/EDICT/Nanobot 下 PR = 0.407/0.338/0.290）；Long Context 和 Multimodal 是主要瓶颈；多轮 user feedback 持续提升 pass rate。论文非模型报告，不建模型页。`raw/` 未改。
+
+## [2026-07-11] ingest | HunyuanOCR-1.5 (arXiv:2607.04884v1)
+
+腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，1B 参数，围绕「更快 + 更好」升级 HunyuanOCR-1.0（不重设计架构）。两条主线：(1) DFlash block-diffusion 推测解码——90.7M / 5 层 draft model，joint FlexAttention block-diagonal mask 一次 forward 训练 K=16 个 draft block，Transformers 6.37× / vLLM 2.14× 加速，输出越长加速越明显（表格 > 公式 > 文本）；(2) Agentic Data Flow——agent 驱动数据构造，自动搜物料、开发渲染/QA pipeline、跑 hard-case 挖掘，补 331 种低资源语言 + 七种古文字 + 多图 QA。RL 用 IcePop（GRPO 变体，train-inference ratio mask）+ 三组件 reward（文档解析事实性 / QA 一致性判官 / 退化抑制）。OmniDocBench v1.6 总分 94.74（1B SOTA），CHAOS-Bench recall 14.15（远超其他 OCR 模型 3–6），Chronicles-OCR 古文字 0.54/0.79（1B SOTA）。`raw/` 未改。
+
+新增/修改页面：
+- `wiki/sources/hunyuan-ocr-1.5.md`（新建，嵌入 4 张图：架构 / DFlash mask / Agentic Data Flow / RL 框架）
+- `wiki/models/hunyuan-ocr-1.5.md`（新建）
+- `wiki/assets/hunyuan-ocr-1.5/`（fig1-architecture / fig2-dflash-training / fig3-agentic-data-flow / fig4-rl-framework）
+- `wiki/concepts/multi-token-prediction.md`（+DFlash 行）
+- `wiki/concepts/agentic-engineering.md`（+Agentic Data Flow 跨报告信号 + 相关页面）
+- `wiki/concepts/post-training-for-agentic-models.md`（+HunyuanOCR-1.5 综合框架条目）
+- `wiki/index.md`（+来源 +模型两行）
+## [2026-07-11] ingest | InternVLA-A1.5 技术报告
+
+新增 `raw/2607.04988v1.pdf`（arXiv:2607.04988v1，2026-07-06，上海 AI Lab / Physical Intelligence Team）--统一 VLA（Vision-Language-Action）机器人操作模型。
+
+新建：
+
+- `wiki/sources/internvla-a1.5.md`：来源页（图文交错）。覆盖三痛点（语义侵蚀 / 异质目标干扰 / 从零学像素生成）→ 三设计（VLM 持续 VQA 训练 / MoT 共享 full attention 解耦 / latent foresight 蒸馏 frozen WAN2.2-5B）。架构段嵌 Figure 2（MoT 框架：VLM Qwen-3.5 2B + 460M unified expert，共享 full attention 层、独立 GDN 层）；foresight 段嵌 Figure 4（foresight reasoning 机制：learnable tokens → frozen WAN DiT → gradient 只回 expert）。训练配方表（3 阶段 / 300K+600K+60K steps）、数据配方（1.2M episodes / 861M frames + 3M 多模态样本）、评测表（6 项仿真全最优 + 真实世界 4 任务领先 π0.5/Motus）、消融（Table 8：去 video loss / 去 foresight tokens 均降）。
+- `wiki/models/internvla-a1.5.md`：模型页。关键事实表含模态 = 多模态（文本+图像+机器人状态→连续动作）、VLM backbone = Qwen-3.5 2B（3:1 GDN:full attention）、unified expert 460M、WAN2.2-5B frozen。技术身份段讲三个组合创新 + 与 wiki 已收录架构的关系（GDN 在 VLA 领域的采用证据）。
+
+更新：
+
+- `wiki/concepts/linear-attention-and-delta-rule.md`：跨报告信号新增 InternVLA-A1.5 行--GDN 混合注意力跨出语言/多模态对话、进入机器人实时控制领域的采用证据，论文明写 backbone "interleaves 3 Gated DeltaNet linear attention layers with 1 standard full attention layer"（§ 2 原文确证）。相关页面补 InternVLA-A1.5。
+- `wiki/models/qwen3.5.md`：相关页面新增"作为 backbone 被采用：InternVLA-A1.5"反链。
+- `wiki/index.md`：来源区 + 模型区各加 1 条。
+
+图文化：2 张图（Figure 2 框架 + Figure 4 foresight 机制），PyMuPDF 300 DPI 渲染 + `get_textbox` 校验 + `vision_analyze` 核对。`raw/` 未改。
