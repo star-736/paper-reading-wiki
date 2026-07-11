@@ -67,7 +67,7 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 - **PDF 文本回收**：把 **Qwen2.5-VL** finetune 成 OCR/extraction 工具，对大规模 PDF 文档抽文，再用 Qwen2.5 提质，"额外得到数万亿 token"。
 - **领域专用合成数据**：Qwen2.5-Math / Qwen2.5-Coder 合成数万亿 token 的教材、QA、指令、代码片段。
-- **instance-level data mixture**：用一个轻量 Qwen 标注器给 >30T tokens 在「教育价值 / 领域 / 安全」多维度打标，按 instance 而非 domain 优化数据混合。
+- **instance-level data mixture**：用一个轻量 Qwen 标注器给 >30T tokens 在「教育价值 / 领域 / 安全」多维度打标，按 instance 而非 domain 优化数据混合。这是 domain-level reweighting 方法（如 [DoReMi](doremi.md)）向更细粒度的自然演进——DoReMi 论文自己也指出更细粒度的 domain 可能带来更大增益，详见 [数据混合优化](../concepts/data-mixture-optimization.md)。
 
 ## 后训练
 

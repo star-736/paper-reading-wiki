@@ -30,6 +30,7 @@
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
 - [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
+- [DoReMi](sources/doremi.md) - Google DeepMind + Stanford 的 NeurIPS 2023 论文：用 280M proxy model 跑 Group DRO 优化 domain weights（仅 8% 额外 FLOPs），让 8B 模型预训练加速 2.6x，所有 domain perplexity 改善，不需下游任务知识。
 
 ## 模型
 
@@ -69,6 +70,7 @@
 - [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、Kascade、HySparse 等如何让多数层共用 anchor 层选好的 top-k 索引。
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
+- [数据混合优化](concepts/data-mixture-optimization.md) - LLM 预训练数据混合优化的方法谱系：DoReMi (Group DRO) → DoGE (bi-level) → RegMix (回归) → TANDEM (twin network)，核心都是用小模型预测大模型的最优 domain 权重。
 
 ## 比较
 

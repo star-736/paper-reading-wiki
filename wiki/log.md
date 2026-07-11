@@ -520,3 +520,14 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - 图文化：用 PyMuPDF 裁出并嵌入 3 张图，全部经 `page.get_textbox(clip)` 核对：Figure 1（架构 + 解码循环：A B C → D anchor → parallel backbone EFGH + sequential block + confidence c1-c4 → scheduler keep EFG/drop H → target 验证）、Figure 2（position-wise conditional acceptance：揭示"parallel drafter 反胜 autoregressive drafter"的反直觉现象 = 位置 1 容量优势 + DFlash suffix decay + DSpark 同时拿到两边）、Figure 7（V4-Flash/V4-Pro live traffic 下 throughput-TPS Pareto 前沿外推）。
 - `wiki/index.md` 来源区第 33 条新增 DSpark；概念区 MTP 行摘要更新。
 - 证据：所有机制结论均按 `raw/DSpark_paper.pdf` § 标号校验——semi-AR (§3.1 公式 4-6)、confidence + STS (§3.2.1 公式 7-8 + Figure 6)、scheduler (§3.2.2 Algorithm 1 + 附录 A 因果性反例)、训练 (§3.3 公式 9-12)、生产 (§5.1-5.4 + Figure 7-8)。"DSpark 替换 MTP-1"出自 §5.4 原文 "MTP-1 represents the former production setup, having been superseded by DSpark two weeks following the DeepSeek-V4-preview release."。`raw/` 未改。
+
+## [2026-07-11] ingest | DoReMi 论文
+
+新增 `raw/Xie 等 - 2023 - DoReMi Optimizing data mixtures speeds up language model pretraining.pdf`（arXiv:2305.10429v4, NeurIPS 2023, Google DeepMind + Stanford）：
+
+- 新增 `wiki/sources/doremi.md`：覆盖三步流程（reference model → Group DRO proxy → large model）、minimax 目标公式、Algorithm 1 pseudocode、The Pile / GLaM 实验（2.6x 加速、22/22 domain ppl 改善、6.5pp 下游提升）、scale 消融（280M proxy 最优，1B proxy 退化）、domain weight 轨迹、局限。
+- 新增 `wiki/concepts/data-mixture-optimization.md`：把 DoReMi 放进方法论谱系（启发式 → Group DRO → DoGE bi-level → RegMix 回归 → TANDEM twin network），含产业实践对比（Qwen3 instance-level mixture）。
+- 更新 `wiki/sources/qwen3.md`：instance-level data mixture 行加 DoReMi 反向链接。
+- `wiki/index.md` 来源区 +1 条、概念区 +1 条。
+
+图文化：用 PyMuPDF 从原 PDF 裁出并嵌入 7 张图：Figure 1（三步流程）、Figure 2（加速效果）、Figure 3（下游准确率）、Figure 4（per-domain perplexity）、Figure 5（跨尺度）、Figure 6（消融）、Figure 8（domain weight 轨迹），均经 `get_textbox(clip)` + vision_analyze 核对。`raw/` 未改。
