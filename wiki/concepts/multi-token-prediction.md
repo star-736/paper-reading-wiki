@@ -22,8 +22,9 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | --- | --- | --- |
 | [GLM-5](../models/glm-5.md) | 训练 + speculative decoding + RL rollout 加速 | 使用参数共享的 MTP 层，报告称在私有 prompt 集上 acceptance length 为 2.76。 |
 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) | 明确作为部署加速模块 | 每个 MTP block 0.33B；3-layer MTP 在 16K 输入 / 1K 输出测试中约 1.86-2.70x 加速。 |
-| [DeepSeek-V4](../models/deepseek-v4.md) | 继承 DeepSeek 系列设计 + 生产端已被 DSpark 替换 | Flash 和 Pro 的报告原文 MTP depth=1（即沿用 V3/V3.2 single-token MTP）；但 V4 preview 上线**两周后**，生产 serving 引擎里 MTP-1 已被 **[DSpark](../sources/dspark.md)**（semi-AR drafter + confidence-scheduled verification）替换，per-user 生成速度 +60–85%。MTP-1 之所以一直没扩到 MTP-3/5，是因为静态多 token drafter 在高并发下吞吐严格下降——这正是 DSpark hardware-aware scheduler 解决的问题。 |
+| [DeepSeek-V4](../models/deepseek-v4.md) | 继承 DeepSeek 系列设计 + 生产端已被 DSpark 替换 | Flash 和 Pro 的报告原文 MTP depth=1（即沿用 V3/V3.2 single-token MTP）；但 V4 preview 上线**两周后**，生产 serving 引擎里 MTP-1 已被 **[DSpark](../sources/dspark.md)**（semi-AR drafter + confidence-scheduled verification）替换，per-user 生成速度 +60–85%。MTP-1 之所以一直没扩到 MTP-3/5，是因为静态多 token drafter 在高并发下吞吐严格下降--这正是 DSpark hardware-aware scheduler 解决的问题。 |
 | [MiniMax-M2 Series](../models/minimax-m2-series.md) | 预训练信号 + speculative decoding + Forge rollout 加速 | 预训练先用单 MTP module，继续预训练阶段通过权重复制扩展到 3 个 MTP modules。 |
+| [Gemma 4](../models/gemma-4.md) | Speculative decoding drafter | 4 层小 Transformer drafter，通过 **cross-attention 复用主模型 KV cache**（而非复制 KV），无需 MTP prefill，支持任意 draft 长度。E2B/E4B 用 top-k on token clusters 把最终投影从 d×262k 降到 d×4k。dim 256（小模型）/ 1024（大模型）。 |
 
 ## MiMo 的经验
 
@@ -44,6 +45,10 @@ MiniMax 的另一个要点是初始化方式：从主模型复制权重扩展 MT
 DeepSeek 系列在 V3 / V3.2 / V4 的报告原文里一直停留在 MTP-1（single-token MTP），而不是扩到 MTP-3/5 这种更激进的多 token draft。[DSpark 论文](../sources/dspark.md) § 5.4 给出了**生产侧的诚实原因**：静态多 token drafter 在高并发下会**严格降低 aggregate throughput**，因为长 draft block 里靠后的低置信 token 会无差别占用 target 验证 batch 的容量。DSpark 把"该验多长"做成动态的全局吞吐最大化问题——confidence head 估每个 prefix 存活概率，hardware-aware scheduler 按 profile 出的 SPS(B) 曲线在线截断——于是大 draft block 在轻负载下能展开吃干算力、在高负载下又会自动压缩，避免 MTP-3/5 的吞吐塌方。V4 preview 上线两周后，生产 serving 引擎里 MTP-1 已被 DSpark 整体替换。
 
 这把 MTP 在 DeepSeek 系里的角色推到下一阶段：从"训练目标 + 静态 draft" 进入"训练目标 + dynamic-block draft + per-request scheduling"，draft model 不再是固定深度的并行预测头，而是 parallel backbone + 轻量 sequential head + 校准过的 confidence head 三件套。
+
+## Gemma 4 的经验
+
+Gemma 4 的 MTP drafter 设计与 GLM-5 / MiMo 的关键差异在于 **cross-attention 复用主模型 KV**：drafter 不复制或重新计算主模型的 context representation，而是通过 4 层小 Transformer 的 cross-attention 直接访问主模型已计算的 KV cache。这消除了 MTP prefill 阶段（传统 MTP 需要先对 prompt 做一次 prefill 才能开始 draft），并支持任意 draft 长度。E2B/E4B 的 top-k on token clusters 优化解决了 262k 大词表下最终投影的瓶颈——把 d×262k 降到 d×4k 而不损失 acceptance rate，这对共享 Gemini tokenizer 的大词表模型尤其重要。
 
 ## 观察点
 

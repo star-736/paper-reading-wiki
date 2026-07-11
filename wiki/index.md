@@ -32,6 +32,7 @@
 - [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
 - [DoReMi](sources/doremi.md) - Google DeepMind + Stanford 的 NeurIPS 2023 论文：用 280M proxy model 跑 Group DRO 优化 domain weights（仅 8% 额外 FLOPs），让 8B 模型预训练加速 2.6x，所有 domain perplexity 改善，不需下游任务知识。
 - [TANDEM](sources/tandem.md) - JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy + 动态 reference）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。
+- [Gemma 4 技术报告](sources/gemma-4.md) - Google DeepMind 的 Gemma 4 arXiv 报告，原生多模态 dense + MoE 家族（E2B~31B），重点是 encoder-free 12B、5:1 SWA/GA + key-as-value + p-RoPE 长上下文、MTP drafter 和 QAT 量化。
 
 ## 模型
 
@@ -46,6 +47,7 @@
 - [Qwen3.5](models/qwen3.5.md) - Qwen3.5 多模态 Hybrid MoE 家族（397B-A17B 旗舰到 0.8B dense），3 GDN : 1 gated-attention，Qwen3.5-Omni 的架构基座。
 - [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的 LLM 前作。
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
+- [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
 
 ## 概念
 

@@ -20,7 +20,7 @@ timestamp: 2026-06-06
 | --- | --- | --- | --- | --- |
 | 内容稀疏（token 级） | DSA / [GLM-5](../models/glm-5.md) | lightning indexer 给 query 选 top-k token，所有 query head 共享一个 top-k。 | 长程信息访问自适应；可从 dense checkpoint 继续训练得到。 | indexer 的 top-k 稳定性会影响 RL；indexer 自身仍是 O(NL²)。 |
 | 内容稀疏（block 级） | [MSA](../sources/msa.md) / MiniMax-M3 | 在 GQA 之上加 Index Branch，每个 GQA group 独立选 n 个 KV 块。 | 块级 IO 更规整，KV-outer kernel 易拿到 1M context 14× prefill / 7× decode；对 GQA 改动小。 | 评测仅在 109B-MoE 预训练上做过，RL 后训练阶段稳定性还没有公开数据。 |
-| 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) | 5 个 SWA 层配 1 个 GA 层。 | 架构简单，KV 和 attention 成本下降。 | 对需要任意长程交互的任务可能不如内容自适应。 |
+| 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) / [Gemma 4](../models/gemma-4.md) | 5 个 SWA 层配 1 个 GA 层（Gemma 4 E2B 用 4:1）。Gemma 4 额外在全局层做 key-as-value + p-RoPE + KV sharing，全局 KV cache -37.5%。 | 架构简单，KV 和 attention 成本下降。 | 对需要任意长程交互的任务可能不如内容自适应。 |
 | 压缩注意力 | [DeepSeek-V4](../models/deepseek-v4.md) | CSA/HCA 先压缩 KV，再做稀疏或密集注意力。 | 支持 1M context，KV-cache 极大降低。 | 架构、kernel、cache 管理复杂。 |
 | 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md) | 大多数层用线性注意力（RNN 固定状态，无随长度增长的 KV），少数层（3:1）保留全局 [MLA](multi-head-latent-attention.md)。 | decode 时线性层无 KV cache，1M context KV 降 75%、吞吐 6.3×；首个公平对比下全面追平 full attention 的混合线性方案。 | 固定状态容量有限，长程精确检索靠那 1/4 全局层兜底；线性层在长 trajectory RL 上的稳健性证据仍有限。 |
 
@@ -31,6 +31,8 @@ DSA 不是固定窗口，而是先用 indexer 为 query 找出重要的历史 KV
 MSA 在内容稀疏这一支里走相反方向：把粒度从 token 抬到 block（B=128，n=16），并把 top-k 从"所有 query head 共享"改成"每个 GQA group 独立选块"。block-level 让访存更规整，KV-outer iteration 配合 query gather 能把 FLOPs/IO 比从 d 提到约 ⅔·G·d；GQA-group 独立选块则保留了多组检索的多样性。代价是新增了两个 idx 投影矩阵，部署门槛比 DSA 那种"零参数改动"的 indexer 高一点。
 
 MiMo-V2-Flash 的 hybrid SWA/GA 更像工程上保守的折中。SWA 限制局部窗口，GA 周期性提供全局通路。5:1 比例和 128-token window 让大多数层成本较低，同时避免纯局部模型完全失去远程通信能力。
+
+[Gemma 4](../models/gemma-4.md) 走同一路线（E2B 4:1，其余 5:1），但在 KV 侧做了更激进的压缩：全局层直接复用 key 作为 value（values = keys，与 [MLA](multi-head-latent-attention.md) 的 KV 压缩思路类似但不完全相同）、全局层用 p-RoPE (p=0.25) 替代标准 RoPE、并在 E2B/E4B 上做 KV cache sharing（20/35 和 18/42）。三者组合把全局 KV cache 压低 37.5%。Gemma 4 的 RULER 128k 评测中 31B 达 96.4、E4B 达 86.6，远超 Gemma 3 27B 的 66.0，说明 SWA/GA 混合 + KV 侧优化在 128K 级上下文足够有效，不需要切换到 DSA/CSA 等内容稀疏方案。
 
 DeepSeek-V4 的 CSA/HCA 更激进。CSA 每 `m` 个 token 压缩成一个 KV entry，然后再做 DSA 式 top-k selection；HCA 用更大的 `m'` 做重压缩，并在压缩状态上做 attention。它还额外保留 sliding-window branch，弥补压缩块内部局部细节不足。
 

@@ -546,3 +546,22 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 ## [2026-07-11] deepen | TANDEM 图文化补全
 
 用户重新下载了字体完好的 PDF（`raw/2606.04401v1.pdf`），替换了原损坏文件。用 PyMuPDF 重新裁出并嵌入 5 张图：Figure 1（架构 + 计算流程）、Figure 3（三场景 mixture ratio 演化）、Figure 5（各方法学到的 mixture ratio）、Figure 7（Dist(u,w) 同步 vs 不同步）、Figure 8（variance vs K），均经 `get_textbox(clip)` + vision_analyze 核对。source 页 resource 指向更新为新文件名。`raw/` 未改（用户操作）。
+
+## [2026-07-11] ingest | Gemma 4 技术报告
+
+沉淀 Gemma 4（arXiv:2607.02770v1，Google DeepMind，2026-06-19）。原生多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），Apache 2.0。
+
+新增页面：
+- `wiki/sources/gemma-4.md`（来源页，含 Table 1/3/5/6/9 重新排版的 Markdown 表 + Figure 1 嵌入）
+- `wiki/models/gemma-4.md`（模型实体页，含模态/变体/架构/KV 优化/MTP/QAT 关键事实表）
+- `wiki/assets/gemma-4/fig1-mtp-drafter.png`（Figure 1 MTP drafter 架构图，300 DPI vector render）
+- `wiki/assets/gemma-4/fig2-image-resizing.png`（Figure 2 图像缩放示意，300 DPI vector render）
+
+更新页面：
+- `concepts/efficient-long-context-attention.md`：模式稀疏行加入 Gemma 4（5:1 SWA/GA + key-as-value + p-RoPE + KV sharing，全局 KV -37.5%），新增机制段
+- `concepts/multi-token-prediction.md`：用法表加 Gemma 4 行（cross-attention 复用主模型 KV，无需 MTP prefill），新增"Gemma 4 的经验"段
+- `concepts/moe-frontier-model-scaling.md`：对比表加 26B-A4B 行
+- `comparisons/2026-open-model-technical-reports.md`：范围/对比表/二版综合加 Gemma 4
+- `index.md`：来源段和模型段各加一条
+
+核心发现：Gemma 4 走效率优先路线，长上下文用 SWA/GA 混合 + KV 侧压缩（而非内容稀疏/线性注意力），128K 级足够有效（RULER 128k 31B=96.4）。12B encoder-free 证明可去掉独立 ViT/USM 编码器。MTP drafter 用 cross-attention 复用主模型 KV，消除 MTP prefill。31B 以 Elo 1451 居 Arena Text open dense 首位。`raw/` 未改。

@@ -10,7 +10,7 @@ timestamp: 2026-06-06
 
 ## 范围
 
-本页比较当前沉淀的五篇报告：[GLM-5](../sources/glm-5.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md) 和 [Kimi K2.5](../sources/kimi-k2.5.md)。
+本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md) 和 [Gemma 4](../sources/gemma-4.md)。
 
 ## 对比表
 
@@ -21,6 +21,7 @@ timestamp: 2026-06-06
 | DeepSeek-V4 | 高效百万 token 上下文智能 | Flash 284B / 13B active；Pro 1.6T / 49B active | 1M native target | hybrid CSA/HCA compressed attention | reasoning modes、tool-use formats、超长上下文 RL/OPD 基础设施 |
 | MiniMax-M2 / M2.7 | 低激活 MoE 的真实 agent 任务能力 | 229.9B / 9.8B active | 192K native | full attention with GQA | Forge agent-native RL、interleaved thinking、self-evolution |
 | Kimi K2.5 | 视觉 agentic intelligence 与并行 agent 编排 | 1.04T / 32B active | 评测常用 256K | Kimi K2 MoE + MoonViT-3D | zero-vision SFT、joint multimodal RL、PARL Agent Swarm |
+| Gemma 4 | 效率导向的多模态 dense + MoE | E2B 2.3B / E4B 4.5B / 12B / 26B-A4B / 31B | 128K+ | 5:1 hybrid SWA/GA + key-as-value + p-RoPE + KV sharing | thinking mode、QAT 量化、MTP drafter |
 
 ## 主综合
 
@@ -53,6 +54,7 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 - DeepSeek-V4 认为百万 token 上下文需要从 attention、KV-cache、QAT、teacher scheduling 到 fault tolerance 全栈重构。
 - MiniMax-M2 认为低激活 MoE 可以通过高可信 agent 数据、Forge RL 和 self-evolution scaffold 获得真实任务能力。
 - Kimi K2.5 认为视觉-文本联合训练与并行 sub-agent 编排可以共同提升 agentic 工作流。
+- Gemma 4 认为效率优先于规模——用 SWA/GA 混合 + KV 侧压缩（而非内容稀疏）即可在 128K 级上下文达到竞争力，用 encoder-free 架构消除多模态的编码器开销，用 QAT + MTP drafter 把部署成本压到端侧可承受。
 
 这意味着后续比较不应只看 SWE-bench 或 HLE 分数，而要比较“模型 + agent harness + context strategy + serving system”的整体能力。
 

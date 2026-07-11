@@ -23,6 +23,7 @@ timestamp: 2026-06-06
 | [MiniMax-M2](../models/minimax-m2-series.md) | 229.9B | 9.8B | 256 fine-grained experts，8 active，sigmoid gating。 |
 | [MiniMax-M3](../models/minimax-m3.md) | 428B | 22B (+ 600M visual encoder) | 128 routed experts，每 token 激活 4 个（NVIDIA blog）。 |
 | [Kimi K2.5](../models/kimi-k2.5.md) | 1.04T | 32B | 384 experts，8 active，继承 Kimi K2 MoE backbone。 |
+| [Gemma 4 26B-A4B](../models/gemma-4.md) | 26B | 3.8B | 报告未公开 expert 数和路由配置；与 dense 变体（E2B/E4B/12B/31B）共享架构。 |
 
 ## 解释
 
