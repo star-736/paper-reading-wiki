@@ -42,6 +42,7 @@
 - [Seed2.0 Model Card](sources/seed2.md) - 字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，含 MaaS 部署洞察、四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）和真实世界 case studies，不含架构/训练细节。
 - [KVpop 技术报告](sources/kvpop.md) - NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法：future-attention target 在 eviction boundary 监督 keep-or-drop，mLSTM 延迟打分利用近未来上下文，Qwen3-8B 88% 压缩下保留 100% teacher 性能。
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
+- [LoopCoder-v2](sources/loopcoder-v2.md) - 北航 + IQuest Research 的 PLT loop-count 选择研究：7B coder 从头训练 18T tokens，gain–cost 视角发现 R=2 最优（SWE-bench Verified 64.4%）、R≥3 退化，per-loop 可解释性诊断解释饱和机制。
 
 ## 模型
 
@@ -62,6 +63,7 @@
 - [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
 - [VibeThinker-3B](models/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，MGPO + Long2Short RL + CLR，纯文本，verifiable reasoning 追平旗舰。
+- [LoopCoder-v2](models/loopcoder-v2.md) - 北航 + IQuest 的 7B PLT coder 模型族，weight-tied looped Transformer（14 层共享 block），R=2 最优（SWE-bench Verified 64.4%），纯文本。
 
 ## 概念
 
@@ -87,7 +89,8 @@
 - [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、Kascade、HySparse 等如何让多数层共用 anchor 层选好的 top-k 索引。
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
-- [数据混合优化](concepts/data-mixture-optimization.md) - LLM 预训练数据混合优化的方法谱系：DoReMi (Group DRO) → DoGE (bi-level) → RegMix (回归) → TANDEM (twin network)，核心都是用小模型预测大模型的最优 domain 权重。
+- [数据混合优化](concepts/data-mixture-optimization.md) - LLM 预训练数据混合优化的方法谱系：DoReMi (Group DRO) -> DoGE (bi-level) -> RegMix (回归) -> TANDEM (twin network)，核心都是用小模型预测大模型的最优 domain 权重。
+- [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和（gain–cost 剪刀：refinement gain 递减 + CLP offset cost 恒定）。
 
 ## 比较
 

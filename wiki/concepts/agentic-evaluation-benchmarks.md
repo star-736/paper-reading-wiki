@@ -33,7 +33,9 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
-| UniClawBench | proactive agent 真实世界任务，capability-driven（5 维能力），三角色闭环评测 | 首个按能力分解而非场景分类的 proactive agent benchmark；400 双语任务，live web + Docker，跨模型 × 跨框架实验揭示 framework > model。 |
+|| Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
+|| BFCL (v3) | 函数调用 / tool use | 测试模型选择和调用外部工具的能力。 |
+|| UniClawBench | proactive agent 真实世界任务，capability-driven（5 维能力），三角色闭环评测 | 首个按能力分解而非场景分类的 proactive agent benchmark；400 双语任务，live web + Docker，跨模型 × 跨框架实验揭示 framework > model。 |
 | KAT Code Bench | 快手内部 repository-level SWE 评测，12 语言，pin base commit + runtime + verification | KAT-Coder-V2.5 新建，覆盖 defect fix / feature completion / interface compatibility / cross-module edit / regression repair，压制不可复现环境/flaky test/verifier 耦合等噪声源。 |
 | KAT Claw Bench | 快手内部业务导向 tool-use 评测，7 大类（个人办公 / 内容创作 / 软件开发 / 数据分析 / 信息检索 / 自动监控 / 投资分析） | KAT-Coder-V2.5 新建，覆盖短视频/直播/电商/广告/职场自动化场景，补现有 Claw benchmark 在任务粒度过细、场景覆盖不足、偏离业务上下文上的短板。 |
 | PinchBench | OpenClaw 框架下的 agentic tool-use benchmark | KAT-Coder-V2/V2.5、GLM-5、MiniMax M2.7 等用来测真实 agent 任务执行效率。 |
@@ -80,3 +82,5 @@ UniClawBench（arXiv:2607.08768，HKU MMLab + Meituan）与上表其他 benchmar
 GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 context management。MiMo-V2-Flash 更强调在较小模型规模下 SWE-bench 与 BrowseComp 的提升。DeepSeek-V4 则把 agent benchmark 放在 512K context、内部 harness 和 1M context 能力背景下理解。MiniMax-M2 更强调统一 scaffold、verifiable reward 和 self-evolution 工作流。Kimi K2.5 则把 Agent Swarm 作为 benchmark 变量，直接比较单 agent、context management 和并行 agent 编排。ARPO 不是发布新模型，而是把 GAIA / WebWalkerQA / HLE / XBench 作为算法测试床，强调同一个 backbone 下 rollout 采样结构也会显著改变 tool-use 分数。Seed2.0 Model Card 把 agentic 评测升级为四维框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks），新建 NL2Repo-Bench / Ainstain Bench / GDPVal-Verified 三个内部 benchmark，并诚实标注 coding（SWE-Evo 8.5）和 repository 构建（NL2Repo-Bench 27.9）为短板。
 
 因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy、rollout / sampling 策略、policy optimization 算法、reward / judge 设置分别是什么。
+
+LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%——loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。

@@ -688,3 +688,21 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1。
 
 非模型方法论文（learned eviction / KV cache compression），不建 models/ 页。`raw/` 未改。待追问：abstract/contributions 数字不一致（v1→v2 修订疑似未同步），未验证 MLA/GDN 架构迁移性。
+
+## [2026-07-11] ingest | LoopCoder-v2 技术报告
+
+`raw/2606.18023v1.pdf`（arXiv:2606.18023v1, Beihang + IQuest Research + Langboat, 2026-06-16）。
+
+新增：
+
+- `wiki/sources/loopcoder-v2.md`：来源页（图文交错）。嵌入 Figure 1（PLT overview：标准 loop vs PLT + gain–cost 权衡 + per-loop 诊断证据）和 Figure 3（gain–cost scissors：Δp(r) 崩溃 vs Ω(r) 恒定）。Table 2 主评测结果 + Table 3 per-loop 行为特征 + Table 4 instruct vs thinking 对比转 Markdown。待追问 4 条（CLP offset 自适应、与 MTP 关系、数据组成影响、跨参数量 scaling）。
+- `wiki/models/loopcoder-v2.md`：模型页。关键事实表含模态=纯文本（已据原文核实）。变体表列 R=1/2/3/4 的 SWE-bench Verified + Avg。
+- `wiki/concepts/looped-transformers.md`：新概念页。覆盖 looped Transformer 谱系（UT -> MELT/PLT/LT2 效率路线）、PLT 的 CLP offset 结构性代价、跨报告信号（LoopCoder-v2 / Huginn-3.5B / scaling law r^0.46 / 稳定性）、与高效长上下文注意力 + MTP 的正交关系、latent loop + explicit CoT 超加性互补。
+- `wiki/assets/loopcoder-v2/`：fig1-overview.png, fig3-gain-cost-scissors.png
+
+更新：
+
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表加 Mind2Web + BFCL (v3) 两行（LoopCoder-v2 用到但 wiki 未列）；解读注意事项末段加「推理时计算量」变量（R=2 SWE-bench 64.4% -> R=3 27.6% -> R=4 22.4%，强非单调）。
+- `wiki/index.md`：来源段 +1，模型段 +1，概念段 +1。
+
+核心定位：LoopCoder-v2 不是常规 dense LLM，而是 weight-tied looped Transformer（14 层共享 block，R=1/2/3/4 变体）。PLT 通过 CLP（cross-loop position offset）+ shared-KV G-SWA 使延迟和 KV-cache 不随 R 增长。gain–cost 剪刀是核心机制洞察：第二个 loop 的 refinement gain 最大（effective rank 达峰、attention routing 变化最大、output shift 最大），之后收益急缩且振荡（cos θ < 0）；CLP offset cost Ω(r) 恒定。固定成本 + 递减收益 = R=2 饱和。7B R=2 在 SWE-bench Verified 64.4% 超 Kimi-Dev-72B。latent loop + explicit CoT 呈超加性互补（LCB +26.9）。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + `get_textbox` 校验。
