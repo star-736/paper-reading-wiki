@@ -641,3 +641,23 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - 新增：`wiki/sources/davinci-agency.md`、`wiki/assets/davinci-agency/`（4 PNG）
 - 更新：`wiki/concepts/agentic-engineering.md`（跨报告信号 + 相关页面）、`wiki/concepts/post-training-for-agentic-models.md`（综合框架新增 SFT 数据结构层）、`wiki/index.md`
 - `raw/` 未改
+
+## [2026-07-11] ingest | Seed2.0 Model Card (arXiv:2607.00248v1)
+
+字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，87 页。**这是 Model Card 而非技术报告**--不含架构设计、参数量、训练数据、训练方法，核心内容是部署洞察 + 评测框架 + benchmark 结果 + 真实世界 case studies。
+
+新建文件：
+
+- `wiki/sources/seed2.md`：来源页（图文交错）。部署洞察段（MaaS 使用分布 + agentic coding 查询分布 + 定价表）嵌入 Figure 1（MaaS 双饼图）和 Figure 2（查询分布柱状图）；评测要点段含语言/视觉/agentic benchmark 表（对标 GPT-5.2/Claude-4.5/Gemini-3-Pro），竞赛编程段嵌入 Figure 7（ICPC 五场 Pass@8 柱状图）；Case studies 段概括 Vibe Coding / GUI 操作 / 科研编程 / 复杂数学四类案例。待追问列出 5 条架构/开源/定价/VideoCut 工具未披露项。
+- `wiki/models/seed2.md`：模型页。关键事实表标注模态 = 多模态（文本+图像+视频，已据原文核实），总参数/激活参数/架构/上下文均标"未披露"。技术身份段解释 Model Card 定位与技术报告的区别，列出部署导向/四维评测框架/诚实差距承认/丰富 case studies 四项价值。
+- `wiki/assets/seed2/`：fig1-maas-usage-distribution.png, fig2-query-distribution.png, fig7-icpc-results.png
+
+更新：
+
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表新增 NL2Repo-Bench / Ainstain Bench / GDPVal-Verified 三行；"对已沉淀报告的影响"段加 Seed2.0 四维评测框架行。
+- `wiki/concepts/agentic-engineering.md`：跨报告信号加 Seed2.0 生产部署视角行（前端 >50%、bug fixing 主导、四维框架、case studies）；相关页面加 Seed2.0 反链。
+- `wiki/concepts/moe-frontier-model-scaling.md`：对比表加 Seed2.0 行（参数/激活均未披露）。
+- `wiki/comparisons/2026-open-model-technical-reports.md`：范围段加 Seed2.0 + Model Card 注释；对比表加 Seed2.0 行（列标"未披露"）；二版综合加 Seed2.0 工程哲学。
+- `wiki/index.md`：来源段 +1 条，模型段 +1 条。
+
+核心定位：Seed2.0 Pro 在数学竞赛（AIME 2025 98.3、IMO/CMO Gold）和搜索 agent（BrowseComp 77.3、BrowseComp-zh 82.4）方面领先，ICPC Pass@8 73.02% 超过 GPT-5.2/Gemini-3-Pro；诚实承认 coding 不如 Claude（SWE-Evo 8.5 vs 27.1）、长尾知识不如 Gemini（SimpleQA 36.0 vs 72.1）。定价比 frontier 模型低约一个数量级。前代 Seed 家族包括 Seed1.6/1.8、Seed1.5-VL、Seed-OSS、Seed-Coder、Seed Diffusion、Seed-Prover、Seedream/Seedance。与已收录的 [DAPO](dapo.md) 同为 ByteDance Seed 团队。图文化：3 张图（Figure 1 MaaS 分布 + Figure 2 查询分布 + Figure 7 ICPC 结果），PyMuPDF 300 DPI 渲染 + `get_textbox` 校验 + `vision_analyze` 核对。`raw/` 未改。
