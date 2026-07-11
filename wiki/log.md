@@ -782,3 +782,23 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1（本次补录：源页/模型页已先于 index/log 提交，本条目补齐索引）。
 
 核心定位：JoyAI-VL-Interaction 是 JD.com 的 8B 视觉驱动交互模型，提出 interaction model 范式——模型持续观看视频流，每秒内部决定说话（`</response>`）/ 静默（`</silence>`）/ 委托后台（`</delegation>`），而非等用户提问才响应。基座是 Qwen3-8B + Qwen3-VL ViT，视频编码用 AdaCodec（预测式 I-frame/P-frame 结构，~16× 压缩）。4M+ 时间对齐流式数据六族，角色加权 SFT 对抗 silence 主导（w_repeated_silence=0.4, w_response=1.5），GRPO RL 用 answer-centered window sampling 压缩 rollout horizon。完整系统含双并发循环（实时 + 异步委托）、三层记忆（约 2 小时）、vLLM-native serving。vs Doubao 胜率 77.6% / vs Gemini 87.9%（6 场景 58 case 人工盲评），监控告警 100% 获胜。论文声称首个开源视觉驱动交互模型 + 完整可部署系统。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-07-11] ingest | Xiaomi-GUI-0 技术报告
+
+`raw/2606.31410v2.pdf`（arXiv:2606.31410v2, 小米 SeerRay Team, 2026-07-01, 40 页）。
+
+新增：
+
+- `wiki/sources/xiaomi-gui-0.md`：来源页（图文交错）。嵌入 Figure 1（混合基础设施三层架构：Resource/Scheduling/Execution & Collection，Device-Pull 调度）、Figure 5（teacher 打分与接管：student rollout + teacher 逐步打分 + 有界接管产生 deviation–diagnosis–recovery 段）、Figure 6（Agentic RL 在线训练框架：推理/环境执行/数据传输解耦，异步状态机驱动每条轨迹）。Table 1 cascade reward 转 Markdown，Table 2 RealMobile 能力域分布转 Markdown，Table 4 主要结果转 Markdown，Table 3 sub-goal 分解转散文，Table 7 action space + Table 8 异常语义转散文。待追问 6 条（backbone 视觉前端是否修改 / teacher 模型身份 / 5000 异常态样本分布 / Agentic RL 任务规模来源 / cascade reward 三值表达力 / RealMobile 评测方差）。
+- `wiki/models/xiaomi-gui-0.md`：模型页。关键事实表含模态=多模态（文本+图像输入；文本输出）（已据报告原文核实：native end-to-end multimodal GUI agent）。总参数/激活参数标注"继承 Qwen3-VL-30B-A3B 基座，未提及新增模块"。
+- `wiki/assets/xiaomi-gui-0/`：fig1-hybrid-infrastructure.png, fig5-teacher-takeover.png, fig6-agentic-rl-framework.png（PyMuPDF 300 DPI + get_textbox 校验）
+
+更新：
+
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架加 Xiaomi-GUI-0 一条（三阶段 dense→sparse 课程 + cascade reward top-down early-exit + turn-level batching + error-driven flywheel，复用 GSPO + DAPO dynamic sampling）。
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表加 RealMobile + MobileBench-OL 两行，AndroidWorld 行补 Xiaomi-GUI-0 78.9%；末段加 Xiaomi-GUI-0 真机评测三点结构性差异（全真机真应用 / 细粒度 sub-goal + veto + conditional branching / 双验证 XPath + logical semantic rules）+ Safety & Reflection 共同瓶颈。
+- `wiki/concepts/agentic-engineering.md`：跨报告信号加 Xiaomi-GUI-0 行（训练/评测分布对齐而非模型规模 + error-driven flywheel 定向修复 + 真机闭环，与 KAT-Coder / daVinci-Agency 互补）；相关页面加反向链接。
+- `wiki/models/qwen3-vl.md`：相关页面加 Xiaomi-GUI-0 反向链接（下游 GUI agent）。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：Xiaomi-GUI-0 是小米 SeerRay Team 的 native end-to-end multimodal GUI agent，核心论点是 benchmark 高分不等于真实可用性——真实设备上的账号状态 / 权限弹窗 / 支付验证 / 风控拦截持续改变执行状态分布。以 Qwen3-VL-30B-A3B-Instruct 为基座，构建真机为主的混合基础设施（Device-Pull 调度）+ error-driven data flywheel（首个关键错误标注 + teacher 打分接管）+ 三阶段训练（SFT → Step RL → Agentic RL，GSPO + cascade reward + turn-level batching）。RealMobile 72.0% / AndroidWorld 78.9%，开源最强对手 MAI-UI-8B 在 RealMobile 仅 33%。Safety & Reflection 是所有模型最弱域（Gemini 3.1 Pro 也仅 62.5%）。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。

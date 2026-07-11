@@ -27,6 +27,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - daVinci-Agency 把长周期 agent 数据合成的瓶颈定位在**监督信号的结构**而非数据量。核心洞察是真实 GitHub PR 链天然编码了 task decomposition / long-term consistency / verifiable refinement 三种长周期技能的监督--chain-of-PRs 把孤立 coding 任务变成有跨 stage 依赖的多步工作流。仅 239 样本 SFT GLM-4.6 即在 Toolathlon +47%、AVG 超过 66k 样本的 SWE-Smith。这与 KAT-Coder 走的 RL + 基础设施路线互补：KAT-Coder 解决「怎么稳定训练」，daVinci-Agency 解决「训练数据本身该长什么样」。
 - Seed2.0 Model Card 从**生产部署视角**补充 agentic engineering：MaaS 使用数据显示真实 agentic coding 查询中前端开发占 >50%、bug fixing 占任务主导，模型优化应优先前端生成质量和调试能力。四维评测框架把"real-world complexity"操作化为 Science Discovery / Vibe Coding / Context Learning / Real-World Tasks，并诚实标注 repository-level coding（NL2Repo-Bench 27.9、SWE-Evo 8.5）为短板。Case studies（FreeCAD 96 步建模 / CapCut 视频编辑 / Qiskit 量子计算 bug 修复）展示 GUI 操作和跨学科科研编程的推理深度，但缺乏对照实验。
 - GLM-5V-Turbo 把 agentic engineering 扩展到**多模态**：模型不只调用工具，还在 GUI 中截图、交互、导航，再结合 native UI-to-code 能力复现网站。工具链覆盖多模态搜索、图像处理（裁剪/标注/3D 框/视频跟踪）和创作（网页/PPT）。三个 design lens 影响对 agentic engineering 的理解：（1）感知是 agent 能力天花板——许多看似高层失败始于模型看不准 GUI 细节；（2）分层优化——低层任务（元素感知/grounding/单步动作）更易构造和验证，高层长周期任务在低层不牢时直接推会失稳；（3）端到端任务的关键是清晰规格 + 可靠验证 + 受控评测（Vision2Web benchmark 把任务规格从文本指令扩展到 PRD/mockup/reference page/resource asset，用 workflow-based verification 替代单一终态判断）。详见 [GLM-5V-Turbo 来源页](../sources/glm-5v-turbo.md)。
+- Xiaomi-GUI-0 把 agentic engineering 的瓶颈定位在**训练与评测的分布对齐**而非模型规模。核心论点是 benchmark 高分不等于真实可用性——真实设备上的账号状态 / 权限弹窗 / 支付验证 / 风控拦截持续改变执行状态分布，而离线成功轨迹 / 模拟环境 / 标准化 benchmark 无法覆盖。三处设计回应这一论断：（1）真机为主的混合基础设施 + Device-Pull 调度，让数据采集 / 训练 rollout / 评测共享接近部署的执行分布；（2）error-driven data flywheel 围绕模型自身错误分布做定向修复（首个关键错误标注 + teacher 打分接管产生 deviation–diagnosis–recovery 段），而非简单扩数据量——传统 flywheel 丢弃失败轨迹，Xiaomi-GUI-0 把失败转为反思/纠正/恢复监督；（3）RealMobile 真机评测用细粒度 sub-goal + veto + 双验证，按 4 能力域分解揭示 Safety & Reflection 是所有模型共同瓶颈。与 KAT-Coder / daVinci-Agency 互补：KAT-Coder 解决训练基础设施稳定性，daVinci-Agency 解决 SFT 数据结构，Xiaomi-GUI-0 解决训练/评测与真实部署分布的对齐。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
 
 ## 为什么重要
 
@@ -52,3 +53,4 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [KAT-Coder](../models/kat-coder.md) - Specialize-then-Unify + KwaiEnv + Tree Training
 - [daVinci-Agency](../sources/davinci-agency.md) - chain-of-PRs 数据合成范式
 - [Seed2.0](../models/seed2.md) - 四维评测框架 + 部署洞察
+- [Xiaomi-GUI-0](../models/xiaomi-gui-0.md) - 真机闭环 + error-driven flywheel

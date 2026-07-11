@@ -46,7 +46,9 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | Design2Code | 从设计图生成前端代码 | GLM-5V-Turbo 94.8，超过 Kimi K2.5（91.3）和 Claude Opus 4.6（77.3）。 |
 | Vision2Web | 端到端视觉网站开发，任务规格含 PRD/mockup/reference page，用 workflow-based verification | GLM-5V-Turbo 31.0，弱于 Claude Opus 4.6（43.5）和 Kimi K2.5（33.2）——报告将此归因于 Claude 的更强代码生成能力。 |
 | MMSearch / MMSearch-Plus | 多模态搜索 / 带来源溯源的多模态搜索 | GLM-5V-Turbo MMSearch 72.9 / MMSearch-Plus 30.0，前者较 GLM-4.6V 近八倍提升。 |
-| AndroidWorld | Android GUI 环境中的动态 agent 任务 | GLM-5V-Turbo 75.7 vs Kimi K2.5 43.1 vs Claude Opus 4.6 62.0。 |
+| AndroidWorld | Android GUI 环境中的动态 agent 任务 | GLM-5V-Turbo 75.7 vs Kimi K2.5 43.1 vs Claude Opus 4.6 62.0；Xiaomi-GUI-0 78.9（超过 UI-Venus-1.5-30B-A3B 77.6）。 |
+| RealMobile | 真机 GUI agent benchmark，100 任务 / 14 应用 / 4 能力域 / 57% 跨应用，细粒度 sub-goal + veto + 双验证（XPath + logical semantic rules） | Xiaomi-GUI-0 自建，72.0% success / 85.8% progress。开源最强对手 MAI-UI-8B 仅 33%，接近 Gemini 3.1 Pro 85% / Seed 2.0 Pro 80%。 |
+| MobileBench-OL | 中文真机在线 GUI agent benchmark，测任务执行 / 推理 / 噪声鲁棒性 | Xiaomi-GUI-0 引用为 prior real-device work。 |
 | WebVoyager | 端到端 web agent | GLM-5V-Turbo 88.5 vs Kimi K2.5 84.3 vs Claude Opus 4.6 88.0。 |
 | Ainstain Bench | 科学计算编程，测试模型能否实现和操控科研工作流中的计算程序 | Seed2.0 Model Card 新建，归入 Science Discovery 评测维度。Seed2.0 Pro 47.7，超过 GPT-5.2（41.3）和 Claude-Sonnet-4.5（33.7）。 |
 | GDPVal-Verified | GDPVal 的可靠子集 + rubric 自动评测，面向端到端真实世界任务 | Seed2.0 Model Card 新建，归入 Real-World Tasks 评测维度。 |
@@ -93,3 +95,11 @@ GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 c
 LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%--loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。
 
 JoyAI-VL-Interaction 则展示了另一种评测思路：**不跑 offline benchmark，直接与真实部署产品做 head-to-head 人工盲评**。它选了 Doubao 和 Gemini 的视频通话功能作为 baseline，在 6 个 event-driven 场景（监控告警 / 实时计数 / 实时翻译 / 时间感知 / 实时解说 / 长程记忆）58 个 case 上让 5 名 LLM 研究者盲评 quality + timing 两轴。这种方法的核心论点是：流式交互场景的关键维度（是否在正确时刻行动）无法被 offline video-understanding benchmark 捕捉，只有与真实 turn-based 产品在 live event-driven 设置中对打才能暴露"turn-based 结构性缺陷"这一范式差距。详见 [JoyAI-VL-Interaction 来源页](../sources/joyai-vl-interaction.md)。
+
+Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark 本身就在物理设备上跑 live 应用**。其与现有 GUI benchmark 的三点结构性差异恰好对应报告对 prior work 的三个批评：
+
+1. **全真机真应用** vs 模拟器/mock 环境——主流商业应用的反模拟器检测使许多应用无法在虚拟化下稳定运行，验证码 / 支付验证 / 登录过期 / 风控拦截等异常态更难在模拟器中复现。AndroidWorld 等模拟器 benchmark 的状态分布偏向简化环境，无法完全捕获真实应用的账号态 / 页面动态 / 业务逻辑。
+2. **细粒度 sub-goal 打分** vs 二元 pass/fail——每个任务 3–6 个 sub-goal 按 [0,1] 连续值给 partial credit，配合 veto 机制（不可恢复错误归零）和 conditional branching（多条有效路径均可得满分）。这让"完成大部分但最后一步失败"的 agent 不再与"立即偏离"的 agent 同分，提供诊断信号。
+3. **双验证框架**——XML structure matching（XPath 查 UI hierarchy）+ logical semantic rules（sequential constraints 保证操作顺序 + consistency constraints 验证跨步信息传递如"QQ 音乐搜的歌必须和小红书歌单匹配"）。纯 XPath 对 UI 变化脆弱，纯代码检查需应用特定代码，双验证在 robustness 和 scalability 间平衡。
+
+按能力域分解的结果揭示了一个跨模型共性：**Safety & Reflection 是所有模型最弱域**（Gemini 3.1 Pro 也仅 62.5%），安全感知和自纠正行为是当前 GUI agent 的共同瓶颈。而 Foundation 域 Xiaomi-GUI-0 达 100%，与 Gemini 3.1 Pro / Seed 2.0 Pro 并列——基础 UI 操作已接近饱和，不再区分能力。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
