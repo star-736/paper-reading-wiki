@@ -64,6 +64,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 - KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。
 - [daVinci-Agency](../sources/davinci-agency.md)：如何在 SFT 阶段就从数据结构层面注入长周期监督。不靠 RL 或 distillation，而是用 GitHub chain-of-PRs 的跨 stage 依赖把孤立 coding 任务串成项目演化级工作流，239 样本即超过 66k 样本的 SWE-Smith。与上述 RL 路线互补--它是 RL 之前的数据层问题：训练数据本身该长什么样才能让 agent 内化 task decomposition / long-term consistency / refinement。
+- [VibeThinker-3B](../sources/vibethinker-3b.md)：如何在严格小模型（3B dense）上把 verifiable reasoning 推到旗舰级。后训练范式是 Spectrum-to-Signal Principle——SFT 构造多样化解空间（Diversity-Exploring Distillation 按 Pass@K 选域 specialist 再参数级 merge），RL 用 MGPO（最大熵 prompt 权重降权全对/全错 prompt）放大推理信号。独有设计：(1) Long2Short RL 用零和 centered length-aware reward shift 在不改变 group baseline 的前提下偏好更短正确轨迹；(2) CLR test-time scaling 聚焦 claim 级自验证而非整条 trace 聚合；(3) 渐进式 context window 扩展在 3B 上失效（与 1.5B 相反），高 SFT 质量下 warm-up 截断破坏已有长推理行为。提出 Parametric Compression-Coverage Hypothesis 解释为何 3B 能追平旗舰数学/编程但 GPQA-D 仍差 14 点。
 
 ## 待追问
 

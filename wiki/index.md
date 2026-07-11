@@ -40,6 +40,7 @@
 - [KAT-Coder-V2.5 技术报告](sources/kat-coder-v2.5.md) - 快手 KwaiKAT 的 coding-focused agentic 模型，AutoBuilder + KwaiClawEnv + harness randomization + asymmetric PPO with hindsight critic + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）。
 - [daVinci-Agency](sources/davinci-agency.md) - SII-GAIR 的长周期 agent 数据合成范式：从 GitHub chain-of-PRs 挖掘 task decomposition / long-term consistency / refinement 监督，239 样本 SFT GLM-4.6 即在 Toolathlon +47%、AVG 超过 66k 样本的 SWE-Smith。
 - [Seed2.0 Model Card](sources/seed2.md) - 字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，含 MaaS 部署洞察、四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）和真实世界 case studies，不含架构/训练细节。
+- [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
 
 ## 模型
 
@@ -59,6 +60,7 @@
 - [HunyuanOCR-1.5](models/hunyuan-ocr-1.5.md) - 腾讯轻量端到端 OCR VLM（1B），DFlash block-diffusion 推测解码 + Agentic Data Flow 数据构造，OmniDocBench v1.6 总分 94.74。
 - [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
+- [VibeThinker-3B](models/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，MGPO + Long2Short RL + CLR，纯文本，verifiable reasoning 追平旗舰。
 
 ## 概念
 

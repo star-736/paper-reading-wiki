@@ -15,7 +15,8 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 - DAPO 补的是 **GRPO 在 long-CoT 数学 RL 大规模复现时的 recipe 缺口**；
 - GSPO 改的是 **importance ratio / clipping 的优化单元**，从 token-level 改到 sequence-level；
 - SAPO 改的是 **trust region 的形状**，从 hard clipping 改成 temperature-controlled soft gate；
-- ARPO 改的是 **agentic rollout 的采样位置**，从完整轨迹采样改到工具反馈后的高熵 step 分叉。
+- ARPO 改的是 **agentic rollout 的采样位置**，从完整轨迹采样改到工具反馈后的高熵 step 分叉；
+- MGPO 改的是 **prompt-level 的梯度权重**，用最大熵权重降权全对/全错 prompt，聚焦能力边界 prompt。
 
 如果把它们都简写成「比 GRPO 更好」，检索时会混掉层级。本页按抽象层级拆开。
 
@@ -27,6 +28,7 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 | [GSPO](../sources/group-sequence-policy-optimization.md) | Qwen Team，2025-07 | **importance ratio / clipping 单元** | sequence likelihood ratio $s_i=(\pi_\theta(y_i)/\pi_{old}(y_i))^{1/|y_i|}$，response-level clipping | token-level ratio 与 sequence-level reward 不匹配；MoE expert routing 波动使 token ratio 失效 | Qwen3-30B-A3B，AIME / LiveCodeBench / CodeForces | 用 sequence-level ratio 替代 GRPO token ratio |
 | [SAPO](../sources/soft-adaptive-policy-optimization.md) | Qwen Team，2025-12 | **soft trust region / gate 形状** | sigmoid soft gate + $sech^2$ gradient weight；$\tau_{neg}>\tau_{pos}$ | hard clipping 过脆；GSPO 整条 sequence 被裁、GRPO token 越界即零梯度 | Qwen3-30B-A3B、Qwen3-VL-30B-A3B | 保留 group-based RL，替换硬裁剪为软门控 |
 | [ARPO](../sources/agentic-reinforced-policy-optimization.md) | 人大 + 快手，2025-07 | **agentic rollout 采样结构** | 工具反馈后监控 token entropy，在高熵 tool-call step 分叉 partial rollouts；advantage attribution | trajectory-level RL 忽略工具反馈后的 step-level 决策 | Qwen2.5 / Llama3.1 / Qwen3，math/QA/deep search | 把 DAPO/GRPO/REINFORCE++ 当 trajectory-level baseline |
+| [MGPO](../sources/vibethinker-3b.md) | Sina Weibo，2025-11（VibeThinker-1.5B）→ 2026-06（3B） | **prompt-level 梯度权重** | 最大熵权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权全对/全错 prompt；GRPO clipped objective + on-policy | 全对/全错 prompt 零梯度浪费；training-inference probability mismatch | Qwen2.5-Coder-3B（VibeThinker-3B），AIME/LiveCodeBench | 保留 GRPO group-relative clipped objective，加 prompt-level weight |
 
 ## 关键分叉：token、sequence、step 三个「单位」
 
@@ -59,10 +61,21 @@ ARPO 和前三者不在同一轴上。它不主要讨论 token ratio 或 clippin
 
 这意味着 ARPO 可以理论上叠加 DAPO / GSPO / SAPO 的 policy loss；它改的是 rollout collection / sampling structure。
 
+### MGPO：不争 ratio 也不争采样位置，而争 prompt 的梯度贡献
+
+MGPO 和前四者在又一条不同的轴上。它不改 token-level ratio（DAPO/GSPO/SAPO 的轴），也不改 rollout 采样结构（ARPO 的轴），而是改 **batch 内每个 prompt 对梯度的贡献权重**。
+
+核心观察：GRPO 里一个 prompt 采 $G$ 条 response，如果全对（$p(q)\approx 1$）或全错（$p(q)\approx 0$），group-relative advantage $A_i$ 全为 0 或信号极弱，梯度贡献接近零——这些 prompt 在 batch 里浪费了采样预算。DAPO 的 Dynamic Sampling 用 hard filter 丢弃这些 prompt（只保留有对有错的），MGPO 则用连续的指数权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权它们，保留在 batch 里但降低梯度影响。
+
+两种策略的 trade-off：DAPO hard filter 更彻底（全对/全错直接丢弃，采样预算全部给有信号的 prompt），但需要一个额外的过滤+重采样 pass；MGPO soft weighting 实现更简单（权重直接乘进 loss），但全对/全错 prompt 仍占采样预算。两者动机完全一致——聚焦能力边界 prompt——区别在实现粒度。
+
+MGPO 还有一个 DAPO 不涉及的维度：它显式处理 training-inference probability mismatch。VibeThinker-3B 发现 rollout engine 优化推理吞吐量后，training-inference 概率失配被放大，因此改为全 on-policy（参考 [14, 15] 的稳定化策略）。这是 GRPO 系实践中常见的工程问题，DAPO 论文未讨论。
+
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
 - [Qwen3-VL 技术报告](../sources/qwen3-vl.md)：原报告有 own post-training pipeline；SAPO 论文提供后续/配套 Qwen3-VL RL 训练证据，说明 SAPO 用在 Qwen3-VL-30B-A3B preliminary cold-start 上，但不替换源报告 pipeline。
+- [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本页可作为该概念页里「RL policy optimization 子谱系」的展开。
 
 ## 待追问
@@ -74,6 +87,6 @@ ARPO 和前三者不在同一轴上。它不主要讨论 token ratio 或 clippin
 
 ## 相关页面
 
-- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)
+- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)
-- 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)
+- 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

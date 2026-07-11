@@ -661,3 +661,21 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1 条，模型段 +1 条。
 
 核心定位：Seed2.0 Pro 在数学竞赛（AIME 2025 98.3、IMO/CMO Gold）和搜索 agent（BrowseComp 77.3、BrowseComp-zh 82.4）方面领先，ICPC Pass@8 73.02% 超过 GPT-5.2/Gemini-3-Pro；诚实承认 coding 不如 Claude（SWE-Evo 8.5 vs 27.1）、长尾知识不如 Gemini（SimpleQA 36.0 vs 72.1）。定价比 frontier 模型低约一个数量级。前代 Seed 家族包括 Seed1.6/1.8、Seed1.5-VL、Seed-OSS、Seed-Coder、Seed Diffusion、Seed-Prover、Seedream/Seedance。与已收录的 [DAPO](dapo.md) 同为 ByteDance Seed 团队。图文化：3 张图（Figure 1 MaaS 分布 + Figure 2 查询分布 + Figure 7 ICPC 结果），PyMuPDF 300 DPI 渲染 + `get_textbox` 校验 + `vision_analyze` 核对。`raw/` 未改。
+
+## [2026-07-11] ingest | VibeThinker-3B 技术报告
+
+`raw/2606.16140v1.pdf`（arXiv:2606.16140v1, Sina Weibo, 2026-06-15）。
+
+新增：
+
+- `wiki/sources/vibethinker-3b.md`：来源页（图文交错）。嵌入 Figure 1（六 benchmark 柱状图）、Figure 2（参数效率图）、Figure 3（训练流水线）。Table 1/2 核心评测数据重排为 Markdown。待追问 5 条（MGPO 的 $D_{ME}$ 具体形式、参数 merge 方法、Long2Short $\lambda$ 消融、CLR claim 提取敏感性、context window 策略与 SFT 质量耦合）。
+- `wiki/models/vibethinker-3b.md`：模型页。关键事实表含模态=纯文本（已据原文核实）。技术身份段定位为后训练系统工程而非架构创新。
+- `wiki/assets/vibethinker-3b/`：fig1-benchmark-bars.png, fig2-param-efficiency.png, fig3-pipeline.png
+
+更新：
+
+- `wiki/comparisons/llm-rl-policy-optimization.md`：MGPO 加入速览表（prompt-level 梯度权重层）+ 新增「MGPO：不争 ratio 也不争采样位置，而争 prompt 的梯度贡献」段（与 DAPO Dynamic Sampling 的 hard filter vs soft weighting 对比）+ 相关页面加 VibeThinker-3B 双向引用。
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架加 VibeThinker-3B 条目（Spectrum-to-Signal + Long2Short + CLR + context window 失效发现 + Parametric Compression-Coverage Hypothesis）。
+- `wiki/index.md`：来源段 +1 条，模型段 +1 条。
+
+核心定位：VibeThinker-3B 是 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，用 Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR）在 verifiable reasoning 上追平旗舰（AIME26 94.3 vs DeepSeek V3.2 94.2 / GLM-5 95.8），但 GPQA-D 差 14 点。MGPO 与 DAPO 的 Dynamic Sampling 动机一致但实现不同（soft weighting vs hard filter）。Long2Short RL 的零和 length-aware reward shift 是训练时效率优化，与 CLR 的 test-time scaling 互补。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验 + `vision_analyze` 核对 Fig 3。
