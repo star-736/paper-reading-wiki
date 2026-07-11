@@ -62,6 +62,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - DAPO / GSPO / SAPO：如何把 group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
+- KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。
 
 ## 待追问
 

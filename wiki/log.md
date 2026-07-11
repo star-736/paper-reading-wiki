@@ -611,3 +611,25 @@ UniClawBench（HKU MMLab + Meituan）是 capability-driven 的 proactive agent b
 - `wiki/index.md`：来源区 + 模型区各加 1 条。
 
 图文化：2 张图（Figure 2 框架 + Figure 4 foresight 机制），PyMuPDF 300 DPI 渲染 + `get_textbox` 校验 + `vision_analyze` 核对。`raw/` 未改。
+## [2026-07-11] ingest | KAT-Coder-V2 / V2.5 技术报告
+
+新增快手 KwaiKAT 团队两篇 agentic coding 模型报告：
+
+- `raw/2603.27703v1.pdf`（KAT-Coder-V2，arXiv:2603.27703，2026-03-29，22 页）
+- `raw/2607.05471v1.pdf`（KAT-Coder-V2.5，arXiv:2607.05471，2026-07-06，24 页）
+
+新建/修改文件：
+
+- `wiki/sources/kat-coder-v2.md`（新建）：Specialize-then-Unify 五域分治（SWE/WebCoding/Terminal/WebSearch/General）+ KwaiEnv 模块化沙箱 + AutoBuilder + Agentic Scaling（task complexity/intent alignment/scaffold generalization）+ MCLA（K=8 forward prefill 取 log-prob 平均降 MoE RL 方差）+ turn-level GSPO adaptation + Tree Training（DFS 展平树状轨迹，梯度等价，6.2× 加速）+ OPD 专家融合。嵌入 Figure 4（AutoBuilder）和 Figure 5（Tree Training）。
+- `wiki/sources/kat-coder-v2.5.md`（新建）：系统性基础设施重构。Environment Scaling Engine（verifiable task mining + AutoBuilder 100K+ 环境/12 语言，成功率 16.5%->57.2%）+ Data Scaling Flywheel（hint-boosted near-miss 恢复 + hint-free replay + 九维 process filtering + harness rewriting）+ KwaiClawEnv（Service/Task/Eval 三层 + 两级 scaling）+ harness randomization（format/context-structure/control-flow 三轴）+ Gateway Server（retokenization drift 消除）+ reliability-hardened sandbox（错误率 16%-><2%）+ asymmetric PPO with hindsight-augmented critic + harness-oriented reward（三层 10 项 rule-based + GRM model-based）+ 长上下文 MOPD 稳定化（cold start + drift-aware truncation）。嵌入 Figure 2（SE 数据管线）、Figure 3（KwaiClawEnv）、Figure 4（RL 架构）。
+- `wiki/models/kat-coder.md`（新建）：V2/V2.5 变体表，模态=纯文本，基座未公开，代际演进段。
+- `wiki/assets/kat-coder-v2/`（fig4-autobuilder.png, fig5-tree-training.png）
+- `wiki/assets/kat-coder-v2.5/`（fig2-se-data-pipelines.png, fig3-kawaiclawenv.png, fig4-rl-infrastructure.png）
+- `wiki/concepts/agentic-engineering.md`：+KAT-Coder 跨报告信号 + 相关页面
+- `wiki/concepts/post-training-for-agentic-models.md`：+KAT-Coder 综合框架条目
+- `wiki/concepts/multi-teacher-on-policy-distillation.md`：+KAT-Coder-V2.5 长上下文 MOPD 待追问
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：+KAT Code Bench / KAT Claw Bench / PinchBench / Claw-Eval 四行
+- `wiki/comparisons/on-policy-distillation.md`：速览表 +KAT-Coder V2/V2.5 两行，轴一 A 类 +KAT-Coder V2.5 长上下文稳定化
+- `wiki/index.md`：来源段 +2 条，模型段 +1 条
+
+核心发现：V2 -> V2.5 的核心变化不是架构升级而是训练基础设施系统性重构--RL 算法从 GRPO 变体切到 asymmetric PPO + hindsight critic，发现 ~16% 训练失败源于沙箱而非算法（降到 <2%），V2.5 的 MOPD 是已收录报告中唯一把长上下文 OPD 不稳定性（student prefix 偏离 teacher 分布）作为独立工程问题处理的，用 cold start + drift-aware truncation 解决。两篇报告均未公开 backbone 架构和参数量。图文化：5 张图（V2: AutoBuilder + Tree Training；V2.5: SE 数据管线 + KwaiClawEnv + RL 架构），PyMuPDF 300 DPI + get_textbox 校验 + vision_analyze 核对。`raw/` 未改。

@@ -36,6 +36,8 @@
 - [InternVLA-A1.5 技术报告](sources/internvla-a1.5.md) - 上海 AI Lab 的统一 VLA 机器人模型，Qwen-3.5 2B backbone + 460M unified expert + latent foresight（frozen WAN2.2 蒸馏），6 项仿真 benchmark 全部最优。
 - [HunyuanOCR-1.5 技术报告](sources/hunyuan-ocr-1.5.md) - 腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，DFlash block-diffusion 推测解码（Transformers 6.37× / vLLM 2.14×）+ Agentic Data Flow 数据构造 + 三组件 reward RL。
 - [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
+- [KAT-Coder-V2 技术报告](sources/kat-coder-v2.md) - 快手 KwaiKAT 的 agentic coding 模型，Specialize-then-Unify 五域分治 + KwaiEnv 模块化沙箱 + MCLA 稳定 MoE RL + Tree Training 6.2× 加速 + OPD 专家融合。
+- [KAT-Coder-V2.5 技术报告](sources/kat-coder-v2.5.md) - 快手 KwaiKAT 的 coding-focused agentic 模型，AutoBuilder + KwaiClawEnv + harness randomization + asymmetric PPO with hindsight critic + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）。
 
 ## 模型
 
@@ -53,6 +55,7 @@
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
 - [InternVLA-A1.5](models/internvla-a1.5.md) - 上海 AI Lab 统一 VLA 机器人模型，Qwen-3.5 2B（3:1 GDN:full attention）做 backbone + 460M unified expert + latent foresight，GDN 混合注意力在机器人控制领域的采用。
 - [HunyuanOCR-1.5](models/hunyuan-ocr-1.5.md) - 腾讯轻量端到端 OCR VLM（1B），DFlash block-diffusion 推测解码 + Agentic Data Flow 数据构造，OmniDocBench v1.6 总分 94.74。
+- [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 
 ## 概念
 

@@ -183,4 +183,5 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
 - Teacher 数量增加时，student 容量是否足够保留所有能力？
 - MOPD 与异步 agent RL 能否形成“先 RL 出 teacher，再 MOPD 融合，再继续 RL”的循环？
+- KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
 

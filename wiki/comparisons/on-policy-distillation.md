@@ -20,7 +20,7 @@ timestamp: 2026-06-23
 2. 把 flagship 模型的能力**压到小模型**里（Qwen3、Qwen3-VL），
 3. 还是把 RL 流水线里多个阶段的能力**召回**到最终 checkpoint（GLM-5）？
 
-## 5 家速览
+## 速览
 
 | 模型 | OPD 的定位 | Teacher 配置 | KL 形式 | 在 pipeline 中的位置 |
 | --- | --- | --- | --- | --- |
@@ -28,7 +28,9 @@ timestamp: 2026-06-23
 | **[DeepSeek-V4](../models/deepseek-v4.md)** | 多专家**融合**（OPD **完全替代了 mixed RL 阶段**） | >10 个 domain teacher（覆盖各领域），加权 reverse KL | **full-vocabulary** reverse KL（不简化成 token-level estimate） | 分领域 specialist 训练（SFT+GRPO）→ OPD |
 | **[Qwen3](../models/qwen3.md)** lightweight | 把 flagship **压到小模型**（替代小模型的 RL） | **单 teacher**（Qwen3-32B 或 Qwen3-235B-A22B）；只用在 8/14B + 30B-A3B + 4/1.7/0.6B | logit-level reverse KL（off-policy distill 打底 → on-policy distill） | flagship 走完 4 阶段后，lightweight 只跑两阶段 distill |
 | **[Qwen3-VL](../sources/qwen3-vl.md)** lightweight | 同 Qwen3，把 flagship VL 压到小 VL | 单 teacher（flagship Qwen3-VL）；off-policy + on-policy 两阶段 | logit-level reverse KL | long-CoT SFT 之后、RL 之前 |
-| **[GLM-5](../models/glm-5.md)** | RL 阶段间**能力召回**（"swiftly recover the skills acquired in earlier SFT and RL stages"） | **多 teacher**：上游 SFT / Reasoning RL / General RL 各阶段的 final checkpoint 都作为 teacher，prompt 按其归属阶段路由到对应 teacher（§3.5 原文：teachers 复数，"training prompts are sampled from the corresponding teachers' RL training sets and mixed in appropriate proportions"） | token-level KL log-ratio 当 advantage（§3.5 公式 2）；GRPO group size = 1，因 advantage 不再来自 group 内对比而直接来自 teacher gap | **整个后训练的最终阶段**——SFT → Reasoning RL → Agentic RL → General RL → cross-stage distillation，更新 General RL 末端 checkpoint |
+| **[GLM-5](../models/glm-5.md)** | RL 阶段间**能力召回**（"swiftly recover the skills acquired in earlier SFT and RL stages"） | **多 teacher**：上游 SFT / Reasoning RL / General RL 各阶段的 final checkpoint 都作为 teacher，prompt 按其归属阶段路由到对应 teacher（§3.5 原文：teachers 复数，"training prompts are sampled from the corresponding teachers' RL training sets and mixed in appropriate proportions"） | token-level KL log-ratio 当 advantage（§3.5 公式 2）；GRPO group size = 1，因 advantage 不再来自 group 内对比而直接来自 teacher gap | **整个后训练的最终阶段**--SFT -> Reasoning RL -> Agentic RL -> General RL -> cross-stage distillation，更新 General RL 末端 checkpoint |
+| **[KAT-Coder](../models/kat-coder.md)** V2 | 多专家**融合**（Specialize-then-Unify 的 unify 阶段） | 5 域专家（SWE / WebCoding / Terminal / WebSearch / General），每个 task 动态选最佳专家做 teacher | token-level log-prob 监督（不做 full-vocabulary KL），与 RL loss 联合优化 | SFT -> 分域 RL -> OPD（最后阶段） |
+| **[KAT-Coder](../models/kat-coder.md)** V2.5 | 多专家**融合** + **长上下文稳定化**（MOPD） | 5 域专家（SWE / Agent-Claw / Terminal / WebCoding / General），reverse-KL mode-seeking 减跨域干扰 | token-level reverse KL + **off-policy cold start** + **drift-aware dynamic truncation**（top-k overlap 控制 token 权重，低兼容性截断） | SFT -> 分域 RL + asymmetric PPO -> MOPD（最后阶段） |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear。
 
@@ -38,7 +40,7 @@ timestamp: 2026-06-23
 
 把 5 家的 OPD 目标按"想解决什么问题"归三类：
 
-**A. 多专家融合（capability merging）**——典型代表 **MiMo MOPD** 和 **DeepSeek-V4 OPD**。问题是 sequential RL 的 capability see-saw：数学 RL 提升后写作或代码退化，简单合并权重也不保留每个 teacher 的峰值。OPD 用 student on-policy 轨迹 + 多个 domain teacher 的 KL 监督来融合，让 student 同时学多个专家而不互相覆盖。两家都用 **>10 个 teacher**。
+**A. 多专家融合（capability merging）**--典型代表 **MiMo MOPD** 和 **DeepSeek-V4 OPD**。问题是 sequential RL 的 capability see-saw：数学 RL 提升后写作或代码退化，简单合并权重也不保留每个 teacher 的峰值。OPD 用 student on-policy 轨迹 + 多个 domain teacher 的 KL 监督来融合，让 student 同时学多个专家而不互相覆盖。两家都用 **>10 个 teacher**。**KAT-Coder V2/V2.5** 也属于这一类，用 5 个域专家做 teacher，但 V2.5 独特之处在于专门解决了**长上下文 OPD 的不稳定性**--student 生成的前缀在长轨迹后段偏离 teacher 训练分布，使 teacher 条件分布不可靠。V2.5 用 off-policy cold start 预对齐 + drift-aware dynamic truncation（top-k overlap 控制权重和截断）稳定化，是 A 类中唯一把长上下文稳定性作为独立工程问题处理的。
 
 **B. 强到弱迁移（capacity transfer）**——典型代表 **Qwen3 Strong-to-Weak** 和 **Qwen3-VL Strong-to-Weak**。问题是 lightweight 模型走完整 4 阶段后训练（long-CoT SFT → reasoning RL → mode fusion → general RL）成本高，且 RL 在小模型上 pass@64 不涨（只 sharpen 已有能力，不扩探索空间）。Qwen3 的回答是**单 teacher**（flagship 32B 或 235B-A22B）→ off-policy distill 打底 → on-policy distill 微调，**仅 1/10 GPU·h** 拿到比 RL 更好的 pass@1，**而且 pass@64 也涨**（详见下文 Table 21 复刻）。
 
