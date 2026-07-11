@@ -34,10 +34,13 @@ HunyuanOCR-1.5 的定位不是通用 VLM，而是 OCR-specialized VLM——把�
 两个核心创新：
 
 - **DFlash** 是 block-diffusion 式推测解码，与 [DSpark](../sources/dspark.md)、[Gemma 4](../models/gemma-4.md) MTP drafter 同属推测解码加速家族，但用 block-diagonal FlexAttention mask 训练并行 draft block，而非 sequential 多 token 预测头。详见 [多 Token 预测](../concepts/multi-token-prediction.md)。
-- **Agentic Data Flow** 是 agent 驱动的自动数据构造系统，与 [agentic engineering](../concepts/agentic-engineering.md) 趋势一致——用 agent 自动化数据 pipeline 开发，而非人工标注。
+- **Agentic Data Flow** 是 agent 驱动的自动数据构造系统，与 [agentic engineering](../concepts/agentic-engineering.md) 趋势一致--用 agent 自动化数据 pipeline 开发，而非人工标注。
+
+与 [Unlimited OCR](unlimited-ocr.md) 的对比：两者都是 OCR-specialized VLM，但技术路线不同。HunyuanOCR-1.5 走推测解码加速（DFlash，decode 步数减少）+ agentic 数据构造补长尾；Unlimited OCR 走注意力机制设计（R-SWA，KV cache 恒定不随输出增长）。前者解决「更快」，后者解决「更长」。OmniDocBench v1.6 上 HunyuanOCR-1.5（1B）94.74 vs Unlimited-OCR（3B-A0.5B）93.92，但评测条件不完全可比。
 
 ## 相关页面
 
 - [HunyuanOCR-1.5 技术报告](../sources/hunyuan-ocr-1.5.md)
+- [Unlimited OCR](unlimited-ocr.md) - 同属 OCR VLM 家族，走 R-SWA 恒定 KV cache 路线
 - [多 Token 预测](../concepts/multi-token-prediction.md) - DFlash 在推测解码谱系中的位置
 - [Agentic Engineering](../concepts/agentic-engineering.md) - Agentic Data Flow 的上下文

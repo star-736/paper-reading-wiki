@@ -125,5 +125,6 @@ OmniDocBench v1.6（端到端文档解析）总分 94.74，是 1B 级模型 SOTA
 ## 相关页面
 
 - [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) - 模型身份页
+- [Unlimited OCR Works](unlimited-ocr.md) - 同属 OCR VLM 家族，走恒定 KV cache attention 路线（R-SWA）而非推测解码
 - [多 Token 预测](multi-token-prediction.md) - DFlash 作为 block-diffusion 推测解码变体
 - [Agentic Engineering](agentic-engineering.md) - Agentic Data Flow 作为 agent 驱动自动化的一个实例
