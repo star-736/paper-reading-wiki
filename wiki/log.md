@@ -746,3 +746,18 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：GLM-5V-Turbo 是 GLM-5 家族的多模态扩展（基座 GLM-5-Turbo），定位 native multimodal agent。报告刻意不披露参数量/训练量，主轴是五条线（模型设计 / 多模态训练 / RL / 工具链 / agent 框架集成）+ 三个 design lens（感知是天花板 / 分层优化 / 清晰规格+可靠验证+受控评测）。CogViT 两阶段预训练（distillation MIM + contrastive IT）以 403M 超 427M–632M 竞品。MMTP 用共享 `<|image|>` token 解决多模态 MTP 的图像 token 传递问题。30+ 类别多模态联合 RL 观察到 RL 跨域干扰弱于 SFT。加视觉未侵蚀文本 coding（CC-Backend/CC-RepoExploration 反超 GLM-5-Turbo）。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验 + `vision_analyze` 交叉确认。
+
+## [2026-07-11] ingest | Keye-VL-2.0 技术报告
+
+- **来源**：`raw/2606.10651v1.pdf`（arXiv:2606.10651v1，快手 Keye Team，2026-06-10，31 页）
+- **新建页面**：
+  - `wiki/sources/keye-vl-2.md`（图文交错 source 页，嵌入 Figure 1/2/4/5）
+  - `wiki/models/keye-vl-2.md`（模型页，已据 HF config 核实：31.1B 总参 / 3B 激活 / 48 层 / 128 experts / 8 per-token / GQA 4 KV heads / 256K / SigLIP-384-14 ViT）
+- **提取图表**：`wiki/assets/keye-vl-2/`
+- **更新已有页面**：
+  - `wiki/concepts/deepseek-sparse-attention.md`：新增「Keye-VL-2.0：DSA 从 MLA 走向 GQA」段
+  - `wiki/concepts/efficient-long-context-attention.md`：DSA 路线行加 Keye-VL-2.0
+  - `wiki/concepts/multi-teacher-on-policy-distillation.md`：新增「Keye-VL-2.0 的 Cross-Modal MOPD」段
+  - `wiki/concepts/post-training-for-agentic-models.md`：综合框架新增 Keye-VL-2.0
+  - `wiki/comparisons/on-policy-distillation.md`：速览表 Keye-VL-2.0 行（第 6 家 OPD 报告）
+- **核心发现**：DSA 不依赖 MLA（indexer MQA + aggregation GQA）；MOPD 首次多模态大规模应用（13 teacher + top-k overlap estimator）；DSA RL 稳定性方案谱系扩张。

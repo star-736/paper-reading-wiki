@@ -10,9 +10,9 @@ timestamp: 2026-06-23
 
 ## 为什么开这一页
 
-「在线策略蒸馏 / On-Policy Distillation（OPD）」在 2025–2026 的开源技术报告里高频出现，但**同一个名字下封装的是三种相当不同的训练设计**——目的、teacher 数量、KL 形式、在流水线中的位置都不一样。这一页把已收录报告里用了 OPD 的 5 家并排比对一遍，作为 [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 概念页之上的跨家综合视角。
+「在线策略蒸馏 / On-Policy Distillation（OPD）」在 2025–2026 的开源技术报告里高频出现，但**同一个名字下封装的是三种相当不同的训练设计**——目的、teacher 数量、KL 形式、在流水线中的位置都不一样。这一页把已收录报告里用了 OPD 的 6 家并排比对一遍，作为 [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 概念页之上的跨家综合视角。
 
-**核心共识**（这 5 家都同意的事，也就是 OPD 之所以叫 OPD）：student 从**自己当前策略**采样轨迹，再用 teacher 在这些**student 轨迹**上的输出分布做监督——以此对齐部署分布、避开离线蒸馏的 exposure bias。off-policy 蒸馏（student 学 teacher 生成的静态数据）是它的对照组。
+**核心共识**（这 6 家都同意的事，也就是 OPD 之所以叫 OPD）：student 从**自己当前策略**采样轨迹，再用 teacher 在这些**student 轨迹**上的输出分布做监督--以此对齐部署分布、避开离线蒸馏的 exposure bias。off-policy 蒸馏（student 学 teacher 生成的静态数据）是它的对照组。
 
 **核心分歧**：OPD 究竟是
 
@@ -31,6 +31,7 @@ timestamp: 2026-06-23
 | **[GLM-5](../models/glm-5.md)** | RL 阶段间**能力召回**（"swiftly recover the skills acquired in earlier SFT and RL stages"） | **多 teacher**：上游 SFT / Reasoning RL / General RL 各阶段的 final checkpoint 都作为 teacher，prompt 按其归属阶段路由到对应 teacher（§3.5 原文：teachers 复数，"training prompts are sampled from the corresponding teachers' RL training sets and mixed in appropriate proportions"） | token-level KL log-ratio 当 advantage（§3.5 公式 2）；GRPO group size = 1，因 advantage 不再来自 group 内对比而直接来自 teacher gap | **整个后训练的最终阶段**--SFT -> Reasoning RL -> Agentic RL -> General RL -> cross-stage distillation，更新 General RL 末端 checkpoint |
 | **[KAT-Coder](../models/kat-coder.md)** V2 | 多专家**融合**（Specialize-then-Unify 的 unify 阶段） | 5 域专家（SWE / WebCoding / Terminal / WebSearch / General），每个 task 动态选最佳专家做 teacher | token-level log-prob 监督（不做 full-vocabulary KL），与 RL loss 联合优化 | SFT -> 分域 RL -> OPD（最后阶段） |
 | **[KAT-Coder](../models/kat-coder.md)** V2.5 | 多专家**融合** + **长上下文稳定化**（MOPD） | 5 域专家（SWE / Agent-Claw / Terminal / WebCoding / General），reverse-KL mode-seeking 减跨域干扰 | token-level reverse KL + **off-policy cold start** + **drift-aware dynamic truncation**（top-k overlap 控制 token 权重，低兼容性截断） | SFT -> 分域 RL + asymmetric PPO -> MOPD（最后阶段） |
+| **[Keye-VL-2.0](../models/keye-vl-2.md)** | 多专家**融合**（Cross-Modal MOPD，多模态场景首次大规模应用） | **13 个** RL-trained domain teacher（safety / 纯文本数学 / 指令跟随 / code / 视觉 STEM / OCR / grounding / counting / video / tool use 等），每 sample 按 modality+task 路由 | token-level reverse KL + **top-k overlap estimator**（只在 teacher/student 都高概率的 token 上算 advantage）+ **SPRR** re-tokenization + token-category-aware scaling + localized repetition penalty | SFT -> General RL -> Specialized RL -> Video RL -> Agentic RL -> Cross-Modal MOPD（最后阶段） |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear。
 
@@ -38,9 +39,9 @@ timestamp: 2026-06-23
 
 ### 轴一：OPD 是干什么用的
 
-把 5 家的 OPD 目标按"想解决什么问题"归三类：
+把 6 家的 OPD 目标按"想解决什么问题"归三类：
 
-**A. 多专家融合（capability merging）**--典型代表 **MiMo MOPD** 和 **DeepSeek-V4 OPD**。问题是 sequential RL 的 capability see-saw：数学 RL 提升后写作或代码退化，简单合并权重也不保留每个 teacher 的峰值。OPD 用 student on-policy 轨迹 + 多个 domain teacher 的 KL 监督来融合，让 student 同时学多个专家而不互相覆盖。两家都用 **>10 个 teacher**。**KAT-Coder V2/V2.5** 也属于这一类，用 5 个域专家做 teacher，但 V2.5 独特之处在于专门解决了**长上下文 OPD 的不稳定性**--student 生成的前缀在长轨迹后段偏离 teacher 训练分布，使 teacher 条件分布不可靠。V2.5 用 off-policy cold start 预对齐 + drift-aware dynamic truncation（top-k overlap 控制权重和截断）稳定化，是 A 类中唯一把长上下文稳定性作为独立工程问题处理的。
+**A. 多专家融合（capability merging）**--典型代表 **MiMo MOPD** 和 **DeepSeek-V4 OPD**。问题是 sequential RL 的 capability see-saw：数学 RL 提升后写作或代码退化，简单合并权重也不保留每个 teacher 的峰值。OPD 用 student on-policy 轨迹 + 多个 domain teacher 的 KL 监督来融合，让 student 同时学多个专家而不互相覆盖。两家都用 **>10 个 teacher**。**KAT-Coder V2/V2.5** 也属于这一类，用 5 个域专家做 teacher，但 V2.5 独特之处在于专门解决了**长上下文 OPD 的不稳定性**--student 生成的前缀在长轨迹后段偏离 teacher 训练分布，使 teacher 条件分布不可靠。V2.5 用 off-policy cold start 预对齐 + drift-aware dynamic truncation（top-k overlap 控制权重和截断）稳定化，是 A 类中唯一把长上下文稳定性作为独立工程问题处理的。**Keye-VL-2.0** 是 A 类最新成员，13 个 teacher 覆盖纯文本和多模态全谱，独有 top-k overlap estimator（只在 teacher/student 都高概率的 token 上算 advantage，避免极低概率 token 的不稳定比较）+ SPRR re-tokenization（prompt/response 分离处理确保 token 对齐）+ token-category-aware scaling（format token 降权、perception/reasoning token 升权）+ localized repetition penalty（重复坍缩点后才惩罚），是 MOPD 在多模态场景的首次大规模应用。
 
 **B. 强到弱迁移（capacity transfer）**——典型代表 **Qwen3 Strong-to-Weak** 和 **Qwen3-VL Strong-to-Weak**。问题是 lightweight 模型走完整 4 阶段后训练（long-CoT SFT → reasoning RL → mode fusion → general RL）成本高，且 RL 在小模型上 pass@64 不涨（只 sharpen 已有能力，不扩探索空间）。Qwen3 的回答是**单 teacher**（flagship 32B 或 235B-A22B）→ off-policy distill 打底 → on-policy distill 微调，**仅 1/10 GPU·h** 拿到比 RL 更好的 pass@1，**而且 pass@64 也涨**（详见下文 Table 21 复刻）。
 
@@ -95,11 +96,13 @@ Qwen3 报告 Table 21（page 21，原文 § The Effectiveness and Efficiency of 
 
 这张表的意思被 Qwen3 报告拿来论证两点：(1) on-policy distill 的训练效率 **≈10× of RL**；(2) pass@64 涨说明 distill 在**扩探索空间**，不是单纯 sharpen 已有分布——而 RL 在 pass@64 不涨，是"RL 只 sharpen，不扩展"的强证据。
 
-## 三家融合派的实际效果
+## 融合派的实际效果
 
 MiMo MOPD 的 Table 7（[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 概念页里完整 12 行复刻）给出 MOPD 前后 student vs best teacher 的对比，**12 项 benchmark 中 8 项接近或超过 best teacher**，4 项落后（BrowseComp −6.8、Arena-Hard Creative Writing −3.9、GPQA-Diamond −1.2、SWE-Bench Verified −0.8）。说明融合派 OPD 不是自动合并峰值，**teacher 选择与 domain routing 依然关键**。
 
-DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed RL 的整体替代品，没有"先做 mixed RL，再做 OPD"这条对照路径），但报告把 V4-Pro-Base 定为"DeepSeek 系列最强 foundation model"——OPD 的有效性是通过端到端 benchmark 而非消融来论证的。
+DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed RL 的整体替代品，没有"先做 mixed RL，再做 OPD"这条对照路径），但报告把 V4-Pro-Base 定为"DeepSeek 系列最强 foundation model"--OPD 的有效性是通过端到端 benchmark 而非消融来论证的。
+
+[Keye-VL-2.0](../sources/keye-vl-2.md) 同样没有给 MOPD 前后消融表，但其 13-teacher 配置是已收录报告中 teacher 数最多的（MiMo 未明确数量，V4 ">10"，KAT 5 个）。Keye-VL-2.0 独有的 top-k overlap estimator 与 KAT-Coder-V2.5 的 drift-aware truncation 解决的是同一类问题--teacher 在 student off-policy 分布外给出不可靠监督--但路径不同：Keye-VL-2.0 在 token 级别过滤（只保留双方高概率的 overlap），KAT-V2.5 在 token 权重级别控制（低兼容性截断）。
 
 ## 待追问
 

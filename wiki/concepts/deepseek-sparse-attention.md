@@ -66,6 +66,17 @@ GLM-5 的处理方式(论文「DSA RL insights」段,原文措辞):
 - **默认冻结 indexer 参数**,既加速训练,也防止 indexer 自身不稳定学习。
 - 不采用 MoE routing replay 那种保存每 token top-k index 的策略--DSA 的 k = 2048 远大于 MoE 的 k,存储和训练/推理引擎间的通信成本都会爆炸。
 
+## Keye-VL-2.0：DSA 从 MLA 走向 GQA
+
+[Keye-VL-2.0](../sources/keye-vl-2.md) 是首个把 DSA 适配到 GQA-based 多模态架构的模型。此前 DSA 只在 MLA-based 模型上实现（V3.2、GLM-5），其 Lightning Indexer 天然走 MQA mode（所有 query head 共享一份 latent KV）。Keye-VL-2.0 的 backbone 是 GQA（4 个 KV head group），需要改造：
+
+- **Indexer 侧仍用 MQA**：所有 query head 共享一个 key head 计算全局 index score，与 MLA-based DSA 一致。这部分不是 DSA 的设计取舍，而是 throughput 选择——MQA 共享 key 大幅减少 indexer 计算和访存。
+- **Aggregation 侧用 GQA**：每个 GQA group 在 indexer 选出的同一个 top-k token 集上独立做 dense attention，但各 group 归一化独立。这是「indexer MQA + aggregation GQA」的混合设计，让 DSA 不再依赖 MLA 的 latent KV 结构。
+
+训练同样沿用 dense warm-up + sparse adaptation 两阶段（§2.3.3），但 warm-up 阶段的 KL target 是 GQA 各 group 的 dense attention 分布（而非 MLA 的 MQA 分布）。
+
+RL 稳定性方面，Keye-VL-2.0 用 `flashinfer.topk` 替代 `torch.topk`（GLM-5 的选择），获得 2-3× speedup 同时保持确定性。但报告未提到冻结 indexer 参数（GLM-5 在 RL 阶段冻结了），这一差异是否源于 GQA+DSA 与 MLA+DSA 在 indexer 参数稳定性上的不同，待追问。
+
 ## 与 DeepSeek-V3.2 / DeepSeek-V4 的关系
 
 DSA 由 [DeepSeek-V3.2](../sources/deepseek-v32.md) 首次引入并命名，其训练方案（dense warmup → sparse training with KL alignment）已成为后续模型的参考范式。

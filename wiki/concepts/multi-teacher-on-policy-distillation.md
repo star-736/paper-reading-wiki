@@ -178,6 +178,17 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 
 [DeepSeek-V4](../models/deepseek-v4.md) 也使用多 teacher OPD，但强调 full-vocabulary logit distillation。它认为 token-level KL 估计虽然省资源，但方差高、训练不稳定，因此通过 teacher hidden-state caching、按 teacher 排序调度和 TileLang kernel 来支持完整 logits 的 KL 计算。
 
+## Keye-VL-2.0 的 Cross-Modal MOPD
+
+[Keye-VL-2.0](../sources/keye-vl-2.md) 是 MOPD 在多模态场景的首次大规模应用。它与 MiMo MOPD 的核心思路一致（多 domain teacher + on-policy student rollout + token-level KL），但增加了四项工程增强：
+
+1. **Top-k overlap estimator**：只在 teacher 和 student 都认为合理（TopK 交集）的 token 上计算 advantage，避免在极低概率 token 上的不稳定比较。$\Omega_{i,t} = \text{TopK}(\pi_T) \cap \text{TopK}(\pi_\theta)$，空集时 advantage 归零。
+2. **SPRR（Segmented Prompt-Response Re-tokenization）**：分别处理 prompt 和 response，确保 teacher log-prob 与 student response token 严格对齐。
+3. **Token-category-aware advantage scaling**：formatting token 降权、perception/reasoning token 升权。
+4. **Localized repetition penalty**：在重复坍缩位置 $\tau_i$ 之后才施加惩罚，不影响正常生成长度。
+
+13 个 domain teacher 覆盖 safety / 纯文本数学 / 指令跟随 / code / 视觉 STEM / OCR / grounding / counting / video / tool use 等，是已收录报告中 teacher 数最多的（MiMo 未明确数量，V4 ">10"，KAT 5 个）。详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)。
+
 ## 待追问
 
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
