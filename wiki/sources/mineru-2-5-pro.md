@@ -196,6 +196,7 @@ Stage 1（大规模 SFT）单阶段贡献最大（+1.31），说明 Data Engine 
 ## 相关页面
 
 - [MinerU2.5-Pro](../models/mineru-2-5-pro.md) - 模型身份页
+- [GLM-OCR](glm-ocr.md) - 头号竞争者，v1.6 上 95.15 < MinerU2.5-Pro 95.69；MTP 加速路线 vs 数据中心方法论路线对照（GLM-OCR 自报 v1.5 = 94.62，本报告 v1.6 统一重测 = 95.15，符合 MGAM 提分预期）
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM，自报 HunyuanOCR-1.0 分数与本报告统一重测分存在分歧（见「跨源评测分歧」）
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - OmniDocBench v1.6 的 MGAM 修正 + Hard 子集是「评测方法论」跨域信号
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - Stage 3 GRPO + DAPO recipe 的非 agentic（文档解析格式对齐）应用

@@ -51,6 +51,7 @@
 - [Agent-World 技术报告](sources/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场：Agentic Environment-Task Discovery（1978 环境 / 19822 工具，MCP/工具文档/PRD 挖主题 + graph-based + programmatic 任务合成）+ Continuous Self-Evolving Agent Training（多环境 GRPO RL + 诊断弱环境→定向扩展→continue RL 的 co-evolution），跨 23 benchmark。
 - [Qwen-AgentWorld 技术报告](sources/qwen-agent-world.md) - Qwen Team 的 native language world model（LWM），首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的 agentic 环境模拟器，三阶段 CPT→SFT→RL（"injects/activates/sharpens"）+ AgentWorldBench（5 维 rubric reference-grounded judging）+ 解耦（Sim RL 可控模拟超真实环境）/ 统一（LWM warm-up 跨任务迁移）两种 agent 增强范式。
 - [MinerU2.5-Pro 技术报告](sources/mineru-2-5-pro.md) - 上海 AI Lab + PKU + SJTU + 商汤的数据中心文档解析报告，固定 1.2B 架构，Data Engine（DDAS + CMCV + Judge-and-Refine）+ 三阶段训练把 OmniDocBench v1.6 从 92.98 推到 95.69，并修正评测匹配偏差（MGAM）+ 引入 Hard 子集；含 HunyuanOCR 1.0 自报分与统一重测分的跨源分歧。
+- [GLM-OCR 技术报告](sources/glm-ocr.md) - 智谱 AI + 清华的 0.9B 轻量 OCR VLM，CogViT + GLM 解码器 + MTP（训练+推理共用共享参数多头，~50% 吞吐提升）+ 两阶段 pipeline + 文档解析/KIE 双任务统一，OmniDocBench v1.5 SOTA 94.62；含 v1.5 自报 vs v1.6 统一重测的评测版本差异。
 - [Ling and Ring 2.6 技术报告](sources/ling-2.6.md) - Inclusion AI 的 Ling-2.6 / Ring-2.6 万亿参数 agentic 模型族，7:1 Lightning Attention + MLA 混合线性注意力 retrofit、token efficiency 后训练、KPop agentic RL。
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
 |
@@ -82,6 +83,7 @@
 - [Agent-World](models/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场产出（8B/14B，Qwen3 dense 基座 + 冷启动 SFT + 多环境 GRPO RL + 2 轮自演化 arena），纯文本，环境合成 + agent-environment co-evolution。
 - [Qwen-AgentWorld](models/qwen-agent-world.md) - Qwen Team 的 native language world model 家族（35B-A3B / 397B-A17B，基于 Qwen3.5），覆盖 7 域 agentic 环境模拟，三阶段 CPT→SFT→RL，纯文本（GUI 域用 accessibility tree 文本表示）。
 - [MinerU2.5-Pro](models/mineru-2-5-pro.md) - 上海 AI Lab + PKU + SJTU + 商汤的 1.2B 轻量文档解析 VLM（NaViT-675M + Qwen2-0.5B），固定架构，Data Engine（DDAS + CMCV + Judge-and-Refine）+ 三阶段训练，多模态（文本+图像输入；结构化文本输出）。
+- [GLM-OCR](models/glm-ocr.md) - 智谱 AI + 清华的 0.9B 轻量 OCR VLM（CogViT ~400M + GLM ~500M），MTP 共享参数多头加速（~50% 吞吐提升）+ 两阶段 pipeline + 文档解析/KIE 双任务统一，多模态（文本+图像输入；结构化 Markdown/JSON 输出）。
 - [Ling-2.6 / Ring-2.6](models/ling-2.6.md) - Inclusion AI 万亿参数 agentic 模型族（Ling-2.6 instant + Ring-2.6 thinking），7:1 Lightning Attention + MLA 混合线性注意力 retrofit，KPop agentic RL，纯文本。
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
 

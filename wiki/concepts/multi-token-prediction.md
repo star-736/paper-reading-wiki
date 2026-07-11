@@ -27,6 +27,7 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | [MiniMax-M2 Series](../models/minimax-m2-series.md) | 预训练信号 + speculative decoding + Forge rollout 加速 | 预训练先用单 MTP module，继续预训练阶段通过权重复制扩展到 3 个 MTP modules。 |
 | [Gemma 4](../models/gemma-4.md) | Speculative decoding drafter | 4 层小 Transformer drafter，通过 **cross-attention 复用主模型 KV cache**（而非复制 KV），无需 MTP prefill，支持任意 draft 长度。E2B/E4B 用 top-k on token clusters 把最终投影从 d×262k 降到 d×4k。dim 256（小模型）/ 1024（大模型）。 |
 | [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) | 推测解码（block-diffusion drafter） | DFlash：~90.7M / 5 层 draft model（从 target 最后 5 层初始化），block size B=16，用 joint FlexAttention block-diagonal mask 一次 forward 训练 K=16 个 draft block。Transformers 6.37× / vLLM 2.14× 加速。输出越长加速越明显（表格 > 公式 > 文本），因结构化 OCR 输出局部规律性强、draft 接受率高。 |
+| [GLM-OCR](../models/glm-ocr.md) | 训练 + 推理共用（共享参数多头） | k 个共享参数辅助头预测未来 k token，训练 10 tokens/step，推理平均 5.2 tokens/step，~50% 吞吐提升。与 GLM-5 共享参数思路一致（引用 [GLM-5](../sources/glm-5.md)）。PDF 吞吐 1.86 pages/s 约为 MinerU2.5 的 3.9×。MTP 还带来结构化输出质量收益——鼓励模型向前规划，产出更少「破损」表格标签。 |
 | [Ling-2.6](../models/ling-2.6.md) | 继续训练 MTP + 参数共享 | post-training 阶段引入两个额外 MTP 层继续训练。MTP-3-share（参数共享 + 仅第一层梯度回传 base model）accept length 从 MTP-1 的 2.71 提升到 3.31。发现仅第一层 MTP 预测所有后续 token 也有改善，说明新引入的 MTP 层训练不足，参数共享 + 梯度隔离是有效的补偿。配合 linghe fused-kernel，FP8 BS=1 下 MTP+linghe 比 baseline +119%。 |
 
 ## MiMo 的经验
@@ -52,6 +53,12 @@ DeepSeek 系列在 V3 / V3.2 / V4 的报告原文里一直停留在 MTP-1（sing
 ## Gemma 4 的经验
 
 Gemma 4 的 MTP drafter 设计与 GLM-5 / MiMo 的关键差异在于 **cross-attention 复用主模型 KV**：drafter 不复制或重新计算主模型的 context representation，而是通过 4 层小 Transformer 的 cross-attention 直接访问主模型已计算的 KV cache。这消除了 MTP prefill 阶段（传统 MTP 需要先对 prompt 做一次 prefill 才能开始 draft），并支持任意 draft 长度。E2B/E4B 的 top-k on token clusters 优化解决了 262k 大词表下最终投影的瓶颈——把 d×262k 降到 d×4k 而不损失 acceptance rate，这对共享 Gemini tokenizer 的大词表模型尤其重要。
+
+## GLM-OCR 的经验：MTP 在确定性 OCR 任务下的双重收益
+
+[GLM-OCR](../sources/glm-ocr.md) 把 MTP 用到 OCR 域，揭示了一个其他报告没强调的点：**MTP 不只是加速器，对确定性结构化输出任务还是质量提升手段**。OCR 是强局部依赖 + 显式结构监督的确定性任务（vs 数学推理 / agentic 的高熵），标准自回归逐 token 解码在此本就低效。GLM-OCR 训练预测 10 tokens/step、推理平均 5.2 tokens/step，~50% 吞吐提升。但更关键的是 MTP 鼓励模型「向前规划」——结构化 token（表格标签、Markdown 语法）有强局部依赖，多 token 预测让模型在生成开标签时就考虑闭标签，产出更少「破损」标签、更鲁棒的结构化输出。
+
+这与 [HunyuanOCR-1.5](../sources/hunyuan-ocr-1.5.md) DFlash 的观察呼应（结构化 OCR 输出局部规律性强、draft 接受率高，表格加速 > 公式 > 文本），但 GLM-OCR 进一步把 MTP 做进训练目标（DFlash 是训练独立 draft model + 推理验证）。两者共同说明：**OCR/结构化输出是 MTP 的甜区**——低熵 + 强局部依赖让多 token 预测既准又快。这也是 GLM-OCR 0.9B 在吞吐 1.86 pages/s（约为 MinerU2.5 的 3.9×）的同时仍能拿 OmniDocBench v1.5 SOTA 的原因。
 
 ## 观察点
 

@@ -867,3 +867,21 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 ## [2026-07-12] maintenance | 补录 index 孤儿条目（Ling-2.6 / Unlimited OCR）
 
 `wiki/sources/ling-2.6.md`、`wiki/sources/unlimited-ocr.md` 及对应模型页已于 2026-07-11 ingest 并提交，但 index.md 漏收（"有页无索引"孤儿）。本次补录 4 条 index 条目：来源段 +2（ling-2.6 / unlimited-ocr）、模型段 +2（Ling-2.6 / Ring-2.6 纯文本 / Unlimited OCR 多模态）。模态据各模型页 关键事实 表核实。`raw/` 未改。
+
+## [2026-07-12] ingest | GLM-OCR 技术报告
+
+`raw/2603.10910v2.pdf`（arXiv:2603.10910v2, 智谱 AI + 清华, 2026-03-16, 17 页）。
+
+新增：
+
+- `wiki/sources/glm-ocr.md`：来源页（图文交错）。嵌入 Figure 1（OmniDocBench v1.5 性能对比四子图）、Figure 2（架构 + MTP + 两任务工作流）。Table 1（训练配方）、Table 2（Stage 4 reward 设计）、Table 3（公开 benchmark 6 模型）、Table 4（OmniDocBench v1.5 详细）、Table 5（自建真实场景 6 类）、Table 6（吞吐对比）转 Markdown 或散文。待追问 6 条（MTP k 值与共享参数细节 / 高并发吞吐反噬 / Stage 4 GRPO 配置 / CogViT 与 GLM-5V-Turbo 是否同源 / PP-DocLayout-V3 错误传播定量 / v1.5→v1.6 提升是否全归 MGAM）。
+- `wiki/models/glm-ocr.md`：模型页。关键事实表含模态=多模态（文本+图像输入；结构化 Markdown/JSON 输出）（已据原文核实）。技术身份四点（MTP 训练+推理共用共享参数 / 解耦两阶段降幻觉 / 文档解析与 KIE 统一 / GRPO task-aware reward）。与 MinerU2.5-Pro（精度 vs 效率）+ HunyuanOCR-1.5（MTP vs DFlash）对照表。
+- `wiki/assets/glm-ocr/`：fig1-omnidocbench-v15-performance.png, fig2-architecture-mtp-workflow.png（PyMuPDF 300 DPI + get_textbox 校验）
+
+更新：
+
+- `wiki/concepts/multi-token-prediction.md`：MTP 用法表加 GLM-OCR 行（训练+推理共用共享参数多头，10/5.2 tokens/step，~50% 吞吐）；新增「GLM-OCR 的经验：MTP 在确定性 OCR 任务下的双重收益」段（MTP 不只加速还提升结构化输出质量，OCR/结构化输出是 MTP 甜区，与 HunyuanOCR DFlash 观察呼应）。
+- `wiki/sources/mineru-2-5-pro.md`：相关页面加 GLM-OCR 反向链接（头号竞争者，v1.6 上 95.15 < 95.69，MTP 加速 vs 数据中心方法论路线对照）。
+- `wiki/index.md`：来源段 +1，模型段 +1（注意并发：index 已含别会话新增的 Ling-2.6 / Unlimited OCR 条目，本次只追加 GLM-OCR 两行）。
+
+核心定位：GLM-OCR 是智谱 AI + 清华的 0.9B 轻量 OCR VLM（CogViT ~400M + GLM ~500M），核心论点是不靠大模型 scaling 而靠架构-解码-任务结构对齐拿效率增益。MTP 是核心加速点——k 个共享参数辅助头预测未来 k token，训练 10 tokens/step、推理平均 5.2 tokens/step、~50% 吞吐提升，且 MTP 同时是训练目标（不只推理加速），还带来结构化输出质量收益（鼓励向前规划，更少破损标签）。两阶段 pipeline（PP-DocLayout-V3 布局 + 并行区域识别）降幻觉，文档解析与 KIE 统一为条件结构化生成。五阶段训练：视觉编码器（MIM+CLIP+大 ViT 蒸馏）→ VL 预训练 → MTP 预训练 → SFT with MTP → RL（GRPO + task-aware reward：edit distance/CDM/TEDS/field-F1 + 结构验证 + 全局重复/畸形惩罚）。OmniDocBench v1.5 Overall 94.62 居首（0.9B 超 PaddleOCR-VL-1.5 94.50、MinerU2.5 90.67、Qwen3-VL-235B 89.15、Gemini-3 Pro 90.33），表格最强（TableTEDS 93.96/TEDS-S 96.39），吞吐 1.86 pages/s 约为 MinerU2.5 的 3.9×。跨源评测版本差异：GLM-OCR 自报 v1.5 = 94.62，MinerU2.5-Pro 统一重测 v1.6 = 95.15（+0.53，符合 MGAM 提分预期，与 HunyuanOCR 1.0 的 92.03 vs 89.87 反向分歧形成对照）。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + get_textbox 校验。
