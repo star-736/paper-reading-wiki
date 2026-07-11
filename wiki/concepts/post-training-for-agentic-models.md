@@ -61,6 +61,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - Kimi K2.5：如何把视觉、文本和并行 agent orchestration 纳入同一后训练框架。
 - DAPO / GSPO / SAPO：如何把 group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
+- HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 
 ## 待追问
 

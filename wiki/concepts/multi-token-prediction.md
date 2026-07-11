@@ -25,6 +25,7 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | [DeepSeek-V4](../models/deepseek-v4.md) | 继承 DeepSeek 系列设计 + 生产端已被 DSpark 替换 | Flash 和 Pro 的报告原文 MTP depth=1（即沿用 V3/V3.2 single-token MTP）；但 V4 preview 上线**两周后**，生产 serving 引擎里 MTP-1 已被 **[DSpark](../sources/dspark.md)**（semi-AR drafter + confidence-scheduled verification）替换，per-user 生成速度 +60–85%。MTP-1 之所以一直没扩到 MTP-3/5，是因为静态多 token drafter 在高并发下吞吐严格下降--这正是 DSpark hardware-aware scheduler 解决的问题。 |
 | [MiniMax-M2 Series](../models/minimax-m2-series.md) | 预训练信号 + speculative decoding + Forge rollout 加速 | 预训练先用单 MTP module，继续预训练阶段通过权重复制扩展到 3 个 MTP modules。 |
 | [Gemma 4](../models/gemma-4.md) | Speculative decoding drafter | 4 层小 Transformer drafter，通过 **cross-attention 复用主模型 KV cache**（而非复制 KV），无需 MTP prefill，支持任意 draft 长度。E2B/E4B 用 top-k on token clusters 把最终投影从 d×262k 降到 d×4k。dim 256（小模型）/ 1024（大模型）。 |
+| [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) | 推测解码（block-diffusion drafter） | DFlash：~90.7M / 5 层 draft model（从 target 最后 5 层初始化），block size B=16，用 joint FlexAttention block-diagonal mask 一次 forward 训练 K=16 个 draft block。Transformers 6.37× / vLLM 2.14× 加速。输出越长加速越明显（表格 > 公式 > 文本），因结构化 OCR 输出局部规律性强、draft 接受率高。 |
 
 ## MiMo 的经验
 
