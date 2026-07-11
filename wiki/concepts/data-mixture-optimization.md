@@ -58,6 +58,12 @@ TANDEM 的核心洞察是：数据充足时 uniform weighting 已近最优（Pro
 
 与 DoReMi/TANDEM 的关键区别：(1) 优化目标不是「各 domain 采样比例」而是「哪些 instance 值得训 + 标注可信度」；(2) 信号来源不是 proxy model 的 loss 而是多模型输出一致性（query-by-committee 思想）；(3) 把标注质量作为一等问题（Hard 样本标注噪声会传播进模型），而非假设标注已给定。这条路线适用于「标注本身不可靠」的场景（文档解析、结构化抽取），而 domain reweighting 假设标注固定、只调比例。MinerU2.5-Pro 用此方法固定 1.2B 架构把 OmniDocBench v1.6 从 92.98 推到 95.69，是「架构成熟后数据工程是主要杠杆」论点在文档解析域的干净实证。
 
+#### IMIC → CMCV：从单模型内省到多模型交叉验证
+
+MinerU2.5-Pro 的 CMCV 直接改进自 [MinerU2.5](../sources/mineru-2-5.md) 的 IMIC（Iterative Mining via Inference Consistency）。IMIC 的核心是利用**单模型多次随机推理**的一致性挖 hard case：对一样本用 MinerU2.5 Stage-1 checkpoint 推理 n 次，算输出间配对一致性（Layout: PageIoU, Formula: CDM, Table: TEDS），低一致性 = hard case = 送人工标注。阈值：PageIoU <0.8 hard / >0.9 easy，CDM <0.3 / >0.7，TEDS <0.6 / >0.9。
+
+CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该模型的认知不确定性，无法区分「模型特定盲点」与「普遍难题」**。模型特定盲点（某模型独有缺陷）可通过跨模型共识直接修正；普遍难题（所有模型都失败）需额外质量精修或人工干预。IMIC 把两者混为一谈都送人工，而 CMCV 用三异构模型（MinerU2.5 + PaddleOCR-VL + Qwen3-VL-30B）交叉验证，按「待改进模型相对外部的表现」分三档：Easy（与外部一致，任一输出可作标注）、Medium（外部一致但待改进模型不同，外部共识作 pseudo-label，**训练价值最高**）、Hard（三模型全分歧，须 Judge-and-Refine 或专家）。Medium 的精确定位 + 可学证明 + 可靠标注是 IMIC 单模型内省无法提供的。这是 query-by-committee 思想在文档解析 hard case 挖掘上的具体演进。
+
 ## 为什么重要
 
 数据混合优化是「data-centric AI」在 LLM 预训练中的核心议题。模型架构和训练算法趋同后，数据组成成为决定模型能力的主要变量。DoReMi 等方法把数据配比从人工经验驱动变成可自动优化的工程问题，且优化成本远低于训练本身（DoReMi 仅 8% 额外 FLOPs）。这对降低训练成本、提升数据效率有直接价值。

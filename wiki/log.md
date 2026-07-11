@@ -885,3 +885,21 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1（注意并发：index 已含别会话新增的 Ling-2.6 / Unlimited OCR 条目，本次只追加 GLM-OCR 两行）。
 
 核心定位：GLM-OCR 是智谱 AI + 清华的 0.9B 轻量 OCR VLM（CogViT ~400M + GLM ~500M），核心论点是不靠大模型 scaling 而靠架构-解码-任务结构对齐拿效率增益。MTP 是核心加速点——k 个共享参数辅助头预测未来 k token，训练 10 tokens/step、推理平均 5.2 tokens/step、~50% 吞吐提升，且 MTP 同时是训练目标（不只推理加速），还带来结构化输出质量收益（鼓励向前规划，更少破损标签）。两阶段 pipeline（PP-DocLayout-V3 布局 + 并行区域识别）降幻觉，文档解析与 KIE 统一为条件结构化生成。五阶段训练：视觉编码器（MIM+CLIP+大 ViT 蒸馏）→ VL 预训练 → MTP 预训练 → SFT with MTP → RL（GRPO + task-aware reward：edit distance/CDM/TEDS/field-F1 + 结构验证 + 全局重复/畸形惩罚）。OmniDocBench v1.5 Overall 94.62 居首（0.9B 超 PaddleOCR-VL-1.5 94.50、MinerU2.5 90.67、Qwen3-VL-235B 89.15、Gemini-3 Pro 90.33），表格最强（TableTEDS 93.96/TEDS-S 96.39），吞吐 1.86 pages/s 约为 MinerU2.5 的 3.9×。跨源评测版本差异：GLM-OCR 自报 v1.5 = 94.62，MinerU2.5-Pro 统一重测 v1.6 = 95.15（+0.53，符合 MGAM 提分预期，与 HunyuanOCR 1.0 的 92.03 vs 89.87 反向分歧形成对照）。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-07-12] ingest | MinerU2.5 技术报告
+
+`raw/2509.22186v2.pdf`（arXiv:2509.22186v2, 上海 AI Lab + PKU + SJTU, 2025-09-29, 57 页）。
+
+新增：
+
+- `wiki/sources/mineru-2-5.md`：来源页（图文交错）。嵌入 Figure 3（Data Engine 三阶段总览）、Figure 7（IMIC 策略三任务图示 + 阈值）。Table 2（数据增强）、Table 3（推理性能）转 Markdown。待追问 5 条（IMIC 随机性来源 / IMIC 阈值依据 / Stage 0 数据规模 / OTSL 与 MTP 兼容性 / 三阶段独立运作自评）。
+- `wiki/models/mineru-2-5.md`：模型页。关键事实表含模态=多模态（文本+图像输入；结构化 Markdown 输出）（已据原文核实）。含 MinerU2.5 → MinerU2.5-Pro 基座改进对照表（架构/数据/hard case 挖掘/标注精修/三阶段关系/RL/OmniDocBench 七维）。
+- `wiki/assets/mineru-2-5/`：fig3-data-engine-overview.png, fig7-imic-strategy.png（PyMuPDF 300 DPI + get_textbox 校验）
+
+更新：
+
+- `wiki/concepts/data-mixture-optimization.md`：「data-centric AI 另一分支」段下新增「IMIC → CMCV：从单模型内省到多模型交叉验证」子段——补 IMIC 具体定义（单模型 n 次随机推理 + PageIoU/CDM/TEDS 阈值）+ CMCV 改进动机（单模型内省无法区分模型特定盲点 vs 普遍难题）+ Medium 训练价值最高的定位。
+- `wiki/sources/mineru-2-5-pro.md`：相关页面加 MinerU2.5 基座反向链接（本报告 CMCV 改进其 IMIC，Data Engine 三组件协同改进其独立三阶段）。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：MinerU2.5 是上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM（NativeRes-ViT 675M + Qwen2-0.5B），coarse-to-fine 两阶段（下采样图布局分析 + 原生分辨率裁剪内容识别）。是 MinerU2.5-Pro 的基座——架构完全被继承不变。Data Engine 三阶段独立运作：Data Curation（多维过滤）+ Pre-training Preparation（强模型精修标注）+ Fine-tuning Construction（IMIC + 专家）。IMIC（Iterative Mining via Inference Consistency）是核心 hard case 挖掘策略——用 MinerU2.5 Stage-1 checkpoint 单模型多次随机推理，算配对一致性（Layout PageIoU<0.8/Formula CDM<0.3/Table TEDS<0.6 = hard），低一致性送人工。这正是 MinerU2.5-Pro CMCV 的改进对象——IMIC 只能捕获单模型认知不确定性，无法区分模型特定盲点 vs 普遍难题；CMCV 用三异构模型交叉验证，Medium（外部一致、待改进模型不同）训练价值最高。训练：Stage 0 模态对齐 + Stage 1 预训练（6.9M×2，MinerU2.5-Pro 扩到 65.5M）+ Stage 2 微调（630K×3：43K layout+300K text+147K formula+140K table）。OTSL 表格语言（5 token vs HTML 28+，序列缩短 50%）。ADR 复合公式原子分解重组。部署 vLLM A100 2.12 pages/s，按布局类型动态调重复惩罚。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + get_textbox 校验。
