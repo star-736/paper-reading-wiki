@@ -43,6 +43,12 @@ vLLM-Omni 用 Qwen2.5-Omni / Qwen3-Omni 展示了一个典型 stage graph：Thin
 
 因此 Qwen3-VL 更接近 multimodal-input LLM serving；Qwen-Omni / Qwen3.5-Omni / vLLM-Omni 这一线则进入 any-to-any serving：输出端也多模态，必须服务 Talker、Vocoder、DiT 等下游 generator。
 
+### MiniCPM-o 4.5：端到端架构是 stage graph 的模型侧融合，llama.cpp-omni 是端侧 serving 实例
+
+[MiniCPM-o 4.5](../sources/minicpm-o-4-5.md) 代表了与 vLLM-Omni 互补的路线：vLLM-Omni 把 Thinker / Talker / Vocoder 拆成独立 serving stage 做 disaggregated 调度；MiniCPM-o 4.5 则在模型设计层面把编码器 → LLM → 语音解码器做成**端到端可微的单模型**（~9B 参数全部可学习），通过 token-level hidden state 连接。LLM backbone（Qwen3-8B）只生成文本 token（3-4 step/s），语音 token 生成委托给轻量 speech decoder（~0.3B），避免 LLM 直接生成 ~25 token/s 语音 token 的效率瓶颈。
+
+Serving 侧，MiniCPM-o 4.5 提供自研 **llama.cpp-omni** 框架：INT4 量化下 RTX 4090 RTF 0.21 / 11GB，跨 macOS / Windows / Linux 兼容，适合端侧部署。这与 vLLM-Omni 的服务器级 disaggregated serving 形成端侧 vs 云端的互补。两个系统面临的核心问题一致——多阶段模型的编排与资源分配——但 MiniCPM-o 4.5 通过端到端训练减少了 stage 边界的传输开销，而 vLLM-Omni 通过 stage graph 解耦获得独立批处理和资源配置的灵活性。
+
 ### 百万 token serving：同是 disaggregation，但对象不同
 
 [百万 token 上下文服务](million-token-context-serving.md) 关注 DeepSeek-V4 的异构 KV-cache、on-disk cache、shared-prefix reuse、prefill/decode disaggregation。它的中间态主要是 **KV / state cache**。
@@ -72,6 +78,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)
-- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)
+- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
 - 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)

@@ -706,3 +706,21 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1，概念段 +1。
 
 核心定位：LoopCoder-v2 不是常规 dense LLM，而是 weight-tied looped Transformer（14 层共享 block，R=1/2/3/4 变体）。PLT 通过 CLP（cross-loop position offset）+ shared-KV G-SWA 使延迟和 KV-cache 不随 R 增长。gain–cost 剪刀是核心机制洞察：第二个 loop 的 refinement gain 最大（effective rank 达峰、attention routing 变化最大、output shift 最大），之后收益急缩且振荡（cos θ < 0）；CLP offset cost Ω(r) 恒定。固定成本 + 递减收益 = R=2 饱和。7B R=2 在 SWE-bench Verified 64.4% 超 Kimi-Dev-72B。latent loop + explicit CoT 呈超加性互补（LCB +26.9）。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + `get_textbox` 校验。
+
+## [2026-07-11] ingest | MiniCPM-o 4.5 技术报告
+
+`raw/2604.27393v1.pdf`（arXiv:2604.27393v1, OpenBMB / 清华 NLP, 2026-04-30）。
+
+新增：
+
+- `wiki/sources/minicpm-o-4-5.md`：来源页（图文交错）。嵌入 Figure 3（回合制 vs 全双工对比）、Figure 4（端到端全模态架构）和 Figure 5（TAIL 三种语音生成策略对比）。Table 1 Omni-Flow 设计权衡消融 + Table 9 length reward 对比转 Markdown。待追问 5 条。
+- `wiki/models/minicpm-o-4-5.md`：模型页。关键事实表含模态=多模态（文本+图像+视频+音频输入；文本+音频输出，已据原文核实）。
+- `wiki/assets/minicpm-o-4-5/`：fig3-turn-vs-duplex.png, fig4-architecture.png, fig5-tail-strategies.png
+
+更新：
+
+- `wiki/concepts/any-to-any-multimodal-serving.md`：加「MiniCPM-o 4.5：端到端架构是 stage graph 的模型侧融合」跨报告信号——与 vLLM-Omni 的 disaggregated serving 互补（端侧端到端 vs 云端 stage graph）。相关页面加链接。
+- `wiki/concepts/multimodal-agentic-training.md`：加「MiniCPM-o 4.5：从回合制到全双工交互」跨报告信号——K2.5 的 early vision fusion vs MiniCPM-o 4.5 的四阶段渐进流水线，两种多模态融合策略对照。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：MiniCPM-o 4.5 是首个全双工全模态 LLM（9B），核心创新在交互范式而非单模态能力。Omni-Flow 框架用时分复用式时间窗口（1.0s chunk，LS 控制 + explicit boundary 最优）把感知与生成在 token-level 持续耦合。关键架构决策：LLM 只生成文本 token（3-4 step/s），语音 token 委托给 ~0.3B speech decoder。TAIL 策略考虑累积播放进度做自适应文本-语音交错。四阶段渐进训练（冻结→联合→SFT→RL）。9B 接近 Gemini 2.5 Flash，全模态超 Qwen3-Omni-30B-A3B，INT4 端侧 < 12GB。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验。

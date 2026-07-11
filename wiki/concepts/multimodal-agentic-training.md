@@ -40,9 +40,16 @@ K2.5 的 RL 同时覆盖 text 和 vision。可验证任务使用规则奖励；�
 
 对知识库的启发是：多模态 agent 的训练目标需要覆盖"看懂输入""遵守工具格式""完成环境任务""控制 token 预算"四个层面，而不是单独优化视觉 benchmark。
 
+## MiniCPM-o 4.5：从回合制到全双工交互
+
+[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)（OpenBMB，9B）代表了多模态训练的另一个方向：不是训练更强的 turn-based VLM 或 agentic tool-user，而是训练一个**全双工交互模型**——同时感知多模态输入流并生成输出。其 Omni-Flow 框架通过时分复用式时间窗口（1.0s chunk）让感知与生成在 token-level 持续耦合，模型在说话的同时能接收新输入并调整后续输出。
+
+训练策略采用四阶段渐进流水线（冻结基座先训语音模块 → 全解冻联合 → SFT → RL），先隔离新模态影响面再逐步打开全参数。这与 K2.5 的 early vision fusion 思路不同：K2.5 在训练分布中长期混合低比例视觉 token；MiniCPM 则先隔离新模态的影响面，再逐步打开全参数联合优化。两者共享的核心洞察是：多模态能力的稳定获取需要训练分布的长期结构设计，而非后期简单接 adapter。
+
 ## 相关页面
 
 - [Kimi K2.5](../models/kimi-k2.5.md)
+- [MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
 - [Agent Swarm](agent-swarm.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
-- [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) — 训练出多模态 agent 只是上半场；vLLM-Omni 这类 serving 系统解决多阶段多模态模型如何在线运行。
+- [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) - 训练出多模态 agent 只是上半场；vLLM-Omni 这类 serving 系统解决多阶段多模态模型如何在线运行。
