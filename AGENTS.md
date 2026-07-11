@@ -79,6 +79,18 @@ This wiki's core value is that claims are traceable, not just plausible. Every n
 
 Rules: never blend a paper's conclusion with your inference of its mechanism in one sentence under a "confirmed" heading; when a past entry over-claimed, downgrade it honestly rather than propping it up with weak corroboration; re-reading the primary PDF beats trusting an earlier summary; `raw/` is never modified — say "`raw/` 未改" in the log when no source was touched.
 
+### 多会话并发提交约定
+
+多个 agent 会话同时 ingest 时，**共享文件（index.md / log.md / 概念页 / 比较页）的并发修改会互相覆盖**。踩坑记录与规则如下：
+
+- **根因**：各会话基于各自读到的 HEAD 编辑共享文件。若会话 A 先提交了含自身条目的 HEAD，会话 B 在其旧 HEAD 上编辑的同名文件被 A 的新 HEAD 覆盖，B 的 index/log 编辑即丢失——表现为"源页/模型页已 push 上线，但 index/log 无对应条目"（孤儿状态）。
+- **源页 / 模型页各会话可独立提交**：`wiki/sources/<slug>.md`、`wiki/models/<slug>.md`、`wiki/assets/` 互不冲突，push 前只需 `git pull --rebase`（有未提交改动会挡 pull，先 commit/stash 自己的）。
+- **共享文件的写回必须等并发收口**：index.md / log.md / 概念页 / 比较页不要各自会话抢提交。两类安全做法：
+  1. 约定一个会话在所有人收口后统一补 index/log/概念信号；或
+  2. 每个会话只在**已 `git pull --rebase` 到最新 HEAD** 之上 `git add` 自己那几行再 commit（绝不在别人的未提交 hunk 上 patch；`log.md` 只用 `cat >>` 追加、绝不用 patch 改旧条目，避免 Windows+OneDrive 的 CRLF/LF 不匹配把整个文件标成 changed）。
+- **写回检查单补一条**：提交前确认 `wiki/index.md` 列出了本次新增的每一个 source/model 页、`wiki/log.md` 有对应条目——否则线上会出现"有页无索引"的孤儿窗口。
+- **`git status` 必查**：提交前确认哪些是自己的未提交改动、哪些是别会话落下的；不要把别人的未提交改动（`??` 文件或 `M` 文件）一起 `git add` 带走。
+
 ### 克制原则（检索负债优先）
 
 这套 wiki 的实际消费者是**检索它来答问的 agent**，不是回看 md 的人类。所以页面的敌人是**碎片化与冗余**，不是篇幅：
