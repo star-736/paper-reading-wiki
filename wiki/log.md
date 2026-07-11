@@ -761,3 +761,24 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
   - `wiki/concepts/post-training-for-agentic-models.md`：综合框架新增 Keye-VL-2.0
   - `wiki/comparisons/on-policy-distillation.md`：速览表 Keye-VL-2.0 行（第 6 家 OPD 报告）
 - **核心发现**：DSA 不依赖 MLA（indexer MQA + aggregation GQA）；MOPD 首次多模态大规模应用（13 teacher + top-k overlap estimator）；DSA RL 稳定性方案谱系扩张。
+
+
+## [2026-07-11] ingest | JoyAI-VL-Interaction 技术报告
+
+`raw/2606.14777v1.pdf`（arXiv:2606.14777v1, JD.com, 2026-06, 21 页）。
+
+新增：
+
+- `wiki/sources/joyai-vl-interaction.md`：来源页（图文交错）。嵌入 Figure 1（交互范式：实时告警/异步委托/持续解说）、Figure 2（AdaCodec 预测式视频编码：ViT 256 token vs P-token 16 token）、Figure 3（系统总览：双并发循环 + 三层记忆）。Table 1/2 评测结果转 Markdown，数据六族表转 Markdown。待追问 6 条（AdaCodec reset 阈值、RL 窗口大小、记忆参数、延迟 breakdown、TML 定量对比、delegation protocol 规范）。
+- `wiki/models/joyai-vl-interaction.md`：模型页。关键事实表含模态=多模态（文本+图像+视频；语音经外置 ASR/TTS 转导，已据原文核实）。技术身份四点（interaction model 范式 / vision-first / delegate 闭合循环 / AdaCodec 无界流式）。与 Qwen3.5-Omni / Kimi K2.5 / Qwen3-VL 对照表。
+- `wiki/assets/joyai-vl-interaction/`：fig1-interaction-paradigm.png, fig2-adacodec-encoding.png, fig3-system-overview.png（PyMuPDF 300 DPI + get_textbox 校验）
+
+更新：
+
+- `wiki/concepts/multimodal-agentic-training.md`：加「JoyAI-VL-Interaction：从看懂到每秒决定是否行动」跨报告信号（AdaCodec / 角色加权 SFT / answer-centered window sampling / 涌现能力，与 K2.5 对照）。
+- `wiki/concepts/any-to-any-multimodal-serving.md`：加「JoyAI-VL-Interaction：不是 stage graph，而是决策在模型 + 可插拔外设」跨报告信号（双并发循环 vs stage graph / 语音在模型外 / 记忆围绕 prefix reuse）。
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架加 JoyAI-VL-Interaction 一条（角色加权 SFT + GRPO + answer-centered window sampling，与 ARPO step-level rollout 的平行演进）。
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：末段加 JoyAI-VL-Interaction 的评测思路（不跑 offline benchmark，直接与 Doubao/Gemini 真实产品做 head-to-head 人工盲评）。
+- `wiki/index.md`：来源段 +1，模型段 +1（本次补录：源页/模型页已先于 index/log 提交，本条目补齐索引）。
+
+核心定位：JoyAI-VL-Interaction 是 JD.com 的 8B 视觉驱动交互模型，提出 interaction model 范式——模型持续观看视频流，每秒内部决定说话（`</response>`）/ 静默（`</silence>`）/ 委托后台（`</delegation>`），而非等用户提问才响应。基座是 Qwen3-8B + Qwen3-VL ViT，视频编码用 AdaCodec（预测式 I-frame/P-frame 结构，~16× 压缩）。4M+ 时间对齐流式数据六族，角色加权 SFT 对抗 silence 主导（w_repeated_silence=0.4, w_response=1.5），GRPO RL 用 answer-centered window sampling 压缩 rollout horizon。完整系统含双并发循环（实时 + 异步委托）、三层记忆（约 2 小时）、vLLM-native serving。vs Doubao 胜率 77.6% / vs Gemini 87.9%（6 场景 58 case 人工盲评），监控告警 100% 获胜。论文声称首个开源视觉驱动交互模型 + 完整可部署系统。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。
