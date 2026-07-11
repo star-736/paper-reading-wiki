@@ -633,3 +633,11 @@ UniClawBench（HKU MMLab + Meituan）是 capability-driven 的 proactive agent b
 - `wiki/index.md`：来源段 +2 条，模型段 +1 条
 
 核心发现：V2 -> V2.5 的核心变化不是架构升级而是训练基础设施系统性重构--RL 算法从 GRPO 变体切到 asymmetric PPO + hindsight critic，发现 ~16% 训练失败源于沙箱而非算法（降到 <2%），V2.5 的 MOPD 是已收录报告中唯一把长上下文 OPD 不稳定性（student prefix 偏离 teacher 分布）作为独立工程问题处理的，用 cold start + drift-aware truncation 解决。两篇报告均未公开 backbone 架构和参数量。图文化：5 张图（V2: AutoBuilder + Tree Training；V2.5: SE 数据管线 + KwaiClawEnv + RL 架构），PyMuPDF 300 DPI + get_textbox 校验 + vision_analyze 核对。`raw/` 未改。
+
+## [2026-07-11] ingest | daVinci-Agency (arXiv:2602.02619v2)
+
+SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PRs（有显式依赖拓扑的 PR 链，非时间排序）挖掘 task decomposition / long-term consistency / verifiable refinement 三种长周期监督信号。Pipeline 三步：query construction（LLM 合成隐去实现细节的 intent-based sub-query）→ cross-stage rollout（前序 patch 叠加到下一 stage 的 base commit，模拟增量开发）→ rejection sampling + scaling success。仅 239 样本 SFT GLM-4.6，Toolathlon +47%（0.157→0.231）、AVG 0.475 超 66k 样本 SWE-Smith（0.373）。消融验证 chain-of-PRs 优于 SinglePR / TemporalChain。两条 scaling law：训练轨迹 horizon 延长 + 推理步数增加都稳步提升。嵌入 4 张图（Fig 1 chain-of-PRs 概念+性能、Fig 2 三层 scope 对比、Fig 4 pipeline、Fig 7 scaling laws）。
+
+- 新增：`wiki/sources/davinci-agency.md`、`wiki/assets/davinci-agency/`（4 PNG）
+- 更新：`wiki/concepts/agentic-engineering.md`（跨报告信号 + 相关页面）、`wiki/concepts/post-training-for-agentic-models.md`（综合框架新增 SFT 数据结构层）、`wiki/index.md`
+- `raw/` 未改

@@ -24,6 +24,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - ARPO 从算法采样结构切入：工具返回后模型前 10–50 个 token entropy 升高，因此 RL 不应只比较完整轨迹，而应在高熵工具调用步分叉 partial rollouts 来学习 step-level tool-use 行为。
 - HunyuanOCR-1.5 的 Agentic Data Flow 把 agent 自动化用到数据构造而非任务执行：算法工程师用自然语言描述能力需求（如「为低资源语言造合成 OCR 数据」），agent 自主分解任务、搜索物料、开发渲染/QA 生成 pipeline、跑 hard-case 挖掘，并与人类多轮迭代。这与 AgentInstruct / TaskCraft / MetaSynth 等 agentic 合成数据系统方向一致，但落地在 OCR 领域的长尾能力扩展。
 - KAT-Coder（V2 / V2.5）把 agentic engineering 的瓶颈定位在**训练基础设施**而非模型规模。V2 用 Specialize-then-Unify 范式分治五域专家 + KwaiEnv 模块化沙箱（万级并发、网络层代理零代码集成 scaffold）+ Tree Training 消除树状轨迹冗余（6.2× 加速）。V2.5 系统性重构：发现 ~16% 轨迹失败源于沙箱而非模型（降到 <2%）、harness randomization 治 scaffold overfitting（format/context-structure/control-flow 三种）、asymmetric PPO with hindsight critic 做 turn-level credit assignment。两代都用 AutoBuilder 从真实仓库自动造可验证 SWE 任务（F2P+P2P）。
+- daVinci-Agency 把长周期 agent 数据合成的瓶颈定位在**监督信号的结构**而非数据量。核心洞察是真实 GitHub PR 链天然编码了 task decomposition / long-term consistency / verifiable refinement 三种长周期技能的监督——chain-of-PRs 把孤立 coding 任务变成有跨 stage 依赖的多步工作流。仅 239 样本 SFT GLM-4.6 即在 Toolathlon +47%、AVG 超过 66k 样本的 SWE-Smith。这与 KAT-Coder 走的 RL + 基础设施路线互补：KAT-Coder 解决「怎么稳定训练」，daVinci-Agency 解决「训练数据本身该长什么样」。
 
 ## 为什么重要
 
@@ -47,3 +48,4 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [百万 token 上下文服务](million-token-context-serving.md)
 - [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) - Agentic Data Flow
 - [KAT-Coder](../models/kat-coder.md) - Specialize-then-Unify + KwaiEnv + Tree Training
+- [daVinci-Agency](../sources/davinci-agency.md) - chain-of-PRs 数据合成范式

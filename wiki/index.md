@@ -38,6 +38,7 @@
 - [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
 - [KAT-Coder-V2 技术报告](sources/kat-coder-v2.md) - 快手 KwaiKAT 的 agentic coding 模型，Specialize-then-Unify 五域分治 + KwaiEnv 模块化沙箱 + MCLA 稳定 MoE RL + Tree Training 6.2× 加速 + OPD 专家融合。
 - [KAT-Coder-V2.5 技术报告](sources/kat-coder-v2.5.md) - 快手 KwaiKAT 的 coding-focused agentic 模型，AutoBuilder + KwaiClawEnv + harness randomization + asymmetric PPO with hindsight critic + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）。
+- [daVinci-Agency](sources/davinci-agency.md) - SII-GAIR 的长周期 agent 数据合成范式：从 GitHub chain-of-PRs 挖掘 task decomposition / long-term consistency / refinement 监督，239 样本 SFT GLM-4.6 即在 Toolathlon +47%、AVG 超过 66k 样本的 SWE-Smith。
 
 ## 模型
 
