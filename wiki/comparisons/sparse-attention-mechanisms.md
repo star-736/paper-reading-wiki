@@ -39,10 +39,11 @@ timestamp: 2026-06-19
 | CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
 | [IndexCache](../sources/indexcache.md)（叠加在 DSA 上） | MLA + DSA | token（继承 DSA） | 共享（继承 DSA） | **F 层算、S 层复用 anchor top-k**（1/4 retention 起步） | 无新训练（training-free 贪心搜索）/ 多层 KL 蒸馏（training-aware） | 干掉 indexer 自己的 O(NL²) 项 |
 
-![IndexCache Figure 2：标准 DSA 与 IndexCache 推理循环对比。(a) Standard DSA——每层都跑 INDEXER → Top-k → SparseAttn，N 层 N 次 indexer 调用。(b) IndexCache——引入 pattern c：F 层正常算 indexer 并把结果存入 T_cache，S 层直接复用 T_cache（▷ reuse），只需一个临时缓冲存一份 index tensor，无额外 GPU 显存。](../assets/indexcache/fig2-inference-loop-comparison.png)
+![IndexCache Figure 2：标准 DSA 与 IndexCache 推理循环对比。(a) Standard DSA--每层都跑 INDEXER -> Top-k -> SparseAttn，N 层 N 次 indexer 调用。(b) IndexCache--引入 pattern c：F 层正常算 indexer 并把结果存入 T_cache，S 层直接复用 T_cache（▷ reuse），只需一个临时缓冲存一份 index tensor，无额外 GPU 显存。](../assets/indexcache/fig2-inference-loop-comparison.png)
 
-> Figure 2（原文截图，§ Inference Loop）：IndexCache 仅在标准 DSA 循环中加一个条件分支——F 层算 + 缓存，S 层复用。T_cache 只存当前一份 index tensor，零额外显存。1/4 retention 即可保质量、端到端 1.3× 起步。
+> Figure 2（原文截图，§ Inference Loop）：IndexCache 仅在标准 DSA 循环中加一个条件分支--F 层算 + 缓存，S 层复用。T_cache 只存当前一份 index tensor，零额外显存。1/4 retention 即可保质量、端到端 1.3× 起步。
 
+| [KVpop](../sources/kvpop.md)（learned eviction） | GQA（Qwen3） | token | per-head 独立打分 | 每层独立 | future-attention target + boundary loss 蒸馏 scorer | 永久丢弃 token 强制固定 per-head budget $B=s+w+k$，与 sparse retrieval 正交（后者不 bound memory） |
 | 推理时稀疏化（H2O / SnapKV / Quest / MInference / FlexPrefill） | 任意 dense 模型 | 视方法而定 | 视方法而定 | 视方法而定 | 无（基于注意力统计或启发式） | 不改训练、只改 serving；在长 prefill 上还能保留近 dense 速度的至少一支 |
 
 ## 训练分阶段对比（第四条轴）
@@ -87,4 +88,8 @@ timestamp: 2026-06-19
 - [跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
-- 来源：[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)
+- 来源：[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)、[KVpop](../sources/kvpop.md)
+
+## eviction vs. sparse retrieval
+
+本页主要对比的是 **sparse retrieval** 方法（DSA/MSA/NSA/MoBA/CSA/IndexCache）：每个 query 在全量 KV cache 上选子集做 attention，**不丢弃 token**，不 bound memory。[KVpop](../sources/kvpop.md) 是 **learned eviction** 方法：永久丢弃 token 强制固定 per-head KV budget $B=s+w+k$，bound memory。两者解决不同问题，正交可叠加--理论上一个模型可以既用 sparse retrieval 减少 attention compute，又用 eviction bound memory，但目前的方案都只走一条路。

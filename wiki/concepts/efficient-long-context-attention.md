@@ -12,9 +12,9 @@ timestamp: 2026-06-06
 
 长上下文模型的瓶颈不是单一的“能不能放下更多 token”，而是 attention FLOPs、KV-cache、prefill latency、decode latency、cache reuse 和训练稳定性共同构成的系统问题。多篇报告都在处理这个瓶颈，但路线不同。
 
-## 五条路线
+## 五条路线 + 学习式驱逐
 
-前四条都仍在 softmax 注意力框架内（只是少看 token 或压缩 KV）；第五条「线性/混合」直接换掉 token mixer，是与前四条**正交**的另一条路线。
+前四条都仍在 softmax 注意力框架内（只是少看 token 或压缩 KV）；第五条「线性/混合」直接换掉 token mixer，是与前四条**正交**的另一条路线。**学习式驱逐**（learned eviction）是另一个正交维度：它不在 per-query 层面选 token（sparse retrieval），而是永久丢弃 token 以强制固定 cache 大小，解决的是 **memory bound** 而非 attention compute。
 
 | 路线 | 代表方案 / 模型 | 核心思想 | 主要收益 | 主要风险 |
 | --- | --- | --- | --- | --- |
@@ -23,6 +23,7 @@ timestamp: 2026-06-06
 | 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) / [Gemma 4](../models/gemma-4.md) / [Unlimited OCR](../models/unlimited-ocr.md) | 5 个 SWA 层配 1 个 GA 层（Gemma 4 E2B 用 4:1）。Gemma 4 额外在全局层做 key-as-value + p-RoPE + KV sharing，全局 KV cache -37.5%。Unlimited OCR 的 R-SWA 更激进：全部层用 SWA，但把 reference token（视觉+prompt）排除在滑动窗口之外全局固定可见，KV cache 恒定 $L_m + n$ 不随输出增长。 | 架构简单，KV 和 attention 成本下降。Unlimited OCR 在 6144 token 输出时 TPS 比 DeepSeek OCR 高 35%，KV cache 完全恒定。 | 对需要任意长程交互的任务可能不如内容自适应。Unlimited OCR 的 128-token 窗口对跨页远距离引用（如第 20 页引用第 1 页的图表编号）覆盖力不足，除非信息经 reference token 间接传递。 |
 | 压缩注意力 | [DeepSeek-V4](../models/deepseek-v4.md) | CSA/HCA 先压缩 KV，再做稀疏或密集注意力。 | 支持 1M context，KV-cache 极大降低。 | 架构、kernel、cache 管理复杂。 |
 | 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md) | 大多数层用线性注意力（RNN 固定状态，无随长度增长的 KV），少数层（3:1）保留全局 [MLA](multi-head-latent-attention.md)。 | decode 时线性层无 KV cache，1M context KV 降 75%、吞吐 6.3×；首个公平对比下全面追平 full attention 的混合线性方案。 | 固定状态容量有限，长程精确检索靠那 1/4 全局层兜底；线性层在长 trajectory RL 上的稳健性证据仍有限。 |
+| 学习式驱逐 | [KVpop](../sources/kvpop.md) | 用 future-attention target 在 eviction boundary 监督 keep-or-drop 决策，永久丢弃 token 强制固定 per-head KV budget $B=s+w+k$。可选 mLSTM 延迟打分利用近未来上下文。 | Qwen3-8B 在 88% 压缩下保留 100% teacher 性能；固定 per-head budget 使 GPU 执行更规整，比 DMS 更快；memory bound 解决后 131k token 生成 VRAM 仅 19GB。 | 与 sparse retrieval 正交（后者不 bound memory）；目前是 post-training retrofit，未验证 from-scratch 或 MLA 架构。 |
 
 ## 机制层理解
 

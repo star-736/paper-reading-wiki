@@ -40,6 +40,7 @@
 - [KAT-Coder-V2.5 技术报告](sources/kat-coder-v2.5.md) - 快手 KwaiKAT 的 coding-focused agentic 模型，AutoBuilder + KwaiClawEnv + harness randomization + asymmetric PPO with hindsight critic + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）。
 - [daVinci-Agency](sources/davinci-agency.md) - SII-GAIR 的长周期 agent 数据合成范式：从 GitHub chain-of-PRs 挖掘 task decomposition / long-term consistency / refinement 监督，239 样本 SFT GLM-4.6 即在 Toolathlon +47%、AVG 超过 66k 样本的 SWE-Smith。
 - [Seed2.0 Model Card](sources/seed2.md) - 字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，含 MaaS 部署洞察、四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）和真实世界 case studies，不含架构/训练细节。
+- [KVpop 技术报告](sources/kvpop.md) - NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法：future-attention target 在 eviction boundary 监督 keep-or-drop，mLSTM 延迟打分利用近未来上下文，Qwen3-8B 88% 压缩下保留 100% teacher 性能。
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
 
 ## 模型

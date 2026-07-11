@@ -679,3 +679,12 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1 条，模型段 +1 条。
 
 核心定位：VibeThinker-3B 是 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，用 Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR）在 verifiable reasoning 上追平旗舰（AIME26 94.3 vs DeepSeek V3.2 94.2 / GLM-5 95.8），但 GPQA-D 差 14 点。MGPO 与 DAPO 的 Dynamic Sampling 动机一致但实现不同（soft weighting vs hard filter）。Long2Short RL 的零和 length-aware reward shift 是训练时效率优化，与 CLR 的 test-time scaling 互补。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + `get_textbox` 校验 + `vision_analyze` 核对 Fig 3。
+
+## [2026-07-11] ingest | KVpop - Key-Value Cache Compression with Predictive Online Pruning
+
+- `wiki/sources/kvpop.md`：新建。NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法。核心机制：固定 per-head KV budget $B=s+w+k$（sink+window+top-k），用 future-attention target 在 eviction boundary 监督 keep-or-drop（transposed-attention pass 不 materialize $S \times S$ 矩阵，复用 sparse LSE 近似 dense LSE），可选 mLSTM 延迟打分利用近未来上下文。Qwen3-8B 在 88% 压缩下保留 100% teacher 性能，Qwen3-4B 保留 97%。比 DMS 快（固定 per-head budget vs dynamic gate 的参差 cache）。Table 1/2 转 Markdown。6 张图（Fig1 overview / Fig2 transposed-attn / Fig3 stateful scorer / Fig4a latency / Fig4b VRAM / Fig6 eviction patterns）PyMuPDF 300 DPI 抽取，`get_textbox` 校验，`vision_analyze` 交叉确认 Fig1/Fig3。
+- `wiki/concepts/efficient-long-context-attention.md`：路线表加「学习式驱逐」行（KVpop），标题改「五条路线 + 学习式驱逐」，加一段说明 eviction 与 sparse retrieval 正交（前者 bound memory，后者减 compute）。
+- `wiki/comparisons/sparse-attention-mechanisms.md`：主表加 KVpop 行；相关页面加 KVpop 链接；新增「eviction vs. sparse retrieval」段。
+- `wiki/index.md`：来源段 +1。
+
+非模型方法论文（learned eviction / KV cache compression），不建 models/ 页。`raw/` 未改。待追问：abstract/contributions 数字不一致（v1→v2 修订疑似未同步），未验证 MLA/GDN 架构迁移性。
