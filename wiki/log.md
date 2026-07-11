@@ -863,3 +863,7 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：MinerU2.5-Pro 是上海 AI Lab + PKU + SJTU + 商汤的数据中心文档解析报告，核心论点是架构成熟后系统化数据工程是推动性能的主要杠杆。完全保留 MinerU2.5 的 1.2B 解耦 coarse-to-fine 架构（NaViT-675M + Qwen2-0.5B）不变，Data Engine 三组件协同：(1) DDAS 在页级+元素级两粒度联合优化多样性（ViT embedding + K-Means 聚类）与难度（CMCV 加权）；(2) CMCV 用三个异构模型（MinerU2.5 / PaddleOCR-VL / Qwen3-VL-30B）输出共识分 Easy/Medium/Hard，锚定待改进模型相对外部表现，Medium 训练价值最高；(3) Hard 样本用 Judge-and-Refine（Qwen3-VL-235B，render-then-verify 把 LaTeX/HTML 渲染成图与原图配对，打破 self-reflection 自肯定偏差）+ Targeted Expert Annotation（Gemini 3 Pro 预标注 + 人工）。数据 <10M → 65.5M（自动）+ 192K（专家）。三阶段训练：大规模 SFT（+1.31）→ Hard-SFT（+0.96，表格 TEDS +2.50）→ GRPO 对齐（+0.45，公式 CDM +0.81，沿用 DAPO clip-higher + dynamic sampling，reward 直接用评测指标）。评测协议贡献 OmniDocBench v1.6：MGAM 修正 v1.5 匹配粒度偏差（预测端三阶段搜最优粒度）+ Hard 子集 296 页（Base/Hard/Full 三层）。OmniDocBench v1.6 Full 95.69 居首，超 GLM-OCR 95.15、PaddleOCR-VL-1.5 94.87、同架构 baseline 92.98，超 200× 参数通用 VLM（Qwen3-VL-235B 89.78、Gemini 3 Pro 92.85、GPT-5.2 86.52）。跨源分歧：HunyuanOCR 1.0 自报 92.03 vs 统一重测 89.87（差 2.16，根因未明）。`raw/` 未改。图文化：4 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-07-12] maintenance | 补录 index 孤儿条目（Ling-2.6 / Unlimited OCR）
+
+`wiki/sources/ling-2.6.md`、`wiki/sources/unlimited-ocr.md` 及对应模型页已于 2026-07-11 ingest 并提交，但 index.md 漏收（"有页无索引"孤儿）。本次补录 4 条 index 条目：来源段 +2（ling-2.6 / unlimited-ocr）、模型段 +2（Ling-2.6 / Ring-2.6 纯文本 / Unlimited OCR 多模态）。模态据各模型页 关键事实 表核实。`raw/` 未改。
