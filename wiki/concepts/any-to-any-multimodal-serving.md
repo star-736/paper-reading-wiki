@@ -59,6 +59,17 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 > Figure 5（[vLLM-Omni](../sources/vllm-omni.md) 原文截图，§ 3.4 Disaggregated Data Transfer）："Disaggregated data transfer with unified connector."
 
+### JoyAI-VL-Interaction：不是 stage graph，而是"决策在模型 + 可插拔外设"
+
+[JoyAI-VL-Interaction](../sources/joyai-vl-interaction.md) 的系统也服务于多模态模型，也跑在 vLLM 上，但走了一条与 stage graph 完全不同的路线：
+
+- **模型是唯一决策者**：interaction model 内部决定每秒说话/静默/委托，ASR/TTS/记忆/UI/后台 brain 都是围绕模型的转导与编排，全部可插拔。
+- **双并发循环替代 stage graph**：实时循环（ingest -> adapt -> model -> TTS -> UI）和异步循环（delegate -> background brain -> 回填）由 delegate action 缝合，而非 vLLM-Omni 那种把 Thinker / Talker / Vocoder 拆成独立 stage 分别调度。
+- **语音在模型外**：与 Qwen3.5-Omni 把语音 fuse 进 Thinker/Talker 不同，JoyAI-VL-Interaction 把 ASR/TTS 视为可替换 I/O。这是"vision-first, speech-as-I/O"的刻意解耦。
+- **长程记忆围绕 prefix reuse 设计**：三层记忆（短期 raw token -> 中期文本摘要 -> 长期压缩块）刻意把非短期层存为文本，使每 chunk 形成稳定 prefix 供 vLLM cache 复用，支撑约 2 小时连续视频。
+
+与 vLLM-Omni 的关系：vLLM-Omni 回答"多阶段多模态模型如何在线运行"，JoyAI-VL-Interaction 回答"一个持续观看的交互模型如何在线运行"。前者是 pipeline 编排问题，后者是流式感知-决策-委托问题。
+
 ## 为什么重要
 
 1. **多模态模型的瓶颈从单模型 decode 变成 pipeline 编排。** 过去优化一个 LLM engine 就能吃到大头；any-to-any 模型里，一个 request 可能穿过多个 AR / non-AR 组件。某个 stage 没法 batch、某条边靠 Python 手写复制，都会吞掉整体收益。
@@ -78,6 +89,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)
-- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)
+- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
 - 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)
