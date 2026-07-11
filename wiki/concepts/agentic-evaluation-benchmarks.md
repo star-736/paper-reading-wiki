@@ -33,6 +33,22 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
+| UniClawBench | proactive agent 真实世界任务，capability-driven（5 维能力），三角色闭环评测 | 首个按能力分解而非场景分类的 proactive agent benchmark；400 双语任务，live web + Docker，跨模型 × 跨框架实验揭示 framework > model。 |
+
+## UniClawBench 的差异化定位
+
+UniClawBench（arXiv:2607.08768，HKU MMLab + Meituan）与上表其他 benchmark 的核心差异在于三点结构性设计，恰好对应它对现有 benchmark 的三个批评：
+
+1. **capability-driven 而非 scenario-driven**：不按 office / research 等场景分类，而是按 5 维能力（Multimodal / Long Context / Skill Usage / Exploration / Cross-Platform）组织任务。场景分类的问题在于模型失败时无法定位瓶颈是视觉感知、长上下文推理还是工具使用——能力分解让 root cause 可诊断。
+2. **三角色闭环评测**：executor agent（Docker 中执行）+ hidden supervisor agent（用 checkpoint rubric 评分，pass/fail/continue 三态）+ user simulator（只收可见轨迹 + 粗粒度信号，生成自然语言反馈）。Information Firewall 隔离评分标准与被测 agent，同时保留多轮人-agent 交互。多数现有 benchmark 是单轮的。
+3. **真实环境执行**：任务在 fresh Docker 中跑，可访问 live web（非自建镜像或缓存页），缩小 sandbox-to-real-world 鸿沟。
+
+其跨模型 × 跨框架实验有两个对 benchmark 解读直接有用的发现：
+
+- **framework 选择对能力表现的影响常超过模型选择**。同一个 GPT-5.4 在 OpenClaw / EDICT / Nanobot 下 Overall PR 分别为 0.407 / 0.338 / 0.290——读任何 agent benchmark 分数时，framework/harness 是与 model 同量级的变量。
+- **"半途失败"现象**：多数模型 intermediate AS 高但 final PR 显著低，说明 agent 能做部分进展但常在长执行链中犯不可恢复错误。这提示单看 step-level score 会高估能力。
+
+详见 [UniClawBench 来源页](../sources/uniclawbench.md)。
 
 ## 外部来源
 
