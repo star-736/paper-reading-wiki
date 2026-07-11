@@ -49,3 +49,13 @@ GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Pyth
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是互补的算法层问题：在一个 agent 轨迹内部，工具反馈后的高熵 step 是否应该追加 partial rollout 探索。前者解决长尾 rollout 怎么跑得动，后者解决有限 rollout 预算投到轨迹哪里。
 
+## 跨报告信号：Ling-2.6 / Ring-2.6 的异步 RL
+
+[Ling-2.6 / Ring-2.6](../sources/ling-2.6.md) 的异步 RL（ASystem + ARouter）与 GLM-5 解决同一问题但路径不同：
+
+- **步边界约束**：GLM-5 用轨迹数量阈值；Ring-2.6 用 **global token budget $\Phi$** 约束每步——未完成轨迹 pause + persist（含 KV-cache fingerprint）到 cross-version rollout buffer，下一 policy version 恢复，而非丢弃或等待。
+- **尾请求处理**：GLM-5 丢弃 stale sample；Ring-2.6 的 ARouter 把尾请求 **offload 到专用推理组**（spillover-based training-inference overlap），主推理组释放计算开始训练侧梯度累积，端到端性能提升 >80%。
+- **版本偏移控制**：GLM-5 用 stale sample dropping；Ring-2.6 用 staleness manager（max_staleness × consumer_batch_size 约束），超限 segment 退役。
+- **训练-推理精度对齐**：GLM-5 用 TITO 避免 text 重新分词；Ring-2.6 用 module-aware FP8 quantization（LM Head 走 FP32 ~2 点 reward 改善；Attention/Shared Experts 保持 BF16，Routed Experts 用 Blockwise FP8），控制 log-probability drift。
+- **KPop vs IcePop**：Ring-2.6 的 KPop 用 binary KL divergence 替代前代 IcePop 的 uniform fixed-ratio constraint，解决 MoE RL 中训练-推理 mismatch 的异质性问题——低概率 token 的 ratio noise 更大，固定比率会过度 mask 它们。这与 GLM-5 的 double-sided importance sampling 是同一层问题的不同解法。
+

@@ -28,7 +28,8 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 | [GSPO](../sources/group-sequence-policy-optimization.md) | Qwen Team，2025-07 | **importance ratio / clipping 单元** | sequence likelihood ratio $s_i=(\pi_\theta(y_i)/\pi_{old}(y_i))^{1/|y_i|}$，response-level clipping | token-level ratio 与 sequence-level reward 不匹配；MoE expert routing 波动使 token ratio 失效 | Qwen3-30B-A3B，AIME / LiveCodeBench / CodeForces | 用 sequence-level ratio 替代 GRPO token ratio |
 | [SAPO](../sources/soft-adaptive-policy-optimization.md) | Qwen Team，2025-12 | **soft trust region / gate 形状** | sigmoid soft gate + $sech^2$ gradient weight；$\tau_{neg}>\tau_{pos}$ | hard clipping 过脆；GSPO 整条 sequence 被裁、GRPO token 越界即零梯度 | Qwen3-30B-A3B、Qwen3-VL-30B-A3B | 保留 group-based RL，替换硬裁剪为软门控 |
 | [ARPO](../sources/agentic-reinforced-policy-optimization.md) | 人大 + 快手，2025-07 | **agentic rollout 采样结构** | 工具反馈后监控 token entropy，在高熵 tool-call step 分叉 partial rollouts；advantage attribution | trajectory-level RL 忽略工具反馈后的 step-level 决策 | Qwen2.5 / Llama3.1 / Qwen3，math/QA/deep search | 把 DAPO/GRPO/REINFORCE++ 当 trajectory-level baseline |
-| [MGPO](../sources/vibethinker-3b.md) | Sina Weibo，2025-11（VibeThinker-1.5B）→ 2026-06（3B） | **prompt-level 梯度权重** | 最大熵权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权全对/全错 prompt；GRPO clipped objective + on-policy | 全对/全错 prompt 零梯度浪费；training-inference probability mismatch | Qwen2.5-Coder-3B（VibeThinker-3B），AIME/LiveCodeBench | 保留 GRPO group-relative clipped objective，加 prompt-level weight |
+| [MGPO](../sources/vibethinker-3b.md) | Sina Weibo，2025-11（VibeThinker-1.5B）-> 2026-06（3B） | **prompt-level 梯度权重** | 最大熵权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权全对/全错 prompt；GRPO clipped objective + on-policy | 全对/全错 prompt 零梯度浪费；training-inference probability mismatch | Qwen2.5-Coder-3B（VibeThinker-3B），AIME/LiveCodeBench | 保留 GRPO group-relative clipped objective，加 prompt-level weight |
+| KPop / IcePop | Inclusion AI（Ling Team），2025-2026 | **训练-推理 mismatch 的 mask 形状** | IcePop：uniform fixed-ratio $[\alpha,\beta]$ + double-sided masking；KPop：symmetric binary KL divergence $D_{KL}^B(\pi_{train}\|\pi_{infer})$，两方向都要求 $\leq\phi$，单超参控制 | MoE RL 中训练-推理精度不对齐导致 token ratio 噪声；固定比率过度 mask 低概率 token | Ring-2.6-1T（1T MoE），agentic coding RL | 与 GRPO 系并列的 MoE RL 稳定化层，不替代 ratio/loss 而是控制哪些 token 参与 |
 
 ## 关键分叉：token、sequence、step 三个「单位」
 
@@ -71,6 +72,14 @@ MGPO 和前四者在又一条不同的轴上。它不改 token-level ratio（DAP
 
 MGPO 还有一个 DAPO 不涉及的维度：它显式处理 training-inference probability mismatch。VibeThinker-3B 发现 rollout engine 优化推理吞吐量后，training-inference 概率失配被放大，因此改为全 on-policy（参考 [14, 15] 的稳定化策略）。这是 GRPO 系实践中常见的工程问题，DAPO 论文未讨论。
 
+### KPop / IcePop：不争 ratio 也不争采样，而争「哪些 token 参与」
+
+KPop 和前述方法在又一条轴上。它不改 token-level ratio（DAPO/GSPO/SAPO 的轴），不改 rollout 采样结构（ARPO 的轴），也不改 prompt 权重（MGPO 的轴），而是控制**训练-推理 mismatch 下哪些 token 被允许参与梯度**。
+
+前代 IcePop 用 uniform constant-ratio constraint（固定 $[\alpha,\beta]$ + double-sided masking），隐含假设所有 token 的 ratio noise 相同。但实际 ratio divergence 依赖 token probability——低概率 token 的 ratio noise 更大，固定比率会过度 mask 它们。KPop 用 symmetric binary KL divergence（把全词表看成「当前 token vs 其余」二事件划分）替代固定比率，两个方向都要求小于阈值 $\phi$，单超参控制。这与 GLM-5 的 double-sided importance sampling 是同一层问题的不同解法，与 GSPO/SAPO 正交可组合。
+
+详见 [Ling-2.6 技术报告](../sources/ling-2.6.md) § 3.2.3。
+
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
@@ -87,6 +96,6 @@ MGPO 还有一个 DAPO 不涉及的维度：它显式处理 training-inference p
 
 ## 相关页面
 
-- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)
+- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)
