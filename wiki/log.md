@@ -843,3 +843,23 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 
 核心定位：Qwen-AgentWorld 是 Qwen Team 的 native language world model，核心论点是 world modeling 是通用 agent 缺失的拼图——当前 LLM agent 研究几乎只关注 policy 侧而忽略 world model。首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的单一 LWM，三阶段 "CPT injects, SFT activates, RL sharpens"：CPT 注入 state-transition dynamics + world knowledge（turn-level 信息论 loss masking 按 7 类 keep ratio 5%–100%）、SFT 激活 next-state-prediction thinking（rejection sampling 69.2% retention）、RL 用 GSPO + hybrid rubric-and-rule reward（9:1）锐化保真度（三种稳定性解法：单 turn 展开防 Echo Trap / rubric+rule 而非 reference/turing-test / tag extraction 防 self-praise）。AgentWorldBench 2,170 样本 / 5 维 rubric / reference-grounded judging，Qwen-AgentWorld-397B-A17B 总均分 58.71 超 GPT-5.4 58.25。两应用范式：(1) Decouple——LWM 作模拟器做 Sim RL，可控模拟（注入扰动 / 构造虚构世界）超真实环境训练（WideSearch 50.3% vs 45.6%）；(2) Unify——LWM RL warm-up（单轮无工具）跨 7 agentic benchmark（含 3 OOD 域）一致提升（Claw-Eval +11.3），机制是 prediction-driven action refinement（预测准确率 69.9%→78.3%）。基于 Qwen3.5 checkpoint。`raw/` 未改。图文化：5 张图，PyMuPDF 300 DPI + get_textbox 校验。
 
+
+## [2026-07-12] ingest | MinerU2.5-Pro 技术报告
+
+`raw/2604.04771v2.pdf`（arXiv:2604.04771v2, 上海 AI Lab + PKU + SJTU + 商汤, 2026-04-09, 43 页）。
+
+新增：
+
+- `wiki/sources/mineru-2-5-pro.md`：来源页（图文交错）。嵌入 Figure 1（OmniDocBench v1.6 性能对比四子图）、Figure 2（Data Engine 三组件总览：DDAS + CMCV + Judge-and-Refine）、Figure 3（DDAS 两粒度流水线）、Figure 4（v1.5 元素匹配偏差示例）。Table 1（三阶段训练配置）、Table 2（主结果 18 模型）、Table 3（训练阶段消融）转 Markdown；Table 4/5/6 元素级结果转散文 + 关键数字。待追问 6 条（HunyuanOCR 1.0 分数分歧根因 / CMCV 模型池选择偏差 / Judge-Refine 与 CMCV 池同源盲点 / 192K Hard 子任务分布 / GRPO mid-reward 阈值 / 200× 参数口径）。
+- `wiki/models/mineru-2-5-pro.md`：模型页。关键事实表含模态=多模态（文本+图像输入；结构化文本输出）（已据原文核实）。技术身份四点（架构不变作控制变量 / CMCV 多模型交叉验证 / render-then-verify 打破自肯定偏差 / 三阶段对应数据质量层级）。与 HunyuanOCR-1.5 对照（路线正交：推测解码+agentic 数据 vs 数据中心方法论+评测修正）。
+- `wiki/assets/mineru-2-5-pro/`：fig1-omnidocbench-v16-performance.png, fig2-data-engine-pipeline.png, fig3-ddas-two-granularity.png, fig4-matching-bias-examples.png（PyMuPDF 300 DPI + get_textbox 校验；fig4 纯图像无文字层，其余含图内标签无 caption 污染）
+
+更新：
+
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：末段加 MinerU2.5-Pro 跨域评测方法论信号（MGAM 修正匹配粒度偏差 + Hard 子集区分力 + 自报分 vs 统一重测分不可混用，与 Qwen-AgentWorld differentiated matching criteria / Xiaomi 饱和域 / Agent-World scaling 呼应）。
+- `wiki/comparisons/llm-rl-policy-optimization.md`：「与模型报告的关系」加 MinerU2.5-Pro 一条（Stage 3 GRPO+DAPO 的非 agentic 应用：任务指标直接作 reward / mid-reward hard filter / 增益小但定向，说明 GRPO+DAPO recipe 适用于任何 token-level loss 与任务级指标错位的结构化输出任务）。
+- `wiki/concepts/data-mixture-optimization.md`：加「data-centric AI 的另一分支：难度感知采样 + 标注精修」段（MinerU2.5-Pro Data Engine 与 DoReMi/TANDEM domain reweighting 正交：优化 instance 价值+标注可信度而非 domain 比例，信号源是多模型一致性非 proxy loss，把标注质量作一等问题）。
+- `wiki/sources/hunyuan-ocr-1.5.md`：待追问加 HunyuanOCR 1.0 自报分（92.03）vs MinerU 统一重测分（89.87）分歧条目；相关页面加 MinerU2.5-Pro 反向链接。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：MinerU2.5-Pro 是上海 AI Lab + PKU + SJTU + 商汤的数据中心文档解析报告，核心论点是架构成熟后系统化数据工程是推动性能的主要杠杆。完全保留 MinerU2.5 的 1.2B 解耦 coarse-to-fine 架构（NaViT-675M + Qwen2-0.5B）不变，Data Engine 三组件协同：(1) DDAS 在页级+元素级两粒度联合优化多样性（ViT embedding + K-Means 聚类）与难度（CMCV 加权）；(2) CMCV 用三个异构模型（MinerU2.5 / PaddleOCR-VL / Qwen3-VL-30B）输出共识分 Easy/Medium/Hard，锚定待改进模型相对外部表现，Medium 训练价值最高；(3) Hard 样本用 Judge-and-Refine（Qwen3-VL-235B，render-then-verify 把 LaTeX/HTML 渲染成图与原图配对，打破 self-reflection 自肯定偏差）+ Targeted Expert Annotation（Gemini 3 Pro 预标注 + 人工）。数据 <10M → 65.5M（自动）+ 192K（专家）。三阶段训练：大规模 SFT（+1.31）→ Hard-SFT（+0.96，表格 TEDS +2.50）→ GRPO 对齐（+0.45，公式 CDM +0.81，沿用 DAPO clip-higher + dynamic sampling，reward 直接用评测指标）。评测协议贡献 OmniDocBench v1.6：MGAM 修正 v1.5 匹配粒度偏差（预测端三阶段搜最优粒度）+ Hard 子集 296 页（Base/Hard/Full 三层）。OmniDocBench v1.6 Full 95.69 居首，超 GLM-OCR 95.15、PaddleOCR-VL-1.5 94.87、同架构 baseline 92.98，超 200× 参数通用 VLM（Qwen3-VL-235B 89.78、Gemini 3 Pro 92.85、GPT-5.2 86.52）。跨源分歧：HunyuanOCR 1.0 自报 92.03 vs 统一重测 89.87（差 2.16，根因未明）。`raw/` 未改。图文化：4 张图，PyMuPDF 300 DPI + get_textbox 校验。

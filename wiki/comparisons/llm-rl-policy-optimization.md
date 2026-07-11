@@ -86,6 +86,7 @@ KPop 和前述方法在又一条轴上。它不改 token-level ratio（DAPO/GSPO
 - [Qwen3-VL 技术报告](../sources/qwen3-vl.md)：原报告有 own post-training pipeline；SAPO 论文提供后续/配套 Qwen3-VL RL 训练证据，说明 SAPO 用在 Qwen3-VL-30B-A3B preliminary cold-start 上，但不替换源报告 pipeline。
 - [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本页可作为该概念页里「RL policy optimization 子谱系」的展开。
+- [MinerU2.5-Pro](../sources/mineru-2-5-pro.md)：Stage 3 是 GRPO + DAPO recipe 的**非 agentic 应用**——文档解析格式对齐。三个特点值得与 agentic RL 对照：(1) reward 直接用评测指标（edit distance / CDM / TEDS / IoU），无需单独 reward model，也无 LLM-as-judge，比 agentic RL 的 reward 设计更「机械」但更可信；(2) 训练数据按 reward 分布过滤（剔除过高/过低 reward，保留中段）以最大化有效 policy gradient 信号——与 [MGPO](../sources/vibethinker-3b.md) 的 prompt-level 加权、DAPO 的 dynamic sampling 同属「聚焦能力边界样本」家族，但用 hard filter 而非 soft weight；(3) 增益小（+0.45）但定向——主要提公式 CDM（+0.81），印证 GRPO 对「交叉熵等权 token 与 sequence-level 结构指标错位」的修补。这说明 GRPO+DAPO recipe 不限于 long-CoT reasoning / agentic，对任何「token-level loss 与任务级指标错位」的结构化输出任务都适用。
 
 ## 待追问
 

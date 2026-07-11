@@ -50,6 +50,7 @@
 - [Xiaomi-GUI-0 技术报告](sources/xiaomi-gui-0.md) - 小米 SeerRay 的 native end-to-end multimodal GUI agent，真机为主的混合基础设施 + error-driven data flywheel + 三阶段训练（SFT→Step RL→Agentic RL），RealMobile 72.0% / AndroidWorld 78.9%。
 - [Agent-World 技术报告](sources/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场：Agentic Environment-Task Discovery（1978 环境 / 19822 工具，MCP/工具文档/PRD 挖主题 + graph-based + programmatic 任务合成）+ Continuous Self-Evolving Agent Training（多环境 GRPO RL + 诊断弱环境→定向扩展→continue RL 的 co-evolution），跨 23 benchmark。
 - [Qwen-AgentWorld 技术报告](sources/qwen-agent-world.md) - Qwen Team 的 native language world model（LWM），首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的 agentic 环境模拟器，三阶段 CPT→SFT→RL（"injects/activates/sharpens"）+ AgentWorldBench（5 维 rubric reference-grounded judging）+ 解耦（Sim RL 可控模拟超真实环境）/ 统一（LWM warm-up 跨任务迁移）两种 agent 增强范式。
+- [MinerU2.5-Pro 技术报告](sources/mineru-2-5-pro.md) - 上海 AI Lab + PKU + SJTU + 商汤的数据中心文档解析报告，固定 1.2B 架构，Data Engine（DDAS + CMCV + Judge-and-Refine）+ 三阶段训练把 OmniDocBench v1.6 从 92.98 推到 95.69，并修正评测匹配偏差（MGAM）+ 引入 Hard 子集；含 HunyuanOCR 1.0 自报分与统一重测分的跨源分歧。
 |
 ## 模型
 
@@ -78,6 +79,7 @@
 - [Xiaomi-GUI-0](models/xiaomi-gui-0.md) - 小米 SeerRay 的 native end-to-end multimodal GUI agent，基于 Qwen3-VL-30B-A3B-Instruct，真机闭环训练 + error-driven flywheel，多模态（文本+图像输入；文本输出）。
 - [Agent-World](models/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场产出（8B/14B，Qwen3 dense 基座 + 冷启动 SFT + 多环境 GRPO RL + 2 轮自演化 arena），纯文本，环境合成 + agent-environment co-evolution。
 - [Qwen-AgentWorld](models/qwen-agent-world.md) - Qwen Team 的 native language world model 家族（35B-A3B / 397B-A17B，基于 Qwen3.5），覆盖 7 域 agentic 环境模拟，三阶段 CPT→SFT→RL，纯文本（GUI 域用 accessibility tree 文本表示）。
+- [MinerU2.5-Pro](models/mineru-2-5-pro.md) - 上海 AI Lab + PKU + SJTU + 商汤的 1.2B 轻量文档解析 VLM（NaViT-675M + Qwen2-0.5B），固定架构，Data Engine（DDAS + CMCV + Judge-and-Refine）+ 三阶段训练，多模态（文本+图像输入；结构化文本输出）。
 
 ## 概念
 

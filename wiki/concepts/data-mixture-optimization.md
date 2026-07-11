@@ -52,6 +52,12 @@ TANDEM 的核心洞察是：数据充足时 uniform weighting 已近最优（Pro
 
 [Qwen3](../sources/qwen3.md) 的预训练数据管线采用了 instance-level data mixture：用轻量 Qwen 标注器给 >30T tokens 在「教育价值 / 领域 / 安全」多维度打标，按 instance 而非 domain 优化数据混合。这是 DoReMi 等方法在 domain 定义粗粒度局限上的自然演进方向——DoReMi 论文自己也指出「更细粒度的 domain 可能带来更大增益」。
 
+### data-centric AI 的另一分支：难度感知采样 + 标注精修
+
+[MinerU2.5-Pro](../sources/mineru-2-5-pro.md) 代表 data-centric AI 在文档解析域的另一条路线，与上述 domain reweighting 谱系正交。它不改 domain 权重，而是协同优化三个维度：**覆盖**（DDAS：ViT embedding + K-Means 聚类 + 难度加权采样纠正长尾偏移）、**信息量**（CMCV：三个异构模型输出共识判定 Easy/Medium/Hard，Medium 训练价值最高）、**标注准确性**（Judge-and-Refine render-then-verify + 专家标注精修 Hard 样本）。
+
+与 DoReMi/TANDEM 的关键区别：(1) 优化目标不是「各 domain 采样比例」而是「哪些 instance 值得训 + 标注可信度」；(2) 信号来源不是 proxy model 的 loss 而是多模型输出一致性（query-by-committee 思想）；(3) 把标注质量作为一等问题（Hard 样本标注噪声会传播进模型），而非假设标注已给定。这条路线适用于「标注本身不可靠」的场景（文档解析、结构化抽取），而 domain reweighting 假设标注固定、只调比例。MinerU2.5-Pro 用此方法固定 1.2B 架构把 OmniDocBench v1.6 从 92.98 推到 95.69，是「架构成熟后数据工程是主要杠杆」论点在文档解析域的干净实证。
+
 ## 为什么重要
 
 数据混合优化是「data-centric AI」在 LLM 预训练中的核心议题。模型架构和训练算法趋同后，数据组成成为决定模型能力的主要变量。DoReMi 等方法把数据配比从人工经验驱动变成可自动优化的工程问题，且优化成本远低于训练本身（DoReMi 仅 8% 额外 FLOPs）。这对降低训练成本、提升数据效率有直接价值。

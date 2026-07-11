@@ -121,10 +121,12 @@ OmniDocBench v1.6（端到端文档解析）总分 94.74，是 1B 级模型 SOTA
 - DFlash 的 draft model（90.7M / 5 层）在高并发下是否有 DSpark 论文指出的静态多 token drafter 吞吐反噬问题？报告只给了 c=1 到 c=32 的数据，c=32 时加速比已从 2.14× 降到 1.80×。
 - Agentic Data Flow 的 agent 具体用什么模型驱动？报告提到 Qwen3.5 参与标注，但 agent 本身的 backbone 未明确。
 - IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？三者都在 GRPO 框架上改 ratio/clipping 粒度。
+- **HunyuanOCR 1.0 自报分与统一重测分分歧**：本报告自报表中 HunyuanOCR-1.0 = 92.03（OmniDocBench v1.6），但 [MinerU2.5-Pro](mineru-2-5-pro.md) 在统一环境用 MGAM 重测同一模型（HunyuanOCR 1.0，arXiv:2511.19575）= 89.87（Full），差约 2.16 分。根因未明（可能与匹配逻辑、评测代码、test 子集有关），读分时须区分自报分与统一重测分。注意：HunyuanOCR-1.5 自身 94.74 尚无统一重测分对照。
 
 ## 相关页面
 
 - [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) - 模型身份页
+- [MinerU2.5-Pro](mineru-2-5-pro.md) - 同属轻量文档解析 VLM，提供 HunyuanOCR 1.0 的统一重测分对照（见待追问）
 - [Unlimited OCR Works](unlimited-ocr.md) - 同属 OCR VLM 家族，走恒定 KV cache attention 路线（R-SWA）而非推测解码
 - [多 Token 预测](multi-token-prediction.md) - DFlash 作为 block-diffusion 推测解码变体
 - [Agentic Engineering](agentic-engineering.md) - Agentic Data Flow 作为 agent 驱动自动化的一个实例
