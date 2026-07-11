@@ -60,6 +60,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | WebVoyager | 端到端 web agent | GLM-5V-Turbo 88.5 vs Kimi K2.5 84.3 vs Claude Opus 4.6 88.0。 |
 | Ainstain Bench | 科学计算编程，测试模型能否实现和操控科研工作流中的计算程序 | Seed2.0 Model Card 新建，归入 Science Discovery 评测维度。Seed2.0 Pro 47.7，超过 GPT-5.2（41.3）和 Claude-Sonnet-4.5（33.7）。 |
 | GDPVal-Verified | GDPVal 的可靠子集 + rubric 自动评测，面向端到端真实世界任务 | Seed2.0 Model Card 新建，归入 Real-World Tasks 评测维度。 |
+| AgentWorldBench | language world model 评测，2,170 turn-level 样本 / 7 域 / 9 source benchmark / 5 frontier model / 5 维 rubric（Format/Factuality/Consistency/Realism/Quality） | Qwen-AgentWorld 自建，评估 LWM 模拟环境观测的保真度；每样本配真实环境执行的 ground-truth 观测，训练/评测在数据源级分区保证 OOD。 |
 
 ## UniClawBench 的差异化定位
 
@@ -113,3 +114,11 @@ Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark
 按能力域分解的结果揭示了一个跨模型共性：**Safety & Reflection 是所有模型最弱域**（Gemini 3.1 Pro 也仅 62.5%），安全感知和自纠正行为是当前 GUI agent 的共同瓶颈。而 Foundation 域 Xiaomi-GUI-0 达 100%，与 Gemini 3.1 Pro / Seed 2.0 Pro 并列——基础 UI 操作已接近饱和，不再区分能力。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
 
 Agent-World 则展示了第三种评测思路：**把评测本身做成动态诊断 arena，而非静态 benchmark**。它不只在 23 个公开 benchmark 上打分，更把自建的 1978 环境 / 19822 工具生态同时当作训练源与诊断 arena——每轮按层次分类分层采样 K=5 环境/一级类别构造评测集，重新合成全新可验证任务（graph-based + programmatic，配 rubric 或可执行 `V_code`），环境与任务跨轮动态变化防过拟合。agentic diagnosis agent 从失败 trace + 错误分布 + 环境元数据定位弱环境与错误模式，输出定向任务生成指南驱动下一轮训练。这与 JoyAI（与真实产品 head-to-head 盲评）、Xiaomi-GUI-0（真机 live 应用评测）形成对照：JoyAI 解决"流式交互的 turn-based 结构性缺陷无法被 offline benchmark 捕捉"，Xiaomi-GUI-0 解决"模拟器状态分布偏离真实部署"，Agent-World 解决"静态评测无法持续诊断能力缺口并驱动定向学习"——三者都承认静态 offline benchmark 有盲区，但分别从交互范式、部署分布、诊断-学习闭环三个角度突围。另有一个对 benchmark 解读有用的发现：Agent-World 的环境数量 scaling 实验（0→2000 环境，四代表域均分 18.4%→38.5%）首次量化了"训练环境多样性"作为独立性能变量的作用——读 agent benchmark 分数时，除 model / framework / context / sampling 外，**训练时见过的环境多样性与自演化轮数**也是同量级变量。详见 [Agent-World 来源页](../sources/agent-world.md)。
+
+Qwen-AgentWorld 的 AgentWorldBench 则展示了第四种评测思路：**评测 world model 本身而非 agent policy**。它不测 agent 能否完成任务，而测 LWM 能否忠实模拟环境观测——给定交互历史与当前 action，预测的下一观测是否匹配真实环境执行。三个结构设计值得 benchmark 解读时参考：
+
+1. **Reference-grounded judging**——judge 同时拿 ground-truth 观测与预测观测，通过比较两者打分，把开放质量判断转为事实比较。这大幅收窄 judge 幻觉空间，是跨 judge 一致性高的主因：Gemini 3 Flash / Claude Sonnet 4.5 / GPT-5.2 三个 judge 绝对分系统性差异（Gemini 最宽松、GPT-5.2 最严），但模型级排名高度一致（pairwise Spearman ρ = 0.92–0.99）。
+2. **Differentiated matching criteria**——把观测内容分三类匹配标准：Deterministic content（echo/文件读取/计算结果）须精确匹配；Pre-existing environment content（预装软件版本、非轨迹创建文件）仅验格式与合理性（模拟器无法复现特定 sandbox 的 gcc patch 版本）；Runtime metadata（timestamp/PID/内存地址/session token）仅验格式与范围。三类区分让 judge 奖励正确结构/语义行为而不惩罚不可复现细节——这对任何涉及环境模拟的 benchmark 都适用。
+3. **Double-blind Turing test 校准 judge**——judge 拿两条候选观测（一条真实、一条 world model 生成，随机序）须识别哪条来自真实环境，用 Turing-test 准确率作优化信号迭代精炼域特定 judge prompt。这把 judge 选择从"挑最严/最宽"转为"挑最能区分真实与模拟的"。
+
+另一个对 benchmark 解读有用的发现：Qwen-AgentWorld 在 GUI 域（Android/Web/OS）落后 Claude Opus 4.8/4.6 与 GPT-5.4，论文归因于 multimodal pre-training 优势——即便 GUI 域已用 accessibility tree 文本表示，纯文本 world modeling 仍不能完全捕获 GUI 状态推理。这暗示**评测 world model 时，模态表示本身是与模型质量同量级的变量**。详见 [Qwen-AgentWorld 来源页](../sources/qwen-agent-world.md)。

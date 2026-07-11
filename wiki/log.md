@@ -824,3 +824,22 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 
 核心定位：Agent-World 是人大 + ByteDance Seed 的自演化 agent 训练场，核心论点是通用 agent 的瓶颈在可扩展真实环境合成与连续自演化训练机制，而非模型参数。两阶段闭环：(1) Agentic Environment-Task Discovery——从真实 MCP servers（~2.8K）/ 工具文档（~0.5K）/ 工业 PRD（~0.2K）挖主题，deep-research agent 从 web 建主题对齐数据库（含数据库复杂化迭代）+ coding agent 生成并交叉验证可执行工具，合成 1978 环境 / 19822 工具生态；任务合成走 graph-based（DAG 工具图 + 随机游走）与 programmatic（解代码 + verifier 脚本）两条路，均靠 sandbox 执行推导 ground truth 并保留可验证性。(2) Continuous Self-Evolving Agent Training——多环境 GRPO RL（可执行 reward：rubric LLM judge / V_code 脚本）+ 自演化 arena（分层采样 K=5 环境 → 动态合成新任务 → agentic diagnosis 定位弱环境 → 定向任务扩展 → continue RL），形成 agent-environment co-evolution。Qwen3-8B/14B 基座 + 冷启动 SFT（40K 轨迹）+ GRPO（clip 0.2/0.28）+ 2 轮自演化。23 benchmark 上 Agent-World-8B/14B 一致超过环境扩展基线，BFCL V4 55.8 与 DeepSeek-V3.2-685B 54.1 竞争力强；环境数量 scaling（0→2000）四域均分 18.4%→38.5%。`raw/` 未改。图文化：4 张图，PyMuPDF 300 DPI + get_textbox 校验。
 
+## [2026-07-12] ingest | Qwen-AgentWorld: Language World Models for General Agents
+
+`raw/2606.24597v1.pdf`（arXiv:2606.24597v1, Qwen Team, 2026-06-24, 47 页, Technical Blog）。
+
+新增：
+
+- `wiki/sources/qwen-agent-world.md`：来源页（图文交错）。嵌入 Figure 1（总览：7 域 native LWM + Decouple/Unify 两范式）、Figure 5（三阶段训练管线 CPT→SFT→RL）、Figure 8（跨域泛化：仅 Terminal RL 训练，MCP/SWE/Search 同步提升）、Figure 9（Controllable Sim RL vs Real RL：Sim RL 50.3% vs Real RL 45.6% + web_extractor 调用分化）、Figure 12（LWM 推理模式：多步因果推理 / 信息泄漏预防 / 认知边界觉察）。Table 1（7 域 action/observation/capability）、Table 2（SFT/RL 数据统计）、Table 3（7 类 turn loss masking）、Table 5（16 模型主结果）、Table 6/8/9（三应用结果）转 Markdown。待追问 7 条（GUI 域差距根因 / Factuality 持续最低 / 10M+ trajectories 构成拆解 / fictional-world 四策略独立贡献 / LWM warm-up 与 auxiliary loss 组合 / 与 Agent-World 互补边界 / state is bottleneck 定量证据）。
+- `wiki/models/qwen-agent-world.md`：模型页。关键事实表含模态=纯文本（已据原文核实：GUI 域用 accessibility tree / UI view hierarchy 文本表示而非像素帧，§1 明确；多模态扩展列 future work）。变体表 35B-A3B / 397B-A17B 均基于 Qwen3.5 checkpoint。
+- `wiki/assets/qwen-agent-world/`：fig1-overview.png, fig5-training-pipeline.png, fig8-cross-domain-generalization.png, fig9-sim-rl-vs-real-rl.png, fig12-reasoning-patterns.png（PyMuPDF 300 DPI + get_textbox 校验；fig5 纯矢量无文字层，其余含图内标签无 caption/footnote 污染）
+
+更新：
+
+- `wiki/concepts/agentic-engineering.md`：跨报告信号加 Qwen-AgentWorld 行（瓶颈定位在 world modeling 缺失拼图，Decouple Sim RL 可控模拟超真实环境 + Unify LWM warm-up 跨任务迁移，与 Agent-World code-driven 路线互补——"trades determinism for generality"）；相关页面加反向链接。
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架加 Qwen-AgentWorld 一条（native LWM 三阶段 + turn-level 信息论 loss masking + hybrid rubric-and-rule reward 9:1 + LWM warm-up 跨任务迁移 + prompt-output 极端不对称，与 Agent-World code-driven 路线互补）。
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表加 AgentWorldBench 行；末段加 Qwen-AgentWorld 第四种评测思路（评测 world model 而非 agent policy）——reference-grounded judging / differentiated matching criteria / double-blind Turing test 校准 judge + GUI 域差距暗示模态表示是变量。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：Qwen-AgentWorld 是 Qwen Team 的 native language world model，核心论点是 world modeling 是通用 agent 缺失的拼图——当前 LLM agent 研究几乎只关注 policy 侧而忽略 world model。首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的单一 LWM，三阶段 "CPT injects, SFT activates, RL sharpens"：CPT 注入 state-transition dynamics + world knowledge（turn-level 信息论 loss masking 按 7 类 keep ratio 5%–100%）、SFT 激活 next-state-prediction thinking（rejection sampling 69.2% retention）、RL 用 GSPO + hybrid rubric-and-rule reward（9:1）锐化保真度（三种稳定性解法：单 turn 展开防 Echo Trap / rubric+rule 而非 reference/turing-test / tag extraction 防 self-praise）。AgentWorldBench 2,170 样本 / 5 维 rubric / reference-grounded judging，Qwen-AgentWorld-397B-A17B 总均分 58.71 超 GPT-5.4 58.25。两应用范式：(1) Decouple——LWM 作模拟器做 Sim RL，可控模拟（注入扰动 / 构造虚构世界）超真实环境训练（WideSearch 50.3% vs 45.6%）；(2) Unify——LWM RL warm-up（单轮无工具）跨 7 agentic benchmark（含 3 OOD 域）一致提升（Claw-Eval +11.3），机制是 prediction-driven action refinement（预测准确率 69.9%→78.3%）。基于 Qwen3.5 checkpoint。`raw/` 未改。图文化：5 张图，PyMuPDF 300 DPI + get_textbox 校验。
+

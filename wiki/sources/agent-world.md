@@ -200,3 +200,4 @@ Qwen3-8B / 14B backbone 在 GRPO 下 reward 稳步上升；entropy 随时间相�
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - 23 benchmark + 动态 arena 评测方法论
 - [Forge Agent-Native RL](../concepts/forge-agent-native-rl.md) - 另一类 self-evolution 路线对照
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - GRPO + Clip-Higher 落地
+- [Qwen-AgentWorld](qwen-agent-world.md) - learned neural simulator 路线（互补对照：code-driven 确定性 vs LWM 通用性）
