@@ -4,14 +4,14 @@ title: "TANDEM：Bi-Level Data Mixture Optimization with Twin Networks"
 description: "JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy model + 动态 reference model）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。"
 tags: ["source", "tandem", "data-mixture", "bi-level-optimization", "pretraining"]
 timestamp: 2026-07-11
-resource: "../../raw/TANDEM-bi-level-data-mixture-2606.04401.pdf"
+resource: "../../raw/2606.04401v1.pdf"
 ---
 
 # TANDEM：Bi-Level Data Mixture Optimization with Twin Networks
 
 ## 来源
 
-- 文件：`raw/TANDEM-bi-level-data-mixture-2606.04401.pdf`
+- 文件：`raw/2606.04401v1.pdf`
 - 标题：TANDEM: Bi-Level Data Mixture Optimization with Twin Networks
 - 团队 / 日期：Jiaxing Wang, Deping Xiang, Jin Xu, Mingyang Yi, Guoqiang Gong, Zicheng Zhang, Haoran Li, Pengzhang Liu, Zhen Chen, Ke Zhang, Ju Fan, Qixiang Jiang（JD.com + Oxford + 人民大学 + 国科大）；NeurIPS 2025；arXiv:2606.04401
 - 定位：数据混合优化方法论文，不是模型报告；核心是把 domain reweighting 建模为 bi-level optimization 并用 twin network 求解，是 [DoReMi](doremi.md) 和 DoGE 的直接后继与改进。
@@ -25,6 +25,10 @@ resource: "../../raw/TANDEM-bi-level-data-mixture-2606.04401.pdf"
 5. **在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE**：当数据不足（小 domain 被多次重复导致过拟合）或 SFT（每个样本被多次访问导致泛化 gap）时，uniform weighting 不再是最优解，TANDEM 的 reweighting 价值凸显（§2.4、Table 3-5）。
 
 ## 算法
+
+![TANDEM 架构图：(a) 两阶段 DMO 流程——Stage One 用 twin network 学习 mixture ratio，Stage Two 用学到的 ratio 训练最终 LLM；(b) TANDEM 计算流程——proxy model（绿色）在 training set 上训练，reference model（橙色）在 training+validation set 上同步 probing K 步，两者的 per-domain loss 差驱动 mixture ratio（粉色）更新。](../assets/tandem/fig1-architecture.png)
+
+> 论文 Figure 1 原文标题："(a) The two-stage data mixture optimization. Optimal mixtures are first learned and then utilized to train the final model. (b) The computation procedure of TANDEM, twined proxy model (green) and reference model (orange) are used to determine the update of the mixture ratio (pink)."（§2.2）
 
 ### Bi-level formulation
 
@@ -118,9 +122,21 @@ TANDEM 比 Uniform 改善 3.46，比最强 baseline Skill-It 改善 1.17。DoReM
 
 在 data-restricted 场景，TANDEM upweight 了小 domain（Arxiv 3.4%→8.9%、Books 3.7%→8.5%、StackExchange 2.8%→11.5%、Wikipedia 3.1%→7.9%），防止它们被大 domain 淹没同时避免过拟合。大 domain（CommonCrawl、C4）仍占主导但比例下降。
 
+![各方法在 data-restricted 场景学到的 domain mixture ratio 对比：TANDEM 与 DoGE 模式相似，DoReMi 偏向极端 upweight CommonCrawl。](../assets/tandem/fig5-learned-mixtures.png)
+
+> 论文 Figure 5 原文标题："Mixture ratio learned by different methods."（§4.2）
+
+![TANDEM 在三种场景下的 step-wise mixture ratio 演化：(a) data-abundant pretraining——ratio 变化较小，验证 Proposition 1；(b) data-restricted pretraining——小 domain 被 upweight；(c) SFT——不同任务类别的 ratio 分化明显。](../assets/tandem/fig3-mixture-evolution.png)
+
+> 论文 Figure 3 原文标题："Step-wise data mixture ratio evolution under three scenarios."（§4.1）
+
 ### 关键消融
 
 **Synchronization 的作用**（Figure 7）：有同步时 $\text{Dist}(u, w)$ 控制在 $1.5 \times 10^{-4}$ 以下并逐渐收缩；无同步时距离爆炸。同步是 penalized form 逼近原始 bi-level 问题的关键。
+
+![Twin model 距离演化：(a) 有同步时 Dist(u,w) 控制在 1.5e-4 以下并逐渐收缩；(b) 无同步时 Dist(u,w) 爆炸到 6.5e+3。同步是 penalized form 逼近原始 bi-level 问题的关键。](../assets/tandem/fig7-sync-dist.png)
+
+> 论文 Figure 7 原文标题："The Dist(u, w) evolution comparison during DMO with and without u, w synchronization."（§4.3）
 
 **Probing steps $K$ 的作用**（Figure 8）：$K$ 越大，hyper-gradient $\Delta$ 的方差越小。DoGE 的 $\Delta$ 方差最大（直接依赖噪声梯度估计），TANDEM $K=5$ 时方差显著降低。SFT 场景梯度方差比 pretraining 大（Figure 2），所以 $K$ 的作用在 SFT 更重要。
 

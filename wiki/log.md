@@ -542,3 +542,7 @@ PyMuPDF（`fitz`）正式登记为本库唯一 tooling 依赖。本轮仅改 sch
 - `wiki/index.md` 来源区 +1 条。
 
 图文化：原 PDF 嵌入字体损坏（MuPDF `FT_New_Memory_Face: broken file`），Figure 1/3/5 的文字标签渲染为乱码，无法嵌入可用图。页面以 prose + Markdown table 代替（Table 1 hyper-gradient 对比、Table 3 实验结果、Table 2 复杂度对比均 re-typeset 为 Markdown table）。`raw/` 未改。
+
+## [2026-07-11] deepen | TANDEM 图文化补全
+
+用户重新下载了字体完好的 PDF（`raw/2606.04401v1.pdf`），替换了原损坏文件。用 PyMuPDF 重新裁出并嵌入 5 张图：Figure 1（架构 + 计算流程）、Figure 3（三场景 mixture ratio 演化）、Figure 5（各方法学到的 mixture ratio）、Figure 7（Dist(u,w) 同步 vs 不同步）、Figure 8（variance vs K），均经 `get_textbox(clip)` + vision_analyze 核对。source 页 resource 指向更新为新文件名。`raw/` 未改（用户操作）。
