@@ -802,3 +802,25 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：Xiaomi-GUI-0 是小米 SeerRay Team 的 native end-to-end multimodal GUI agent，核心论点是 benchmark 高分不等于真实可用性——真实设备上的账号状态 / 权限弹窗 / 支付验证 / 风控拦截持续改变执行状态分布。以 Qwen3-VL-30B-A3B-Instruct 为基座，构建真机为主的混合基础设施（Device-Pull 调度）+ error-driven data flywheel（首个关键错误标注 + teacher 打分接管）+ 三阶段训练（SFT → Step RL → Agentic RL，GSPO + cascade reward + turn-level batching）。RealMobile 72.0% / AndroidWorld 78.9%，开源最强对手 MAI-UI-8B 在 RealMobile 仅 33%。Safety & Reflection 是所有模型最弱域（Gemini 3.1 Pro 也仅 62.5%）。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-07-12] ingest | Agent-World 技术报告
+
+`raw/2604.18292v1.pdf`（arXiv:2604.18292v1, 人大高瓴人工智能学院 + ByteDance Seed, 2026-04-20, 48 页）。
+
+新增：
+
+- `wiki/sources/agent-world.md`：来源页（图文交错）。嵌入 Figure 1（两阶段闭环总览 + 环境 scaling 曲线）、Figure 2（Agentic Environment-Task Discovery 流程：MCP/工具文档/PRD 主题 → database mining → 工具生成验证 → graph/programmatic 任务合成）、Figure 5（Continuous Self-Evolving Agent Training 总框架：多环境 RL + 自演化 arena 闭环）、Figure 8（环境数量 scaling 关系，18.4%→38.5%）。Table 1 主结果（18 模型 × 3 benchmark Avg 列）转 Markdown，Table 2 自演化效果（两模型 × 两轮）转 Markdown。发现一处论文内部矛盾：§4.3.4 prose 称 Agent-World-14B τ2-Bench 45.3%→50.5%，但 Table 2 实为 60.2%→65.4%（BFCL/MCP 两列一致，仅 τ2 列不一致，增量 +5.2 一致），以表值为准并标注。待追问 7 条（τ2 矛盾、MCP-Mark 绝对分偏低、GPT-OSS-120B 双重角色天花板、5K RL 样本规模、自演化轮数上限、DB complexification N 与 K=5 依据、MCP-Mark/MCP-Atlas/MCP-Universe 关系）。
+- `wiki/models/agent-world.md`：模型页。关键事实表含模态=纯文本（已据报告原文核实，全文围绕 MCP 工具/数据库/代码交互，23 benchmark 均为文本/工具/代码）。总参数/激活参数标注"继承 Qwen3-8B/14B dense 基座，未提及新增模块"。技术身份四点（训练方法论产出 / 环境即基础设施 / agent-environment co-evolution / 可执行 reward 双路）。
+- `wiki/assets/agent-world/`：fig1-overview-scaling.png, fig2-discovery-pipeline.png, fig5-self-evolving-framework.png, fig8-env-scaling.png（PyMuPDF 300 DPI + get_textbox 校验；fig2/fig5 含图内标签无 caption 污染，fig1/fig8 纯矢量/图表用像素占比 + 矢量绘制数确认非空白）
+
+更新：
+
+- `wiki/concepts/agentic-engineering.md`：跨报告信号加 Agent-World 行（瓶颈定位在可扩展真实环境合成 + 连续自演化训练，1978 环境/19822 工具生态，与 KAT-Coder/daVinci-Agency/Xiaomi-GUI-0 互补：解决"训练环境本身如何可扩展合成并持续演化"）；相关页面加反向链接。
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架加 Agent-World 一条（多环境 GRPO + 可执行 reward 双路 + 自演化 arena 诊断驱动课程，与 Forge self-evolution/daVinci-Agency 互补）。
+- `wiki/concepts/agentic-evaluation-benchmarks.md`：benchmark 表加 8 行（BFCL V4 / MCP-Mark / MCP-Universe / SkillsBench / ARC-AGI-2 / WebWalkerQA / GAIA / HLE）；末段加 Agent-World 的动态 arena 评测方法论（评测做成动态诊断 arena 而非静态 benchmark，与 JoyAI head-to-head / Xiaomi 真机评测形成对照，环境数量 scaling 首次量化"训练环境多样性"为独立性能变量）。
+- `wiki/concepts/forge-agent-native-rl.md`：与其他路线关系段加 Agent-World 一句（self-evolution 在数据/课程层而非训练系统层的互补路线），保持双向链接。
+- `wiki/models/qwen3.md`：相关页面加 Agent-World 下游 agent 训练反向链接。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：Agent-World 是人大 + ByteDance Seed 的自演化 agent 训练场，核心论点是通用 agent 的瓶颈在可扩展真实环境合成与连续自演化训练机制，而非模型参数。两阶段闭环：(1) Agentic Environment-Task Discovery——从真实 MCP servers（~2.8K）/ 工具文档（~0.5K）/ 工业 PRD（~0.2K）挖主题，deep-research agent 从 web 建主题对齐数据库（含数据库复杂化迭代）+ coding agent 生成并交叉验证可执行工具，合成 1978 环境 / 19822 工具生态；任务合成走 graph-based（DAG 工具图 + 随机游走）与 programmatic（解代码 + verifier 脚本）两条路，均靠 sandbox 执行推导 ground truth 并保留可验证性。(2) Continuous Self-Evolving Agent Training——多环境 GRPO RL（可执行 reward：rubric LLM judge / V_code 脚本）+ 自演化 arena（分层采样 K=5 环境 → 动态合成新任务 → agentic diagnosis 定位弱环境 → 定向任务扩展 → continue RL），形成 agent-environment co-evolution。Qwen3-8B/14B 基座 + 冷启动 SFT（40K 轨迹）+ GRPO（clip 0.2/0.28）+ 2 轮自演化。23 benchmark 上 Agent-World-8B/14B 一致超过环境扩展基线，BFCL V4 55.8 与 DeepSeek-V3.2-685B 54.1 竞争力强；环境数量 scaling（0→2000）四域均分 18.4%→38.5%。`raw/` 未改。图文化：4 张图，PyMuPDF 300 DPI + get_textbox 校验。
+

@@ -35,6 +35,14 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
 || Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
 || BFCL (v3) | 函数调用 / tool use | 测试模型选择和调用外部工具的能力。 |
+| BFCL V4 | BFCL v3 升级版，含 WebSearch / Memory / Multi-Turn / No-live / Live / Relevant / Irrelevant 多子域 | Agent-World 用作核心 agentic tool-use 评测之一（Avg 列）；Agent-World-14B 55.8 与 DeepSeek-V3.2-685B 54.1 颇具竞争力。 |
+| MCP-Mark | 真实 MCP server 多步工具工作流评测，含 File / Github / Notion / Playground / Postgres 子域 | Agent-World 用作核心 agentic tool-use 评测之一；即便 GPT-5.2 High 也仅 53.1、Gemini-3 Pro 50.8，开源基础模型普遍 <6，是当前最难 MCP 评测之一。与 MCP-Atlas 同为 MCP tool-use benchmark 但来源不同。 |
+| MCP-Universe | MCP 工具宇宙，含 Financial Analysis / Browser Automation / Web Searching / Location Navigation / Repository Management 五子域 | Agent-World 用作 Knowledge & MCP 泛化评测，五子域均大幅超过 Qwen3-8B / EnvScaler-8B。 |
+| SkillsBench | 高级 AI assistant 长周期规划与执行 | Agent-World-8B 9.2 / 14B 12.6；多数开源基线均分 <20%。 |
+| ARC-AGI-2 | 前沿 AI 推理新挑战 | Agent-World-8B 6.5 / 14B 8.5；与 SkillsBench / Claw-Eval 同属 Agent-World 的高级 assistant 泛化组。 |
+| WebWalkerQA | 网页 walk 多跳信息检索 | Agent-World 用作 Agentic Search & Coding 评测，增益显著。 |
+| GAIA | 通用 AI assistant 真实世界任务 | Agent-World 用作 Agentic Search & Coding 评测（部分子集加速）。 |
+| HLE (Humanity's Last Exam) | 极难综合问答 | Agent-World 用作 Agentic Search & Coding 评测（部分子集加速）。 |
 || UniClawBench | proactive agent 真实世界任务，capability-driven（5 维能力），三角色闭环评测 | 首个按能力分解而非场景分类的 proactive agent benchmark；400 双语任务，live web + Docker，跨模型 × 跨框架实验揭示 framework > model。 |
 | KAT Code Bench | 快手内部 repository-level SWE 评测，12 语言，pin base commit + runtime + verification | KAT-Coder-V2.5 新建，覆盖 defect fix / feature completion / interface compatibility / cross-module edit / regression repair，压制不可复现环境/flaky test/verifier 耦合等噪声源。 |
 | KAT Claw Bench | 快手内部业务导向 tool-use 评测，7 大类（个人办公 / 内容创作 / 软件开发 / 数据分析 / 信息检索 / 自动监控 / 投资分析） | KAT-Coder-V2.5 新建，覆盖短视频/直播/电商/广告/职场自动化场景，补现有 Claw benchmark 在任务粒度过细、场景覆盖不足、偏离业务上下文上的短板。 |
@@ -103,3 +111,5 @@ Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark
 3. **双验证框架**——XML structure matching（XPath 查 UI hierarchy）+ logical semantic rules（sequential constraints 保证操作顺序 + consistency constraints 验证跨步信息传递如"QQ 音乐搜的歌必须和小红书歌单匹配"）。纯 XPath 对 UI 变化脆弱，纯代码检查需应用特定代码，双验证在 robustness 和 scalability 间平衡。
 
 按能力域分解的结果揭示了一个跨模型共性：**Safety & Reflection 是所有模型最弱域**（Gemini 3.1 Pro 也仅 62.5%），安全感知和自纠正行为是当前 GUI agent 的共同瓶颈。而 Foundation 域 Xiaomi-GUI-0 达 100%，与 Gemini 3.1 Pro / Seed 2.0 Pro 并列——基础 UI 操作已接近饱和，不再区分能力。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
+
+Agent-World 则展示了第三种评测思路：**把评测本身做成动态诊断 arena，而非静态 benchmark**。它不只在 23 个公开 benchmark 上打分，更把自建的 1978 环境 / 19822 工具生态同时当作训练源与诊断 arena——每轮按层次分类分层采样 K=5 环境/一级类别构造评测集，重新合成全新可验证任务（graph-based + programmatic，配 rubric 或可执行 `V_code`），环境与任务跨轮动态变化防过拟合。agentic diagnosis agent 从失败 trace + 错误分布 + 环境元数据定位弱环境与错误模式，输出定向任务生成指南驱动下一轮训练。这与 JoyAI（与真实产品 head-to-head 盲评）、Xiaomi-GUI-0（真机 live 应用评测）形成对照：JoyAI 解决"流式交互的 turn-based 结构性缺陷无法被 offline benchmark 捕捉"，Xiaomi-GUI-0 解决"模拟器状态分布偏离真实部署"，Agent-World 解决"静态评测无法持续诊断能力缺口并驱动定向学习"——三者都承认静态 offline benchmark 有盲区，但分别从交互范式、部署分布、诊断-学习闭环三个角度突围。另有一个对 benchmark 解读有用的发现：Agent-World 的环境数量 scaling 实验（0→2000 环境，四代表域均分 18.4%→38.5%）首次量化了"训练环境多样性"作为独立性能变量的作用——读 agent benchmark 分数时，除 model / framework / context / sampling 外，**训练时见过的环境多样性与自演化轮数**也是同量级变量。详见 [Agent-World 来源页](../sources/agent-world.md)。
