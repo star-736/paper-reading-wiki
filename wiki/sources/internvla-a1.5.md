@@ -36,6 +36,8 @@ InternVLA-A1.5 是一个统一 VLA（Vision-Language-Action）模型，把视觉
 
 > Figure 2（原文截图，§ 2 Model Design）："The architecture adopts a Mixture-of-Transformers design comprising a pretrained VLM for multimodal perception and a lightweight unified expert that shares full attention layers with the VLM while maintaining separate linear attention layers."
 
+> **Backbone 配置**（已据 [HF config](https://huggingface.co/InternRobotics/InternVLA-A1.5-base) 核实）：VLM backbone = Qwen3.5-2B，24 层（`num_hidden_layers=24`），3:1 GDN:full 交替（`full_attention_interval=4`，`layer_types` 逐层列出），`hidden_size=2048`，full attention `num_attention_heads=8` / `head_dim=256` / `num_key_value_heads=2`（GQA），linear attention `linear_num_key_heads=16` / `linear_key_head_dim=128`，`attn_output_gate=true`（gated attention），`mtp_num_hidden_layers=1`。Unified Expert `action_expert_hidden_size=1024`（即 VLM 2048 的一半），foresight tokens `num_learnable_tokens=50`。
+
 两个核心组件：
 
 - **预训练 VLM backbone**（Qwen-3.5 2B）：采用 Qwen3.5 的 hybrid attention（3 层 Gated DeltaNet + 1 层 full attention 交替），初始化自预训练权重。每个 timestep 接收多视角图像 $o_t$、语言指令 $l$ 和机器人本体感知状态 $q_t$，编码为视觉和文本 token。VLM 可输出 VQA 答案、subtask 描述、以及 FAST tokenizer 编码的离散动作 token。
@@ -130,8 +132,6 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 
 - Foresight tokens 数量 $M=50$ 的选择依据未给消融；是否存在质量/成本的 sweet spot。
 - WAN2.2-5B 的预训练覆盖 embodied 场景的程度如何（论文 limitation 承认 priors 受限于视频模型预训练覆盖面）。
-- Unified Expert 460M 的 hidden dimension 具体值、与 VLM 2B 的 dimension 比例。
-- Qwen-3.5 2B 作为 backbone 的具体配置（层数、head 数等）——论文只说"Qwen-3.5 2B"，未列配置表；需查 HF config 核实。
 - Stage 1 到 Stage 2 过渡时 VLM 是否继续训练（论文说 Stage 2 保留 $\mathcal{L}_{\text{stage1}}$，但没明确 VLM 权重是否更新）。
 
 ## 相关页面

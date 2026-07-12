@@ -81,7 +81,7 @@ DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模
 
 ## 待追问
 
-- Lightning indexer 的具体 head 数论文未明确给出（GLM-5 附录报告 32 头 / head dim 128，是否一致待确认）。
+- Lightning indexer 的具体 head 数论文未明确给出（已据原文核实：§2.1, p3 仅给符号 $H_I$ 并定性描述"a small number of heads"，未赋数值；$d_I$ 同样未给。k=2048 已确认，§2.1.1, p4）。GLM-5 附录报告 32 头 / head dim 128 无法从 V3.2 PDF 交叉验证，需查开源代码或 GLM-5 报告。
 - 943.7B sparse training tokens vs GLM-5 的 20B——差异来自起点模型、数据分布还是设计哲学？需要消融实验。
 - Post-training 中 indexer 是否真正更新——论文说"same way as sparse continued pre-training"，但未给出冻结 vs 更新的消融。
 - masked MHA 模式的具体实现和效率收益未在正文展开。

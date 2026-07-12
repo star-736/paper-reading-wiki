@@ -44,8 +44,7 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 
 ## 待追问
 
-- 博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字——这些在不存在的 base report 里才可能有，目前无从核实。
-- 博客末明说「Looking ahead, we will ... develop **Qwen3.5**」——坐实 Qwen3.5 是 Qwen3-Next 架构的直接延续（与 [Qwen3.5 家族页](../models/qwen3.5.md) 的 config 证据一致）。
+- 博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字--这些在不存在的 base report 里才可能有，目前无从核实。
 
 ## 相关页面
 

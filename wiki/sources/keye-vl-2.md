@@ -57,7 +57,7 @@ Keye-VL-2.0-30B-A3B 是快手开源的多模态 MoE 模型（30B 总参 / 3B 激
 
 $$I_{t,s} = \sum_{j=1}^{H_I} w^I_{t,j} \cdot \text{ReLU}(q^I_{t,j} \cdot k^I_s)$$
 
-Top-k token 组成稀疏索引集 $\Omega_t$。MQA 共享 key 大幅减少 indexer 的计算和访存，配合 FP8 实现和 ReLU 打分函数，即使数十万 token 也能高效运行。
+Top-k token 组成稀疏索引集 $\Omega_t$（top-k = 2048，§ Inference Optimization, p17，与 DeepSeek-V3.2 和 GLM-5 一致）。MQA 共享 key 大幅减少 indexer 的计算和访存，配合 FP8 实现和 ReLU 打分函数，即使数十万 token 也能高效运行。
 
 **§2.3.2 GQA Sparse Aggregation**：在 GQA backbone 侧，每个 GQA group 在 indexer 选出的 top-k token 集上独立做 dense attention，但各 group 的 attention 分布归一化独立。这样 indexer 是 MQA（全局共享），sparse aggregation 是 GQA（per-group 独立），两者配合。
 
@@ -191,7 +191,6 @@ TimeLens 三子集 mIoU 全部最优，验证 scene-wise dense caption + diverse
 - 13 个 domain teacher 的具体配置（参数量、训练数据量）未披露。teacher 路由是静态规则还是 learned router？
 - Top-k overlap estimator 中 $\Omega_{i,t}$ 为空时 $A_{i,t} = 0$，这种零 advantage token 的比例有多高？是否影响训练效率？
 - Pre-training Stage 3 的 500B tokens 中长视频占比多少？256K 上下文的 sample 占比多少？
-- DSA 的 top-k value（k = ?）未在报告中明确给出（V3.2 和 GLM-5 均为 k=2048），Keye-VL-2.0 的 k 值是多少？
 
 ## 相关页面
 

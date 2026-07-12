@@ -172,7 +172,7 @@ SkillsBench / ARC-AGI-2 / Claw-Eval 三个高难 assistant benchmark：
 
 两模型三套评测均单调提升；EnvScaler-8B 不依赖 Agent-World 初始化也能持续受益，说明该循环对其它环境扩展基线同样有效。最大增益出现在 MCP-Mark（Agent-World +8.6、EnvScaler +5.6）——该 benchmark 需更强状态追踪与真实 MCP server 深度交互，正契合自演化"诊断定位环境特定弱点→定向合成更难实例"的目标。第二轮增益小于第一轮但保持正向（diminishing yet positive），早期主要修不熟悉环境交互的模式级错误，后期聚焦长周期复杂交互的残余失败。
 
-> **内部矛盾（待核实）**：§4.3.4 prose 称 Agent-World-14B 的 τ2-Bench 从 45.3%→50.5%，但 Table 2 实为 60.2%→65.4%；BFCL-V4（52.4→55.8）与 MCP-Mark（29.5→38.1）两列 prose 与表一致，仅 τ2 列不一致，且增量 (+5.2) 一致。主表 Table 1 的 Agent-World-14B τ2 Avg=65.4 与 Table 2 的 +2 rounds 值吻合，故以表值为准，prose 的 45.3/50.5 疑似笔误（或来自早期草稿）。
+> **内部矛盾（已据原文核实）**：§4.3.4 prose（p17）称 Agent-World-14B 的 τ2-Bench 从 45.3%->50.5%，但同节 Table 2（p16）实为 60.2%->65.4%；BFCL-V4（52.4->55.8）与 MCP-Mark（29.5->38.1）两列 prose 与表一致，仅 τ2 列不一致，且增量 (+5.2) 一致。主表 Table 1 的 Agent-World-14B τ2 Avg=65.4 与 Table 2 的 +2 rounds 值吻合，故以表值为准，prose 的 45.3/50.5 为论文自身笔误（疑似早期草稿残留，增量恰好一致说明只是起点被整体下移）。
 
 ### 训练动力学（Figure 9）
 
@@ -184,7 +184,6 @@ Qwen3-8B / 14B backbone 在 GRPO 下 reward 稳步上升；entropy 随时间相�
 
 ## 待追问
 
-- **τ2-Bench 数值矛盾**：§4.3.4 prose（45.3→50.5）与 Table 2（60.2→65.4）不一致，需向作者确认 prose 是否笔误或来自不同子集口径。
 - **MCP-Mark 绝对分偏低**：Agent-World-14B 在 MCP-Mark Avg 仅 13.3%，远低于 Gemini-3 Pro 50.8% / GPT-5.2 53.1%。报告把 MCP-Mark 列为主战场之一却差距明显，是否因 MCP-Mark 子域（File/Github/Notion/Play./Post.）对真实 MCP server 覆盖不足？需看分项分布。
 - **GPT-OSS-120B 的双重角色**：它既是环境挖掘/任务合成/诊断的策略模型，又被列为被比较的基础模型（MCP-Mark 仅 4.7%）。用它造的训练数据是否存在能力上限天花板？换更强策略模型（如 Doubao-Seed-2.0）能否进一步提升环境/任务质量？
 - **5K RL 样本 + 40K SFT 的规模**：相对环境生态（1978 环境 / 19822 工具）显得偏小，是否靠多环境 rollout 与自演化循环弥补了数据量？更大 RL 样本量的 scaling 未见分析。

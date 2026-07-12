@@ -128,7 +128,7 @@ $$L^* = -A/B \approx 341\ \text{token}$$
 ## 待追问
 
 - **query 压缩「具体怎么省激活显存」论文未展开，待坐实**。一个合理推测：1536 维 latent 当「细腰」checkpoint，只常驻它、backward 时从它重算出 16384 维大 query（~10× 节省）。依据是 V2 训练框架确实用了 recomputation（§ 训练："a portion of the operators are recomputed to save activation memory"），但这句是**块级通用技巧**，论文**没把它专门挂到 query 压缩上**——所以「存细腰+重算 query」是推断，非原文机制。且实际工程中 gradient checkpointing 多在 transformer block 级别整体包，未必是 query 专属。求证难点：博客讲解多为同款二手推断（会循环），官方 modeling 代码大概率只见块级重算；要硬坐实需 DeepSeek 自己的训练代码或作者澄清。
-- MLA 各维度已据 V2 原文 §2.1.2–2.1.3 与配置表坐实主要值：KV latent $d_c=512$、query latent $d_c'=1536$、decoupled per-head $d_R=64$（$n_h=128,\ d_h=128$）；V2-Lite 则 $d_c=512$ 但**不压缩 query**。各上/下投影矩阵的完整形状若需精确复现，仍可回原文配置表补全。
+- MLA 各维度已据 V2 原文 §2.1.2–2.1.3 与配置表坐实主要值：KV latent $d_c=512$、query latent $d_c'=1536$、decoupled per-head $d_R=64$（$n_h=128,\ d_h=128$）；V2-Lite 则 $d_c=512$ 但**不压缩 query**。各上/下投影矩阵的完整形状仍可回原文配置表补全。
 - 附录 D.2「MLA vs MHA」的具体对比数字未沉淀，可作为「MLA 真的 > MHA」这一主张的直接证据补充。
 - DeepSeek-V2 → V3 → V3.2（DSA）→ V4（CSA）这条演进链上「每一步在 MLA 上加了什么」，值得做一张演进表（V3 的 MLA 改动、V3.2 加 DSA、V4 加 token 压缩 + Shared-KV MQA）。
 - MSA 选 GQA 而非 MLA 作底座，是 MiniMax 与 DeepSeek 的路线分歧还是有明确的效率/质量权衡论证？需要对比两篇论文的动机段。

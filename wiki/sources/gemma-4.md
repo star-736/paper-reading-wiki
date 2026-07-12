@@ -46,7 +46,9 @@ Gemma 4 31B 在 Arena Text 排行榜上是 **top open dense model**（Elo 1451�
 | 26B-A4B\* | - | 550M | 740M | 24,500M / 2,800M(active) | 430M |
 | 31B | - | 550M | 1,410M | 29,290M | 500M |
 
-> Table 1 参数表。词表 262k。E2B/E4B 的 embedder 参数含 per-layer embeddings（沿用 Gemma 3n 设计），有效参数分别为 2.3B（总 5B）和 4.5B（总 8B）。星标为 MoE，按激活参数定义。
+> Table 1 参数表。词表 262k。Encoder 参数含 per-layer embeddings（沿用 Gemma 3n 设计），有效参数分别为 2.3B（总 5B）和 4.5B（总 8B）。星标为 MoE，按激活参数定义。
+
+**26B-A4B 的 MoE 配置**（已据 [HF config](https://huggingface.co/google/gemma-4-26B-A4B-it/resolve/main/config.json) 核实）：128 个 expert，每 token 激活 8 个（`top_k_experts=8`），无 shared expert；30 层，5:1 SWA/GA 交替（`layer_types` 逐层列出），sliding_window=1024；`num_attention_heads=16`、`num_key_value_heads=8`（GQA），全局层 `partial_rotary_factor=0.25`（p-RoPE）。
 
 ### 长上下文设计
 
@@ -173,8 +175,6 @@ E2B/E4B 在 FLEURS ASR 和 CoVoST 翻译上均优于 Gemma 3n 对应尺寸，尽
 
 ## 待追问
 
-- 报告未给出 E2B/E4B 的 total / active 参数精确比例外的 MoE/expert 细节（26B-A4B 的 expert 数和 top-k 路由配置）——需查 HuggingFace config 补全。
-- 26B-A4B 的 expert 数量、每 token 激活 expert 数、是否有 shared expert 均未在报告正文中提及。
 - 预训练数据规模（token 数）和训练步数未公开。
 - Thinking mode 的训练数据构成和 RL 策略未详述（仅提及"similar to Gemma 3"）。
 - p-RoPE 的 p=0.25 选择依据和消融结果未给出。

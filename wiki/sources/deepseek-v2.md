@@ -65,7 +65,6 @@ SFT + GRPO 强化学习（DeepSeek 自家 RL 算法），对齐到对话与人�
 
 ## 待追问
 
-- MLA 的 $d_c$、$d_c'$、$d_R$ 具体取值与各上/下投影维度，本页未抄全；如需精确复现可回 §2.1.2–2.1.3 与配置表补。
 - 附录 D.2「MLA vs MHA」的具体数字未沉淀，可作为「MLA 真的 > MHA」这一主张的证据补充。
 - DeepSeek-V2 → V3 → V3.2（DSA）→ V4（CSA）这条 MLA 演进链的每一步「在 MLA 上加了什么」，可在 [MLA 概念页](../concepts/multi-head-latent-attention.md) 做一张演进表。
 

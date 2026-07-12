@@ -903,3 +903,24 @@ SII-GAIR 的长周期 agent 数据合成论文。核心：从 GitHub chain-of-PR
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：MinerU2.5 是上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM（NativeRes-ViT 675M + Qwen2-0.5B），coarse-to-fine 两阶段（下采样图布局分析 + 原生分辨率裁剪内容识别）。是 MinerU2.5-Pro 的基座——架构完全被继承不变。Data Engine 三阶段独立运作：Data Curation（多维过滤）+ Pre-training Preparation（强模型精修标注）+ Fine-tuning Construction（IMIC + 专家）。IMIC（Iterative Mining via Inference Consistency）是核心 hard case 挖掘策略——用 MinerU2.5 Stage-1 checkpoint 单模型多次随机推理，算配对一致性（Layout PageIoU<0.8/Formula CDM<0.3/Table TEDS<0.6 = hard），低一致性送人工。这正是 MinerU2.5-Pro CMCV 的改进对象——IMIC 只能捕获单模型认知不确定性，无法区分模型特定盲点 vs 普遍难题；CMCV 用三异构模型交叉验证，Medium（外部一致、待改进模型不同）训练价值最高。训练：Stage 0 模态对齐 + Stage 1 预训练（6.9M×2，MinerU2.5-Pro 扩到 65.5M）+ Stage 2 微调（630K×3：43K layout+300K text+147K formula+140K table）。OTSL 表格语言（5 token vs HTML 28+，序列缩短 50%）。ADR 复合公式原子分解重组。部署 vLLM A100 2.12 pages/s，按布局类型动态调重复惩罚。`raw/` 未改。图文化：2 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+
+## [2026-07-12] verify | Agent-World 内部矛盾核实（τ2-Bench prose vs Table 2）
+
+`raw/2604.18292v1.pdf`（arXiv:2604.18292v1）重读 p16 Table 2 + p17 §4.3.4 prose 核实 wiki/sources/agent-world.md:175 既记的内部矛盾。确认：§4.3.4 prose 称 Agent-World-14B τ2-Bench 45.3%->50.5%，但同节 Table 2 实为 60.2%->65.4%；BFCL-V4（52.4->55.8）与 MCP-Mark（29.5->38.1）两列 prose 与表一致，仅 τ2 列不一致且增量（+5.2）一致。主表 Table 1 Agent-World-14B τ2 Avg=65.4 与 Table 2 +2 rounds 值吻合，故以表值为准，prose 的 45.3/50.5 为论文自身笔误。结论与既记一致，故仅把注释从「待核实」升级为「已据原文核实」并补 p16/p17 页定位，不改任何事实数字。`raw/` 未改。
+
+
+## [2026-07-12] maintenance | 待追问批量回收（第一批：11 条 + PDF 核实）
+
+TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
+
+待追问批量回收第一轮，从 265 条清理 11 条（265->254）：
+
+- **已坐实移出（4 条）**：`sources/qwen3-coder-next.md`（HF config 已核实层数/比例）、`sources/qwen3.5-omni.md`（HF config 已核实 GDN:attention 比例）、`sources/qwen3-vl.md`（正文已核实 backbone = Qwen3 标准 GQA）、`sources/qwen3-next-blog.md`（已坐实 Qwen3.5 是 Qwen3-Next 延续）。
+- **HF config 新坐实（2 条）**：`sources/gemma-4.md`（26B-A4B MoE 配置：128 expert / top-8 / 无 shared expert / 30 层 5:1 SWA/GA，已据 HF config 核实并补入正文）；`sources/internvla-a1.5.md`（Qwen3.5-2B backbone 配置：24 层 / 3:1 GDN:full / hidden 2048 / Unified Expert hidden 1024 / foresight tokens 50，已据 HF config 核实并补入正文）。
+- **去重移出（2 条）**：`sources/deepseek-v2.md`（MLA 维度已在概念页坐实，source 页不再重复待追问）；`sources/agent-world.md`（τ2-Bench 矛盾已由子 agent 据原文核实为论文笔误，正文 blockquote 已升级为"已据原文核实"，待追问段不再重复）。
+- **PDF 核实移出（1 条）**：`sources/keye-vl-2.md`（DSA top-k=2048，已据原文 p17 核实，补入架构段正文）。
+- **PDF 核实更新措辞（2 条）**：`sources/kvpop.md`（Abstract 98%/97% vs contributions/conclusion 95%/94% 矛盾已据 p1/p2/p11 核实，标注"三处原文已核实"）；`sources/deepseek-v32.md`（indexer head 数已据 §2.1 p3 核实为"报告未覆盖"，标注"仅给符号 $H_I$，未赋值"）。
+- **精简措辞（1 条）**：`concepts/multi-head-latent-attention.md`（主要维度已坐实，精简为只留投影矩阵形状待补）。
+
+`raw/` 未改。

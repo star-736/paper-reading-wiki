@@ -39,7 +39,6 @@ Qwen3-Coder-Next 是一个 **80B 总参 / 3B 激活** 的开源编码模型，�
 
 ## 待追问
 
-- ~~具体层数、GDN:attention 比例~~ **已据 HF config 坐实**：48 层、`full_attention_interval=4`（3 GDN : 1 full-attention）、512 expert 选 10，见模型页 [Qwen3-Coder-Next](../models/qwen3-coder-next.md)。
 - 80B-A3B 在 SWE-Bench 上的确切分数与对照模型，可作为「小激活 + 强 agentic 训练」主张的证据补充。
 - 它和主线 [Kimi K2.5](kimi-k2.5.md)、GLM-5 等更大 agentic 模型在编码 benchmark 上的可比性，需要统一口径才能对比。
 
