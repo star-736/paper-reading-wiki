@@ -23,16 +23,16 @@ When processing a new source:
 
 1. Read the source and identify key claims, entities, concepts, contradictions, and useful citations.
 
-   > **Vision-assisted content extraction（必要时触发）：** 默认用 PyMuPDF 提取文本 + LLM 分析。只在以下痛点页面临时调 `vision_analyze` 辅助识别：
+   > **Vision-assisted content extraction (trigger only when needed):** Default to PyMuPDF text extraction + LLM analysis. Only call `vision_analyze` on pages that hit one of the pain points below:
    >
-   > | 触发条件 | 为什么需要 VLM | 怎么用 |
-   > |---------|--------------|--------|
-   > | **表格密集页**（≥3 个数据表，或跨页/合并单元格复杂表） | `pdftotext` / `page.get_text()` 常列错位、结构崩坏 | VLM 读原图 → 输出结构化表格草稿 → 人工校验 → 转 Markdown |
-   > | **公式推导页**（连续 ≥5 行 LaTeX 或复杂矩阵/张量运算） | 文本提取可能丢符号、下标、上标、括号层级 | VLM 视觉确认关键公式 → 人工校验 → 写入正文 |
-   > | **扫描版或图文混排页**（OCR 后文本顺序错乱、caption 与图分离） | 纯文本丢失空间布局信号 | VLM 按视觉布局理解 → 输出图文关系 → 人工组织 prose |
-   > | **架构图 + 旁边解释文字的跨模态页** | 纯文本提取割裂"图-文"联合信号（如"见图 2，我们采用…"但图 2 的内容在文本里为空） | VLM 联合读图和相邻段落 → 提取设计动机 → 人工校验写入 |
+   > | Trigger | Why VLM is needed | How to use it |
+   > |---------|-----------------|---------------|
+   > | **Dense-table pages** (≥3 data tables, or cross-page / merged-cell complex tables) | `pdftotext` / `page.get_text()` often misaligns columns and breaks structure | VLM reads the rendered image → outputs a structured table draft → human validation → convert to Markdown |
+   > | **Formula-heavy pages** (≥5 lines of LaTeX or complex matrix / tensor ops) | Text extraction may drop symbols, subscripts, superscripts, or bracket nesting | VLM visually confirms the key formula → human validation → write into prose |
+   > | **Scanned or mixed-layout pages** (OCR text order scrambled, caption detached from figure) | Pure text loses spatial-layout signals | VLM understands the visual layout → outputs figure-text relationships → human organizes into prose |
+   > | **Cross-modal pages** (architecture diagram + adjacent explanatory text) | Pure text extraction severs the figure-text joint signal (e.g. "see Figure 2, we adopt…" but Figure 2 content is empty in text) | VLM reads figure + neighboring paragraphs jointly → extracts design motivation → human validates and writes |
    >
-   > **约束：** 正常 prose-heavy 页（无密集表格/公式/图）继续用 LLM + PyMuPDF 文本提取，不调 VLM。VLM 输出只能当"阅读辅助"，不写入正文作为已核实事实；provenance 记 `log.md`。详见 `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" → "Vision-assisted figure triage" / "Synthetic diagrams"。
+   > **Constraint:** Normal prose-heavy pages (no dense tables / formulas / figures) stay on LLM + PyMuPDF text extraction, no VLM. VLM output is **reading aid only**, never evidence-tier; provenance goes to `log.md`, never reader-facing prose. See `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" → "Vision-assisted figure triage" / "Synthetic diagrams".
 
 2. Create or update the relevant wiki pages.
 3. Add cross-references between related pages.
@@ -58,6 +58,6 @@ The wiki embeds source figures inline, not just text. When a page relies on a pa
 - Plain-text tables: re-typeset as Markdown, don't screenshot.
 - Alt text = a full reader-facing caption; an embedded `raw/` figure is tier-1 原文确证. Keep vision-tool provenance out of reader-facing prose.
 
-**Vision 与合成图按需触发：** `vision_analyze` 和 Excalidraw/架构图生成不是默认步骤。只在扫描版 PDF、图数量 >10、caption-正文矛盾、信息过载流程图等明确痛点时才调 VLM；只在 ≥3 个来源描述同一多阶段流水线、原图信息过载、比较页需空间对照时才画合成图。详见 `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" → "Vision-assisted figure triage" / "Synthetic diagrams"。
+**Vision and synthetic diagrams are triggered on demand:** `vision_analyze` and Excalidraw / architecture-diagram generation are not default steps. Only call VLM for scanned PDFs, >10 figures, caption-body contradictions, or information-overload workflow diagrams; only draw synthetic diagrams when ≥3 sources describe the same multi-stage pipeline, the original figure is overloaded, or a comparison page needs spatial contrast. See `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" → "Vision-assisted figure triage" / "Synthetic diagrams".
 
 See `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" for the full convention.

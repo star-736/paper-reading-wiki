@@ -28,16 +28,16 @@ Each workflow ends by appending a `## [YYYY-MM-DD] <kind> | <title>` entry to `w
 **Ingest (`ingest`) — a new PDF landed in `raw/`:** the output is **图文交错 (text + inline figures)** pages, not a text-only summary.
 1. Read the PDF, identify model entities, key claims, mechanisms, contradictions, **and the figures/tables that carry mechanism or headline-result content**.
 
-   > **Vision-assisted content extraction（必要时触发）：** 默认用 PyMuPDF 提取文本 + LLM 分析。只在以下痛点页面临时调 `vision_analyze` 辅助识别：
+   > **Vision-assisted content extraction (trigger only when needed):** Default to PyMuPDF text extraction + LLM analysis. Only call `vision_analyze` on pages that hit one of the pain points below:
    >
-   > | 触发条件 | 为什么需要 VLM | 怎么用 |
-   > |---------|--------------|--------|
-   > | **表格密集页**（≥3 个数据表，或跨页/合并单元格复杂表） | `pdftotext` / `page.get_text()` 常列错位、结构崩坏 | VLM 读原图 → 输出结构化表格草稿 → 人工校验 → 转 Markdown |
-   > | **公式推导页**（连续 ≥5 行 LaTeX 或复杂矩阵/张量运算） | 文本提取可能丢符号、下标、上标、括號层级 | VLM 视觉确认关键公式 → 人工校验 → 写入正文 |
-   > | **扫描版或图文混排页**（OCR 后文本顺序错乱、caption 与图分离） | 纯文本丢失空间布局信号 | VLM 按视觉布局理解 → 输出图文关系 → 人工组织 prose |
-   > | **架构图 + 旁边解释文字的跨模态页** | 纯文本提取割裂"图-文"联合信号（如"见图 2，我们采用…"但图 2 的内容在文本里为空） | VLM 联合读图和相邻段落 → 提取设计动机 → 人工校验写入 |
+   > | Trigger | Why VLM is needed | How to use it |
+   > |---------|-----------------|---------------|
+   > | **Dense-table pages** (≥3 data tables, or cross-page / merged-cell complex tables) | `pdftotext` / `page.get_text()` often misaligns columns and breaks structure | VLM reads the rendered image → outputs a structured table draft → human validation → convert to Markdown |
+   > | **Formula-heavy pages** (≥5 lines of LaTeX or complex matrix / tensor ops) | Text extraction may drop symbols, subscripts, superscripts, or bracket nesting | VLM visually confirms the key formula → human validation → write into prose |
+   > | **Scanned or mixed-layout pages** (OCR text order scrambled, caption detached from figure) | Pure text loses spatial-layout signals | VLM understands the visual layout → outputs figure-text relationships → human organizes into prose |
+   > | **Cross-modal pages** (architecture diagram + adjacent explanatory text) | Pure text extraction severs the figure-text joint signal (e.g. "see Figure 2, we adopt…" but Figure 2 content is empty in text) | VLM reads figure + neighboring paragraphs jointly → extracts design motivation → human validates and writes |
    >
-   > **约束：** 正常 prose-heavy 页（无密集表格/公式/图）继续用 LLM + PyMuPDF 文本提取，不调 VLM。VLM 输出只能当"阅读辅助"，不写入正文作为已核实事实；provenance 记 `log.md`。
+   > **Constraint:** Normal prose-heavy pages (no dense tables / formulas / figures) stay on LLM + PyMuPDF text extraction, no VLM. VLM output is **reading aid only**, never evidence-tier; provenance goes to `log.md`, never reader-facing prose.
 
 2. Create `wiki/sources/<slug>.md` and (if a new model) `wiki/models/<slug>.md`.
 3. Update or create relevant `wiki/concepts/*.md` pages — append cross-source signals to existing concept pages rather than forking new ones when the topic already exists.
@@ -49,26 +49,26 @@ Each workflow ends by appending a `## [YYYY-MM-DD] <kind> | <title>` entry to `w
 Prefer one source at a time unless the user asks for batch ingest.
 
 **Deepen (`deepen`) — extend or sharpen an existing page, usually driven by a user question:**
-- Go back to the relevant `raw/` PDF and verify against the actual text before editing — do not deepen from memory of an earlier summary. Every new mechanism claim must trace to the source (see "Evidence discipline").
-- Touch only the pages the question reaches; add cross-references both ways. Run the write-back checklist, then log as `deepen`.
-- **`deepen` vs `distill`:** `deepen` sharpens content **on a page that already exists**. When the conversation instead surfaces a *new* cross-page insight, comparison, or framing that deserves its own home, that's `distill` (below). A turn can be both — sharpen an old page *and* spin off a new synthesis page; log it under whichever is the headline action.
+|- Go back to the relevant `raw/` PDF and verify against the actual text before editing — do not deepen from memory of an earlier summary. Every new mechanism claim must trace to the source (see "Evidence discipline").
+|- Touch only the pages the question reaches; add cross-references both ways. Run the write-back checklist, then log as `deepen`.
+|- **`deepen` vs `distill`:** `deepen` sharpens content **on a page that already exists**. When the conversation instead surfaces a *new* cross-page insight, comparison, or framing that deserves its own home, that's `distill` (below). A turn can be both — sharpen an old page *and* spin off a new synthesis page; log it under whichever is the headline action.
 
 **Distill (`distill`) — file an insight that emerged from a Q&A conversation back into the wiki:**
 The query workflow (below) often surfaces durable knowledge that isn't yet written down anywhere — a connection across two papers, an original framing, a judgment call the user pushed you to sharpen. `distill` is the act of capturing that so it compounds instead of evaporating into chat history. This is the second engine of an LLM-wiki (the first is `ingest`); treat it as first-class, not an afterthought.
-- **Sniff test — is it worth a page/section?** File it when the insight is **durable** (not a one-off lookup), **reusable** (a future question will want it), and **synthesizing** (it connects ≥2 sources/pages, or states a framing no single source spells out). A pure one-shot fact lookup ("how many tokens did V3.2 train on") is *not* distilled — just answer it. The MLA concept page is the archetype: it was born from the question "is DSA evolved from MLA", which no existing page answered.
-- **Where it lands:**
+|- **Sniff test — is it worth a page/section?** File it when the insight is **durable** (not a one-off lookup), **reusable** (a future question will want it), and **synthesizing** (it connects ≥2 sources/pages, or states a framing no single source spells out). A pure one-shot fact lookup ("how many tokens did V3.2 train on") is *not* distilled — just answer it. The MLA concept page is the archetype: it was born from the question "is DSA evolved from MLA", which no existing page answered.
+|- **Where it lands:**
   - A new cross-source framing or comparison → a new `wiki/concepts/<slug>.md` or `wiki/comparisons/<slug>.md`.
   - An insight that belongs to one existing page but is genuinely new synthesis (not just sharpening) → a new section on that page.
   - An open question with no answer yet → the relevant page's `## 待追问`, not a new page.
-- **How to file it:** the same rigor as `ingest`/`deepen` applies — re-verify every claim against `raw/` (don't trust the chat's own phrasing), tag the evidence tier, embed any figure the insight leans on, and **wire cross-references both ways so the new page/section isn't an orphan**. Run the write-back checklist, then log as `distill`.
-- Don't let the distilled page silently duplicate an existing one — if the topic already has a page, extend it (that may make the turn a `deepen`) rather than forking a near-twin.
+|- **How to file it:** the same rigor as `ingest`/`deepen` applies — re-verify every claim against `raw/` (don't trust the chat's own phrasing), tag the evidence tier, embed any figure the insight leans on, and **wire cross-references both ways so the new page/section isn't an orphan**. Run the write-back checklist, then log as `distill`.
+|- Don't let the distilled page silently duplicate an existing one — if the topic already has a page, extend it (that may make the turn a `deepen`) rather than forking a near-twin.
 
 **Verify (`verify`) — cross-check claims already on a page against external sources and re-read the primary PDF:**
-- Use this when a claim needs independent corroboration or the user asks "is this actually right". External search is reachable via the Tavily API (`TAVILY_API_KEY` in `~/AppData/Local/hermes/.env`; foreign sources reachable); `web_search` as a native tool is **not** available in this environment, and the `delegate_task` web subagent has been unreliable — don't rely on it.
-- Record the verdict per claim (supported / refuted / not-found-externally-but-confirmed-in-primary-source) and downgrade anything that turns out to be inference. Log as `verify`.
+|- Use this when a claim needs independent corroboration or the user asks "is this actually right". External search is reachable via the Tavily API (`TAVILY_API_KEY` in `~/AppData/Local/hermes/.env`; foreign sources reachable); `web_search` as a native tool is **not** available in this environment, and the `delegate_task` web subagent has been unreliable — don't rely on it.
+|- Record the verdict per claim (supported / refuted / not-found-externally-but-confirmed-in-primary-source) and downgrade anything that turns out to be inference. Log as `verify`.
 
 **Refactor (`refactor`) — restructure a page without changing its facts:**
-- Reorder sections, deduplicate, strip internal tooling traces (`pdftotext`, raw `line NNN` anchors, dated scratch notes) into reader-facing locators. **Facts and citations must not change** — say so explicitly in the log entry. Log as `refactor`.
+|- Reorder sections, deduplicate, strip internal tooling traces (`pdftotext`, raw `line NNN` anchors, dated scratch notes) into reader-facing locators. **Facts and citations must not change** — say so explicitly in the log entry. Log as `refactor`.
 
 **Maintenance (`maintenance`) — repo-level housekeeping:** language sweeps, schema-field rollouts across pages, `.gitignore` / version-control changes, link-integrity fixes. Log as `maintenance`.
 
@@ -85,94 +85,94 @@ This wiki's core value is that its claims are traceable, not just plausible. Eve
 3. **推断 / 本页原创综合 (inference / original synthesis)** — your own reasoning connecting confirmed facts, or a framing no source states outright. **Label it as such**, and when it's a guess about mechanism, park the open question in `## 待追问` rather than asserting it in the body.
 
 Rules that follow from this:
-- **Never blend a paper's conclusion with your inference of its mechanism in one sentence** under a "confirmed" heading — that's the exact failure the MLA-query-recompute correction fixed. Split them.
-- When you discover a past entry over-claimed, **downgrade it honestly** (move to 待追问, add a 推测 marker) rather than hunting for weak corroboration to prop it up.
-- Re-reading the primary PDF beats trusting an earlier wiki summary. Earlier passes can be wrong; the `raw/` file can't.
-- `raw/` is never modified by any workflow — say "`raw/` 未改" in the log entry as a standing reassurance.
+|- **Never blend a paper's conclusion with your inference of its mechanism in one sentence** under a "confirmed" heading — that's the exact failure the MLA-query-recompute correction fixed. Split them.
+|- When you discover a past entry over-claimed, **downgrade it honestly** (move to 待追问, add a 推测 marker) rather than hunting for weak corroboration to prop it up.
+|- Re-reading the primary PDF beats trusting an earlier wiki summary. Earlier passes can be wrong; the `raw/` file can't.
+|- `raw/` is never modified by any workflow — say "`raw/` 未改" in the log entry as a standing reassurance.
 
-## 克制原则（检索负债优先）
+## Restraint principle (search debt first)
 
-这套 wiki 的实际消费者是**检索它来答问的 agent**，不是回看 md 的人类。所以页面的敌人是**碎片化与冗余**，不是篇幅：
+The actual consumer of this wiki is the **agent that retrieves it to answer questions**, not a human rereading md. So the enemy of a page is **fragmentation and redundancy**, not length:
 
-- **开新页前先问它该不该存在（YAGNI 反射）。** 主题已有页 → `deepen` 它，别 fork 近亲页。同一主题散在多个近亲页 = 检索捞不全、答得有遗漏。这是动手前的第一反射，不只是 `distill` 流程里的一条注意事项。
-- **删冗余优于堆新段。** 维护时合并重复段落、删去与他页矛盾的旧表述（人类不回看，删旧表述无阅读损失，反而降噪）。注意与「证据分级」配合：过时**结论**按既有纪律**诚实降级**（park 到 待追问 / 标 推测），不是物理删除；这里删的是**重复与冗余表述**，不是可追溯的事实记录。
-- **但绝不为求简而砍机制解释与证据链。** 页面的解释密度与证据 tier 正是 agent 答题的弹药——把页面写薄等于自掏弹药库。克制针对的是「重复、占位、为一个判断反复辩护的散文」，不是「机制讲清楚」。`## 待追问` 没真内容就别留空壳。
+|- **Ask whether a page should exist before creating it (YAGNI reflex).** If the topic already has a page → `deepen` it, don't fork a near-twin. Scattering the same topic across multiple near-twin pages = retrieval misses incomplete answers. This is the first reflex before acting, not just a note in the `distill` workflow.
+|- **Delete redundancy before stacking new sections.** During maintenance, merge duplicate paragraphs and remove old claims that contradict other pages (humans don't reread, so deleting old claims causes no reading loss and actually reduces noise). Work with the "evidence tier" discipline: downgrade outdated **conclusions** honestly (park to 待追问 / mark as 推测), don't physically delete; what you delete here is **redundant and repetitive phrasing**, not traceable factual records.
+|- **But never cut mechanism explanations or evidence chains for brevity.** A page's explanation density and evidence tier are the agent's ammunition for answering — thinning a page equals disarming your own arsenal. Restraint targets "repetition, placeholders, prose that repeatedly defends a single judgment", not "explaining the mechanism clearly". Don't leave `## 待追问` as an empty shell.
 
 ## Write-back checklist
 
 Before considering any `ingest`/`deepen`/`verify`/`refactor` turn done, confirm:
-- [ ] New/changed claims trace to the right evidence tier (primary PDF re-read where it matters).
-- [ ] Cross-references added **both ways** (new page links out; pages it relates to link back).
-- [ ] `wiki/index.md` updated if a page was added or its one-line summary changed.
-- [ ] `wiki/log.md` appended with the correct `<kind>` and a title.
-- [ ] No orphan page (every new page has ≥1 inbound link), no broken relative links.
-- [ ] Internal tooling traces (raw line numbers, `pdftotext`, scratch dates) kept out of reader-facing prose.
-- [ ] Figures a page relies on are **embedded** (not just cited as `Figure N`) per "Figures & visual material"; every `wiki/assets/` file is referenced by ≥1 page.
+|- [ ] New/changed claims trace to the right evidence tier (primary PDF re-read where it matters).
+|- [ ] Cross-references added **both ways** (new page links out; pages it relates to link back).
+|- [ ] `wiki/index.md` updated if a page was added or its one-line summary changed.
+|- [ ] `wiki/log.md` appended with the correct `<kind>` and a title.
+|- [ ] No orphan page (every new page has ≥1 inbound link), no broken relative links.
+|- [ ] Internal tooling traces (raw line numbers, `pdftotext`, scratch dates) kept out of reader-facing prose.
+|- [ ] Figures a page relies on are **embedded** (not just cited as `Figure N`) per "Figures & visual material"; every `wiki/assets/` file is referenced by ≥1 page.
 
 **Wrap-up — offer to commit & push:** this wiki is a git repo (`origin` on GitHub). After a turn has produced **substantive on-disk changes** (an ingest, a deepen, a correction, or any edit that touched `wiki/` and updated `log.md`), proactively offer — in one short line — to `git commit` and `git push` before ending the turn. Don't wait to be asked. Keep it a lightweight offer, not a forced step: skip it for pure read/query turns, and if the user is mid-discussion (still asking follow-ups, hasn't asked to wrap up), batch the changes and offer once at a natural stopping point rather than after every individual edit. When the user accepts, stage only the files changed this session, write an imperative `docs:`-scoped message, and push to `main`.
 
-### 多会话并发提交约定
+### Multi-session concurrent commit agreement
 
-多个 agent 会话同时 ingest 时，**共享文件（index.md / log.md / 概念页 / 比较页）的并发修改会互相覆盖**。踩坑记录与规则如下：
+When multiple agent sessions ingest simultaneously, **concurrent edits to shared files (index.md / log.md / concept pages / comparison pages) will overwrite each other**. Root cause and rules:
 
-- **根因**：各会话基于各自读到的 HEAD 编辑共享文件。若会话 A 先提交了含自身条目的 HEAD，会话 B 在其旧 HEAD 上编辑的同名文件被 A 的新 HEAD 覆盖，B 的 index/log 编辑即丢失——表现为"源页/模型页已 push 上线，但 index/log 无对应条目"（孤儿状态）。
-- **源页 / 模型页各会话可独立提交**：`wiki/sources/<slug>.md`、`wiki/models/<slug>.md`、`wiki/assets/` 互不冲突，push 前只需 `git pull --rebase`（有未提交改动会挡 pull，先 commit/stash 自己的）。
-- **共享文件的写回必须等并发收口**：index.md / log.md / 概念页 / 比较页不要各自会话抢提交。两类安全做法：(1) 约定一个会话在所有人收口后统一补 index/log/概念信号；或 (2) 每个会话只在**已 `git pull --rebase` 到最新 HEAD** 之上 `git add` 自己那几行再 commit（绝不在别人的未提交 hunk 上 patch；`log.md` 只用 `cat >>` 追加、绝不用 patch 改旧条目，避免 Windows+OneDrive 的 CRLF/LF 不匹配把整个文件标成 changed）。
-- **写回检查单补一条**：提交前确认 `wiki/index.md` 列出了本次新增的每一个 source/model 页、`wiki/log.md` 有对应条目——否则线上会出现"有页无索引"的孤儿窗口。
-- **`git status` 必查**：提交前确认哪些是自己的未提交改动、哪些是别会话落下的；不要把别人的未提交改动（`??` 文件或 `M` 文件）一起 `git add` 带走。
+|- **Root cause:** each session edits shared files based on the HEAD it read. If session A commits a new HEAD with its own entries first, session B's edits to the same file based on the old HEAD get overwritten by A's new HEAD — B's index/log edits are lost. This manifests as "source/model page pushed online, but index/log has no corresponding entry" (orphan state).
+|- **Source / model pages can be committed independently per session:** `wiki/sources/<slug>.md`, `wiki/models/<slug>.md`, `wiki/assets/` do not conflict; just `git pull --rebase` before pushing (uncommitted changes will block pull, so commit/stash yours first).
+|- **Shared file write-back must wait until concurrency settles:** do not race to commit index.md / log.md / concept pages / comparison pages. Two safe approaches: (1) designate one session to统一补 index/log/concept signals after everyone settles; or (2) each session only `git add` its own lines after `git pull --rebase` to latest HEAD (never patch on someone else's uncommitted hunk; only `cat >>` to append to `log.md`, never patch old entries, to avoid Windows+OneDrive CRLF/LF mismatch marking the whole file as changed).
+|- **Add to write-back checklist:** before committing, confirm `wiki/index.md` lists every new source/model page and `wiki/log.md` has a matching entry — otherwise an "orphan window" appears online.
+|- **`git status` mandatory:** before committing, confirm which changes are yours and which are left by another session; don't `git add` someone else's uncommitted changes (`??` or `M` files) along with yours.
 
 ## Conventions specific to this wiki
 
-- **Language split:** page **content is written in Chinese** (see existing pages); **filenames, directory names, and slugs stay in English kebab-case** (e.g. `deepseek-sparse-attention.md`). Technical terms and acronyms (MoE, DSA, MTP, RL, SWE-bench) stay in English inside Chinese prose. The 2026-06-06 `maintenance` log entry locks this in — do not re-translate filenames.
-- **OKF v0.1 frontmatter:** every non-reserved Markdown file under `wiki/` is an OKF concept file and must start with YAML frontmatter. `type` is required; use the existing directory mapping: `sources/*.md` → `Source`, `models/*.md` → `Model`, `concepts/*.md` → `Concept`, `comparisons/*.md` → `Comparison`, and `TODO.md` → `TodoList`. Recommended fields (`title`, `description`, `tags`, `timestamp`, and `resource` for source pages) should be present when known. `wiki/index.md` and `wiki/log.md` are OKF reserved files and do not need concept frontmatter.
-- **Page skeleton (sources):** `## 来源` (with PDF path, title, version/date, team, model link) → `## 核心结论` → `## 架构与训练` → `## 后训练` → `## 评测要点` → `## 待追问`. Match this when adding new source pages.
-- **Page skeleton (concepts):** `## 定义` → `## 跨报告信号` → `## 为什么重要` → `## 待追问` → `## 相关页面`.
-- **Page skeleton (models):** `## 身份` → `## 关键事实`（Markdown 表）→ explanation/技术身份 → `## 相关页面`. The `## 关键事实` table **must include a `模态` row** (e.g. 纯文本 / 多模态（文本 + 图像 + 视频）). When a model is a multi-variant family with a variant table instead (e.g. `deepseek-v4.md`), put modality as a `**模态**：…` line right below the table. Mark modality as 已核实 only after checking the source report — incidental "multimodal/vision" mentions in reports are usually about RL-pipeline verifiers, eval benchmarks, or future-work outlooks, not the model's own input.
-- **Cross-links use relative Markdown paths** (e.g. `[GLM-5](../models/glm-5.md)`), not Obsidian `[[wiki-links]]`. Keep this style consistent within a page; the existing wiki uses Markdown links throughout.
-- **External source citations use plain inline Markdown links**, written as `（来源：[标题](url)）` (or an inline `[标题](url)` mid-sentence). **Do not use `^[url 标题]` or `[^url 标题]`** — `^[...]` is a Pandoc-only inline-footnote extension that GitHub/Obsidian don't render, and `[^...]` is a footnote *reference* that needs a short identifier plus a matching `[^id]: …` definition elsewhere; stuffing a URL into either renders as garbled brackets (the 2026-06-21 maintenance fix). Also avoid bare square brackets like `prop[erly]` or `continued [training]` in prose: `[…]` immediately followed by text/parens gets parsed as link syntax and bleeds link styling. Quote source text verbatim (`properly`, not `prop[erly]`); if you must gloss an elided word, use a Chinese parenthetical （训练）, not `[brackets]`.
-- **Log entries** start with `## [YYYY-MM-DD] <kind> | <title>`. `<kind>` is a **fixed vocabulary**: `ingest` (new `raw/` source filed), `deepen` (existing page extended/sharpened), `distill` (a Q&A insight filed back as a new page/section), `verify` (claims cross-checked against external + primary source), `refactor` (page restructured, facts unchanged), `maintenance` (repo housekeeping / lint / schema rollouts). Keep the prefix parseable so `rg "^## \[" wiki/log.md` still works. See "Workflows" for what each kind does.
-- **Log discipline — keep the log a timeline, not a second copy of the page.** Each entry says *what changed, which files, and the headline reason* — a few lines, not the full argument. The detailed reasoning (a derivation, a quote-by-quote verification, a corrected misconception) belongs **on the page it concerns** (often in `## 待追问` or an inline blockquote), with the log pointing to it. If a log entry is growing past ~8 lines, that's a signal the substance should live on the page instead. Always note `raw/` 未改 when no source was touched.
-- **Section "待追问"** (open questions) is a real part of the schema, not boilerplate — populate it with concrete follow-ups when ingesting.
+|- **Language split:** page **content is written in Chinese** (see existing pages); **filenames, directory names, and slugs stay in English kebab-case** (e.g. `deepseek-sparse-attention.md`). Technical terms and acronyms (MoE, DSA, MTP, RL, SWE-bench) stay in English inside Chinese prose. The 2026-06-06 `maintenance` log entry locks this in — do not re-translate filenames.
+|- **OKF v0.1 frontmatter:** every non-reserved Markdown file under `wiki/` is an OKF concept file and must start with YAML frontmatter. `type` is required; use the existing directory mapping: `sources/*.md` → `Source`, `models/*.md` → `Model`, `concepts/*.md` → `Concept`, `comparisons/*.md` → `Comparison`, and `TODO.md` → `TodoList`. Recommended fields (`title`, `description`, `tags`, `timestamp`, and `resource` for source pages) should be present when known. `wiki/index.md` and `wiki/log.md` are OKF reserved files and do not need concept frontmatter.
+|- **Page skeleton (sources):** `## 来源` (with PDF path, title, version/date, team, model link) → `## 核心结论` → `## 架构与训练` → `## 后训练` → `## 评测要点` → `## 待追问`. Match this when adding new source pages.
+|- **Page skeleton (concepts):** `## 定义` → `## 跨报告信号` → `## 为什么重要` → `## 待追问` → `## 相关页面`.
+|- **Page skeleton (models):** `## 身份` → `## 关键事实`（Markdown 表）→ explanation/技术身份 → `## 相关页面`. The `## 关键事实` table **must include a `模态` row** (e.g. 纯文本 / 多模态（文本 + 图像 + 视频）). When a model is a multi-variant family with a variant table instead (e.g. `deepseek-v4.md`), put modality as a `**模态**：…` line right below the table. Mark modality as 已核实 only after checking the source report — incidental "multimodal/vision" mentions in reports are usually about RL-pipeline verifiers, eval benchmarks, or future-work outlooks, not the model's own input.
+|- **Cross-links use relative Markdown paths** (e.g. `[GLM-5](../models/glm-5.md)`), not Obsidian `[[wiki-links]]`. Keep this style consistent within a page; the existing wiki uses Markdown links throughout.
+|- **External source citations use plain inline Markdown links**, written as `(来源：[标题](url))` (or an inline `[标题](url)` mid-sentence). **Do not use `^[url 标题]` or `[^url 标题]`** — `^[...]` is a Pandoc-only inline-footnote extension that GitHub/Obsidian don't render, and `[^...]` is a footnote *reference* that needs a short identifier plus a matching `[^id]: …` definition elsewhere; stuffing a URL into either renders as garbled brackets (the 2026-06-21 maintenance fix). Also avoid bare square brackets like `prop[erly]` or `continued [training]` in prose: `[…]` immediately followed by text/parens gets parsed as link syntax and bleeds link styling. Quote source text verbatim (`properly`, not `prop[erly]`); if you must gloss an elided word, use a Chinese parenthetical （训练）, not `[brackets]`.
+|- **Log entries** start with `## [YYYY-MM-DD] <kind> | <title>`. `<kind>` is a **fixed vocabulary**: `ingest` (new `raw/` source filed), `deepen` (existing page extended/sharpened), `distill` (a Q&A insight filed back as a new page/section), `verify` (claims cross-checked against external + primary source), `refactor` (page restructured, facts unchanged), `maintenance` (repo housekeeping / lint / schema rollouts). Keep the prefix parseable so `rg "^## \[" wiki/log.md` still works. See "Workflows" for what each kind does.
+|- **Log discipline — keep the log a timeline, not a second copy of the page.** Each entry says *what changed, which files, and the headline reason* — a few lines, not the full argument. The detailed reasoning (a derivation, a quote-by-quote verification, a corrected misconception) belongs **on the page it concerns** (often in `## 待追问` or an inline blockquote), with the log pointing to it. If a log entry is growing past ~8 lines, that's a signal the substance should live on the page instead. Always note `raw/` 未改 when no source was touched.
+|- **Section "待追问"** (open questions) is a real part of the schema, not boilerplate — populate it with concrete follow-ups when ingesting.
 
 ## Figures & visual material (图文化)
 
 The wiki is **图文交错 (text + inline figures)**, not text-only. When a page leans on a paper's figure or table — especially a mechanism/architecture diagram a reader can't reconstruct from prose — embed the actual image, don't just cite `Figure N`. The tool for this is **PyMuPDF (`fitz`)** (pip-installed; it's the repo's one tooling dependency).
 
-- **Asset location:** `wiki/assets/<source-slug>/<figure-slug>.png` (e.g. `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`), English kebab-case slugs. `wiki/assets/` **is committed** — figures ship with the wiki; only `raw/` PDFs are git-ignored. Never orphan an asset: every file under `wiki/assets/` must be referenced by ≥1 page.
-- **Extraction:** paper diagrams are usually **vector-drawn**, so `page.get_images()` is empty — render a clipped region: `page.get_pixmap(matrix=fitz.Matrix(300/72,300/72), clip=rect)` at ~300 DPI. Derive the crop box from text-block coordinates (caption bottom, preceding paragraph) and **confirm it with `page.get_textbox(clip)`**: the in-figure labels it returns prove you grabbed the whole figure without bleeding the caption/body text. `page.get_drawings()` bbox can include off-page helper paths — don't trust it blindly.
-- **Footnote bleed:** a figure at the top of a page may inherit footnotes from the previous page (signals: `Project Page:`, superscript markers like `^a`, separator lines `───`). After rendering, check `get_textbox(clip)` for these signals; if present, tighten `clip.y0` downward and re-render. Do NOT rely on `get_drawings()` or `cluster_drawings()` to auto-exclude footnotes — their background boxes are vector paths too.
-- **Tables:** plain-text tables (few/no vector lines) → **re-typeset as a Markdown table**, don't screenshot (keeps them `rg`-searchable, formulas render as LaTeX). Screenshot a table only when its visual layout itself carries meaning.
-- **Alt text = caption:** write the `![…]()` alt text as a full reader-facing caption (trace the diagram), so the page degrades gracefully if the image 404s. Follow with a blockquote carrying the paper's own caption + a reader-facing locator.
-- **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** — it *is* the primary source. A `vision_analyze` reading is only an aid to describe it; don't assert a mechanism the pixels don't show, and keep vision-tool provenance out of reader-facing prose (it's a tooling trace; mention in the log if useful).
+|- **Asset location:** `wiki/assets/<source-slug>/<figure-slug>.png` (e.g. `wiki/assets/deepseek-v32/fig7-mha-mqa-mode.png`), English kebab-case slugs. `wiki/assets/` **is committed** — figures ship with the wiki; only `raw/` PDFs are git-ignored. Never orphan an asset: every file under `wiki/assets/` must be referenced by ≥1 page.
+|- **Extraction:** paper diagrams are usually **vector-drawn**, so `page.get_images()` is empty — render a clipped region: `page.get_pixmap(matrix=fitz.Matrix(300/72,300/72), clip=rect)` at ~300 DPI. Derive the crop box from text-block coordinates (caption bottom, preceding paragraph) and **confirm it with `page.get_textbox(clip)`**: the in-figure labels it returns prove you grabbed the whole figure without bleeding the caption/body text. `page.get_drawings()` bbox can include off-page helper paths — don't trust it blindly.
+|- **Footnote bleed:** a figure at the top of a page may inherit footnotes from the previous page (signals: `Project Page:`, superscript markers like `^a`, separator lines `───`). After rendering, check `get_textbox(clip)` for these signals; if present, tighten `clip.y0` downward and re-render. Do NOT rely on `get_drawings()` or `cluster_drawings()` to auto-exclude footnotes — their background boxes are vector paths too.
+|- **Tables:** plain-text tables (few/no vector lines) → **re-typeset as a Markdown table**, don't screenshot (keeps them `rg`-searchable, formulas render as LaTeX). Screenshot a table only when its visual layout itself carries meaning.
+|- **Alt text = caption:** write the `![…]()` alt text as a full reader-facing caption (trace the diagram), so the page degrades gracefully if the image 404s. Follow with a blockquote carrying the paper's own caption + a reader-facing locator.
+|- **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** — it *is* the primary source. A `vision_analyze` reading is only an aid to describe it; don't assert a mechanism the pixels don't show, and keep vision-tool provenance out of reader-facing prose (it's a tooling trace; mention in the log if useful).
 
-#### Vision-assisted figure triage（视觉辅助初筛——必要时触发）
+#### Vision-assisted figure triage (trigger only when needed)
 
-默认做法是自己读 PDF、判断哪些图值得 embed。只在以下**明确痛点**时，才调用 `vision_analyze` 做初筛或辅助理解：
+Default: read the PDF yourself and judge which figures are worth embedding. Only call `vision_analyze` when one of the pain points below is hit:
 
-| 触发条件 | 为什么需要 VLM | 输出怎么用 |
-|---------|--------------|----------|
-| 1. **扫描版/无文本层 PDF** | 无法 `pdftotext` 提取正文和 caption | OCR + VLM 读图 → 人工校验 → 按正常流程 embed |
-| 2. **论文图数量 >10 张或密集多子图拼接**（如 Figure 3a-f 跨 2 页） | 人工翻页判断"哪张是机制图、哪张只是消融曲线"成本高 | VLM 输出每张图的内容标签（architecture / ablation / data / qualitative）→ 人工确认后只 embed 机制/ headline-result 图 |
-| 3. **图的 caption 与正文描述矛盾** | 需要独立验证图内标签是否与正文一致 | VLM 读图 → 标出矛盾点 → 写入 `## 待追问` 或正文 blockquote，不直接采信 VLM 结论 |
-| 4. **复杂流程图信息过载**（单图含 ≥5 个交互模块 + 多色数据流） | 需要理解图内各模块的边界和交互关系才能写准 prose | VLM 辅助标注模块名和数据流 → 人工对照 PDF 正文校验 → 写入 prose |
+| Trigger | Why VLM is needed | How to use the output |
+|---------|-----------------|----------------------|
+| 1. **Scanned / no-text-layer PDF** | Cannot `pdftotext` extract body text or captions | OCR + VLM read figure → human validation → embed via normal flow |
+| 2. **>10 figures or dense multi-subfigure panels** (e.g. Figure 3a-f spanning 2 pages) | Manual page-flipping to judge "which is a mechanism diagram vs. ablation curve" is expensive | VLM outputs a content tag per figure (architecture / ablation / data / qualitative) → human confirms → embed only mechanism / headline-result figures |
+| 3. **Figure caption contradicts body text** | Need independent verification that in-figure labels match body text | VLM reads figure → flags contradiction → write into `## 待追问` or body blockquote, do NOT take VLM conclusion as fact |
+| 4. **Complex workflow diagram with information overload** (≥5 interactive modules + multi-color data flow in one figure) | Need to understand module boundaries and interactions to write accurate prose | VLM assists labeling module names and data flows → human validates against PDF body text → write into prose |
 
-**约束：** `vision_analyze` 的输出只能当**阅读辅助**，不能当证据（不写入正文作为已核实事实）；provenance 记在 `log.md` 里，不暴露给读者。不满足上述条件时，禁止调用 VLM 初筛。
+**Constraint:** `vision_analyze` output is **reading aid only**, never evidence-tier (do not write into body as a verified fact); provenance goes to `log.md`, not exposed to readers. Do NOT call VLM triage when the conditions above are not met.
 
-#### Synthetic diagrams（合成图——必要时触发）
+#### Synthetic diagrams (trigger only when needed)
 
-除了嵌入论文原图，有时需要**画一张简化概念图**来补全知识结构。默认不画，只在以下情况触发：
+Besides embedding original paper figures, sometimes a **simplified concept diagram** is needed to complete the knowledge structure. Default: do not draw. Only trigger when:
 
-| 触发条件 | 画什么 | 工具 | 输出位置 |
-|---------|------|------|---------|
-| 1. **概念页解释多阶段流水线，且已有 ≥3 个来源报告描述同一流程但视角不同** | 一张抽象层流水线图，剥离各报告的具体命名差异，展示通用阶段和决策点 | Excalidraw `.excalidraw` 或 `creative/architecture-diagram` 的 dark SVG | `wiki/assets/<concept-slug>/` |
-| 2. **来源页嵌入的原图信息过载**（单图 ≥5 个子模块 + 多色数据流），且 prose 已写但读者仍难建立空间直觉 | 一张删减版概念图，保留核心模块和主干数据流，去掉细枝末节 | 同上 | `wiki/assets/<source-slug>/` |
-| 3. **比较页需要并列展示两个架构异同**，文字表格已写但缺乏空间对照 | 一张左右对照架构图，或统一抽象层下的差异标注图 | 同上 | `wiki/assets/<comparison-slug>/` |
+| Trigger | What to draw | Tool | Output location |
+|---------|-------------|------|----------------|
+| 1. **Concept page explains a multi-stage pipeline, and ≥3 source reports describe the same pipeline from different angles** (e.g. MOPD = MiMo says specialization-then-integration / GLM-5 says cross-stage distillation / Mach-Mind says unified RL/OPD loss) | An abstraction-level pipeline diagram that strips report-specific naming differences, showing common stages and decision points | Excalidraw `.excalidraw` or `creative/architecture-diagram` dark SVG | `wiki/assets/<concept-slug>/` |
+| 2. **Original figure embedded on a source page is information-overloaded** (≥5 sub-modules + multi-color data flow in one figure), prose is already written but readers still struggle to build spatial intuition | A stripped-down concept diagram keeping core modules and main data flows, removing minor branches | Same as above | `wiki/assets/<source-slug>/` |
+| 3. **Comparison page needs side-by-side display of two architectural differences**, text table is written but lacks spatial contrast | A left-right contrast architecture diagram, or a unified abstraction-layer difference-annotation diagram | Same as above | `wiki/assets/<comparison-slug>/` |
 
-**约束：** 合成图是**推断层（tier-3）**的辅助材料，必须在图注或正文中明确标注"本图为根据多报告综合绘制的概念示意，非论文原图"；禁止把合成图当 tier-1 证据引用。不满足上述条件时，禁止生成合成图。
+**Constraint:** Synthetic diagrams are **inference-tier (tier-3)** auxiliary materials. The figure caption or body text MUST explicitly state "This diagram is a conceptual illustration synthesized from multiple reports, not an original paper figure." Do NOT cite synthetic diagrams as tier-1 evidence. Do NOT generate synthetic diagrams when the conditions above are not met.
 
 ## What not to do
 
-- Don't overwrite anything in `raw/`.
-- Don't introduce a build system, package manifest, or test runner. The sole tooling dependency is PyMuPDF (`fitz`) for figure extraction; document any further tooling exactly when added.
-- Don't translate filenames to Chinese or rename existing English slugs (breaks links and `rg` workflows).
-- Don't add a wiki page in isolation: if you create a source page without updating `index.md`, `log.md`, and at least one concept/comparison cross-reference, the ingest is incomplete.
+|- Don't overwrite anything in `raw/`.
+|- Don't introduce a build system, package manifest, or test runner. The sole tooling dependency is PyMuPDF (`fitz`) for figure extraction; document any further tooling exactly when added.
+|- Don't translate filenames to Chinese or rename existing English slugs (breaks links and `rg` workflows).
+|- Don't add a wiki page in isolation: if you create a source page without updating `index.md`, `log.md`, and at least one concept/comparison cross-reference, the ingest is incomplete.

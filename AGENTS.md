@@ -26,7 +26,7 @@ Write Markdown in concise sections with descriptive headings. Prefer sentence-ca
 
 Every non-reserved Markdown file under `wiki/` is an **OKF v0.1 concept file** and must start with YAML frontmatter. `type` is required; use the existing directory mapping: `sources/*.md` → `Source`, `models/*.md` → `Model`, `concepts/*.md` → `Concept`, `comparisons/*.md` → `Comparison`, and `TODO.md` → `TodoList`. Recommended fields (`title`, `description`, `tags`, `timestamp`, and `resource` for source pages) should be present when known. `wiki/index.md` and `wiki/log.md` are OKF reserved files and do not need concept frontmatter.
 
-**External source citations use plain inline Markdown links**, written as `（来源：[标题](url)）` (or an inline `[标题](url)` mid-sentence). **Do not use `^[url 标题]` or `[^url 标题]`** — `^[...]` is a Pandoc-only inline-footnote extension GitHub/Obsidian don't render, and `[^...]` is a footnote *reference* requiring a short identifier plus a matching `[^id]: …` definition; either with a URL inside renders as garbled brackets (the 2026-06-21 maintenance fix). Likewise avoid bare brackets like `prop[erly]` / `continued [training]` in prose — `[…]` followed by text or parens is parsed as link syntax and bleeds link styling. Quote source text verbatim; gloss an elided word with a Chinese parenthetical （训练）, not `[brackets]`.
+**External source citations use plain inline Markdown links**, written as `(来源：[标题](url))` (or an inline `[标题](url)` mid-sentence). **Do not use `^[url 标题]` or `[^url 标题]`** — `^[...]` is a Pandoc-only inline-footnote extension GitHub/Obsidian don't render, and `[^...]` is a footnote *reference* requiring a short identifier plus a matching `[^id]: …` definition; either with a URL inside renders as garbled brackets (the 2026-06-21 maintenance fix). Likewise avoid bare brackets like `prop[erly]` / `continued [training]` in prose — `[…]` followed by text or parens is parsed as link syntax and bleeds link styling. Quote source text verbatim; gloss an elided word with a Chinese parenthetical （训练）, not `[brackets]`.
 
 For logs, use parseable dated headings such as `## [2026-06-06] ingest | Source Title`, where the kind comes from the fixed `<kind>` vocabulary (see "Agent-Specific Instructions" below).
 
@@ -61,16 +61,16 @@ Each workflow ends by appending a `## [YYYY-MM-DD] <kind> | <title>` entry to `w
 
 - **`ingest` — a new PDF landed in `raw/`:** the output is an **图文交错 (text + inline figures)** set of pages, not a text-only summary.
 
-  > **Vision-assisted content extraction（必要时触发）：** 默认用 PyMuPDF 提取文本 + LLM 分析。只在以下痛点页面临时调 `vision_analyze` 辅助识别：
+  > **Vision-assisted content extraction (trigger only when needed):** Default to PyMuPDF text extraction + LLM analysis. Only call `vision_analyze` on pages that hit one of the pain points below:
   >
-  > | 触发条件 | 为什么需要 VLM | 怎么用 |
-  > |---------|--------------|--------|
-  > | **表格密集页**（≥3 个数据表，或跨页/合并单元格复杂表） | `pdftotext` / `page.get_text()` 常列错位、结构崩坏 | VLM 读原图 → 输出结构化表格草稿 → 人工校验 → 转 Markdown |
-  > | **公式推导页**（连续 ≥5 行 LaTeX 或复杂矩阵/张量运算） | 文本提取可能丢符号、下标、上标、括号层级 | VLM 视觉确认关键公式 → 人工校验 → 写入正文 |
-  > | **扫描版或图文混排页**（OCR 后文本顺序错乱、caption 与图分离） | 纯文本丢失空间布局信号 | VLM 按视觉布局理解 → 输出图文关系 → 人工组织 prose |
-  > | **架构图 + 旁边解释文字的跨模态页** | 纯文本提取割裂"图-文"联合信号（如"见图 2，我们采用…"但图 2 的内容在文本里为空） | VLM 联合读图和相邻段落 → 提取设计动机 → 人工校验写入 |
+  > | Trigger | Why VLM is needed | How to use it |
+  > |---------|-----------------|---------------|
+  > | **Dense-table pages** (≥3 data tables, or cross-page / merged-cell complex tables) | `pdftotext` / `page.get_text()` often misaligns columns and breaks structure | VLM reads the rendered image → outputs a structured table draft → human validation → convert to Markdown |
+  > | **Formula-heavy pages** (≥5 lines of LaTeX or complex matrix / tensor ops) | Text extraction may drop symbols, subscripts, superscripts, or bracket nesting | VLM visually confirms the key formula → human validation → write into prose |
+  > | **Scanned or mixed-layout pages** (OCR text order scrambled, caption detached from figure) | Pure text loses spatial-layout signals | VLM understands the visual layout → outputs figure-text relationships → human organizes into prose |
+  > | **Cross-modal pages** (architecture diagram + adjacent explanatory text) | Pure text extraction severs the figure-text joint signal (e.g. "see Figure 2, we adopt…" but Figure 2 content is empty in text) | VLM reads figure + neighboring paragraphs jointly → extracts design motivation → human validates and writes |
   >
-  > **约束：** 正常 prose-heavy 页（无密集表格/公式/图）继续用 LLM + PyMuPDF 文本提取，不调 VLM。VLM 输出只能当"阅读辅助"，不写入正文作为已核实事实；provenance 记 `log.md`。
+  > **Constraint:** Normal prose-heavy pages (no dense tables / formulas / figures) stay on LLM + PyMuPDF text extraction, no VLM. VLM output is **reading aid only**, never evidence-tier; provenance goes to `log.md`, never reader-facing prose.
 
   (1) read the PDF, identify model entities, key claims, mechanisms, contradictions, **and the figures/tables that carry mechanism or headline-result content**; (2) create `wiki/sources/<slug>.md` and, if a new model, `wiki/models/<slug>.md`; (3) update or create relevant `wiki/concepts/*.md` — append cross-source signals to existing concept pages rather than forking new ones; (4) **embed the key figures**: per "Figures & visual material", extract each mechanism/architecture/headline diagram with PyMuPDF into `wiki/assets/<source-slug>/` and embed it on the page that argues it (re-typeset plain-text tables as Markdown). Every ingest should embed ≥1 figure unless the paper genuinely has no diagram worth showing — say so explicitly in the log if you embed none. (5) update `wiki/comparisons/*.md` if it belongs in an existing comparison; (6) add the new pages to `wiki/index.md` with a one-line Chinese summary; (7) run the write-back checklist, then append the log entry. One source at a time unless asked for batch. A single ingest typically touches 5–15 pages — that fan-out is the point.
 
@@ -144,27 +144,27 @@ The wiki is **图文交错 (text + inline figures)**, not text-only. When a page
 - **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** (it *is* the primary source). If a vision model read the figure to help you describe it, that reading is an aid — the figure itself is the evidence, but don't assert a mechanism the pixels don't actually show. Keep `vision_analyze` provenance out of reader-facing prose (it's a tooling trace; note it in the log if relevant).
 - **Don't orphan assets:** every file under `wiki/assets/` must be referenced by ≥1 page; a page that cites a figure it could embed should embed it.
 
-#### Vision-assisted figure triage（视觉辅助初筛——必要时触发）
+#### Vision-assisted figure triage (trigger only when needed)
 
-默认做法是自己读 PDF、判断哪些图值得 embed。只在以下**明确痛点**时，才调用 `vision_analyze` 做初筛或辅助理解：
+Default: read the PDF yourself and judge which figures are worth embedding. Only call `vision_analyze` when one of the pain points below is hit:
 
-| 触发条件 | 为什么需要 VLM | 输出怎么用 |
-|---------|--------------|----------|
-| 1. **扫描版/无文本层 PDF** | 无法 `pdftotext` 提取正文和 caption | OCR + VLM 读图 → 人工校验 → 按正常流程 embed |
-| 2. **论文图数量 >10 张或密集多子图拼接**（如 Figure 3a-f 跨 2 页） | 人工翻页判断"哪张是机制图、哪张只是消融曲线"成本高 | VLM 输出每张图的内容标签（architecture / ablation / data / qualitative）→ 人工确认后只 embed 机制/ headline-result 图 |
-| 3. **图的 caption 与正文描述矛盾** | 需要独立验证图内标签是否与正文一致 | VLM 读图 → 标出矛盾点 → 写入 `## 待追问` 或正文 blockquote，不直接采信 VLM 结论 |
-| 4. **复杂流程图信息过载**（单图含 ≥5 个交互模块 + 多色数据流） | 需要理解图内各模块的边界和交互关系才能写准 prose | VLM 辅助标注模块名和数据流 → 人工对照 PDF 正文校验 → 写入 prose |
+| Trigger | Why VLM is needed | How to use the output |
+|---------|-----------------|----------------------|
+| 1. **Scanned / no-text-layer PDF** | Cannot `pdftotext` extract body text or captions | OCR + VLM read figure → human validation → embed via normal flow |
+| 2. **>10 figures or dense multi-subfigure panels** (e.g. Figure 3a-f spanning 2 pages) | Manual page-flipping to judge "which is a mechanism diagram vs. ablation curve" is expensive | VLM outputs a content tag per figure (architecture / ablation / data / qualitative) → human confirms → embed only mechanism / headline-result figures |
+| 3. **Figure caption contradicts body text** | Need independent verification that in-figure labels match body text | VLM reads figure → flags contradiction → write into `## 待追问` or body blockquote, do NOT take VLM conclusion as fact |
+| 4. **Complex workflow diagram with information overload** (≥5 interactive modules + multi-color data flow in one figure) | Need to understand module boundaries and interactions to write accurate prose | VLM assists labeling module names and data flows → human validates against PDF body text → write into prose |
 
-**约束：** `vision_analyze` 的输出只能当**阅读辅助**，不能当证据（不写入正文作为已核实事实）；provenance 记在 `log.md` 里，不暴露给读者。不满足上述条件时，禁止调用 VLM 初筛。
+**Constraint:** `vision_analyze` output is **reading aid only**, never evidence-tier (do not write into body as a verified fact); provenance goes to `log.md`, not exposed to readers. Do NOT call VLM triage when the conditions above are not met.
 
-#### Synthetic diagrams（合成图——必要时触发）
+#### Synthetic diagrams (trigger only when needed)
 
-除了嵌入论文原图，有时需要**画一张简化概念图**来补全知识结构。默认不画，只在以下情况触发：
+Besides embedding original paper figures, sometimes a **simplified concept diagram** is needed to complete the knowledge structure. Default: do not draw. Only trigger when:
 
-| 触发条件 | 画什么 | 工具 | 输出位置 |
-|---------|------|------|---------|
-| 1. **概念页解释多阶段流水线，且已有 ≥3 个来源报告描述同一流程但视角不同**（如 MOPD = MiMo 说 specialization-then-integration / GLM-5 说 cross-stage distillation / Mach-Mind 说统一 RL/OPD loss） | 一张抽象层流水线图，剥离各报告的具体命名差异，展示通用阶段和决策点 | Excalidraw `.excalidraw` 或 `creative/architecture-diagram` 的 dark SVG | `wiki/assets/<concept-slug>/` |
-| 2. **来源页嵌入的原图信息过载**（单图 ≥5 个子模块 + 多色数据流），且 prose 已写但读者仍难建立空间直觉 | 一张删减版概念图，保留核心模块和主干数据流，去掉细枝末节 | 同上 | `wiki/assets/<source-slug>/` |
-| 3. **比较页需要并列展示两个架构异同**，文字表格已写但缺乏空间对照 | 一张左右对照架构图，或统一抽象层下的差异标注图 | 同上 | `wiki/assets/<comparison-slug>/` |
+| Trigger | What to draw | Tool | Output location |
+|---------|-------------|------|----------------|
+| 1. **Concept page explains a multi-stage pipeline, and ≥3 source reports describe the same pipeline from different angles** (e.g. MOPD = MiMo says specialization-then-integration / GLM-5 says cross-stage distillation / Mach-Mind says unified RL/OPD loss) | An abstraction-level pipeline diagram that strips report-specific naming differences, showing common stages and decision points | Excalidraw `.excalidraw` or `creative/architecture-diagram` dark SVG | `wiki/assets/<concept-slug>/` |
+| 2. **Original figure embedded on a source page is information-overloaded** (≥5 sub-modules + multi-color data flow in one figure), prose is already written but readers still struggle to build spatial intuition | A stripped-down concept diagram keeping core modules and主干 data flows, removing细枝末节 | Same as above | `wiki/assets/<source-slug>/` |
+| 3. **Comparison page needs side-by-side display of two architectural differences**, text table is written but lacks spatial contrast | A left-right对照 architecture diagram, or a unified abstraction-layer difference-annotation diagram | Same as above | `wiki/assets/<comparison-slug>/` |
 
-**约束：** 合成图是**推断层（tier-3）**的辅助材料，必须在图注或正文中明确标注"本图为根据多报告综合绘制的概念示意，非论文原图"；禁止把合成图当 tier-1 证据引用。不满足上述条件时，禁止生成合成图。
+**Constraint:** Synthetic diagrams are **inference-tier (tier-3)**辅助 materials. The figure caption or body text MUST explicitly state "This diagram is a conceptual illustration synthesized from multiple reports, not an original paper figure." Do NOT cite synthetic diagrams as tier-1 evidence. Do NOT generate synthetic diagrams when the conditions above are not met.
