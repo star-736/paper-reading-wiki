@@ -34,7 +34,6 @@ Each workflow ends by appending a `## [YYYY-MM-DD] <kind> | <title>` entry to `w
    > |---------|-----------------|---------------|
    > | **Dense-table pages** (≥3 data tables, or cross-page / merged-cell complex tables) | `pdftotext` / `page.get_text()` often misaligns columns and breaks structure | VLM reads the rendered image → outputs a structured table draft → human validation → convert to Markdown |
    > | **Formula-heavy pages** (≥5 lines of LaTeX or complex matrix / tensor ops) | Text extraction may drop symbols, subscripts, superscripts, or bracket nesting | VLM visually confirms the key formula → human validation → write into prose |
-   > | **Scanned or mixed-layout pages** (OCR text order scrambled, caption detached from figure) | Pure text loses spatial-layout signals | VLM understands the visual layout → outputs figure-text relationships → human organizes into prose |
    > | **Cross-modal pages** (architecture diagram + adjacent explanatory text) | Pure text extraction severs the figure-text joint signal (e.g. "see Figure 2, we adopt…" but Figure 2 content is empty in text) | VLM reads figure + neighboring paragraphs jointly → extracts design motivation → human validates and writes |
    >
    > **Constraint:** Normal prose-heavy pages (no dense tables / formulas / figures) stay on LLM + PyMuPDF text extraction, no VLM. VLM output is **reading aid only**, never evidence-tier; provenance goes to `log.md`, never reader-facing prose.
@@ -151,24 +150,11 @@ Default: read the PDF yourself and judge which figures are worth embedding. Only
 
 | Trigger | Why VLM is needed | How to use the output |
 |---------|-----------------|----------------------|
-| 1. **Scanned / no-text-layer PDF** | Cannot `pdftotext` extract body text or captions | OCR + VLM read figure → human validation → embed via normal flow |
-| 2. **>10 figures or dense multi-subfigure panels** (e.g. Figure 3a-f spanning 2 pages) | Manual page-flipping to judge "which is a mechanism diagram vs. ablation curve" is expensive | VLM outputs a content tag per figure (architecture / ablation / data / qualitative) → human confirms → embed only mechanism / headline-result figures |
-| 3. **Figure caption contradicts body text** | Need independent verification that in-figure labels match body text | VLM reads figure → flags contradiction → write into `## 待追问` or body blockquote, do NOT take VLM conclusion as fact |
-| 4. **Complex workflow diagram with information overload** (≥5 interactive modules + multi-color data flow in one figure) | Need to understand module boundaries and interactions to write accurate prose | VLM assists labeling module names and data flows → human validates against PDF body text → write into prose |
+| 1. **>10 figures or dense multi-subfigure panels** (e.g. Figure 3a-f spanning 2 pages) | Manual page-flipping to judge "which is a mechanism diagram vs. ablation curve" is expensive | VLM outputs a content tag per figure (architecture / ablation / data / qualitative) → human confirms → embed only mechanism / headline-result figures |
+| 2. **Figure caption contradicts body text** | Need independent verification that in-figure labels match body text | VLM reads figure → flags contradiction → write into `## 待追问` or body blockquote, do NOT take VLM conclusion as fact |
+| 3. **Complex workflow diagram with information overload** (≥5 interactive modules + multi-color data flow in one figure) | Need to understand module boundaries and interactions to write accurate prose | VLM assists labeling module names and data flows → human validates against PDF body text → write into prose |
 
 **Constraint:** `vision_analyze` output is **reading aid only**, never evidence-tier (do not write into body as a verified fact); provenance goes to `log.md`, not exposed to readers. Do NOT call VLM triage when the conditions above are not met.
-
-#### Synthetic diagrams (trigger only when needed)
-
-Besides embedding original paper figures, sometimes a **simplified concept diagram** is needed to complete the knowledge structure. Default: do not draw. Only trigger when:
-
-| Trigger | What to draw | Tool | Output location |
-|---------|-------------|------|----------------|
-| 1. **Concept page explains a multi-stage pipeline, and ≥3 source reports describe the same pipeline from different angles** (e.g. MOPD = MiMo says specialization-then-integration / GLM-5 says cross-stage distillation / Mach-Mind says unified RL/OPD loss) | An abstraction-level pipeline diagram that strips report-specific naming differences, showing common stages and decision points | Excalidraw `.excalidraw` or `creative/architecture-diagram` dark SVG | `wiki/assets/<concept-slug>/` |
-| 2. **Original figure embedded on a source page is information-overloaded** (≥5 sub-modules + multi-color data flow in one figure), prose is already written but readers still struggle to build spatial intuition | A stripped-down concept diagram keeping core modules and main data flows, removing minor branches | Same as above | `wiki/assets/<source-slug>/` |
-| 3. **Comparison page needs side-by-side display of two architectural differences**, text table is written but lacks spatial contrast | A left-right contrast architecture diagram, or a unified abstraction-layer difference-annotation diagram | Same as above | `wiki/assets/<comparison-slug>/` |
-
-**Constraint:** Synthetic diagrams are **inference-tier (tier-3)** auxiliary materials. The figure caption or body text MUST explicitly state "This diagram is a conceptual illustration synthesized from multiple reports, not an original paper figure." Do NOT cite synthetic diagrams as tier-1 evidence. Do NOT generate synthetic diagrams when the conditions above are not met.
 
 ## What not to do
 
