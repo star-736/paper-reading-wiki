@@ -924,3 +924,21 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - **精简措辞（1 条）**：`concepts/multi-head-latent-attention.md`（主要维度已坐实，精简为只留投影矩阵形状待补）。
 
 `raw/` 未改。
+
+## [2026-07-13] ingest | Mach-Mind-4-Flash 技术报告
+
+`raw/2607.09375v1.pdf`（arXiv:2607.09375v1，理想汽车 Foundation Model Team，2026-07-10）。
+
+新增：
+- `wiki/sources/mach-mind-4-flash.md`
+- `wiki/models/mach-mind-4-flash.md`
+- `wiki/assets/mach-mind-4-flash/`：fig1-benchmark-comparison.png, fig4-post-training-pipeline.png, fig13-hmpo-overview.png（PyMuPDF 300 DPI + vision_analyze 校验）
+
+更新：
+- `wiki/concepts/multi-teacher-on-policy-distillation.md`：新增「Mach-Mind-4-Flash 的 MOPD」段--统一 RL/OPD loss（唯一把 RL 和 OPD 混进单一加权 loss 的实现）、Early Stopping Rollout（8K 截断）、teacher-student 参数量匹配策略、Appendix C 消融的 code teacher 跨域迁移效应。
+- `wiki/comparisons/on-policy-distillation.md`：速览表 +1 行（Mach-Mind），A 类融合派讨论补 Mach-Mind 段（统一 RL/OPD loss + 跨域迁移量化数据）。
+- `wiki/concepts/post-training-for-agentic-models.md`：综合框架 +1 条（后训练 scaling 作为紧凑模型追赶前沿主路径）。
+- `wiki/concepts/moe-frontier-model-scaling.md`：对比表 +1 行（35B/3B），解释段补 Mach-Mind 定位。
+- `wiki/index.md`：来源段 +1，模型段 +1。
+
+核心定位：Mach-Mind-4-Flash 是理想汽车的 35B MoE / 3B 激活 agentic 模型，基座 Qwen3.5-35B-A3B（不改预训练权重）。三支柱：(1) 统一 RL/OPD 训练框架（`L = α·L_OPD + β·L_RL`，三模式切换）；(2) specialization-then-integration（三轨并行 RL 共 10+ 专家 → MOPD 融合）；(3) HMPO token 效率（中位长度 adaptive budget + 乘法 reward 防 hacking，仅数学训练压缩 19–46% 跨域泛化）。MOPD 用 k1 estimator + PPO clipped surrogate（Appendix B 完整推导）。3B 激活在 AIME'26 92.70 / IFBench 82.82 / Behavioral-SafetyBench 80.74 追平或超越 10–30× 激活规模模型。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + vision_analyze 校验。

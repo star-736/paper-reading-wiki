@@ -189,6 +189,18 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 
 13 个 domain teacher 覆盖 safety / 纯文本数学 / 指令跟随 / code / 视觉 STEM / OCR / grounding / counting / video / tool use 等，是已收录报告中 teacher 数最多的（MiMo 未明确数量，V4 ">10"，KAT 5 个）。详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)。
 
+## Mach-Mind-4-Flash 的 MOPD
+
+[Mach-Mind-4-Flash](../sources/mach-mind-4-flash.md)（理想汽车，arXiv:2607.09375）是 MOPD 融合派的又一个大规模实例。与 MiMo MOPD 算法形式一致（token-level reverse-KL k1 estimator + PPO clipped surrogate），但工程实现有三处独有设计：
+
+1. **统一 RL/OPD 训练框架**：把 RL 和 OPD 深度集成到同一框架（加权 loss `L = α·L_OPD + β·L_RL`，公式 1），支持纯 RL / 纯 OPD / 联合三模式切换。OPD 阶段直接复用 RL 框架的分布式调度、异步 reward routing（20+ task 并行）和 online sampling 闭环。这是已收录报告中唯一把 RL 和 OPD 统一到单一 loss 公式的实现--MiMo/V4/GLM-5 的 OPD 和 RL 在 pipeline 上是先后阶段，不混在一个 loss 里。
+
+2. **Early Stopping Rollout**：max_response_length 截到 8K token（即使长 math/code/search），缩短每步 rollout、降 vLLM KV-cache 压力。引 Ziheng et al. [60]（Less is More: Early Stopping Rollout for OPD）。
+
+3. **Teacher-student 参数量匹配**：匹配 teacher 与 student 参数量比用大 teacher 有更高 top-K overlap rate，引 Li et al. [61]（Rethinking OPD: Phenomenology, Mechanism, and Recipe）。这与"大 teacher 蒸小 student"的直觉相反。
+
+MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capability anchoring**（专家防止融合退化，移除 Reasoning expert 导致 −2–4%）；(2) General 的 **full retention**（融合后微超专家）；(3) Agent 的 **mixed**（SWE 部分保留 −2.7pp，ClawBench/ClawEval 超越专家）。Appendix C 消融发现 code teacher 的跨域迁移效应：加 code teacher 后 AIME'25 +2.30 / AIME'26 +0.83（未加数学 teacher），但报告明确建议每个想保留的能力都应有 teacher 代表，不依赖跨域迁移。
+
 ## 待追问
 
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？

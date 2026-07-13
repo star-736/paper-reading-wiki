@@ -55,6 +55,7 @@
 - [MinerU2.5 技术报告](sources/mineru-2-5.md) - 上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM，coarse-to-fine 两阶段 + Data Engine（IMIC 单模型推理一致性挖 hard case）。MinerU2.5-Pro 的基座，IMIC 是 CMCV 的改进对象。
 - [Ling and Ring 2.6 技术报告](sources/ling-2.6.md) - Inclusion AI 的 Ling-2.6 / Ring-2.6 万亿参数 agentic 模型族，7:1 Lightning Attention + MLA 混合线性注意力 retrofit、token efficiency 后训练、KPop agentic RL。
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
+- [Mach-Mind-4-Flash 技术报告](sources/mach-mind-4-flash.md) - 理想汽车的 35B MoE agentic 模型（3B 激活），基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练（三轨并行 RL + MOPD 融合 + HMPO token 效率），统一 RL/OPD 训练框架。
 |
 ## 模型
 
@@ -88,6 +89,7 @@
 - [MinerU2.5](models/mineru-2-5.md) - 上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM（NativeRes-ViT 675M + Qwen2-0.5B），coarse-to-fine 两阶段 + Data Engine（IMIC），MinerU2.5-Pro 的基座，多模态（文本+图像输入；结构化 Markdown 输出）。
 - [Ling-2.6 / Ring-2.6](models/ling-2.6.md) - Inclusion AI 万亿参数 agentic 模型族（Ling-2.6 instant + Ring-2.6 thinking），7:1 Lightning Attention + MLA 混合线性注意力 retrofit，KPop agentic RL，纯文本。
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
+- [Mach-Mind-4-Flash](models/mach-mind-4-flash.md) - 理想汽车 35B / 3B 激活的 agentic MoE 模型，基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练 + 统一 RL/OPD loss + MOPD 融合 + HMPO token 效率，纯文本。
 
 ## 概念
 
