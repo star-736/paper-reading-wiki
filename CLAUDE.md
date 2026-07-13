@@ -133,6 +133,31 @@ The wiki is **图文交错 (text + inline figures)**, not text-only. When a page
 - **Alt text = caption:** write the `![…]()` alt text as a full reader-facing caption (trace the diagram), so the page degrades gracefully if the image 404s. Follow with a blockquote carrying the paper's own caption + a reader-facing locator.
 - **Evidence tier:** an embedded `raw/` figure is **tier-1 原文确证** — it *is* the primary source. A `vision_analyze` reading is only an aid to describe it; don't assert a mechanism the pixels don't show, and keep vision-tool provenance out of reader-facing prose (it's a tooling trace; mention in the log if useful).
 
+#### Vision-assisted figure triage（视觉辅助初筛——必要时触发）
+
+默认做法是自己读 PDF、判断哪些图值得 embed。只在以下**明确痛点**时，才调用 `vision_analyze` 做初筛或辅助理解：
+
+| 触发条件 | 为什么需要 VLM | 输出怎么用 |
+|---------|--------------|----------|
+| 1. **扫描版/无文本层 PDF** | 无法 `pdftotext` 提取正文和 caption | OCR + VLM 读图 → 人工校验 → 按正常流程 embed |
+| 2. **论文图数量 >10 张或密集多子图拼接**（如 Figure 3a-f 跨 2 页） | 人工翻页判断"哪张是机制图、哪张只是消融曲线"成本高 | VLM 输出每张图的内容标签（architecture / ablation / data / qualitative）→ 人工确认后只 embed 机制/ headline-result 图 |
+| 3. **图的 caption 与正文描述矛盾** | 需要独立验证图内标签是否与正文一致 | VLM 读图 → 标出矛盾点 → 写入 `## 待追问` 或正文 blockquote，不直接采信 VLM 结论 |
+| 4. **复杂流程图信息过载**（单图含 ≥5 个交互模块 + 多色数据流） | 需要理解图内各模块的边界和交互关系才能写准 prose | VLM 辅助标注模块名和数据流 → 人工对照 PDF 正文校验 → 写入 prose |
+
+**约束：** `vision_analyze` 的输出只能当**阅读辅助**，不能当证据（不写入正文作为已核实事实）；provenance 记在 `log.md` 里，不暴露给读者。不满足上述条件时，禁止调用 VLM 初筛。
+
+#### Synthetic diagrams（合成图——必要时触发）
+
+除了嵌入论文原图，有时需要**画一张简化概念图**来补全知识结构。默认不画，只在以下情况触发：
+
+| 触发条件 | 画什么 | 工具 | 输出位置 |
+|---------|------|------|---------|
+| 1. **概念页解释多阶段流水线，且已有 ≥3 个来源报告描述同一流程但视角不同** | 一张抽象层流水线图，剥离各报告的具体命名差异，展示通用阶段和决策点 | Excalidraw `.excalidraw` 或 `creative/architecture-diagram` 的 dark SVG | `wiki/assets/<concept-slug>/` |
+| 2. **来源页嵌入的原图信息过载**（单图 ≥5 个子模块 + 多色数据流），且 prose 已写但读者仍难建立空间直觉 | 一张删减版概念图，保留核心模块和主干数据流，去掉细枝末节 | 同上 | `wiki/assets/<source-slug>/` |
+| 3. **比较页需要并列展示两个架构异同**，文字表格已写但缺乏空间对照 | 一张左右对照架构图，或统一抽象层下的差异标注图 | 同上 | `wiki/assets/<comparison-slug>/` |
+
+**约束：** 合成图是**推断层（tier-3）**的辅助材料，必须在图注或正文中明确标注"本图为根据多报告综合绘制的概念示意，非论文原图"；禁止把合成图当 tier-1 证据引用。不满足上述条件时，禁止生成合成图。
+
 ## What not to do
 
 - Don't overwrite anything in `raw/`.

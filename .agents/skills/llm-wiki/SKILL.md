@@ -46,4 +46,6 @@ The wiki embeds source figures inline, not just text. When a page relies on a pa
 - Plain-text tables: re-typeset as Markdown, don't screenshot.
 - Alt text = a full reader-facing caption; an embedded `raw/` figure is tier-1 原文确证. Keep vision-tool provenance out of reader-facing prose.
 
+**Vision 与合成图按需触发：** `vision_analyze` 和 Excalidraw/架构图生成不是默认步骤。只在扫描版 PDF、图数量 >10、caption-正文矛盾、信息过载流程图等明确痛点时才调 VLM；只在 ≥3 个来源描述同一多阶段流水线、原图信息过载、比较页需空间对照时才画合成图。详见 `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" → "Vision-assisted figure triage" / "Synthetic diagrams"。
+
 See `AGENTS.md` / `CLAUDE.md` → "Figures & visual material" for the full convention.
