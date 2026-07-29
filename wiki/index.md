@@ -59,6 +59,7 @@
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
 - [Kimi K3 技术报告](sources/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.8T/104B 激活），KDA scaled sigmoid + Attention Residuals + Stable LatentMoE + 原生视觉 + 1M 上下文，2.5× scaling efficiency，9-专家 RL + MOPD + AgentENV microVM 沙箱。
+- [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 
 ## 模型
 
@@ -94,6 +95,7 @@
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
 - [Mach-Mind-4-Flash](models/mach-mind-4-flash.md) - 理想汽车 35B / 3B 激活的 agentic MoE 模型，基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练 + 统一 RL/OPD loss + MOPD 融合 + HMPO token 效率，纯文本。
 - [Kimi K3](models/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.78T/104B 激活），Hybrid KDA-MLA（3:1）+ Attention Residuals + Stable LatentMoE（896 routed/16 active）+ MoonViT-V2 原生视觉 + 1M 上下文，多模态（文本+图像+视频）。
+- [Laguna](models/laguna.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程，3:1 SWA/GA + softplus 门控 + WSD + AutoMixer + CISPO RL，XS.2 Apache 2.0 开源，纯文本。
 
 ## 概念
 

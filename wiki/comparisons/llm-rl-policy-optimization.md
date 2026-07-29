@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "DAPO / GSPO / SAPO / ARPO 四类 LLM RL policy optimization 方法的抽象层级对比：GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout。"
+description: "DAPO / GSPO / SAPO / ARPO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、prompt 权重、mismatch mask、asymmetric clip。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -30,6 +30,7 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 | [ARPO](../sources/agentic-reinforced-policy-optimization.md) | 人大 + 快手，2025-07 | **agentic rollout 采样结构** | 工具反馈后监控 token entropy，在高熵 tool-call step 分叉 partial rollouts；advantage attribution | trajectory-level RL 忽略工具反馈后的 step-level 决策 | Qwen2.5 / Llama3.1 / Qwen3，math/QA/deep search | 把 DAPO/GRPO/REINFORCE++ 当 trajectory-level baseline |
 | [MGPO](../sources/vibethinker-3b.md) | Sina Weibo，2025-11（VibeThinker-1.5B）-> 2026-06（3B） | **prompt-level 梯度权重** | 最大熵权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权全对/全错 prompt；GRPO clipped objective + on-policy | 全对/全错 prompt 零梯度浪费；training-inference probability mismatch | Qwen2.5-Coder-3B（VibeThinker-3B），AIME/LiveCodeBench | 保留 GRPO group-relative clipped objective，加 prompt-level weight |
 | KPop / IcePop | Inclusion AI（Ling Team），2025-2026 | **训练-推理 mismatch 的 mask 形状** | IcePop：uniform fixed-ratio $[\alpha,\beta]$ + double-sided masking；KPop：symmetric binary KL divergence $D_{KL}^B(\pi_{train}\|\pi_{infer})$，两方向都要求 $\leq\phi$，单超参控制 | MoE RL 中训练-推理精度不对齐导致 token ratio 噪声；固定比率过度 mask 低概率 token | Ring-2.6-1T（1T MoE），agentic coding RL | 与 GRPO 系并列的 MoE RL 稳定化层，不替代 ratio/loss 而是控制哪些 token 参与 |
+| CISPO | MiniMax（M1），2025；[Laguna](../sources/laguna-m1-xs2.md) 采用 2026 | **importance-ratio clipping 形状（asymmetric）** | token-level REINFORCE surrogate + asymmetric clipping $(c_{low},c_{high})=(1,4)$（有效 clip $[0,5]$，只 engage 重 off-policy token）+ length-weighted LOO group-relative advantage | GRPO/GSPO 在 agentic 多轮 RL 的质量-稳定性组合不如 CISPO（Laguna 公开消融理由） | Laguna M.1（225B/23B）/ XS.2（33B/3B），agentic coding RL（SWE/terminal/math） | 源自 MiniMax-M1；Laguna 是首个公开 vs GRPO/GSPO 消融选择 CISPO 的团队 |
 
 ## 关键分叉：token、sequence、step 三个「单位」
 
@@ -80,6 +81,14 @@ KPop 和前述方法在又一条轴上。它不改 token-level ratio（DAPO/GSPO
 
 详见 [Ling-2.6 技术报告](../sources/ling-2.6.md) § 3.2.3。
 
+### CISPO：不争 ratio 单元也不争采样，而争 clipping 的形状与方向
+
+CISPO（源自 [MiniMax-M1](../sources/minimax-m2-series.md)）和前述方法在又一条轴上。它不改 token-level ratio 的优化单元（DAPO/GSPO/SAPO 的轴），不改 rollout 采样结构（ARPO），不改 prompt 权重（MGPO），也不改 mismatch mask（KPop），而是改 **importance-ratio clipping 的形状与方向**——用 asymmetric $(c_{low},c_{high})=(1,4)$，有效 clip $[0,5]$，且只在重 off-policy token 上 engage。
+
+[Laguna](../sources/laguna-m1-xs2.md)（2026-05）是首个公开「消融 vs GRPO / GSPO 后选 CISPO」的团队，理由是「最终评测质量 + 训练稳定性组合最好」。Laguna 的 CISPO 配 length-weighted leave-one-out group-relative advantage（$b_i=\sum_{j\ne i}w_j r_j/\sum_{j\ne i}w_j$，$A_i=r_i-b_i$，$w_i$ 是被 reward 的 assistant token 数），reward 只让 binary task verifier 给正分、其余全小负惩罚——长周期信用分配全靠末尾 verifier 经 advantage 传到每个 token。
+
+CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-policy 的方向不对称——向低概率方向（$\rho<1$，$\pi_\theta<\pi_{old}$，模型变不爱生成）比向高概率方向更该容忍还是更该约束？$(c_{low},c_{high})=(1,4)$ 给的 $[0,5]$ 有效区间意味着 $\rho$ 下到 0 完全不裁、上到 5 才裁——即**几乎不约束「模型变不爱生成旧 token」**（下界 $1-c_{low}=0$），只约束「模型过分偏爱旧 token」（上界 $1+c_{high}=5$）。这与 DAPO Clip-Higher 放宽上界防探索 token 被压死的动机相反：CISPO 放宽的是下界。两者是否互补、还是冲突，需实验。CISPO 与 GSPO/SAPO 的关系也待澄清——CISPO 仍是 token-level ratio，理论上可与 GSPO 的 sequence-level 单元或 SAPO 的 soft gate 组合，但 Laguna 未做这层消融。
+
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
@@ -97,6 +106,6 @@ KPop 和前述方法在又一条轴上。它不改 token-level ratio（DAPO/GSPO
 
 ## 相关页面
 
-- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）
+- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

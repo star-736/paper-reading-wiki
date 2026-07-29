@@ -29,6 +29,8 @@ timestamp: 2026-06-06
 | [Ling-2.6-1T](../models/ling-2.6.md) | ~1T | ~8B | 256 routed experts + 1 shared，8 active；fine-grained MoE（expert intermediate=2,048）；前 4 层 dense FFN。 |
 | [Ling-2.6-flash](../models/ling-2.6.md) | ~104B | ~5B | 同上 256+1 配置，32 层，前 1 层 dense。 |
 | [Mach-Mind-4-Flash](../models/mach-mind-4-flash.md) | 35B | 3B | 继承 [Qwen3.5-35B-A3B](../models/qwen3.5.md) 架构（后训练不改预训练权重）。 |
+| [Laguna M.1](../models/laguna.md) | 225.8B | 23.4B | 256 routed + 1 shared（token-choice，routed ×2.5 系数）；3 底部 dense 层；每层 global attention；Muon + cosine。 |
+| [Laguna XS.2](../models/laguna.md) | 33.4B | 3B | 8 of 256 routed + 1 shared；1 底部 dense 层；**3:1 SWA/GA + softplus per-head gating**；WSD + AutoMixer 数据混合；Apache 2.0 开源。 |
 
 ## 解释
 
@@ -39,6 +41,8 @@ MiniMax-M2 是当前知识库里激活参数最低的前沿 agentic 案例，它
 Kimi K3 把开源前沿推到 **2.78T / 104.2B active**——首个 3T 级开源模型，激活参数也最大（104B vs DeepSeek-V4-Pro 49B、K2.5 32B）。支撑这个规模的关键不是单纯加 expert，而是 [Stable LatentMoE](stable-latentmoe.md)：LatentMoE 把 routed expert 解耦到 latent 空间（ℓ=d/2）压通信，Normalized + SiTU-GLU 压激活爆炸，Quantile Balancing 解 896-expert 负载失衡。K3 的 896 routed / 16 active（sparsity 56）是当前 wiki 收录最稀疏的 MoE，比 DeepSeek-V4-Pro 的 384/6（sparsity 64）更激进且 expert 池更大。配 MoonEP 完美平衡 EP（E/R 冗余 bound 证明 tight）做 3T 级预训练。
 
 MiMo-V2-Flash 与 DeepSeek-V4-Flash 的激活参数预算接近，但注意力策略完全不同。GLM-5、Kimi K2.5 和 DeepSeek-V4-Pro 则处在更大的 frontier model 层级。
+
+[Laguna](../models/laguna.md)（Poolside，2026-05）代表另一类叙事：不追绝对规模，而把「模型开发的工业流程复用速度」当核心杠杆——M.1（225.8B/23.4B）预训练结束后**五周**从零交付 XS.2（33.4B/3B）。两模型共享 30T+ 预训练 token 池与同一 Model Factory 流水线，XS.2 的四项架构改动（3:1 SWA/GA、WSD、expert 调制、dense 层 3→1）都是 16B MoE proxy 消融后翻配置 flag 上线。XS.2 以 3B 激活在 SWE-bench Verified 73.4 略胜 Qwen3.6-35B-A3B、Terminal-Bench 2.0 51.5 领先同重量级开源；M.1 23.4B 激活 SWE-bench Verified 79.6 追平 Devstral 2。它不在「最大 MoE」榜单上，但把 [AutoMixer 数据混合优化](data-mixture-optimization.md) + [Gated Attention](attention-gating.md) + CISPO RL 等已有成果组合进可配置流水线，是「工艺→工业」转型的一个干净样本。
 
 Mach-Mind-4-Flash 以 35B 总参 / 3B 激活成为已收录 agentic MoE 中激活参数最低的之一（与 Gemma 4 26B-A4B 的 3.8B 激活接近，低于 MiniMax-M2 的 9.8B），证明纯后训练 scaling 可让紧凑模型在 AIME'26 / IFBench / Behavioral-SafetyBench 等维度追平甚至超越 10–30× 激活规模的模型。
 

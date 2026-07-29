@@ -51,6 +51,7 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
   - **Trinity Large**（Arcee AI，400B MoE / 13B active，**非 Qwen**）：独立采用者，且用法不同——不在混合栈里，而是在更常规的 full-attention 栈里用「SDPA 输出后、输出投影前」的门。说明 gated attention 不是 Qwen 专属技巧。（来源：[Sebastian Raschka, Gated Attention](https://sebastianraschka.com/llm-architecture-gallery/gated-attention)）
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA）**：两层关系。其一，KDA 在输出投影前也用了 **data-dependent sigmoid 输出门**（低秩参数化），报告明说目的之一是**缓解 attention sink**——与 Gated Attention 完全独立的团队/架构上得到同一类结论，互为佐证。其二，据第三方分析，Kimi Linear 本质是把 **Qwen3-Next 那个 gated-attention 全局层换成了 MLA**——两者是「同一混合骨架、不同全局层」的对照（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。
 - **[Kimi K3](../sources/kimi-k3.md)（Gated MLA + Gated KDA，2026-07，首个开源 3T 级）**：把输出门从 Kimi Linear 的**低秩**升级到 **input-dependent full-rank** 投影，且 KDA 层和 Gated MLA 层用**同款全秩门**（`y = W_o[Sigmoid(W_g x) ⊙ RMSNorm(~o)]` for KDA；`y = W_o[Sigmoid(W_g x) ⊙ ~o]` for MLA）。这是 full-rank 门首次同时用在混合栈的线性注意力层和 softmax 全局层——K3 报告明说门让「每个 token 能调制从全局注意力 / recurrent state 读出的通道」。与 Gated Attention 报告的「G1 SDPA 输出门」同属 output gating 家族，但 K3 的 full-rank 参数化比 Gated Attention 消融的 head-specific elementwise 门更重（全秩 `W_g` 投影），且 K3 在 2.8T 规模验证其有效。配套 Gated MLA 还用 NoPE + FP32 attention output（纠正 flash attention rounding）。
+- **[Laguna XS.2](../sources/laguna-m1-xs2.md)（Poolside，2026-05，33.4B/3B MoE agentic coding）**：在 3:1 interleaved SWA/GA 架构里用 **softplus-based per-head gating [67]**——[67] 正是 [Gated Attention 报告](../sources/gated-attention.md)。报告写「softplus」而非「sigmoid」，是 Gated Attention 报告里 head-specific elementwise 门的激活选择变体（论文同时讨论 sigmoid/SiLU，softplus 与 sigmoid 同为有界单调，属同一家族的有界乘性门）。Laguna 是 Gated Attention 报告之外又一**非 Qwen 团队**的生产采用者（继 Trinity Large 之后），且把门用在 SWA 层与 GA 层统一的 per-head gating 配置里，配 GA 层 partial RoPE(50%) + θ=5e5、SWA 层 window 512 + θ=1e4。消融（16B proxy, Table 9）显示加 per-head gating + θ_swa=1e4 这一步把 4K Avg 从 0.5292 拉到 0.5328，是最终架构的组成步骤之一。
 - **延伸**：NSA、Switch Heads 等也带门控，但常和稀疏/路由耦合在一起。Gated Attention 的贡献正是把「门本身的价值」从路由/稀疏里**解耦**出来（它发现 Switch Heads 退化到单 expert、门只调制 value 输出时增益仍在）。
 
 ## 为什么重要
@@ -67,7 +68,7 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
 
 ## 相关页面
 
-- 来源：[Gated Attention 技术报告](../sources/gated-attention.md)、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（full-rank 门同时用在 KDA + Gated MLA）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)
+- 来源：[Gated Attention 技术报告](../sources/gated-attention.md)、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（full-rank 门同时用在 KDA + Gated MLA）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（softplus per-head gating 落地）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（线性注意力里的「门」是另一回事；Qwen3-Next 系把 gated attention 和 GDN 配在一起）
 - [高效长上下文注意力](efficient-long-context-attention.md)（去 sink 改善长度外推）
 - 模型：[Kimi Linear](../models/kimi-linear.md)

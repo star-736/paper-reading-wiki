@@ -71,3 +71,13 @@ GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Pyth
 - **训练-推理精度对齐**：GLM-5 用 TITO 避免 text 重新分词；Ring-2.6 用 module-aware FP8 quantization（LM Head 走 FP32 ~2 点 reward 改善；Attention/Shared Experts 保持 BF16，Routed Experts 用 Blockwise FP8），控制 log-probability drift。
 - **KPop vs IcePop**：Ring-2.6 的 KPop 用 binary KL divergence 替代前代 IcePop 的 uniform fixed-ratio constraint，解决 MoE RL 中训练-推理 mismatch 的异质性问题——低概率 token 的 ratio noise 更大，固定比率会过度 mask 它们。这与 GLM-5 的 double-sided importance sampling 是同一层问题的不同解法。
 
+## 跨报告信号：Laguna 的在线 agentic RL 基础设施
+
+[Laguna](../sources/laguna-m1-xs2.md)（Poolside，2026-05）的 agentic RL 走**在线**路线（非 GLM-5 的异步解耦，而是 trainer 与 inference fleet 物理隔离但高带宽互联的在线同步），三处工程值得与 GLM-5 / K3 / Ring-2.6 对照：
+
+- **TITO + chat-template 对齐**：用 token-in-token-out API for RL actors（与 GLM-5 同一动机——保 token ID 跨多轮稳定，避免 text 重新分词错位）。独有补充是 `render_assistant_messages_raw` flag：RL 渲染器与生产 chat template 独立迭代，但每次生成后用该 flag 把 rollout token 原样插回 assistant message 块并断言解码字符串与 rollout 存的 prefix 严格相等——从机制上消除「RL 训的格式 ≠ 部署格式」的退化（缺一个换行/尾空格就能显著掉点）。
+- **trainer↔inference 权重同步**：NCCL point-to-point GPUDirect RDMA，n→m fan-out（m 在 2n–3n 间），每 2 optimizer step 广播一次，异步（训练不阻塞）。两个安全原语保证在线 RL 良定义：权重广播触发 inference 侧 KV-cache reset（防不同权重版本 token 混入）；权重更新 block 在途 rollout step（保证单 rollout 视 policy 为 piecewise-constant，与 loss 里 importance ratio $\rho_t$ 假设一致）。staleness 上限 10 optimizer step，但因训练/推理 GPU 配比实际从未触及——所有轨迹都非浪费。这与 GLM-5 的 stale sample dropping、Ring-2.6 的 staleness manager 是同一问题的不同治理粒度（Laguna 靠配比自然消除，另两者靠显式丢弃/退役）。
+- **FP8 KV cache for rollout**：131072 全 context 下 KV cache 主导 inference-replica 显存，存 FP8 约翻倍单 replica 并发轨迹数。release 跑 BF16 权重 + FP8 KV cache；预发布消融也试过 FP8 权重（in-flight block-wise 再量化无校准），稳定性无碍但 train-inference KL mismatch 变大，release 仍保 BF16 权重——这是「为安全牺牲一半并发」的诚实权衡。
+
+**与三家的定位**：Laguna 不做 partial rollout（K3/ Ring-2.6）也不做轨迹数量阈值的异步解耦（GLM-5），而是靠「trainer↔inference 高带宽直连 + 每 2 step 同步 + 配比自然消 staleness」把在线 RL 跑到吞吐可行。它的独有价值在 chat-template 对齐断言——这是已收录报告里最严格的「RL 训练格式 = 部署格式」工程保证。
+

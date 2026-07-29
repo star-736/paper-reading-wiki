@@ -54,6 +54,18 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 **1M Agentic RL 基础设施**是 K3 后训练的工程重心：partial rollout（λ 比例完成即暂停）+ AgentENV microVM 沙箱（51M+ sandbox，incremental checkpointing 49ms/133ms，pause/resume/fork/snapshot）+ External KV cache pool（write-back，KDA states 与 MLA KV 同步 offload/prefetch）+ rollout auto-throttling。详见 [异步 Agent RL](asynchronous-agent-rl.md)。
 
+## Laguna：Model Factory + 三阶段 + CISPO + 合成代码环境
+
+[Laguna](../models/laguna.md)（Poolside，2026-05）的后训练是三阶段 mid-train→SFT→agentic RL，recipe 在 M.1/XS.2 间一致。三处值得沉淀：
+
+**1. 合成代码环境作统一可验证任务源**。把真实 git commit 转成可验证任务——problem statement + repo checkout + 隐藏 test patch 取自 commit，commit diff 作 gold solution。**双端正确性检查**（gold 过测 + 空解失败测）滤掉 trivial test 与不测变更的 test；再按 repo 热度 + 代码质量百分位滤，从 ~236k commits 留 30–60k 任务。这批任务**同时喂 SFT（teacher 轨迹）和 RL（per-repo test suite 作 binary verifier）**——同一可验证环境贯穿两阶段，与 [KAT-Coder](../models/kat-coder.md) 的 KwaiEnv 模块化沙箱同思路，但 Laguna 强调从真实 commit 挖而非全合成。
+
+**2. CISPO + length-weighted LOO advantage**。RL 用 token-level REINFORCE surrogate + **CISPO** clipping [14]（[14]=[MiniMax-M1](../sources/minimax-m2-series.md)，CISPO 源头）+ length-weighted leave-one-out group-relative advantage。asymmetric clipping $(c_{low},c_{high})=(1,4)$，有效 ratio clip $[0,5]$。报告明说消融 vs [GRPO](agentic-reinforced-policy-optimization.md) / [GSPO](group-sequence-policy-optimization.md) 后选 CISPO 是因「最终评测质量 + 训练稳定性组合最好」——这是 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 里 CISPO 首次有公开的 vs GRPO/GSPO 消融选择理由。reward 设计只让 binary task verifier 给正 reward（1.0），其余全是小负惩罚（parsing/min-steps/tool-error per-token），长周期信用分配全靠末尾 verifier 经 advantage 传到每个 token。
+
+**3. IF judge + multi-harness 防过拟合**。agentic SFT 的关键挑战是 instruction following——没有显式 IF 监督，RL 会灾难性遗忘，超半数 agentic 任务因违反 system-message 约束在 coding 被评前就零分。用 EvolInstruct-style generator 给每任务造多个合成 system message + 专用 IF judge 逐项打分。SFT 还混 1.3B tokens 多 harness 轨迹（OpenHands / OpenCode2 / Mini-SWE-Agent），刻意保留各 harness 原生行为（subagent spawning / context compaction / planning scaffold）以利泛化——与 [Kimi K3 的 Unified White-Box RL Env](../sources/kimi-k3.md)（harness-agnostic 训练）同动机但更轻量（数据层而非 RL 配置层）。
+
+**工程**：TITO API for RL actors（保 token ID 跨多轮稳定，与 [GLM-5 异步 Agent RL](asynchronous-agent-rl.md) 同动机）+ trainer↔inference 权重同步（NCCL GPUDirect RDMA，每 2 optimizer step 广播，KV-cache reset 防版本混入，staleness 上限 10 step）+ FP8 KV cache 跑 131072 context rollout（翻倍并发轨迹）。
+
 ## ARPO 与 LLM RL policy optimization：采样结构和优化目标
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 不是新模型报告，而是把 Qwen2.5 / Llama3.1 / Qwen3 等 backbone 放进多轮工具环境里比较 RL 算法。它的关键观察是：模型收到外部工具反馈后，后续前 10–50 个 token entropy 会显著上升，搜索反馈的不确定性又高于 Python 反馈。因此 ARPO 不再只做完整 trajectory-level sampling，而是在高熵工具调用步从当前节点分叉 partial rollouts，并用 advantage attribution 区分共享前缀与分叉段。
@@ -74,6 +86,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - Kimi K3：如何在 3T 规模 + 1M 上下文下做 9-专家 RL + MOPD 融合 + harness-agnostic 训练 + microVM 沙箱支撑 partial rollout。
 - DAPO / GSPO / SAPO：如何把 group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
+- Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 - KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。
 - [daVinci-Agency](../sources/davinci-agency.md)：如何在 SFT 阶段就从数据结构层面注入长周期监督。不靠 RL 或 distillation，而是用 GitHub chain-of-PRs 的跨 stage 依赖把孤立 coding 任务串成项目演化级工作流，239 样本即超过 66k 样本的 SWE-Smith。与上述 RL 路线互补--它是 RL 之前的数据层问题：训练数据本身该长什么样才能让 agent 内化 task decomposition / long-term consistency / refinement。

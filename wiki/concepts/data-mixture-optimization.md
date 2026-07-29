@@ -25,6 +25,7 @@ timestamp: 2026-07-11
 | [RegMix](https://arxiv.org/abs/2407.01492) | 小模型 validation loss | 回归模型拟合 loss-mixture 曲面 | 否 | ICLR 2025 |
 | MDE (Belenki et al.) | mixture-of-data-experts 近似 loss | 回归 + MDE 特征 | 否 | ACL 2025 |
 | [TANDEM](https://arxiv.org/abs/2606.04401) | twin network 差值 (bi-level) | penalized single-level + twin | 否 | NeurIPS 2025 |
+| [AutoMixer](../sources/laguna-m1-xs2.md) | ~60 个 0.5B MoE proxy 的 per-capability 下游指标 | Dirichlet 扰动 + 非线性回归器 + KL 正则 | 否（能力组代理 benchmark） | 2026（Poolside Laguna） |
 
 ## 跨报告信号
 
@@ -47,6 +48,18 @@ RegMix（ICLR 2025，Sea AI Lab）彻底改变了优化策略：训练 512 个 1
 [TANDEM](../sources/tandem.md)（NeurIPS 2025，JD.com + Oxford + 人大）把 bi-level optimization 简化为 single-level penalized form，用 twin network（proxy model + 动态 reference model）测量 domain 的边际收益。关键创新是每个 episode 同步初始化 twin model（$w_0 = u_0$），然后各自 probing $K$ 步，用 loss 差更新 domain weights。理论上比 DoReMi 更通用（$O(T^{-1/4})$ 收敛保证），还能处理 data-restricted 和 SFT 场景。
 
 TANDEM 的核心洞察是：数据充足时 uniform weighting 已近最优（Proposition 1：generalization gap 趋零时 uniform 是 bi-level 问题的有效解），reweighting 的价值在 data-restricted（小 domain 过拟合）和 SFT（样本多次访问导致泛化 gap）场景才凸显。在 data-restricted 实验中，DoReMi 反而恶化（36.91 vs Uniform 31.53），TANDEM 显著改善（28.07）。
+
+### AutoMixer：产业落地的 per-capability 回归路线
+
+[AutoMixer](../sources/laguna-m1-xs2.md)（Poolside Laguna，2026）把这套范式用到了 33B 生产 MoE 的 30T 预训练上——是已收录报告中**唯一在 frontier-scale 生产 MoE 上验证的数据混合优化**。它训了一群 ~60 个 ~0.5B MoE proxy，每个在不同混合上训 ~60B tokens，覆盖 50+ 异构数据集组，学 surrogate 映射 $\mathcal{M}: x\to y$（混合向量 $x$ → $k$ 个能力组下游指标 $y$）。
+
+与 DoReMi/DoGE/RegMix/TANDEM 的关键区别在三点：
+
+1. **采样 + 约束**：候选混合按 $x\sim\text{Dirichlet}(\alpha x_0)$ 采样并约束 $\|x-x_0\|_1<\epsilon$，优化目标再加 KL 正则 $\lambda D_{KL}(x\|x_0)$ 把解拉回人工先验——避免漂向少数主导源。这比 DoReMi 的 minimax / TANDEM 的 bi-level 更保守，本质是「在人工先验邻域内搜最优」。
+2. **per-capability 独立回归器**：每个能力组（coding / math reasoning / STEM knowledge / commonsense / general knowledge）单独拟合 $f_j(x)\approx y_j$（实践用非线性），再在 $\max_x\sum_j w_j f_j(x)$ 下显式恢复能力间 trade-off。效果上优化目标 HumanEval+ +43%、GSM8K +41%，但 commonsense 任务略退（ARC-C -6.8%）——这种**负相关被直接建模并接受**，是 per-capability 回归器相比单一 loss 标量的优势。
+3. **held-out 泛化**：优化未见的 MATH +25%、LiveCodeBench +39%、APTBench-4k +35%，说明 surrogate 学到的不是过拟合。
+
+AutoMixer 也补上了「这些方法在 MoE 上是否有效」的待追问——DoReMi/TANDEM 的实验都基于 dense model，AutoMixer 直接在 MoE proxy + MoE 生产模型上验证有效。代价是 ~60 个 proxy 的总训练成本未披露，KL 系数 $\lambda$ 的 sensitivity 也未给。
 
 ### 产业实践：instance-level 超越 domain-level
 
@@ -73,10 +86,11 @@ CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该�
 - DoReMi 的 domain weights 跨尺度迁移机制仍不清楚——280M 产出为何能用于 8B？TANDEM 的 bi-level 理论是否给出更严格的迁移保证？
 - RegMix 发现 web corpus 比高质量 Wikipedia 更重要，这与 DoReMi 大幅 upweight Pile-CC 一致——但为什么？
 - instance-level mixture（Qwen3）与 domain-level reweighting（DoReMi/RegMix）的效果对比尚无公开 benchmark。
-- 这些方法在 MoE 模型上是否同样有效？DoReMi/TANDEM 的实验都基于 dense model。
+- AutoMixer 已在 MoE proxy + MoE 生产模型上验证有效（此前 DoReMi/TANDEM 仅 dense），但 ~60 个 proxy 的总成本与 KL 系数 $\lambda$ 的 sensitivity 未披露；per-capability 回归器在能力间强负相关时是否会陷入零和解？
 
 ## 相关页面
 
 - [DoReMi](../sources/doremi.md) — Group DRO 路线的开创性工作
 - [TANDEM](../sources/tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进
+- [AutoMixer / Laguna 技术报告](../sources/laguna-m1-xs2.md) — per-capability 回归 + Dirichlet + KL 正则，frontier-scale MoE 产业落地
 - [Qwen3 技术报告](../sources/qwen3.md) — instance-level data mixture 的产业实践
