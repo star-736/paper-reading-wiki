@@ -57,6 +57,7 @@
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
 - [Mach-Mind-4-Flash 技术报告](sources/mach-mind-4-flash.md) - 理想汽车的 35B MoE agentic 模型（3B 激活），基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练（三轨并行 RL + MOPD 融合 + HMPO token 效率），统一 RL/OPD 训练框架。
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
+- [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
 
 ## 模型
 

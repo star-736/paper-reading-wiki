@@ -105,18 +105,27 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 
 [Keye-VL-2.0](../sources/keye-vl-2.md) 同样没有给 MOPD 前后消融表，但其 13-teacher 配置是已收录报告中 teacher 数最多的（MiMo 未明确数量，V4 ">10"，KAT 5 个）。Keye-VL-2.0 独有的 top-k overlap estimator 与 KAT-Coder-V2.5 的 drift-aware truncation 解决的是同一类问题--teacher 在 student off-policy 分布外给出不可靠监督--但路径不同：Keye-VL-2.0 在 token 级别过滤（只保留双方高概率的 overlap），KAT-V2.5 在 token 权重级别控制（低兼容性截断）。
 
+### domain reward 噪声决定 teacher 类型
+
+[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)从 MiMo Table 7 读出一个跨家规律：**Math/Code 偏好 RL teacher，Creative writing / 知识密集型偏好 self-distillation / 蒸馏**。这与 reward 噪声一致--verifiable reward 的 domain（数学/代码有标准答案）适合 RL teacher，reward 噪声大的 domain（创意写作用 LLM judge 是有偏代理）适合蒸馏。
+
+更值得注意的是 student-teacher 差距的方向：**RL domain 的最终 merged student 几乎总是超过 teacher，self-distill domain 的 student 有时不如 teacher**（MiMo Table 7 中 BrowseComp −6.8、Arena-Hard Creative Writing −3.9 的落后都在 self-distill / SFT domain）。nrehiew 没给出解释，但点出了 pipeline 收敛趋势：GLM-5 和 DeepSeek-V4 都用 OPD 做最终 expert merging，最终 checkpoint 不经 RL--这意味着「怎么训 expert」成为核心问题，而 domain reward 噪声可能是 teacher 类型选择的可操作判据。
+
 ## 待追问
 
-- **token-level KL vs full-vocab KL 的真实差距有多大**？MiMo 在 token-level KL 上做出了可与 V4 比拼的 SWE-Bench 73.4 / BrowseComp 58.3，说明 token-level 在恰当稳定性补丁下不是 OPD 的瓶颈。V4 上 full-vocab 的工程代价到底换来了什么——是稳定性、收敛速度，还是 teacher 数量上限？
-- **单 teacher（Qwen3）vs 多 teacher（MiMo/V4）哪种更适合谁**？Qwen3 demo 了"单 flagship teacher 也能让 8B 在 pass@64 上扩探索空间"，那 MiMo/V4 的多 teacher 是否在小模型场景下也成立——还是只有大模型 student 容量才撑得住多 teacher？
+- **token-level KL vs full-vocab KL 的真实差距有多大**？MiMo 在 token-level KL 上做出了可与 V4 比拼的 SWE-Bench 73.4 / BrowseComp 58.3，说明 token-level 在恰当稳定性补丁下不是 OPD 的瓶颈。V4 上 full-vocab 的工程代价到底换来了什么--是稳定性、收敛速度，还是 teacher 数量上限？
+- **单 teacher（Qwen3）vs 多 teacher（MiMo/V4）哪种更适合谁**？Qwen3 demo 了"单 flagship teacher 也能让 8B 在 pass@64 上扩探索空间"，那 MiMo/V4 的多 teacher 是否在小模型场景下也成立--还是只有大模型 student 容量才撑得住多 teacher？
 - **GLM-5 的 cross-stage distillation 应不应该归到 OPD**？它的 KL 算法、on-policy 形式与另外几家一致（都引同一篇 Thinking Machines Lab 博客），但目的（召回而非融合 / 压缩）独立。本页倾向于把它列出来作为第三类用法，而不是排除在 OPD 之外。
 - **off-policy distill + on-policy distill 的两阶段是不是更通用**？Qwen3 和 Qwen3-VL 都走这条；MiMo 直接从 SFT 进 MOPD 不做 off-policy 预热；V4 也从 specialist 训练进 OPD 不做 off-policy 预热。两阶段是 Qwen 家族的偏好，还是普适更优？
 - **MOPD 的 teacher-student co-evolution 循环**（MiMo 报告提到 distill 后 student 可再进 specialist RL 阶段生成更强 teacher）有没有人真的跑通多轮？目前的报告都只跑了一轮 OPD。
+- **teacher 类型选择（RL vs SFT vs Self）是否由 domain reward 噪声决定**？[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)指出 MiMo Table 7 中 Math/Code 偏好 RL teacher、Creative writing / 知识密集型偏好 self-distillation，与 reward 噪声一致--verifiable reward 的 domain 适合 RL teacher，LLM judge 有偏的 domain 适合蒸馏。这是否意味着 teacher 类型选择有一条可操作规则？
+- **为什么 RL domain 的 student 几乎总是超过 teacher，self-distill domain 却不一定**？nrehiew 注意到 MiMo Table 7 里最终 merged student 在 RL domain 普超 teacher、在 self-distilled domain 有时不如 teacher。这与 on-policy 承重墙实验（teacher 质量不是决定性的）是否矛盾--还是 self-distill domain 的 reward 噪声让 teacher 信号本身不可靠？
 
 ## 相关页面
 
-- [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 单家深入（公式、Table 7、与 V4 OPD 的差异），并含跨家共用的 [OPD 数学依据](../concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（七层论证 + 多 teacher 混采的边界）。
+- [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 单家深入（公式、Table 7、与 V4 OPD 的差异），并含跨家共用的 [OPD 数学依据](../concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（七层论证 + 多 teacher 混采的边界），以及分布视角三轴对照和 on-policy 承重墙实验。
 - [Thinking Machines Lab On-Policy Distillation 博客](../sources/thinking-machines-on-policy-distillation.md)：GLM-5/MiMo 共同引用的 OPD 算法源头页（Kevin Lu 2025-10-27），含 reverse-KL "unhackable"、O(1) vs O(N) bits/episode、phase-alternating 框架、personalization 召回实验等本数学依据节多处引用的一手出处。
+- [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](../sources/nrehiew-sft-rl-opd.md)：分布视角三轴框架 + on-policy 承重墙对照实验 + OPSD + student 超越 teacher 机制。本页 MiMo Table 7 的 domain-level 分析和 pipeline 趋势观察引用自该博客。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：5 家后训练范式总览，OPD 是其中一支。
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)：GLM-5 在 cross-stage distillation 之前的 RL 阶段。
 - [MiMo-V2-Flash 技术报告](../sources/mimo-v2-flash.md) / [DeepSeek-V4 技术报告](../sources/deepseek-v4.md) / [Qwen3 技术报告](../sources/qwen3.md) / [Qwen3-VL 技术报告](../sources/qwen3-vl.md) / [GLM-5 技术报告](../sources/glm-5.md)：源页。

@@ -960,3 +960,16 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - 证据分级诚实：显式区分 controlled reference / module-level / preliminary-internal / transfer-feasibility / design-only 五级，MemFuseBench 为内部 benchmark。
 
 `raw/` 未改。临时文件 `raw/_mi_memory_text.txt` 已清理。
+
+## [2026-07-30] ingest | nrehiew 博客：SFT, RL, and On-Policy Distillation Through a Distributional Lens
+
+新增博客源页 `wiki/sources/nrehiew-sft-rl-opd.md`，原始快照存于 `raw/nrehiew-sft-rl-opd.md`（`raw/` 未改）。
+
+博客用分布视角（target distribution / 数据来源 / KL 方向）统一对照 SFT、RL、OPD 三方法，核心论点：**on-policy 数据是抗遗忘的承重墙**，不是 RL 本身或显式 KL 惩罚。关键实验：在 Minimal Code Editing 任务上，OPD student 不论从 SFT 还是 RL teacher 蒸馏，结果几乎一致且都略超 RL teacher--说明 teacher 提供信号但 on-policy 采样决定几何形状。
+
+同步 deepen 两个已有页面：
+
+- `wiki/concepts/multi-teacher-on-policy-distillation.md`：新增「分布视角三轴对照」段（SFT/RL/OPD 的 target/数据/KL 方向/梯度范围/遗忘）+「on-policy 数据是承重墙」对照实验 +「OPSD」变体（self-distillation + reference solution prefix + per-token clipping）+「Student 超越 Teacher」机制（OPD 监督更精准 + KL matching≠reward maximization + entropy collapse）。待追问补充 3 条。
+- `wiki/comparisons/on-policy-distillation.md`：新增「domain reward 噪声决定 teacher 类型」段（MiMo Table 7 的 RL domain vs self-distill domain 分歧 + student-teacher 差距方向）。待追问补充 2 条，相关页面补 nrehiew 源页。
+
+无图嵌入（博客原图为 SVG 概念图，核心信息已用表格和 prose 覆盖）。

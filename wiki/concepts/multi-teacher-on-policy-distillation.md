@@ -151,6 +151,54 @@ $$\pi^*(y\mid x) \;=\; \pi_{T_{k(x)}}(y\mid x), \quad \text{其中 } k(x) = \tex
 
 这是 OPD 在数学上**没**完全闭合的部分，也是为什么 GLM-5 §3.5（"mixed in appropriate proportions"）和 MiMo §4 都把 teacher 选择 / domain routing / 采样比例挂在嘴边——这一步外包给了数据 curation，不是公式能解决的。
 
+## 分布视角：SFT / RL / OPD 的三轴对照
+
+> 以下框架来自 [nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)（2026），它把三种 post-training 方法放在同一个分布视角下：**target distribution 是什么 / 数据从哪来 / KL 方向**。这与上面的七层数学依据互补--七层讲「OPD 为什么 work」，分布视角讲「把 SFT 和 RL 也拉进来，差异在哪一层」。
+
+| | SFT | RL | OPD |
+| --- | --- | --- | --- |
+| target distribution | 固定外部分布（数据集） | 无明确外部目标 | teacher 分布 |
+| 数据来源 | 外部数据集（off-policy） | 当前策略采样（on-policy） | 当前策略采样（on-policy） |
+| KL 方向 | forward KL（mode-covering） | ~reverse KL（mode-seeking） | reverse KL |
+| 梯度压力范围 | 均匀施加在所有 demonstrated token | 只在当前策略采样的高概率区域 | 只在 student 采样区域，朝 teacher 拉 |
+| 遗忘 | 严重 | 轻微 | 轻微 |
+
+SFT 的 forward KL 等价于最小化 $D_{KL}(p_{\text{data}} \| q_\theta)$，其中 $p_{\text{data}}$ 是数据集定义的固定分布。由于 NLL 不考虑起始分布，模型没有内置理由偏好邻近解--target 可以任意远。SFT 对每个 demonstrated token 一视同仁推高概率，不区分 task-critical token 和 style token（[Diao et al.](https://arxiv.org/abs/2601.02151) 发现 SFT 中存在大量 low-probability low-entropy token，模型本很自信却被迫拟合分歧 label）。
+
+RL 的 [Chen et al., 2025](https://arxiv.org/abs/2510.18874) 指出可看作 reverse KL 最小化。但作者认为 KL 方向解释**不完整**--它依赖显式 KL 正则化，而 RLVR 去掉 KL 惩罚后仍抗遗忘。[Shenfeld et al.](https://arxiv.org/abs/2509.04259) 给出更底层解释：用 REINFORCE + binary 0/1 reward 时，reward 充当 filter（reward=1 贡献正信号，0 不贡献），RL 的隐式 target 是「所有 optimal policy 中离当前策略最近的」--on-policy 数据在每个时间步把训练约束在低 KL 区域。
+
+### on-policy 数据是承重墙：对照实验
+
+nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 和 RL 训出两个 teacher（RL 泛化更好、不遗忘；SFT 遗忘明显），再分别做 OPD 蒸馏到 student。
+
+| Model | Pass@1 ↑ | Norm. Levenshtein ↓ | Added CC ↓ | LiveCodeBench v6 ↑ |
+| --- | --- | --- | --- | --- |
+| SFT teacher | 0.775 | 0.450 | 0.450 | 0.286 |
+| RL teacher | 0.792 | 0.063 | 0.206 | 0.320 |
+| OPD ← SFT teacher | **0.800** | 0.059 | **0.206** | 0.297 |
+| OPD ← RL teacher | 0.787 | **0.055** | 0.228 | **0.314** |
+
+**反直觉**：两个 OPD student 几乎一样，都略超 RL teacher、远超 SFT teacher。即使 teacher 是退化的 SFT 模型，student 的遗忘也比 SFT teacher 本身轻。
+
+**含义**：teacher 提供信号，但 on-policy 采样决定了几何形状。这与七层数学依据中的「第三层 on-policy 消除 exposure bias」和「第六层 RL 子网络脆弱」吻合--on-policy 数据在 student 真实分布上召回/重塑子网络，teacher 质量不是决定性的。这暗示可以「暴力 SFT 过训练 expert → OPD 蒸馏 → 保留原模型大部分能力」。
+
+### OPSD：On-Policy Self Distillation
+
+[OPSD](https://arxiv.org/abs/2601.18734) 是 OPD 变体：teacher 和 student 是**同一模型**，但 teacher 计算 log probability 时被提供 reference solution 作为 prefix（privileged information）。问题在于同一模型做 teacher/student 时大多数 token 输出几乎相同，per-token KL 分析发现 **style / pivot token**（"wait"、"alright"）的 KL 远高于 **math token**（"power"、"exponent"）。在不重要的高 KL token 上更新太猛会导致 collapse，解法是 per-token clipping。
+
+OPSD 更接近 RLHF 而非 RLVR：teacher 信号不完全相关于 task importance（高 KL token 可能只是 style），需要类似 RLHF 的 clipping 防过度优化；RLVR 的 reward 偏差低，更敢去掉 KL penalty 或放松 trust-region（GRPO 替代 PPO）。
+
+这与已收录报告中的 token 级控制机制呼应：[KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) 的 drift-aware truncation（长上下文 drift 控制权重）、[Keye-VL-2.0](../sources/keye-vl-2.md) 的 top-k overlap estimator（双方低概率 token 过滤）、token-category-aware scaling（format token 降权）--三者与 OPSD 的 per-token clipping 都在 token 级别控制 OPD 更新质量，但切入点不同。
+
+### Student 为什么能超越 Teacher
+
+[Agarwal et al. 2023](https://arxiv.org/pdf/2306.13649) 已在 GSM8K 上报告此现象。nrehiew 给出两个假设：
+
+1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议，而非 teacher 生成的轨迹。student 的错误不一定是 teacher 的错误--off-policy 蒸馏可能在 student 很少访问的分布区域给监督。
+2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
+
+熵行为差异：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 预期行为，[Gu et al., 2023](https://arxiv.org/abs/2306.08543)），reward 上升更突然。这部分是推测性的。
+
 ## 报告中的结果
 
 MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）：
@@ -207,4 +255,7 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 - Teacher 数量增加时，student 容量是否足够保留所有能力？
 - MOPD 与异步 agent RL 能否形成“先 RL 出 teacher，再 MOPD 融合，再继续 RL”的循环？
 - KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
+- **on-policy 数据 > teacher 的结论是否只在 niche task 上成立**？nrehiew 的实验用 minimal editing（适合测遗忘/泛化），在更 broad 的能力域上 teacher 质量是否会重新主导？
+- **OPSD 的 per-token clipping 与 KAT-V2.5 drift-aware truncation / Keye-VL-2.0 top-k overlap 是否在解同一个问题**？三者切入点不同（style token 降权 vs 长上下文 drift vs 双方低概率 token 过滤），有没有统一框架？
+- **OPD 比 RL 更剧烈的 entropy collapse 是否意味着多样性损失更严重**？这与 Qwen3 Table 21 里 OPD pass@64 也涨是否矛盾？
 
