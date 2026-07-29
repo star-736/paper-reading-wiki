@@ -942,3 +942,21 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - `wiki/index.md`：来源段 +1，模型段 +1。
 
 核心定位：Mach-Mind-4-Flash 是理想汽车的 35B MoE / 3B 激活 agentic 模型，基座 Qwen3.5-35B-A3B（不改预训练权重）。三支柱：(1) 统一 RL/OPD 训练框架（`L = α·L_OPD + β·L_RL`，三模式切换）；(2) specialization-then-integration（三轨并行 RL 共 10+ 专家 → MOPD 融合）；(3) HMPO token 效率（中位长度 adaptive budget + 乘法 reward 防 hacking，仅数学训练压缩 19–46% 跨域泛化）。MOPD 用 k1 estimator + PPO clipped surrogate（Appendix B 完整推导）。3B 激活在 AIME'26 92.70 / IFBench 82.82 / Behavioral-SafetyBench 80.74 追平或超越 10–30× 激活规模模型。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + vision_analyze 校验。
+
+## [2026-07-29] ingest | Mi-Memory: A Lifecycle Memory Framework for Personal AI
+
+沉淀小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架论文（arXiv:2607.18975v1，52 页）。
+
+**新增页面**：
+- `wiki/sources/mi-memory.md`——源页，覆盖四个生命周期角色（Structure / Expansion / Evolution / Deployment）的完整机制、审计契约四类工件、全部评测结果和证据分级。
+- `wiki/concepts/agent-memory-lifecycle.md`——概念页，提炼 lifecycle 范式定义、四角色分工、与传统 RAG 的区别、跨报告信号。
+- `wiki/assets/mi-memory/`——9 张图：fig1 lifecycle / fig2 architecture / fig3 memstack runtime / fig4 controlled-reference / fig5 IKB path / fig6 memfuse / fig7 mem-gallery accuracy / fig8 dual-loop / fig9 litemem。
+
+**关键发现**：
+- 论文核心贡献是 lifecycle audit contract 本身——用 typed evidence / diagnostic traces / strategy artifacts / gate-rollback 四类工件统一异构模块，而非单一 leaderboard 数字。
+- MemStack（Structure）在 LoCoMo / PersonaMem-V2 / LongMemEval 上达 93.59% / 57.24% / 87.47%（controlled reference vs reproduced MemBrain）。
+- E2MEND（Evolution）在 LoCoMo 上从 75.58% 提升至 94.74%（+19.16pp，descriptive），但非 repeated-run statistical claim。
+- LiteMem（Deployment）达 90.81%，保留 90.0% 服务端改善，97.0% absolute ratio vs full MemStack。
+- 证据分级诚实：显式区分 controlled reference / module-level / preliminary-internal / transfer-feasibility / design-only 五级，MemFuseBench 为内部 benchmark。
+
+`raw/` 未改。临时文件 `raw/_mi_memory_text.txt` 已清理。

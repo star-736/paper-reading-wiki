@@ -56,7 +56,8 @@
 - [Ling and Ring 2.6 技术报告](sources/ling-2.6.md) - Inclusion AI 的 Ling-2.6 / Ring-2.6 万亿参数 agentic 模型族，7:1 Lightning Attention + MLA 混合线性注意力 retrofit、token efficiency 后训练、KPop agentic RL。
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
 - [Mach-Mind-4-Flash 技术报告](sources/mach-mind-4-flash.md) - 理想汽车的 35B MoE agentic 模型（3B 激活），基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练（三轨并行 RL + MOPD 融合 + HMPO token 效率），统一 RL/OPD 训练框架。
-|
+- [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
+
 ## 模型
 
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
@@ -117,6 +118,7 @@
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 预训练数据混合优化的方法谱系：DoReMi (Group DRO) -> DoGE (bi-level) -> RegMix (回归) -> TANDEM (twin network)，核心都是用小模型预测大模型的最优 domain 权重。
 - [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和（gain–cost 剪刀：refinement gain 递减 + CLP offset cost 恒定）。
+- [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
 
 ## 比较
 
