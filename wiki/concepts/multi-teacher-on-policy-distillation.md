@@ -249,6 +249,17 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 
 MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capability anchoring**（专家防止融合退化，移除 Reasoning expert 导致 −2–4%）；(2) General 的 **full retention**（融合后微超专家）；(3) Agent 的 **mixed**（SWE 部分保留 −2.7pp，ClawBench/ClawEval 超越专家）。Appendix C 消融发现 code teacher 的跨域迁移效应：加 code teacher 后 AIME'25 +2.30 / AIME'26 +0.83（未加数学 teacher），但报告明确建议每个想保留的能力都应有 teacher 代表，不依赖跨域迁移。
 
+## Kimi K3 的 MOPD
+
+[Kimi K3](../sources/kimi-k3.md)（Moonshot AI，arXiv:2607.24653，首个开源 3T 级）的 MOPD 把 teacher 数推到 **9 个**（3 域 × 3 reasoning effort），是已收录报告中 teacher 数第二多（仅次于 Keye-VL-2.0 的 13 个），且首次把 **reasoning effort 作为正交 teacher 维度**：
+
+- **9 teacher 矩阵**：3 域（general tasks / general agents / coding agents）× 3 reasoning effort（`{low, high, max}`）。给定 domain `d` 和采样 effort `e`，由对应 teacher `π_teacher^(d,e)` 监督。这是对 Mach-Mind「10+ 专家按域分」和 Keye-VL「13 teacher 按模态/任务分」的另一种切法——**同一域的不同 effort 是不同 teacher**，让 student 能在统一模型里按需切换 effort。
+- **per-token OPD reward with R_max clip**：`r_opd = clip(sg(log π_teacher / π_θ), -R_max, R_max)`（`sg` stop-gradient，`R_max` clip 极端 advantage 稳定 RL 训练）。clip 形式与 MiMo/Mach-Mind 的 PPO clipped surrogate 同族，但 K3 明确把 clip 上界叫 `R_max` 并强调"constrain extreme advantage signals"——是对 OPD reward 尺度失控的直接防护。
+- **dense reward 无缝接入 RL 框架**：OPD reward 是 per-token dense 信号，天然支持 partial rollout training（长 horizon 任务未完成轨迹跨 iteration 续跑）。试过更细的 **top-k distillation 目标**，但在收敛速度和最终性能上都没明显优势——这与 Mach-Mind 的观察一致（full-vocabulary OPD 够用，不需 top-k 精简）。
+- **与 RL 阶段的衔接**：9 个 teacher 是 RL 阶段的产物（3 域 × 3 effort 的 9 个 RL 专家），MOPD 把它们融合成单一 student。这与 MiMo「先训多 teacher 再 MOPD」同构，但 K3 的 teacher 矩阵结构（域 × effort）让融合后的 student 能按 prompt 激活不同 effort，而非固定一个 effort。
+
+详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)。
+
 ## 待追问
 
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？

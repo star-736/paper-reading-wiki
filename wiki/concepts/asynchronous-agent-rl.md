@@ -49,6 +49,18 @@ GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Pyth
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是互补的算法层问题：在一个 agent 轨迹内部，工具反馈后的高熵 step 是否应该追加 partial rollout 探索。前者解决长尾 rollout 怎么跑得动，后者解决有限 rollout 预算投到轨迹哪里。
 
+## 跨报告信号：Kimi K3 的 partial rollout + AgentENV
+
+[Kimi K3](../sources/kimi-k3.md) 在 1M 上下文 agentic RL 上走了与 GLM-5 / Ring-2.6 同源但工程更重的 partial rollout 路线：
+
+- **Partial rollout（沿用 Kimi K1.5 / K2.5）**：每 iteration 采样 K completions × N prompts，维持 `N×K` 活跃轨迹。**当 λ∈(0,1) 比例轨迹完成即暂停生成**进入 policy optimization，不等所有 rollout 结束。未完成轨迹入队下一 iteration 优先恢复。单条长 horizon 轨迹自然跨多 iteration，引入 data staleness——K3 靠 per-token regularization 约束 policy update 在局部邻域内，容忍极端 off-policy 数据（沿用 K2.5 算法）。
+- **AgentENV microVM 沙箱**：partial rollout 的「暂停-恢复」要 sandbox 状态可持久化。K3 用 AgentENV（Firecracker microVM，开源 github.com/kvcache-ai/AgentENV）——incremental checkpointing 只存脏内存页（checkpoint 49ms / resume 133ms），三个高层操作：(a) Pause/Resume（paused sandbox 不耗 CPU/内存，agent 等推理结果时可 pause，占 lifetime 98%）；(b) Fork（从原状态 fork 新沙箱做 reward judging 无副作用）；(c) Snapshot（定期快照错误恢复）。OverlayBD 镜像 + ublk driver + P2P transport 实现 sub-second launch，copy-on-write memory 实现 6.5× 内存 overcommit。K3 训练+评测共创建 **51,219,741 个 sandbox** 跨 1,505,678 个镜像。
+- **External KV cache pool**：1M multi-step rollout 下 prefix KV-cache miss 极贵，partial rollout + speculative decoding 加剧 prefix-block churn。K3 用 write-back 设计——active decoding block 留 GPU，可复用 idle prefix 仅在被驱逐时 write-back 到 CPU DRAM 外部池，下次复用 prefetch 回。**KDA states 与 MLA KV cache blocks 一起 offload/prefetch，生命周期对齐**（这是 K3 混合 KDA-MLA 架构特有的——两套 cache 必须同步管理）。训练 iteration 结束后训练状态 offload 到 NVMe 腾 DRAM。
+- **Rollout auto-throttling scheduler**：多步 rollout context 渐进增长，固定 concurrency 难估且早期过保守。用 runtime signals（active/queued request count、KV cache utilization）动态控制发往 inference engine 的请求数。
+- **Gradient-buffer reuse for non-policy model forwarding**：RL loss 需 forward-only non-policy 模型（如 reference model），权重太大无法常驻 GPU。把权重放 CPU，用 policy model 的 FP32 gradient-buffer storage 作后盾 materialize，ZeRO-2 下每 GPU 只持两个 VPP chunk 的 gradient buffer，streaming reference weights chunk by chunk（一个 slot 算当前 chunk，另一个 prefetch 下一个）。
+
+**与 GLM-5 / Ring-2.6 的对比**：三者都解决长尾 rollout 的同步瓶颈，但 K3 的特点是 (1) 沙箱工程最重（microVM + Firecracker，vs GLM-5 的 container、Ring-2.6 的 rollout buffer）；(2) 混合 KDA-MLA 架构带来两套 cache 同步管理的独特挑战（KDA fixed-size recurrent state + MLA per-token KV cache 大小/生命周期根本不同，K3 设计 unified paged layout 让两者共享同一 pool）；(3) 1M 上下文规模最大（K3 训练上下文 1M vs GLM-5 SFT 到 202,752、Ring-2.6 256K）。K3 的 partial rollout 阈值用 λ 比例（vs GLM-5 轨迹数量阈值、Ring-2.6 global token budget Φ）。
+
 ## 跨报告信号：Ling-2.6 / Ring-2.6 的异步 RL
 
 [Ling-2.6 / Ring-2.6](../sources/ling-2.6.md) 的异步 RL（ASystem + ARouter）与 GLM-5 解决同一问题但路径不同：

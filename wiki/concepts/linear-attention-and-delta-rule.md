@@ -30,6 +30,7 @@ $$S_t = S_{t-1} + k_t v_t^\top,\qquad o_t = S_t q_t$$
 | DeltaNet | $S_t = (I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 把递推看成对重构损失 $\tfrac12\lVert S k_t - v_t\rVert^2$ 做在线梯度下降（经典 **delta rule**）；rank-1 更新等价于广义 Householder 变换，可 chunkwise 并行 | 让记忆「自我纠错」，但旧关联仍永久保留 |
 | Gated DeltaNet（GDN） | $S_t = \alpha_t(I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 加一个 **head-wise 标量遗忘门** $\alpha_t\in[0,1]$（作用类似对快速权重的 weight decay / 数据相关 L2 正则）。GDN 原文（[来源页](../sources/gated-delta-net.md)）的洞察：门控负责「快速整块清空」、delta rule 负责「定向精确更新」，两者互补——$\alpha_t\to0$ 瞬间清空记忆，$\alpha_t\to1$ 退化成纯 delta rule | 可控的记忆寿命，缓解干扰，改善稳定性与长上下文泛化 |
 | **KDA**（Kimi Linear） | $S_t = (I-\beta_t k_t k_t^\top)\mathrm{Diag}(\alpha_t)S_{t-1} + \beta_t k_t v_t^\top$ | 把 GDN 的标量门换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维独立遗忘速率（思路承自 GLA） | 更精细地调度有限状态记忆，在合成检索任务上超过 GDN、Mamba2 |
+| **KDA（Kimi K3 升级）** | 同上结构，但 decay 参数化从无界 negative-Softplus 换成 **scaled sigmoid**（有下界）；输出门从低秩换成 **full-rank** | `g_t = g_min·Sigmoid(e^A·z_t) ∈ (g_min, 0)`，`g_min=-5` 固定 → retention factor `α > e^-5 ≈ 6.7e-3`，16-token tile 累积 log-decay ∈ (-80, 0) → reciprocal `1/Γ` 不溢出 BF16 → **所有因果 tile（含对角）用 dense Tensor Core MMA**，消掉 position-pair diagonal 路径 | 解锁 KDA 在 3T 级生产模型的硬件效率；K3 用 69 KDA + 24 MLA 的 3:1 混合栈，1M context NoPE 外推 |
 
 > **Qwen3-Next / Qwen3.5 停在 GDN 这一环，机制上未升级到 KDA。** 它们的线性层用的就是 GDN 原版的 gated delta rule（$\alpha_t$ 是 **head-wise 标量门**，不是 KDA 的 channel-wise 向量门），且 $\alpha_t$ 沿用 GDN 自己规定的 Mamba2 式参数化（原文脚注「We use Mamba2's parameterization for α」）——所以「用 Mamba2 式 α」恰恰是忠实沿用 GDN、不是 Qwen 的改动。判据：HF `config.json` 的 `linear_num_*_heads` + 每 head 一个 `A_log`/`dt_bias` 坐实标量门（代码/config tier-1）。机制沿用 ≠ 模块实现无改动——Qwen 在 block 实现层有工程化改动（value head 2× key head、投影与输出门融合等），那是另一层，见官方 `transformers` modeling，不在本机制演进链内。
 
@@ -77,6 +78,28 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
 > Figure 2（原文截图，§ 3.2 Efficiency Analysis）：\"Execution time of kernels for varying input lengths, with a uniform batch size of 1 and 16 heads.\"
 
+## Kimi K3 的 KDA 升级：scaled sigmoid + full-rank gate（已据 Kimi K3 原文 § 2.1.1 核实）
+
+[Kimi K3](../sources/kimi-k3.md)（2026-07，首个开源 3T 级模型）沿用 Kimi Linear 的 KDA 结构（channel-wise 细粒度门 + delta rule），但改了两处参数化，让 KDA 能在 2.8T 规模、1M 上下文下高效跑起来：
+
+**1. Lower-bounded decay（scaled sigmoid 替代 negative-Softplus）**
+
+Kimi Linear 用 `g_t = -e^A · Softplus(z_t) ∈ (-∞, 0)`（无下界）。问题在 chunkwise 计算（Eq. 4）：keys 要乘以 reciprocal cumulative decay `1/Γ_{1→C}`，`Γ` 是 retention factors `α ∈ (0,1)` 的乘积，无界趋零 → reciprocal 无界增长 → **溢出 BF16 动态范围**。于是对角 tile 被迫走 position-pair diagonal 专用路径（无法用 dense Tensor Core MMA），非对角 tile 才走 dense MMA——KDA 算力的一个结构性瓶颈。
+
+K3 改成 `g_t = g_min · Sigmoid(e^A · z_t) ∈ (g_min, 0)`，`g_min = -5` 固定。于是每个 retention factor `α_t > e^-5 ≈ 6.7e-3`，16-token tile 的累积 log-decay落在 `(-80, 0)`，reciprocal rescaling factor < e^80 **仍在 BF16 动态范围内**。结果：**所有因果 tile（对角 + 非对角）都能用 dense Tensor Core matrix multiplication**，消掉 position-pair diagonal 路径。
+
+![Kimi K3 Figure 3：KDA 的 log-decay 参数化对比。(a) Kimi Linear 用无界 negative-Softplus 映射 g = -e^A·Softplus(z)，值域 (-∞, 0)；Kimi K3 用 scaled sigmoid g = g_min·Sigmoid(e^A·z)，值域 (g_min, 0) = (-5, 0) 有下界。(b) 因值域有界，Kimi K3 的所有因果 tile（含对角 tile）都能用 dense Tensor Core MMA，而 Kimi Linear 的对角 tile 必须走 position-pair diagonal 专用路径。](../assets/kimi-k3/fig3-kda-decay.png)
+
+> Figure 3（原文截图，§ 2.1.1）："Lower-bounded decay and its effect on chunkwise KDA computation. (a) Kimi Linear uses an unbounded negative-Softplus mapping, whereas Kimi K3 bounds the log-decay with a scaled sigmoid … (b) Kimi Linear evaluates each diagonal tile with an explicit position-pair computation, while the bounded range in Kimi K3 allows all causal tiles to use dense Tensor Core matrix multiplications."
+
+> 这个参数化与 prior work 的 lower-bounded recurrence gates（[97, 27, 91]）相关。`A_h` 是 per-head learnable log-scale，初始化为 0；`b_α^h` 按 Kimi Linear/GDN/Mamba2 初始化。
+
+**2. Full-rank output gate**
+
+Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input-dependent **full-rank** 投影：`y = W_o[Sigmoid(W_g x) ⊙ RMSNorm(~o)]`，让每个 token 用全秩门调制从 recurrent state 读出的通道。Gated MLA 层也用同款 full-rank 门（见 [注意力门控](attention-gating.md)）。
+
+**配套的 KDA Context Parallelism（KCP）**：K3 在 1M 上下文下需要跨设备 CP。朴素线性注意力的 CP 靠 summing local states（`S_t` 从 `S=0` 算）即可，但 KDA 的 delta rule 有 token-dependent 转移矩阵 `M_t`，local segment 效果依赖进入状态。KCP 把每段效果分解成 cumulative transition `M_{t←1}`（作用于进入状态）+ zero-state 生成的 `~S_t`，每 rank 本地算后一次 all-gather + prefix scan 重组。**只需固定大小 all-gather，线性 compute scaling**（§ 5.1.2）。实现见 FLA PR #691。
+
 ## 跨报告信号
 
 - **[Gated DeltaNet（GDN）](../sources/gated-delta-net.md)（Yang 等，ICLR 2025，原文已入库）**：演进链中间一环的**一手出处**。提出 gated delta rule——门控（快速整块清空）+ delta rule（定向精确更新）互补合体，超过 Mamba2 和 DeltaNet，并自提「GDN + 滑窗/Mamba2」混合架构。KDA 与 Qwen3-Next 系的线性层都建在它之上。
@@ -85,10 +108,11 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
   > Figure 1（原文截图，§ 架构）：\"Visualization of the (hybrid) architecture and block design of Gated DeltaNet models. Gated DeltaNet-H1 and H2 use Gated DeltaNet + SWA and Mamba2 + Gated DeltaNet + SWA patterns, respectively.\"
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA，2025）**：本 wiki 首篇线性注意力路线报告。KDA 是 GDN 的细粒度门升级（head-wise 标量门 → channel-wise $\mathrm{Diag}(\alpha_t)$）；模型层面用 **3:1 layerwise 混合**（3 KDA : 1 Full MLA），首次让混合线性注意力在公平对比下全面追平/超过 full attention，1M context KV cache 降 75%、decode 吞吐 6.3×。
+- **[Kimi K3](../sources/kimi-k3.md)（KDA 升级，2026-07，首个开源 3T 级）**：K3 把 Kimi Linear 的 KDA 推进到生产 3T 规模。沿用 3:1 混合（69 KDA + 24 Gated MLA），但 decay 参数化从无界 negative-Softplus 换成 **scaled sigmoid**（`g_min=-5` 有下界）→ 所有因果 tile 用 dense Tensor Core MMA；输出门从低秩换成 full-rank。配套 KCP（KDA Context Parallelism）解跨设备 CP 的 delta-rule 依赖问题。MLA 层用 **NoPE**（位置编码全靠 KDA 隐式编码，1M 外推零修改）。这是 KDA 从研究模型（Kimi Linear 48B）进入 2.8T frontier 模型的里程碑，证明混合线性注意力路线在 3T 规模仍成立且是 scaling efficiency 2.5× 的贡献者之一。
 - **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**--用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合。Qwen3-Next 无技术报告，但[官方博客](../sources/qwen3-next-blog.md)把这条设计讲明白了：3:1 是「**75% layers use Gated DeltaNet, 25% keep standard attention**」的官方原话（不只是 HF config `layer_types` 推断），选 GDN 的理由是「systematic experiments」下它的 **in-context learning 强于 Sliding Window Attention 或 Mamba2**；全局 attention 层加 output gating 是为「eliminate Attention Sink and Massive Activation」。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
 - **[InternVLA-A1.5](../models/internvla-a1.5.md)（上海 AI Lab，2026-07，VLA 机器人操作）**：GDN 混合注意力跨出语言/多模态对话、进入**机器人实时控制**领域的采用证据。该模型用 Qwen3.5 2B（3:1 GDN:full attention）做 VLM backbone，处理多视角图像 token 序列做机器人操作决策。GDN 降 KV-cache I/O 的价值在实时控制的多视角图像序列场景同样成立。论文明写 backbone "employs an efficient hybrid attention mechanism that interleaves 3 Gated DeltaNet linear attention layers with 1 standard full attention layer"（§ 2，原文确证）。这是 GDN 作为通用 token mixer（不只服务于语言模型）的信号。
 - **[Ling-2.6](../sources/ling-2.6.md)（Inclusion AI，2026-06，万亿参数 agentic）**：另一条混合线性注意力生产路线，但线性层用的**不是 GDN/KDA 的 delta rule 家族**，而是 **Lightning Attention**（Qin et al. 2024，FlashLinearAttention kernel），gating 机制不同。混合比例为 **7:1**（7 Lightning Attention : 1 MLA），比 Kimi Linear / Qwen3-Next 的 3:1 更激进——scaling law 实验在 M=2/4/8/16 中选 M=8 最优，M=16 已退化，说明线性注意力仍有容量上限。全局层选 MLA（与 Kimi Linear 同路、与 Qwen3-Next 的 gated attention 不同）。独特之处是 **retrofit 而非从头训练**：从 Ling-2.0 的 GQA checkpoint 经四阶段迁移（Lightning Attention 转换 -> MLA 转换，含 QK Norm absorption + Partial RoPE adaptation）无损转换为 hybrid 架构。Lightning Attention 的内部机制（是否也用 delta rule、还是纯 gated linear recurrence）报告未展开，待追问。
-- **混合而非纯线性**：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next 保留 1/4 的全局 gated attention 层、Ling-2.6 保留 1/8 的全局 MLA 层维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。混合比例本身成为新的架构超参：3:1（Kimi/Qwen）vs 7:1（Ling-2.6），选哪个取决于线性注意力变体的质量和模型规模。
+- 混合而非纯线性：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next 保留 1/4 的全局 gated attention 层、Ling-2.6 保留 1/8 的全局 MLA 层、**Kimi K3 保留 1/4 的 Gated MLA 层**维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。混合比例本身成为新的架构超参：3:1（Kimi Linear/K3/Qwen）vs 7:1（Ling-2.6），选哪个取决于线性注意力变体的质量和模型规模。K3 在 3T 规模仍选 3:1，说明 KDA 升级（scaled sigmoid）提升了线性层质量但未到能再压低全局层比例的程度。
 - **门的两种含义别混**：线性注意力里的「门」（GDN/KDA 的遗忘门 $\alpha_t$）控制 RNN 状态记忆寿命；softmax 注意力里的「门」（见 [注意力门控](attention-gating.md)）是给 SDPA 输出注入非线性 + 去 attention sink。同名不同事。
 
 ## 为什么重要
@@ -106,9 +130,9 @@ KDA 的做法是用一个**专门化 DPLR 变体**：把低秩两支 $a,b$ 都**
 
 ## 相关页面
 
-- 来源：[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（Lightning Attention 7:1 hybrid，retrofit 路线）
+- 来源：[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（KDA scaled sigmoid 升级 + KCP）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（Lightning Attention 7:1 hybrid，retrofit 路线）
 - [注意力门控](attention-gating.md)
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（Kimi Linear 的全局层底座）
 - [高效长上下文注意力](efficient-long-context-attention.md)
 - [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)（正交的另一条路线）
-- 模型：[Kimi Linear](../models/kimi-linear.md)、[InternVLA-A1.5](../models/internvla-a1.5.md)（VLA 机器人，用 Qwen3.5 backbone）
+- 模型：[Kimi Linear](../models/kimi-linear.md)、[Kimi K3](../models/kimi-k3.md)（3T 级 KDA 生产采用）、[InternVLA-A1.5](../models/internvla-a1.5.md)（VLA 机器人，用 Qwen3.5 backbone）

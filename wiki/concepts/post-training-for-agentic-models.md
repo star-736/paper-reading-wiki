@@ -42,6 +42,18 @@ RL 阶段由 [Forge](forge-agent-native-rl.md) 承载。Forge 把工具、contex
 
 PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随后退火到 0，让最终策略回到任务质量。这相当于把“是否并行、怎样并行”也变成 RL 可学习的 agent 行为。
 
+## Kimi K3：3-stage + White-Box RL Environment + 1M Agentic RL
+
+[Kimi K3](../models/kimi-k3.md) 的后训练是三阶段范式：**SFT → RL（9 专家）→ MOPD 融合**，三处独特：
+
+**1. RL 跨 3 域 × 3 reasoning effort = 9 专家**。不按单任务训专用模型，而是跨三大域（general tasks / general agents / coding agents）× 三 reasoning effort（`{low, high, max}`）训 9 个专家。Reasoning Effort RL 用 per-problem budget control——每问题给初始 token budget `b0(x)`（cold-start 估），轨迹总 token `T(y) > τ·b0(x)` 则 reward override 为 -1；先训 max-budget 变体（大 τ 但封顶防 overthinking），再退火 τ 得 high/low 专家。Agentic Generative Reward Model（GRM）用 tournament-style binary comparison + 强制四步协议（读输出→生成 rubric→按 rubric 打分→记 scorepad）+ verbosity control 防 reward hacking 向冗长漂移。
+
+**2. Unified White-Box RL Environment**。把 agent harness 表示成可配置可组合模块集合（tool interfaces / system prompts / context management / skills / memories / subagents）。配置化实例化主流 harness（Kimi Code / Claude Code / Codex / OpenClaw / Hermes）及全新 harness。RL 训练时为不同任务组动态构造不同 harness 配置，**避免过拟合单一 harness 的 tool schema / system prompt / context 管理机制**——这是对「framework > model」（[UniClawBench](../sources/uniclawbench.md) 结论）的直接训练侧回应：不让模型绑死在某个 harness 上。配套 Knowledge-Graph-Guided Task Synthesis（自演化 DAG 知识图谱，agent 持续 web-scale 探索扩展）+ 多类 verifiable 任务环境（kernel optimization / personal assistant / Autonomous Execution Tasks / web development）。
+
+**3. MOPD 9 teacher + Deployment-Aware QAT**。九个 teacher 专家把跨 reasoning effort 的领域能力融合进单一 student（per-token OPD reward with R_max clip）。从 SFT 起即 QAT（MXFP4 权重 + MXFP8 激活），RL 时 rollout 与 training 共用同一量化方案消除 train-inference mismatch。预训练 MTP 层 fine-tune 成 EAGLE-3 draft（融合 1st/4th/final AttnRes block 特征，直接优化 LK loss = acceptance rate 负对数）。
+
+**1M Agentic RL 基础设施**是 K3 后训练的工程重心：partial rollout（λ 比例完成即暂停）+ AgentENV microVM 沙箱（51M+ sandbox，incremental checkpointing 49ms/133ms，pause/resume/fork/snapshot）+ External KV cache pool（write-back，KDA states 与 MLA KV 同步 offload/prefetch）+ rollout auto-throttling。详见 [异步 Agent RL](asynchronous-agent-rl.md)。
+
 ## ARPO 与 LLM RL policy optimization：采样结构和优化目标
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 不是新模型报告，而是把 Qwen2.5 / Llama3.1 / Qwen3 等 backbone 放进多轮工具环境里比较 RL 算法。它的关键观察是：模型收到外部工具反馈后，后续前 10–50 个 token entropy 会显著上升，搜索反馈的不确定性又高于 Python 反馈。因此 ARPO 不再只做完整 trajectory-level sampling，而是在高熵工具调用步从当前节点分叉 partial rollouts，并用 advantage attribution 区分共享前缀与分叉段。
@@ -58,7 +70,8 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - MiMo-V2-Flash：如何把多个专门 teacher 的能力合成到一个 student。
 - DeepSeek-V4：如何在超长上下文和多 reasoning mode 下做稳定蒸馏与 RL。
 - MiniMax-M2：如何把 agent harness、reward、rollout、training 和 serving 组织成可扩展系统。
-- Kimi K2.5：如何把视觉、文本和并行 agent orchestration 纳入同一后训练框架。
+- Kimi K2.5：如何让多模态和并行 sub-agent 编排共同提升 agentic 工作流。
+- Kimi K3：如何在 3T 规模 + 1M 上下文下做 9-专家 RL + MOPD 融合 + harness-agnostic 训练 + microVM 沙箱支撑 partial rollout。
 - DAPO / GSPO / SAPO：如何把 group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。

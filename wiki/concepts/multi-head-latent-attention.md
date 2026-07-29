@@ -117,6 +117,7 @@ $$L^* = -A/B \approx 341\ \text{token}$$
 - **[DeepSeek-V4](../sources/deepseek-v4.md)**：CSA 进一步在 MLA 血统上叠压缩——core attention 是 **Shared-KV MQA**，query 仍由**压缩 latent 向量上投影**得到（且该 latent 与 indexer query 共享）。即 MLA 的 latent-query 结构被 CSA 继承，再在压缩 KV entry 上做 MQA。
 - **[GLM-5](../models/glm-5.md)**：同样在 MLA-DSA 基座上做长上下文稀疏，RL 阶段冻结 indexer + deterministic top-k（与 V3.2「post-training 继续训练 indexer」是两条路线）。
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA，2025，非 DeepSeek 系）**：换了个用法——不是「在 MLA 上加稀疏选择」，而是把 MLA **稀释成 1/4 的全局层**（3 个 [KDA 线性注意力](linear-attention-and-delta-rule.md) 层配 1 个 Full MLA 层），其余层换成线性注意力。且这 1/4 的 MLA 层用 **NoPE**，推理时退化成纯 MQA。这说明 MLA 不仅是稀疏注意力的底座，也能当混合线性注意力里那一小撮「负责全局信息流」的全局层。
+- **[Kimi K3](../sources/kimi-k3.md)（Gated MLA，2026-07，首个开源 3T 级）**：继承 Kimi Linear 的 3:1 KDA:MLA 混合，但把 MLA 层升级为 **Gated MLA**——三处改动：(1) **NoPE** 沿用（位置编码全靠 KDA 隐式编码，扩展上下文长度零修改，1M 外推无需 retune RoPE base 或 YaRN）；(2) **Full-rank output gate**（`y = W_o[Sigmoid(W_g x) ⊙ ~o]`，与 KDA 同款全秩门，让每 token 调制从全局注意力读出的通道，见 [注意力门控](attention-gating.md)）；(3) **FP32 attention output** 纠正 flash attention 的 biased rounding error（代价是 on-chip footprint 翻倍，故重设 kernel 把它与 KV staging buffer 重叠）。K3 的 Gated MLA 配 KDA 的混合栈，是 MLA 在 3T 级 frontier 模型里作「全局层」角色的最新证据——且 NoPE 路线（vs DeepSeek 系的 Decoupled RoPE）让长上下文扩展摆脱位置编码 retuning 负担。
 - **横向**：见 [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)——DSA、CSA 的「底层」栏都落在 MLA / MLA-MQA 上，而 MSA 走的是 GQA 底座、NSA/MoBA 走 MQA/GQA 底座，构成「减头 vs 压秩」两种起点的分野。
 
 ## 为什么重要
@@ -135,7 +136,7 @@ $$L^* = -A/B \approx 341\ \text{token}$$
 
 ## 相关页面
 
-- 来源：[DeepSeek-V2](../sources/deepseek-v2.md)（MLA 首次提出）、[DeepSeek-V3.2](../sources/deepseek-v32.md)、[DeepSeek-V4](../sources/deepseek-v4.md)
+- 来源：[DeepSeek-V2](../sources/deepseek-v2.md)（MLA 首次提出）、[DeepSeek-V3.2](../sources/deepseek-v32.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（Gated MLA：NoPE + full-rank output gate + FP32 attention output）
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（Kimi Linear 用 MLA 当 1/4 全局层）
 - [高效长上下文注意力](efficient-long-context-attention.md)

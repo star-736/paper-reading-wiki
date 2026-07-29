@@ -29,6 +29,7 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) | 推测解码（block-diffusion drafter） | DFlash：~90.7M / 5 层 draft model（从 target 最后 5 层初始化），block size B=16，用 joint FlexAttention block-diagonal mask 一次 forward 训练 K=16 个 draft block。Transformers 6.37× / vLLM 2.14× 加速。输出越长加速越明显（表格 > 公式 > 文本），因结构化 OCR 输出局部规律性强、draft 接受率高。 |
 | [GLM-OCR](../models/glm-ocr.md) | 训练 + 推理共用（共享参数多头） | k 个共享参数辅助头预测未来 k token，训练 10 tokens/step，推理平均 5.2 tokens/step，~50% 吞吐提升。与 GLM-5 共享参数思路一致（引用 [GLM-5](../sources/glm-5.md)）。PDF 吞吐 1.86 pages/s 约为 MinerU2.5 的 3.9×。MTP 还带来结构化输出质量收益——鼓励模型向前规划，产出更少「破损」表格标签。 |
 | [Ling-2.6](../models/ling-2.6.md) | 继续训练 MTP + 参数共享 | post-training 阶段引入两个额外 MTP 层继续训练。MTP-3-share（参数共享 + 仅第一层梯度回传 base model）accept length 从 MTP-1 的 2.71 提升到 3.31。发现仅第一层 MTP 预测所有后续 token 也有改善，说明新引入的 MTP 层训练不足，参数共享 + 梯度隔离是有效的补偿。配合 linghe fused-kernel，FP8 BS=1 下 MTP+linghe 比 baseline +119%。 |
+| [Kimi K3](../models/kimi-k3.md) | 预训练 MTP 层 → EAGLE-3 draft | 预训练 MTP 层（结构镜像一个 backbone block）被 fine-tune 成 EAGLE-3 风格 draft model（target 冻结，只训 draft 层 + feature-fusion 投影）。draft 输入融合 target model 低/中/高层特征（取自第 1、4、最后一个 AttnRes block 输出），`W_E3` 初始化为 `[0 0 I]`（初始等价高层特征，逐渐学入低/中频）。**直接优化 LK loss**（acceptance rate 负对数 `L_LK = -log Σ_x min(p(x), q(x))`），而非传统 KL surrogate——理由是 capacity-limited draft 上最小化 KL 不保证最大化 acceptance rate。训练时按 EAGLE-3 test protocol unroll 7 步。QAT 配置（MXFP4 权重 + MXFP8 激活）。 |
 
 ## MiMo 的经验
 
@@ -59,6 +60,16 @@ Gemma 4 的 MTP drafter 设计与 GLM-5 / MiMo 的关键差异在于 **cross-att
 [GLM-OCR](../sources/glm-ocr.md) 把 MTP 用到 OCR 域，揭示了一个其他报告没强调的点：**MTP 不只是加速器，对确定性结构化输出任务还是质量提升手段**。OCR 是强局部依赖 + 显式结构监督的确定性任务（vs 数学推理 / agentic 的高熵），标准自回归逐 token 解码在此本就低效。GLM-OCR 训练预测 10 tokens/step、推理平均 5.2 tokens/step，~50% 吞吐提升。但更关键的是 MTP 鼓励模型「向前规划」——结构化 token（表格标签、Markdown 语法）有强局部依赖，多 token 预测让模型在生成开标签时就考虑闭标签，产出更少「破损」标签、更鲁棒的结构化输出。
 
 这与 [HunyuanOCR-1.5](../sources/hunyuan-ocr-1.5.md) DFlash 的观察呼应（结构化 OCR 输出局部规律性强、draft 接受率高，表格加速 > 公式 > 文本），但 GLM-OCR 进一步把 MTP 做进训练目标（DFlash 是训练独立 draft model + 推理验证）。两者共同说明：**OCR/结构化输出是 MTP 的甜区**——低熵 + 强局部依赖让多 token 预测既准又快。这也是 GLM-OCR 0.9B 在吞吐 1.86 pages/s（约为 MinerU2.5 的 3.9×）的同时仍能拿 OmniDocBench v1.5 SOTA 的原因。
+
+## Kimi K3 的经验：MTP 层 → EAGLE-3 draft + LK loss
+
+[Kimi K3](../sources/kimi-k3.md) 的 MTP 用法有两点独特：
+
+**1. 预训练 MTP 层 fine-tune 成 EAGLE-3 风格 draft**。K3 预训练时有 1 层 MTP（结构镜像一个 backbone block）。后训练时把它 fine-tune 成 EAGLE-3 风格 draft model——target 冻结，只训 draft 层 + feature-fusion 投影 `W_E3`。`W_E3` 输入融合 target model 的低/中/高层特征（取自第 1、4、最后一个 [AttnRes block](attention-residuals.md) 输出），初始化为 `[0 0 I]`——初始等价于高层特征 `h_h`（MTP 预训练时的输入），逐渐学入低/中频特征。这是 AttnRes 块结构被 draft model 利用的一个例子：AttnRes 的 block 表示天然提供多粒度特征。
+
+**2. 直接优化 LK loss（acceptance rate 负对数）而非 KL surrogate**。`L_LK = -log Σ_x min(p(x), q(x))`，`p`/`q` 是 target/draft 的 next-token 分布（temperature 1，无辅助 ground-truth cross-entropy 项）。理由：speculative decoding 的加速由 per-token acceptance rate `Σ_x min(p(x), q(x))` 决定，而**最小化 KL divergence surrogate 不保证最大化这个 rate**——尤其 capacity-limited draft model 上。这是对 Ling-2.6 / GLM-5 等「MTP 训练用标准 cross-entropy / KL」路线的一个直接改进信号：当 draft 的目的明确是 speculative decoding 加速时，直接优化 acceptance rate 比优化分布匹配更对目标。
+
+训练时按 EAGLE-3 test protocol unroll 7 步；第一步无 target-side 最新位置特征，draft 消费自己更早步的输出，镜像推理时的 recurrent drafting。QAT 配置贯穿（MXFP4 权重 + MXFP8 激活）。
 
 ## 观察点
 

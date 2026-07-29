@@ -973,3 +973,32 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - `wiki/comparisons/on-policy-distillation.md`：新增「domain reward 噪声决定 teacher 类型」段（MiMo Table 7 的 RL domain vs self-distill domain 分歧 + student-teacher 差距方向）。待追问补充 2 条，相关页面补 nrehiew 源页。
 
 无图嵌入（博客原图为 SVG 概念图，核心信息已用表格和 prose 覆盖）。
+
+
+## [2026-07-30] ingest | Kimi K3 技术报告
+
+`raw/2607.24653v1.pdf`（arXiv:2607.24653v1，Moonshot AI Kimi Team，2026-07-27，47 页）。
+
+新增：
+
+- `wiki/sources/kimi-k3.md`：来源页（图文交错）。嵌入 Figure 7（scaling law 2.5×）、Figure 2（架构总览）、Figure 3（KDA scaled sigmoid decay）、Figure 5（Quantile Balancing）、Figure 12（KDA-aware prefix cache）。Table 1（K2 vs K3 架构对比）、Table 2（主表 6 模型 × 30+ benchmark）转 Markdown。待追问 10 条（g_min=-5 选择 / Block AttnRes N=8 在 93 层是否最优 / MoonViT-V2 追平 SigLIP 量化 / MOPD 9 teacher 混采策略 / MoonEP E/R bound tightness / prefix cache hit rate 实测 / cosine vs WSD 独立超参细节 / Per-Head Muon 改善量化 / SiTU-GLU β 选择 / Cyber Tier 2 可复现性）。
+- `wiki/models/kimi-k3.md`：模型页。关键事实表含模态=多模态（文本+图像+视频）（已据原文 § 2.4 + Abstract 核实，原生多模态单一共享 backbone）。技术身份按三信息流轴（序列 KDA-MLA / 深度 AttnRes / 宽度 Stable LatentMoE）+ 原生视觉 + Per-Head Muon 组织。含 K2→K2.5→Kimi Linear→K3 同族演进表。
+- `wiki/concepts/attention-residuals.md`：新概念页。Full AttnRes（每层 attend 所有前层，softmax kernel + RMSNorm）+ Block AttnRes（N=8 × S=12，O(Nd) 内存，online softmax 合并）。定位为深度维 attention，类比 Transformer 解序列 RNN 瓶颈。
+- `wiki/concepts/stable-latentmoe.md`：新概念页。LatentMoE（routed 在 ℓ=d/2 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded |f|≤β1·β2=100，β1=4 β2=25）+ Quantile Balancing（balanced assignment 对偶 LP 的 exact coordinate minimizer，无学习率，histogram 估分位数）。支撑 896-expert/16-active sparsity 56 在 2.8T 稳定。
+- `wiki/assets/kimi-k3/`：fig2-architecture.png, fig3-kda-decay.png, fig5-quantile-balancing.png, fig7-scaling-law.png, fig12-prefix-cache.png（PyMuPDF 300 DPI + get_textbox 校验）
+
+更新：
+
+- `wiki/concepts/linear-attention-and-delta-rule.md`：演进表加 K3 行（scaled sigmoid lower-bounded decay + full-rank gate）；新增「Kimi K3 的 KDA 升级」段（g_min=-5 有界 → 所有因果 tile 用 dense Tensor Core MMA + KCP 跨设备 CP）；跨报告信号 + K3；相关页面 + K3。
+- `wiki/concepts/multi-head-latent-attention.md`：跨报告信号加 K3 Gated MLA（NoPE + full-rank output gate + FP32 attention output）；相关页面 + K3。
+- `wiki/concepts/attention-gating.md`：跨报告信号加 K3（full-rank 门同时用在 KDA + Gated MLA，比 Gated Attention 消融的 head-specific elementwise 门更重）；相关页面 + K3。
+- `wiki/concepts/moe-frontier-model-scaling.md`：对比表 + K3 行（2.78T/104.2B，首个开源 3T，896 routed/16 active sparsity 56）；解释段补 K3 定位 + Stable LatentMoE + MoonEP。
+- `wiki/concepts/multi-token-prediction.md`：用法表 + K3 行（预训练 MTP 层 → EAGLE-3 draft，融合 1st/4th/final AttnRes block 特征，直接优化 LK loss = acceptance rate 负对数）；新增「Kimi K3 的经验」段（LK loss vs KL surrogate + AttnRes block 多粒度特征利用）。
+- `wiki/concepts/asynchronous-agent-rl.md`：新增「Kimi K3 的 partial rollout + AgentENV」段（λ 比例 partial rollout + Firecracker microVM 51M sandbox + external KV cache pool KDA/MLA 同步 + auto-throttling + gradient-buffer reuse）+ 三家对比（K3 vs GLM-5 vs Ring-2.6）。
+- `wiki/concepts/post-training-for-agentic-models.md`：新增「Kimi K3」段（3-stage SFT→9-专家 RL→MOPD + Unified White-Box RL Env harness-agnostic + AgentENV 1M partial rollout）；综合框架 + K3。
+- `wiki/concepts/multi-teacher-on-policy-distillation.md`：新增「Kimi K3 的 MOPD」段（9 teacher = 3 域 × 3 reasoning effort 矩阵，首次把 effort 作正交 teacher 维度 + R_max clip + top-k 无优势）。
+- `wiki/comparisons/2026-open-model-technical-reports.md`：范围 + K3；对比表 + K3 行；二版综合 + K3 哲学（两条 scaling 轴同时 push）。
+- `wiki/comparisons/on-policy-distillation.md`：速览表 + K3 行；A 类融合派讨论 + K3（9 teacher 矩阵 + R_max clip）；未用 OPD 列表 + Ling-2.6。
+- `wiki/index.md`：来源段 +1，模型段 +1，概念段 +2（Attention Residuals / Stable LatentMoE）。
+
+核心定位：Kimi K3 是 Moonshot AI 的首个开源 3T 级模型（2.78T 总参 / 104.2B 激活），原生多模态（文本+图像+视频），1M token 上下文。架构沿三条信息流轴重新设计：(1) 序列长度——Hybrid KDA-MLA 3:1 混合，KDA 升级 scaled sigmoid lower-bounded decay（g_min=-5 有界 → 所有因果 tile 用 dense Tensor Core MMA）+ full-rank output gate，Gated MLA 用 NoPE + full-rank gate + FP32 attention output；(2) 网络深度——Attention Residuals（Block AttnRes N=8 × S=12，每层 attend 所有前层 block 表示，解除标准残差的深度 RNN 瓶颈）；(3) 模型宽度——Stable LatentMoE（LatentMoE routed 在 ℓ=d/2 latent 空间 + Normalized RMSNorm + SiTU-GLU bounded activation |f|≤100 + Quantile Balancing aux-loss-free 的 exact 对偶 LP 解），支撑 896 routed/16 active/2 shared（sparsity 56）。配 MoonViT-V2（27 层 ViT ~401M，从零训练非 SigLIP init）原生视觉 + Per-Head Muon optimizer。综合架构+数据+训练改进相对 Kimi K2 拿到 2.5× scaling efficiency。后训练三阶段 SFT→9-专家 RL（3 域 × 3 reasoning effort）→ MOPD 融合，QAT 贯穿（MXFP4/MXFP8），Unified White-Box RL Env（harness-agnostic，配置化实例化 Kimi Code/Claude Code/Codex/OpenClaw/Hermes），AgentENV microVM 沙箱（51M+ sandbox，Firecracker，incremental checkpointing 49ms/133ms，pause/resume/fork/snapshot）支撑 1M partial rollout。基础设施含 FlashKDA kernel + KCP（KDA Context Parallelism，prefix scan + 单次 all-gather）+ MoonEP 完美平衡 EP（E/R bound tight）+ KDA-aware prefix cache（unified paged layout，hash block 512 / physical block 6144 解耦）+ cache-aware affinity scheduling + budget-based admission control。评测 frontier 级但承认落后 Claude Fable 5 / GPT-5.6 Sol：ProgramBench/SWE-Marathon/BrowseComp/MCPMark-Verified/AutomationBench/τ3-Banking/Harvey Lab-AA 等 8 项 #1，WebDev Arena 1,678 Elo 首个开源登顶，Intelligence Index v4.1 #4/580（57.1），Vals Index #2/39（74.7）。`raw/` 未改。图文化：5 张图，PyMuPDF 300 DPI + get_textbox 校验。

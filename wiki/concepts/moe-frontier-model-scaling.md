@@ -23,6 +23,7 @@ timestamp: 2026-06-06
 | [MiniMax-M2](../models/minimax-m2-series.md) | 229.9B | 9.8B | 256 fine-grained experts，8 active，sigmoid gating。 |
 | [MiniMax-M3](../models/minimax-m3.md) | 428B | 22B (+ 600M visual encoder) | 128 routed experts，每 token 激活 4 个（NVIDIA blog）。 |
 | [Kimi K2.5](../models/kimi-k2.5.md) | 1.04T | 32B | 384 experts，8 active，继承 Kimi K2 MoE backbone。 |
+| [Kimi K3](../models/kimi-k3.md) | **2.78T** | **104.2B** | **首个开源 3T 级**。896 routed + 2 shared，16 active（sparsity 56）；[Stable LatentMoE](stable-latentmoe.md)（routed 在 latent 空间 ℓ=d/2=3584，SiTU-GLU bounded activation + Quantile Balancing）；69 KDA + 24 Gated MLA 混合注意力。 |
 | [Gemma 4 26B-A4B](../models/gemma-4.md) | 26B | 3.8B | 报告未公开 expert 数和路由配置；与 dense 变体（E2B/E4B/12B/31B）共享架构。 |
 | [Seed2.0](../models/seed2.md) | **未披露** | **未披露** | Model Card 不含架构/训练细节；三档定价 Pro/Lite/Mini 对标 GPT-5.2/GPT-5-mini 级别。 |
 | [Ling-2.6-1T](../models/ling-2.6.md) | ~1T | ~8B | 256 routed experts + 1 shared，8 active；fine-grained MoE（expert intermediate=2,048）；前 4 层 dense FFN。 |
@@ -34,6 +35,8 @@ timestamp: 2026-06-06
 这些报告的激活参数大致落在 9.8B 到 49B。设计前沿不再只是“模型更大”，而是如何组合稀疏激活、长上下文注意力、后训练、agent scaffold 和 serving 基础设施。
 
 MiniMax-M2 是当前知识库里激活参数最低的前沿 agentic 案例，它用 Forge、数据和系统优化补足约 10B active 的模型预算。Kimi K2.5 则处在 1T total / 32B active 层级，并把视觉编码器和 Agent Swarm 纳入整体能力。
+
+Kimi K3 把开源前沿推到 **2.78T / 104.2B active**——首个 3T 级开源模型，激活参数也最大（104B vs DeepSeek-V4-Pro 49B、K2.5 32B）。支撑这个规模的关键不是单纯加 expert，而是 [Stable LatentMoE](stable-latentmoe.md)：LatentMoE 把 routed expert 解耦到 latent 空间（ℓ=d/2）压通信，Normalized + SiTU-GLU 压激活爆炸，Quantile Balancing 解 896-expert 负载失衡。K3 的 896 routed / 16 active（sparsity 56）是当前 wiki 收录最稀疏的 MoE，比 DeepSeek-V4-Pro 的 384/6（sparsity 64）更激进且 expert 池更大。配 MoonEP 完美平衡 EP（E/R 冗余 bound 证明 tight）做 3T 级预训练。
 
 MiMo-V2-Flash 与 DeepSeek-V4-Flash 的激活参数预算接近，但注意力策略完全不同。GLM-5、Kimi K2.5 和 DeepSeek-V4-Pro 则处在更大的 frontier model 层级。
 
