@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "数据混合优化"
-description: "LLM 预训练数据混合优化的方法论谱系：从启发式 → Group DRO (DoReMi) → 回归预测 (RegMix) → bi-level optimization (DoGE/TANDEM)，核心都是用小模型预测大模型的最优 domain 权重。"
+description: "LLM 数据混合优化的方法谱系：预训练 domain reweighting（启发式 → Group DRO/DoReMi → 回归/RegMix → bi-level/DoGE·TANDEM → per-capability/AutoMixer）用小 proxy model 预测大模型权重；SFT 阶段另有在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。"
 tags: ["concept", "data-mixture", "pretraining", "domain-reweighting"]
 timestamp: 2026-07-11
 ---
@@ -10,9 +10,9 @@ timestamp: 2026-07-11
 
 ## 定义
 
-数据混合优化（data mixture optimization / domain reweighting）指在 LLM 预训练前，自动确定各数据 domain（如 Wikipedia / web text / code / books）的采样比例（domain weights），使预训练后的模型在广泛下游任务上表现更好。核心挑战是：domain 权重对模型性能影响巨大，但搜索空间随 domain 数量指数增长，直接在大模型上搜不现实。
+数据混合优化（data mixture optimization / domain reweighting）指在 LLM 训练前或训练中，自动确定各数据 domain（如 Wikipedia / web text / code / books，或 SFT 阶段的各指令数据集）的采样比例（domain weights），使训练后的模型在广泛下游任务上表现更好。核心挑战是：domain 权重对模型性能影响巨大，但搜索空间随 domain 数量指数增长，直接在大模型上搜不现实。
 
-所有主流方法的共同范式是：用小 proxy model 的训练信号预测大模型的最优 domain 权重，区别在于如何利用 proxy model 的信号。
+本页主谱系是**预训练 domain reweighting**——共同范式是用小 proxy model 的训练信号预测大模型的最优 domain 权重，区别在于如何利用 proxy model 的信号。[DynamixSFT](../sources/dynamix-sft.md) 则是**SFT 阶段、在线、无 proxy** 的另一分支，直接在目标模型上用 Multi-Armed Bandit 调整，见下文专节。
 
 ## 方法谱系
 
@@ -26,6 +26,7 @@ timestamp: 2026-07-11
 | MDE (Belenki et al.) | mixture-of-data-experts 近似 loss | 回归 + MDE 特征 | 否 | ACL 2025 |
 | [TANDEM](https://arxiv.org/abs/2606.04401) | twin network 差值 (bi-level) | penalized single-level + twin | 否 | NeurIPS 2025 |
 | [AutoMixer](../sources/laguna-m1-xs2.md) | ~60 个 0.5B MoE proxy 的 per-capability 下游指标 | Dirichlet 扰动 + 非线性回归器 + KL 正则 | 否（能力组代理 benchmark） | 2026（Poolside Laguna） |
+| [DynamixSFT](../sources/dynamix-sft.md) | 目标模型自身 1-step look-ahead loss 下降（learning progress） | Multi-Armed Bandit + Prior-scaled Boltzmann（在线，无 proxy） | 否 | 2026（MSRA，**SFT 阶段**） |
 
 ## 跨报告信号
 
@@ -61,6 +62,24 @@ TANDEM 的核心洞察是：数据充足时 uniform weighting 已近最优（Pro
 
 AutoMixer 也补上了「这些方法在 MoE 上是否有效」的待追问——DoReMi/TANDEM 的实验都基于 dense model，AutoMixer 直接在 MoE proxy + MoE 生产模型上验证有效。代价是 ~60 个 proxy 的总训练成本未披露，KL 系数 $\lambda$ 的 sensitivity 也未给。
 
+### DynamixSFT：SFT 阶段的在线无 proxy 分支
+
+[DynamixSFT](../sources/dynamix-sft.md)（Microsoft Research Asia + UMich + KAIST，2026，arXiv:2508.12116）是与上述 proxy-model 谱系**范式分叉**的另一分支：不用小 proxy model 预测大模型权重，而是**直接在目标模型上、训练过程中在线调整**数据集采样比例。它针对 SFT 阶段（指令微调），把「从 K 个候选数据集采一个 batch」建模为 Multi-Armed Bandit，每个数据集 = 一个 arm。
+
+两个关键设计（均为原文确证）：
+
+1. **Prior-scaled Boltzmann Exploration**：在标准 Boltzmann 采样概率 $\propto\exp(\beta Q_k)$ 上乘原始数据集比例 $p^{(0)}$ 作先验，软锚定采样分布到原始比例（保留 LIMA 小而精、FLAN 大而广这类固有定位），再加 $\gamma/K$ minimum floor 防 never-sampling。这与 AutoMixer 的 KL 正则 $\lambda D_{KL}(x\|x_0)$「把解拉回人工先验」思路同源——都是承认原始混合含人工先验知识、不应被 reward 推得太远——但 DynamixSFT 是乘性先验（直接进采样概率），AutoMixer 是加性惩罚（进优化目标）。
+2. **1-Step Look-ahead Reward**：每 $T_{\text{update}}$ 步对每个数据集做一次虚拟单步更新，用 $r=(L_{\text{pre}}-L_{\text{post}})/(L_{\text{pre}}+\epsilon)$ 作 reward，min-max 归一化 + EMA 平滑。理论上一阶 Taylor 展开 $r\approx\eta\|\nabla L\|^2$，所以最大化 reward = 最大化梯度下降幅度 = 衡量 learning progress 而非 raw loss；又由 telescoping，累积 reward = $L(\theta_0)-L(\theta_{T+1})$，故 MAB 优化累积 reward 等价于优化长期收敛——非启发式 trick。
+
+与 proxy-model 谱系的对比要点：
+
+- **信号来源**：DoReMi/RegMix 用 proxy 的 excess loss / validation loss，TANDEM 用 proxy 的 bi-level 梯度，AutoMixer 用 proxy 的 per-capability 下游指标；DynamixSFT 用**目标模型自身**的 1-step loss 下降。前者靠 proxy 放大省成本，后者靠「reward 只需前向」省成本——但论文内部对 reward 是否真做了梯度更新存在矛盾（见来源页待追问），需谨慎。
+- **开销**：DynamixSFT 仅 +12.7%（1.13×），低于 HBO（+139%）、MultiUAT（+380%）、MultiDDS（+760%），也低于 DoReMi 的 8% 额外 FLOPs 量级（DoReMi 是预训练，绝对量级不同，仅作相对参考）。轻量是它相对其他**动态**方法的主要卖点。
+- **阶段**：本谱系其余方法主攻预训练 domain reweighting，DynamixSFT 专注 SFT；SFT 数据集异构性更强（LIMA 1K vs FLAN 50K+，尺度差 50×），prior-scaling 的锚定收益在此更显著（消融：去 prior 后 AVG 27.7→25.9，即便按比例初始化仍只有 26.3）。
+- **粒度**：仍是 dataset-level，与 [Qwen3](../sources/qwen3.md) 的 instance-level 标注混合、[MinerU2.5-Pro](../sources/mineru-2-5-pro.md) 的 instance-level 难度采样是不同粒度维度。
+
+DynamixSFT 缺少在 frontier-scale 模型上的验证（实验只到 8B），无法判断「在线无 proxy」与「proxy 放大」哪种范式在极大尺度下更优——这是它留给本谱系的开放问题。
+
 ### 产业实践：instance-level 超越 domain-level
 
 [Qwen3](../sources/qwen3.md) 的预训练数据管线采用了 instance-level data mixture：用轻量 Qwen 标注器给 >30T tokens 在「教育价值 / 领域 / 安全」多维度打标，按 instance 而非 domain 优化数据混合。这是 DoReMi 等方法在 domain 定义粗粒度局限上的自然演进方向——DoReMi 论文自己也指出「更细粒度的 domain 可能带来更大增益」。
@@ -87,10 +106,12 @@ CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该�
 - RegMix 发现 web corpus 比高质量 Wikipedia 更重要，这与 DoReMi 大幅 upweight Pile-CC 一致——但为什么？
 - instance-level mixture（Qwen3）与 domain-level reweighting（DoReMi/RegMix）的效果对比尚无公开 benchmark。
 - AutoMixer 已在 MoE proxy + MoE 生产模型上验证有效（此前 DoReMi/TANDEM 仅 dense），但 ~60 个 proxy 的总成本与 KL 系数 $\lambda$ 的 sensitivity 未披露；per-capability 回归器在能力间强负相关时是否会陷入零和解？
+- DynamixSFT 的「在线无 proxy」与 DoReMi/RegMix/AutoMixer 的「proxy 放大」在 frontier-scale 下孰优尚无对比（DynamixSFT 实验仅到 8B）；其 reward 计算在 §4.2 / Algorithm 1（virtual gradient step，需反向传播）与 §8（solely forward passes, no backward）之间存在描述矛盾，+12.7% 开销推导依赖后者，需作者澄清实现究竟用了 forward-only 近似还是真做了梯度更新。
 
 ## 相关页面
 
 - [DoReMi](../sources/doremi.md) — Group DRO 路线的开创性工作
 - [TANDEM](../sources/tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进
 - [AutoMixer / Laguna 技术报告](../sources/laguna-m1-xs2.md) — per-capability 回归 + Dirichlet + KL 正则，frontier-scale MoE 产业落地
+- [DynamixSFT 技术报告](../sources/dynamix-sft.md) — SFT 阶段在线无 proxy 的 Multi-Armed Bandit 分支，与 proxy-model 谱系范式分叉
 - [Qwen3 技术报告](../sources/qwen3.md) — instance-level data mixture 的产业实践
