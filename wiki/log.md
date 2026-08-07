@@ -1046,3 +1046,21 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - `wiki/index.md`：来源段 +1。
 
 核心定位：DynamixSFT 是 MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化方法。把「从 K 个候选数据集采一个 batch」建模为 Multi-Armed Bandit（每数据集 = arm），两个关键设计（均原文确证）：(1) Prior-scaled Boltzmann Exploration——在 softmax(βQ) 上乘原始数据集比例 p^(0) 作先验软锚定采样分布 + γ/K minimum floor 防 never-sampling；(2) 1-Step Look-ahead Reward——每 T_update 步对每数据集做虚拟单步更新，用 (L_pre-L_post)/(L_pre+ε) 作 reward，min-max 归一化 + EMA 平滑；理论上一阶 Taylor r≈η||∇L||² 故衡量 learning progress 而非 raw loss，telescoping 累积 reward = L(θ0)-L(θT+1) 故 MAB 优化累积 reward 等价长期收敛（非启发式 trick）。TÜLU-2/3 上相对 Full Coverage +5.1%/+5.3%（10 benchmark 平均），一致优于 HBO/MultiDDS/MultiUAT，开销仅 +12.7%（1.13×，vs HBO +139%/MultiUAT +380%/MultiDDS +760%）。与 DoReMi/RegMix/TANDEM/AutoMixer 的 proxy-model 谱系范式分叉（在线无 proxy vs proxy 放大），但实验仅到 8B，frontier-scale 孰优未决；dataset-level，与 Qwen3 instance-level 不同粒度。内部矛盾：§4.2/Algorithm 1 reward 来自 virtual gradient step（需反向传播）与 §8 solely forward passes 描述不一致，+12.7% 推导依赖后者，需作者澄清。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-08-07] ingest | Aioli 技术报告
+
+`raw/2411.05735v2.pdf`（arXiv:2411.05735v2，Stanford + NYU，2025-04-22，40 页）。
+
+新增：
+
+- `wiki/sources/aioli.md`：来源页（图文交错）。嵌入 Figure 1（LMO 统一框架 overview）、Figure 3（参数准确度 vs 性能）、Figure 7（AIOLI 推导：naive sweep -> 缩短 -> 交错训练）。Table 1（LMO 框架下各方法表达）、Table 2（无限制设置主结果）、Table 3（限制预算设置）、Table 20（消融）转 Markdown。待追问 5 条（frontier-scale 验证缺失 / perplexity-downstream 负相关 / δ=0.007 估计质量 / SFT 阶段 linear dynamic R²=0.419 / A_tstar 时变机制）。
+- `wiki/assets/aioli/`：3 张图（fig1-lmo-framework / fig3-param-accuracy-vs-performance / fig7-aioli-derivation，PyMuPDF 300 DPI + caption 定位裁剪 + get_textbox 校验）。
+
+未新建模型页：Aioli 是数据混合方法论文，非模型发布，实验用 160M/1.4B GPT-style 模型，按 IndexCache/MSA/DynamixSFT 先例不配模型页。未更新比较页：4 个现有比较页（前沿模型技术报告 / 稀疏注意力 / OPD / RL policy optimization）均不匹配数据混合主题。
+
+更新（1 concept + index）：
+
+- `wiki/concepts/data-mixture-optimization.md`：定义段后新增「LMO 统一框架：方法谱系的元层 abstraction」段（三组件分解 + 三条关键发现 + 统一语言定位五方法）；方法谱系表 + Aioli 行；待追问 + Aioli perplexity-downstream 负相关与 frontier-scale 未验证；相关页面 + Aioli。
+- `wiki/index.md`：来源段 +1。
+
+核心定位：Aioli 提出 LMO 统一框架，把 DML/Skill-It/DoReMi/DoGE 统一为同一个优化问题（最小化各组 validation loss，受制于 method-specific mixing law）的特例，三者差异在三轴：mixing law 参数化（静态 log-linear / 动态 linear）、参数 A_t 取值、求解策略（直接 / EGD）。关键发现：参数化高保真（R²>0.94），失败在参数取值--DoReMi 对角 A_t 错过 off-diagonal，Skill-It 静态 skills graph 无法适应 A_tstar 时变方向。AIOLI 用交错训练（time-division multiplexing）从当前训练历史直接拟合 A_t，无需额外 run，6/6 设置优于 stratified（平均 -0.274 perplexity），其他方法至少 1 设置差于 stratified。限制预算设置下可从其他方法学到的比例接续调整，30 中 28 改善。消融确认 A_t 需动态更新且需完整矩阵。1.4B 上仍有效。诚实披露 perplexity 与 downstream 负相关（r=0.529），承认 AIOLI 优化 perplexity 而非 downstream，纳入 downstream 是开放问题。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。

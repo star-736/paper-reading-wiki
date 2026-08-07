@@ -12,7 +12,19 @@ timestamp: 2026-07-11
 
 数据混合优化（data mixture optimization / domain reweighting）指在 LLM 训练前或训练中，自动确定各数据 domain（如 Wikipedia / web text / code / books，或 SFT 阶段的各指令数据集）的采样比例（domain weights），使训练后的模型在广泛下游任务上表现更好。核心挑战是：domain 权重对模型性能影响巨大，但搜索空间随 domain 数量指数增长，直接在大模型上搜不现实。
 
-本页主谱系是**预训练 domain reweighting**——共同范式是用小 proxy model 的训练信号预测大模型的最优 domain 权重，区别在于如何利用 proxy model 的信号。[DynamixSFT](../sources/dynamix-sft.md) 则是**SFT 阶段、在线、无 proxy** 的另一分支，直接在目标模型上用 Multi-Armed Bandit 调整，见下文专节。
+本页主谱系是**预训练 domain reweighting**--共同范式是用小 proxy model 的训练信号预测大模型的最优 domain 权重，区别在于如何利用 proxy model 的信号。[DynamixSFT](../sources/dynamix-sft.md) 则是**SFT 阶段、在线、无 proxy** 的另一分支，直接在目标模型上用 Multi-Armed Bandit 调整，见下文专节。
+
+### LMO 统一框架：方法谱系的元层 abstraction
+
+[Aioli](../sources/aioli.md)（Stanford + NYU，arXiv:2411.05735v2）提出 **Linear Mixing Optimization (LMO)** 框架，把上述多个方法统一为求解同一个优化问题的特例：最小化各组 validation loss，受制于一个 method-specific mixing law $L^{\text{val},i}_{t+1}(p) = \sigma(A^t p^t)$。三种组件决定一个方法：(a) mixing law 参数化（静态 log-linear / 动态 linear），(b) 参数 $A^t$ 的取值，(c) 求解策略（直接 / EGD）。
+
+关键发现（均为原文确证）：
+
+1. **参数化本身高保真**：log-linear 静态 $R^2 = 0.991$，linear 动态 $R^2 = 0.947$，两种形式都能很好拟合真实 loss-proportion 关系。
+2. **失败在参数取值**：现有方法的 $A^t$ 与最优 $A^{t\star}$ 偏差大，偏差与性能劣化正相关（$R^2 = 0.491$）。DoReMi 用对角 $A^t$ 错过 off-diagonal 交互；Skill-It 用静态 skills graph 无法适应 $A^{t\star}$ 随时间变方向。
+3. **AIOLI 直接估计 $A^t$**：每轮用 $\delta$ 比例的交错训练（time-division multiplexing）从当前训练历史拟合 $A^t$，无需额外训练 run。6/6 设置优于 stratified（平均 -0.274 perplexity），其他方法至少 1 个设置差于 stratified。
+
+LMO 框架的价值不在 AIOLI 本身（实验仅到 1.4B，perplexity 与 downstream 负相关），而在它给出了**分析现有方法的统一语言**：DML = log-linear 静态 + 拟合 + 直接求解；DoReMi = linear 动态 + 对角 $A^t$ + EGD；DoGE = linear 动态 + 梯度内积 $A^t$ + EGD；Skill-It = linear 动态 + 静态 skills graph × 当前 loss + EGD。后续方法可沿三轴（参数化 / 参数估计 / 求解策略）定位和改进。
 
 ## 方法谱系
 
@@ -27,6 +39,7 @@ timestamp: 2026-07-11
 | [TANDEM](https://arxiv.org/abs/2606.04401) | twin network 差值 (bi-level) | penalized single-level + twin | 否 | NeurIPS 2025 |
 | [AutoMixer](../sources/laguna-m1-xs2.md) | ~60 个 0.5B MoE proxy 的 per-capability 下游指标 | Dirichlet 扰动 + 非线性回归器 + KL 正则 | 否（能力组代理 benchmark） | 2026（Poolside Laguna） |
 | [DynamixSFT](../sources/dynamix-sft.md) | 目标模型自身 1-step look-ahead loss 下降（learning progress） | Multi-Armed Bandit + Prior-scaled Boltzmann（在线，无 proxy） | 否 | 2026（MSRA，**SFT 阶段**） |
+| [Aioli](../sources/aioli.md) (LMO 框架) | 当前训练历史的 $L^{\text{val}}$ 和 $p$ 直接拟合 $A^t$（在线，无额外 run） | EGD + 交错训练估计 $A^t$ | 否 | 2025（Stanford+NYU，**统一框架**） |
 
 ## 跨报告信号
 
@@ -107,11 +120,13 @@ CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该�
 - instance-level mixture（Qwen3）与 domain-level reweighting（DoReMi/RegMix）的效果对比尚无公开 benchmark。
 - AutoMixer 已在 MoE proxy + MoE 生产模型上验证有效（此前 DoReMi/TANDEM 仅 dense），但 ~60 个 proxy 的总成本与 KL 系数 $\lambda$ 的 sensitivity 未披露；per-capability 回归器在能力间强负相关时是否会陷入零和解？
 - DynamixSFT 的「在线无 proxy」与 DoReMi/RegMix/AutoMixer 的「proxy 放大」在 frontier-scale 下孰优尚无对比（DynamixSFT 实验仅到 8B）；其 reward 计算在 §4.2 / Algorithm 1（virtual gradient step，需反向传播）与 §8（solely forward passes, no backward）之间存在描述矛盾，+12.7% 开销推导依赖后者，需作者澄清实现究竟用了 forward-only 近似还是真做了梯度更新。
+- Aioli 的 LMO 框架统一了 DoReMi/DoGE/Skill-It/DML，但实验仅到 1.4B 且 perplexity 与 downstream 负相关（$r=0.529$）--AIOLI 优化 perplexity 是否反而损害 downstream？框架本身是分析工具，AIOLI 方法在 frontier-scale 的效果未验证。
 
 ## 相关页面
 
 - [DoReMi](../sources/doremi.md) — Group DRO 路线的开创性工作
 - [TANDEM](../sources/tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进
 - [AutoMixer / Laguna 技术报告](../sources/laguna-m1-xs2.md) — per-capability 回归 + Dirichlet + KL 正则，frontier-scale MoE 产业落地
-- [DynamixSFT 技术报告](../sources/dynamix-sft.md) — SFT 阶段在线无 proxy 的 Multi-Armed Bandit 分支，与 proxy-model 谱系范式分叉
-- [Qwen3 技术报告](../sources/qwen3.md) — instance-level data mixture 的产业实践
+- [DynamixSFT 技术报告](../sources/dynamix-sft.md) - SFT 阶段在线无 proxy 的 Multi-Armed Bandit 分支，与 proxy-model 谱系范式分叉
+- [Aioli 技术报告](../sources/aioli.md) - LMO 统一框架，把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例；AIOLI 在线方法无需额外训练 run
+- [Qwen3 技术报告](../sources/qwen3.md) - instance-level data mixture 的产业实践

@@ -61,6 +61,7 @@
 - [Kimi K3 技术报告](sources/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.8T/104B 激活），KDA scaled sigmoid + Attention Residuals + Stable LatentMoE + 原生视觉 + 1M 上下文，2.5× scaling efficiency，9-专家 RL + MOPD + AgentENV microVM 沙箱。
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
+- [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
 
 ## 模型
 
