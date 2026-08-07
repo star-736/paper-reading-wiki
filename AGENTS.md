@@ -2,14 +2,14 @@
 
 ## Project Structure & Module Organization
 
-This repository is a lightweight Markdown knowledge-base workspace.
+This repository is a lightweight Markdown knowledge-base workspace. It can be browsed as an Obsidian vault, but `.obsidian/` is **git-ignored** (per the 2026-06-19 maintenance entry), so don't rely on vault settings being shared; links use relative Markdown paths, not Obsidian `[[wiki-links]]`.
 
-- `raw/` stores source materials before they are processed. Treat these files as source-of-truth inputs and avoid modifying them during wiki maintenance.
-- `wiki/` contains generated knowledge-base pages. Start at `wiki/index.md`; append workflow history to `wiki/log.md`. Unfinished engineering follow-ups go in `wiki/TODO.md` (a checklist), **not** in `log.md` — keep `log.md` a record of what already happened, not a plan of what's next.
-- `.agents/skills/llm-wiki/` contains the repo-scoped Codex skill; `references/llm-wiki.md` holds the original gist.
+- `raw/` stores source materials before they are processed. Treat these as source-of-truth inputs and **never modify** them during wiki maintenance. Filenames here are heterogeneous (e.g. `glm-5-2602.15763.pdf`, `Bai 等 - 2026 - IndexCache ...pdf`); leave them as-is.
+- `wiki/` contains generated knowledge-base pages. Start at `wiki/index.md` (read this first when answering queries); append workflow history to `wiki/log.md`. Unfinished engineering follow-ups go in `wiki/TODO.md` (a checklist), **not** in `log.md` - keep `log.md` a record of what already happened, not a plan of what's next. Remove a TODO item when done and log the completed action.
+- `.agents/skills/llm-wiki/` contains the repo-scoped Codex skill; `references/llm-wiki.md` holds the original gist. The skill's own `SKILL.md` condenses the same pattern for skill-triggered loading.
 - Generated wiki pages are grouped under `wiki/sources/`, `wiki/models/`, `wiki/concepts/`, and `wiki/comparisons/`.
 
-Keep source documents, generated summaries, and logs separated.
+Keep source documents, generated summaries, and logs separated. A single ingest typically touches 5–15 wiki pages across these subdirectories in one pass - that fan-out is the point.
 
 ## Build, Test, and Development Commands
 
@@ -43,7 +43,7 @@ There are no automated tests. Validate contributions manually against the **writ
 
 No meaningful commit-message convention is available in the root workspace history. Use short, imperative messages with a scope when helpful, such as `docs: add wiki index` or `raw: add transformer survey`.
 
-After a turn has produced substantive on-disk changes (an ingest, a deepen, a correction — anything that edited `wiki/` and appended to `wiki/log.md`), proactively offer in one short line to commit and push before ending the turn; don't wait to be asked. Keep it a lightweight offer: skip it for pure read/query turns, and when the user is still mid-discussion, batch the changes and offer once at a natural stopping point rather than after every individual change.
+After a turn has produced substantive on-disk changes (an ingest, a deepen, a correction - anything that edited `wiki/` and appended to `wiki/log.md`), proactively offer in one short line to commit and push before ending the turn; don't wait to be asked. Keep it a lightweight offer: skip it for pure read/query turns, and when the user is still mid-discussion, batch the changes and offer once at a natural stopping point rather than after every individual change. When the user accepts, stage only the files changed this session, write an imperative `docs:`-scoped message, and push to `main`.
 
 Pull requests should describe what changed, list added or processed sources, note updated wiki pages, and call out unresolved contradictions or follow-up research. Include screenshots only when changes affect rendered diagrams, slides, or visual assets.
 
@@ -51,7 +51,7 @@ Pull requests should describe what changed, list added or processed sources, not
 
 Agents should read `wiki/index.md` first when it exists, then inspect relevant pages and raw sources. Do not overwrite raw files. When ingesting a source, update summaries, cross-references, the index, and the chronological log in the same pass.
 
-`AGENTS.md` and `CLAUDE.md` carry the **same conventions** in tool-specific form; either is self-sufficient. When you change a shared convention, update both so they stay in sync.
+`AGENTS.md` is the single source of truth for all conventions. `CLAUDE.md` (Claude Code) is a one-line `@AGENTS.md` import stub, so tools reading either file get identical instructions. When you change a convention, edit `AGENTS.md` only - no need to touch `CLAUDE.md`.
 
 ## Wiki workflows & writing discipline
 
@@ -118,7 +118,7 @@ Before any `ingest`/`deepen`/`verify`/`refactor` turn is done, confirm:
 - [ ] New/changed claims trace to the right evidence tier (primary PDF re-read where it matters).
 - [ ] Cross-references added **both ways** (new page links out; related pages link back).
 - [ ] `wiki/index.md` updated if a page was added or its one-line summary changed.
-- [ ] `wiki/log.md` appended with the correct `<kind>` and a title; entry is a short timeline note, not a transcript — detailed derivations live on the page they concern.
+- [ ] `wiki/log.md` appended with the correct `<kind>` and a title; entry is a short timeline note, not a transcript - detailed derivations live on the page they concern. If a log entry grows past ~8 lines, that's a signal the substance should live on the page instead. Always note `raw/` 未改 when no source was touched.
 - [ ] No orphan page (every new page has ≥1 inbound link), no broken relative links.
 - [ ] Internal tooling traces (raw line numbers, `pdftotext`, scratch dates) kept out of reader-facing prose.
 - [ ] Figures a page relies on are **embedded** (not just cited as `Figure N`) per "Figures & visual material"; every `wiki/assets/` file is referenced by ≥1 page.
@@ -154,3 +154,10 @@ Default: read the PDF yourself and judge which figures are worth embedding. Only
 | 3. **Complex workflow diagram with information overload** (≥5 interactive modules + multi-color data flow in one figure) | Need to understand module boundaries and interactions to write accurate prose | VLM assists labeling module names and data flows → human validates against PDF body text → write into prose |
 
 **Constraint:** `vision_analyze` output is **reading aid only**, never evidence-tier (do not write into body as a verified fact); provenance goes to `log.md`, not exposed to readers. Do NOT call VLM triage when the conditions above are not met.
+
+## What not to do
+
+- Don't overwrite anything in `raw/`.
+- Don't introduce a build system, package manifest, or test runner. The sole tooling dependency is PyMuPDF (`fitz`) for figure extraction; document any further tooling exactly when added.
+- Don't translate filenames to Chinese or rename existing English slugs (breaks links and `rg` workflows).
+- Don't add a wiki page in isolation: if you create a source page without updating `index.md`, `log.md`, and at least one concept/comparison cross-reference, the ingest is incomplete.
