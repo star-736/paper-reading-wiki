@@ -1064,3 +1064,11 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - `wiki/index.md`：来源段 +1。
 
 核心定位：Aioli 提出 LMO 统一框架，把 DML/Skill-It/DoReMi/DoGE 统一为同一个优化问题（最小化各组 validation loss，受制于 method-specific mixing law）的特例，三者差异在三轴：mixing law 参数化（静态 log-linear / 动态 linear）、参数 A_t 取值、求解策略（直接 / EGD）。关键发现：参数化高保真（R²>0.94），失败在参数取值--DoReMi 对角 A_t 错过 off-diagonal，Skill-It 静态 skills graph 无法适应 A_tstar 时变方向。AIOLI 用交错训练（time-division multiplexing）从当前训练历史直接拟合 A_t，无需额外 run，6/6 设置优于 stratified（平均 -0.274 perplexity），其他方法至少 1 设置差于 stratified。限制预算设置下可从其他方法学到的比例接续调整，30 中 28 改善。消融确认 A_t 需动态更新且需完整矩阵。1.4B 上仍有效。诚实披露 perplexity 与 downstream 负相关（r=0.529），承认 AIOLI 优化 perplexity 而非 downstream，纳入 downstream 是开放问题。`raw/` 未改。图文化：3 张图，PyMuPDF 300 DPI + get_textbox 校验。
+
+## [2026-08-07] deepen | DoReMi 来源页 + LMO 框架定位
+
+用户放入 `raw/2305.10429v4.pdf`（arXiv:2305.10429v4），与现有 `wiki/sources/doremi.md` 来源页同版本（NeurIPS 2023），来源页内容已完整（128 行，含算法/实验/5 张图/消融/局限）。无需重新 ingest。
+
+本次 deepen：DoReMi 来源页新增「LMO 框架下的定位」段，把 Aioli 统一框架对 DoReMi 的表达（linear 动态 + 对角 $A^t$ + EGD，$A^t_{ii}=$ excess loss 负部）和失败诊断（对角近似错过 off-diagonal 交互 -> Github/C4 错选优先 domain -> 3/6 优于 stratified）写入。相关页面 + Aioli 反向链接。
+
+`raw/` 未改（2305.10429v4.pdf 与已有来源页同一版本，raw 路径不指向新文件名）。

@@ -121,8 +121,13 @@ $$\min_\theta \max_{\alpha \in \Delta^k} L(\theta, \alpha) := \sum_{i=1}^k \alph
 - **Group DRO 在大 proxy 上退化**：1B proxy 效果不如 280M proxy，可能因 loss reweighting vs resampling 不一致。论文建议改用 resampling-based Group DRO（§4）。
 - **可外推省算力**：domain weights 在 50k 步后稳定，理论上可以提前停 + 外推，但论文未实现（§6）。
 
+### LMO 框架下的定位
+
+[Aioli](aioli.md) 的 LMO 统一框架把 DoReMi 表达为：**linear 动态 mixing law + 对角 $A^t$ + EGD**。其中 $A^t_{ii} = \min\{L^{\text{train},i}_t - L^{\text{train},i}(f_{\text{ref}}), 0\}$（即 excess loss 的负部），off-diagonal 全为 0。Aioli 的分析（§C.2.1）指出这正是 DoReMi 在某些设置（如 Github/C4）上失败的原因：最优 $A^{t\star}$ 需要完整矩阵，对角近似会错选优先 domain（对角建议优先 Github，完整矩阵建议优先 C4）。这也解释了 DoReMi 在 Aioli 的 6 个实验设置中仅 3/6 优于 stratified 的现象。
+
 ## 相关页面
 
-- [Qwen3 技术报告](../sources/qwen3.md) — Qwen3 的 instance-level data mixture（用轻量标注器按 instance 而非 domain 优化数据混合）是 DoReMi domain-level reweighting 的更细粒度演进路线。
-- [TANDEM 技术报告](tandem.md) — Bi-level optimization + twin network 路线，DoReMi 的直接改进：动态 reference model 替代静态 reference，$O(T^{-1/4})$ 收敛保证，在 data-restricted 和 SFT 场景显著优于 DoReMi。
-- [数据混合优化](../concepts/data-mixture-optimization.md) — 方法论谱系：从启发式 → Group DRO → 回归预测 → bi-level optimization。
+- [Qwen3 技术报告](../sources/qwen3.md) - Qwen3 的 instance-level data mixture（用轻量标注器按 instance 而非 domain 优化数据混合）是 DoReMi domain-level reweighting 的更细粒度演进路线。
+- [TANDEM 技术报告](tandem.md) - Bi-level optimization + twin network 路线，DoReMi 的直接改进：动态 reference model 替代静态 reference，$O(T^{-1/4})$ 收敛保证，在 data-restricted 和 SFT 场景显著优于 DoReMi。
+- [Aioli 技术报告](aioli.md) - LMO 统一框架把 DoReMi 表达为"对角 $A^t$ + EGD"特例，指出对角近似错过 off-diagonal 交互是 DoReMi 部分设置失败的原因。
+- [数据混合优化](../concepts/data-mixture-optimization.md) - 方法论谱系：从启发式 -> Group DRO -> 回归预测 -> bi-level optimization。
