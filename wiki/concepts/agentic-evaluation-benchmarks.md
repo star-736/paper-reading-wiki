@@ -63,6 +63,12 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | GDPVal-Verified | GDPVal 的可靠子集 + rubric 自动评测，面向端到端真实世界任务 | Seed2.0 Model Card 新建，归入 Real-World Tasks 评测维度。 |
 | AgentWorldBench | language world model 评测，2,170 turn-level 样本 / 7 域 / 9 source benchmark / 5 frontier model / 5 维 rubric（Format/Factuality/Consistency/Realism/Quality） | Qwen-AgentWorld 自建，评估 LWM 模拟环境观测的保真度；每样本配真实环境执行的 ground-truth 观测，训练/评测在数据源级分区保证 OOD。 |
 
+## Macaron-V1 的 Personal Intelligence 与 GenUI 评测边界
+
+[Macaron-V1](../sources/macaron-v1.md) 增加三种不同于传统 coding / tool benchmark 的评测：ChatBench（46 条 de-identified 产品多轮对话，以 persona + scenario 条件化的 LLM judge 评协作体验）、LivingBench（40 个最多 10 turn 的状态化生活助理模拟，按 need fulfillment 0.7 + process quality 0.3 计分）和 UI4A-Bench（161 个生成式 UI case，以编译/渲染、内容、视觉、interaction、constraint adherence 五层评卡片）。
+
+它们适合审查「目标产品分布上的端到端系统」，但不应被误作独立通用能力 ranking：前两者与 RSI 共用产品 failure taxonomy / source domain，又依赖 LLM-mediated judge；LivingBench 会按模型轨迹释放 noise，模型未必看到逐事件相同的测试路径；UI4A 的 headline Final Score 只用 mobile viewport。报告在这些边界内比较才是合理的——例如 UI4A-Bench 共享 161-case runtime 下的 87.8 可与同表 75.9（Opus 4.8）和 72.1（GPT-5.5）直接比较，而跨 benchmark 平均没有意义。
+
 ## UniClawBench 的差异化定位
 
 UniClawBench（arXiv:2607.08768，HKU MMLab + Meituan）与上表其他 benchmark 的核心差异在于三点结构性设计，恰好对应它对现有 benchmark 的三个批评：

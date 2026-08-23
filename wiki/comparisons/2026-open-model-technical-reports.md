@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "2026 前沿模型技术报告对比"
-description: "GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2 和 Kimi K2.5 的横向比较。"
+description: "GLM-5、Macaron-V1、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 等 2026 前沿模型技术报告的横向比较。"
 tags: ["comparison", "2026-open-model-technical-reports"]
 timestamp: 2026-06-06
 ---
@@ -10,7 +10,7 @@ timestamp: 2026-06-06
 
 ## 范围
 
-本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[GLM-5V-Turbo](../sources/glm-5v-turbo.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Kimi K3](../sources/kimi-k3.md)、[Gemma 4](../sources/gemma-4.md)、[Laguna](../sources/laguna-m1-xs2.md) 和 [Seed2.0](../sources/seed2.md)。
+本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[Macaron-V1](../sources/macaron-v1.md)、[GLM-5V-Turbo](../sources/glm-5v-turbo.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Kimi K3](../sources/kimi-k3.md)、[Gemma 4](../sources/gemma-4.md)、[Laguna](../sources/laguna-m1-xs2.md) 和 [Seed2.0](../sources/seed2.md)。
 
 注：Seed2.0 是 Model Card 而非技术报告，不含架构/训练/参数量信息，因此下表对应列为空白。其价值在部署洞察和评测框架，见 [Seed2.0 Model Card](../sources/seed2.md)。
 
@@ -19,6 +19,7 @@ timestamp: 2026-06-06
 | 模型 | 主要目标 | 规模 | 上下文 | 注意力策略 | 后训练重点 |
 | --- | --- | --- | --- | --- | --- |
 | GLM-5 | Agentic engineering 与 ARC 能力 | 744B / 40B active | SFT 到 202,752 tokens | MLA backbone 上的 DSA | 异步 agent RL、reasoning RL、general RL、cross-stage distillation |
+| Macaron-V1 | 将 agent 变成可版本化 model–harness system | Venti：744B GLM-5.2 base + 4 LoRA；Tall：35B-A3B base + 4 LoRA | Venti 长上下文 serving；Tall 未披露 native 值 | frozen base 上按 user turn 路由一个 LoRA（MoL），per-adapter own-view KV reuse | HCP 配置搜索 + MindForge RSI lineage + frozen-base LoRA GRPO；跨代增益尚未实证 |
 | GLM-5V-Turbo | Native multimodal agent（感知即推理） | 未披露 | 未披露 | CogViT + MMTP + GLM-5-Turbo backbone | 30+ 类别多模态联合 RL、agent 框架集成（Claude Code / AutoClaw） |
 | MiMo-V2-Flash | 在紧凑激活规模下获得快速 reasoning 与 agentic 能力 | 309B / 15B active | 32K native，256K extended | 128-token SWA 的 5:1 hybrid SWA/GA | MOPD multi-teacher on-policy distillation |
 | DeepSeek-V4 | 高效百万 token 上下文智能 | Flash 284B / 13B active；Pro 1.6T / 49B active | 1M native target | hybrid CSA/HCA compressed attention | reasoning modes、tool-use formats、超长上下文 RL/OPD 基础设施 |
@@ -57,6 +58,7 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 五篇报告的差异可以浓缩成五种工程哲学：
 
 - GLM-5 认为 agentic 能力来自训练环境和异步 RL 基础设施，模型架构服务于长周期 agent rollout。
+- Macaron-V1 认为持续学习的最小可审计单元是 model–harness pair：MoL 使 specialist 权重可独立升级，HCP 把 runtime 写成可复放配置，MindForge 将它们同 trajectory/evaluation 连成 lineage。其证据目前只到 single snapshot 和 frozen-model harness search，不能把「系统为持续学习而设计」读成「已证明跨代进步」。
 - MiMo-V2-Flash 认为紧凑 MoE、简单长上下文架构和 MOPD 可以在较小激活预算下接近大模型能力。
 - DeepSeek-V4 认为百万 token 上下文需要从 attention、KV-cache、QAT、teacher scheduling 到 fault tolerance 全栈重构。
 - MiniMax-M2 认为低激活 MoE 可以通过高可信 agent 数据、Forge RL 和 self-evolution scaffold 获得真实任务能力。

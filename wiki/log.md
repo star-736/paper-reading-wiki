@@ -1106,3 +1106,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 ## [2026-08-23] ingest | MOSS-VL 技术报告
 
 `raw/2608.15045v1.pdf`（arXiv:2608.15045v1，OpenMOSS，2026-08-15，22 页）。新增 `wiki/sources/moss-vl.md` 与 `wiki/models/moss-vl.md`，并抽取原文 Figure 2（gated cross-attention 架构）、Figure 3（XRoPE）和 Figure 4（serving latency）到 `wiki/assets/moss-vl/`。核心定位：11.3B MOSS-VL 把视觉 patch 留在独立的 gated cross-attention KV 通道，新增帧可追加 cache 而不进入正在增长的文本解码序列；XRoPE + 绝对时间戳对齐时空，Realtime-SFT 用 silence/response 状态 token、焦点/频率重加权学 timing。更新多模态训练与 agentic 评测概念页、JoyAI/Qwen3/Qwen3-VL 反链及索引；明确公开流式评测只覆盖 L2--L4，L5“生成时仍感知”目前仅定性展示。`raw/` 未改。
+
+## [2026-08-23] ingest | Macaron-V1 技术报告
+
+`raw/arxiv-2608.09819.pdf`（arXiv:2608.09819v1，Mind Lab，2026-08-10，49 页）。新增 `wiki/sources/macaron-v1.md`、`wiki/models/macaron-v1.md` 与 3 张原文图：Figure 2（MoE / skills / MoL 的 capability scaling 对照）、Figure 6（MindForge rollout、HCP 与 serving 共用 harness）、Figure 7（frozen GLM-5.2 base-failure 集上的 HCP 搜索覆盖）。
+
+更新 agentic engineering、agentic 后训练、agentic 评测体系及 2026 技术报告比较页，并加入索引。核心边界已显式保留：MoL + HCP + MindForge 是可持续学习的系统设计；122/122 结果仅是冻结模型上的 adaptive harness-search coverage，非 LoRA 学习曲线、跨代持续学习或第三方 adapter collective intelligence 的证明。`raw/` 除新增原文 PDF 外未改。

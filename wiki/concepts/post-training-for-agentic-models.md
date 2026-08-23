@@ -72,6 +72,12 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 **工程**：TITO API for RL actors（保 token ID 跨多轮稳定，与 [GLM-5 异步 Agent RL](asynchronous-agent-rl.md) 同动机）+ trainer↔inference 权重同步（NCCL GPUDirect RDMA，每 2 optimizer step 广播，KV-cache reset 防版本混入，staleness 上限 10 step）+ FP8 KV cache 跑 131072 context rollout（翻倍并发轨迹）。
 
+## Macaron-V1：先搜索 harness，再把验证过的行为转入 LoRA
+
+[Macaron-V1](../models/macaron-v1.md) 将后训练对象显式拆成 frozen sparse base $\theta$、可训练 LoRA $\phi$ 与版本化 harness configuration $c$：$\pi_\phi(a_t \mid o_{\leq t};\theta,c)$。MindForge 的 Discovery → Expansion → Update 不把 HCP 当可微参数；它先在同一 production harness 上搜索 prompts、skills、tool exposure、hooks 等 HCP 资源，评测通过后才把选出的 trajectory 交给 GRPO 更新 LoRA。这样可以区分「能力没有」与「同一 frozen model 尚未在恰当 action surface / context 中被 elicited」。
+
+报告的 122 个 TerminalBench 2.1 base-failure task 从 0/122 被适应式配置搜索覆盖到 122/122，但全过程**没有 optimizer step**，两个单一 configuration 的最好结果只有 11/122。因此这是 harness-search coverage，不是模型学习曲线、不是单一配置泛化，也不能证明 recursive self-improvement 已跨代复利。它与 GLM-5.3 的可验证环境生产、Kimi K3 的 harness-agnostic RL 和 Laguna 的 multi-harness SFT 共同推动了一个更严格的观点：agentic 后训练的 unit 不是权重本身，而是权重、环境和 runtime contract 的联合作用。详见 [Macaron-V1 技术报告](../sources/macaron-v1.md)。
+
 ## ARPO 与 LLM RL policy optimization：采样结构和优化目标
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 不是新模型报告，而是把 Qwen2.5 / Llama3.1 / Qwen3 等 backbone 放进多轮工具环境里比较 RL 算法。它的关键观察是：模型收到外部工具反馈后，后续前 10–50 个 token entropy 会显著上升，搜索反馈的不确定性又高于 Python 反馈。因此 ARPO 不再只做完整 trajectory-level sampling，而是在高熵工具调用步从当前节点分叉 partial rollouts，并用 advantage attribution 区分共享前缀与分叉段。

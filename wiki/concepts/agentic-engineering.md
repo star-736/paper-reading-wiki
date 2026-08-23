@@ -33,6 +33,8 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - Qwen-AgentWorld 把 agentic engineering 的瓶颈定位在 **world modeling 这一缺失的拼图**——当前 LLM agent 研究几乎只关注 policy 侧（states → actions），忽略了 world model（(states, actions) → subsequent states）。论文论证 world modeling 从两个互补轴增强 agent：(1) **Decouple**——LWM 作独立环境模拟器做 Sim RL，靠可控模拟（注入定向扰动 / 构造完全虚构但自洽的世界）暴露真实环境罕见的弱点，甚至超过真实环境训练（WideSearch Sim RL 50.3% vs Real RL 45.6%；MCPMark controlled +12.3 vs 标准 Sim RL 反降）；(2) **Unify**——LWM RL warm-up（单轮、无工具调用）把 next-state prediction 内化为 meta-reasoning 模式，跨 7 个 agentic benchmark（含 3 个完全 OOD 域）一致提升（Claw-Eval +11.3、BFCL v4 +9.0）。机制证据是 prediction-driven action refinement：RL 后模型在执行前系统性心智模拟环境响应（mailman 任务正确预测 Postfix 处理流程），预测准确率 69.9%→78.3%。与 [Agent-World](../sources/agent-world.md)（code-driven 环境合成）互补：Agent-World 用程序化合成保证确定性执行与可验证 reward，Qwen-AgentWorld 用 learned neural simulator 覆盖 code 难以指定的域（搜索引擎、真实 MCP servers）——论文明确自定位为 "trades determinism for generality"。详见 [Qwen-AgentWorld 来源页](../sources/qwen-agent-world.md)。
 - [Laguna](../sources/laguna-m1-xs2.md)（Poolside，2026-05）把 agentic engineering 的瓶颈定位在**模型开发流程本身**，而非模型规模或单点算法。核心论点是「把模型开发当工业流程而非手工艺」是 frontier 模型开发最 consequential 的杠杆——M.1 预训练结束后**五周**从零交付 XS.2 是这套 Model Factory 的实证。三条原则（experiments as code / composable decoupled components / reserve human attention for novel decisions）落到 agentic coding 上具体体现为：(1) 合成代码环境把真实 git commit 转成可验证任务（双端正确性检查 + repo 热度过滤），**同一可验证环境贯穿 SFT（teacher 轨迹）与 RL（per-repo test suite 作 binary verifier）**，复用率高于分别造数据；(2) RL 用 CISPO（[MiniMax-M1](../sources/minimax-m2-series.md) 源头）+ length-weighted LOO advantage，asymmetric clip (1,4)，明说消融 vs GRPO/GSPO 后选它；(3) IF judge + multi-harness 训练（OpenHands/OpenCode2/Mini-SWE-Agent）防 scaffold 过拟合。与 [KAT-Coder](../models/kat-coder.md)（训练基础设施稳定性）/ [daVinci-Agency](../sources/davinci-agency.md)（SFT 数据结构）/ [Kimi K3 Unified White-Box RL Env](../sources/kimi-k3.md)（harness-agnostic RL 配置）互补：Laguna 解决「整个开发流程如何可复用、可由非核心团队 self-service 跑起来」这一更外层的工程问题——XS.2 的初始 imitation learning 阶段由核心后训练团队之外的人独立跑完。
 
+- Macaron-V1 把瓶颈进一步落在**model–harness 的共同版本化**：MoL 让 Chat / Agent / Coding / GenUI specialist 在 frozen base 上按 turn 路由，而 HCP 将 router、工具、skills、prompts、memory 与 workspace 变成可审计 runtime contract。其 122/122 TerminalBench base-failure task 覆盖实验只改变 HCP/skill/hook、base 全程冻结；它支持「很多失败是未被正确 elicitation 的能力」这一工程判断，却不等价于 adapter 训练、跨代持续学习或 collective intelligence 已被实证。详见 [Macaron-V1 技术报告](../sources/macaron-v1.md)。
+
 ## 为什么重要
 
 Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要管理上下文、使用工具、吸收环境反馈、记住先前动作，并在长历史中保持稳定推理。
@@ -61,4 +63,5 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Agent-World](../models/agent-world.md) - 可扩展真实环境合成 + 自演化训练场
 - [Qwen-AgentWorld](../models/qwen-agent-world.md) - language world model（Sim RL 模拟器 + agent 基座 warm-up）
 - [Laguna](../models/laguna.md) - Model Factory 工业化流程 + 合成代码环境贯穿 SFT/RL + CISPO
+- [Macaron-V1](../models/macaron-v1.md) - MoL specialist composition + HCP 版本化 harness + 未闭合的 RSI 证据边界
 - [GLM-5.3](../models/glm-5-3.md) - 可验证环境合成与 verifier 审计闭环
