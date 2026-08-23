@@ -17,6 +17,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 ## 跨报告信号
 
 - GLM-5 强调 ARC 能力：agentic、reasoning、coding，并加入异步 agent RL、preserved thinking 和 CC-Bench-V2 真实工程评测。
+- GLM-5.3 官方发布博客把同一路线的瓶颈进一步落在**环境生产的审计闭环**：research agent 从真实工作抽取模式并合成可执行环境，judge agent 检查可解性，verifier 不看参考解生成，再由 solver trajectory 发现 reward shortcut；只有通过 oracle / no-op / unsolved-state 的 verifier 才输出训练用二元 reward。它把“足够多的真实任务”细化成“可生成、可解、且难被 reward hacking 的任务环境”，但未公开人工参与比例和误判率。详见 [GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)。
 - MiMo-V2-Flash 强调软件工程 benchmark、search agent、tau2-Bench 工具使用，以及通过 MOPD 融合专门 teacher。
 - DeepSeek-V4 强调长周期工作流和百万 token 上下文，把它视为 test-time scaling 与未来 online learning 的基础设施。
 - MiniMax-M2 把 agentic engineering 进一步系统化：任务要有可执行环境、verifiable reward 或可信 judge evidence；训练端用 Forge 解耦 agent、rollout、training 和 reward。
@@ -60,3 +61,4 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Agent-World](../models/agent-world.md) - 可扩展真实环境合成 + 自演化训练场
 - [Qwen-AgentWorld](../models/qwen-agent-world.md) - language world model（Sim RL 模拟器 + agent 基座 warm-up）
 - [Laguna](../models/laguna.md) - Model Factory 工业化流程 + 合成代码环境贯穿 SFT/RL + CISPO
+- [GLM-5.3](../models/glm-5-3.md) - 可验证环境合成与 verifier 审计闭环

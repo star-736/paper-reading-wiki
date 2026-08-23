@@ -1072,3 +1072,8 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 本次 deepen：DoReMi 来源页新增「LMO 框架下的定位」段，把 Aioli 统一框架对 DoReMi 的表达（linear 动态 + 对角 $A^t$ + EGD，$A^t_{ii}=$ excess loss 负部）和失败诊断（对角近似错过 off-diagonal 交互 -> Github/C4 错选优先 domain -> 3/6 优于 stratified）写入。相关页面 + Aioli 反向链接。
 
 `raw/` 未改（2305.10429v4.pdf 与已有来源页同一版本，raw 路径不指向新文件名）。
+## [2026-08-23] ingest | GLM-5.3 官方发布博客
+
+新增 `wiki/sources/glm-5-3-blog.md` 与 `wiki/models/glm-5-3.md`：将其定为官方发布博客的外部佐证，而非架构报告；记录“同 GLM-5.2 base、只扩后训练”、可验证环境的生成—审计闭环、`slime` 的 OPD/对齐/调度信号，以及带 harness/预算限制的厂商自报评测。嵌入 Z.ai Code Bench effort—token 图并标明私有、不可横比。
+
+深化 `wiki/concepts/post-training-for-agentic-models.md`、`wiki/concepts/asynchronous-agent-rl.md`、`wiki/concepts/agentic-engineering.md`、`wiki/concepts/agentic-evaluation-benchmarks.md`；`wiki/models/glm-5.md` 反链并保留家族关系不确定性，`wiki/index.md` 加来源与模型入口。`raw/` 未改；新增图片资产 `wiki/assets/glm-5-3-blog/zai-code-bench-effort.png`。

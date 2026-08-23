@@ -43,9 +43,13 @@ timestamp: 2026-06-06
 
 GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Python、Java、Go、C/C++、JavaScript、TypeScript、PHP、Ruby 等语言。它还构造 terminal-agent environments 和 multi-hop search tasks，使 agentic RL 不只依赖静态 benchmark。
 
+GLM-5.3 的官方发布博客补上了环境如何继续扩的公开描述：由 research agent 从真实工作收集模式并生成含隐藏状态、多步依赖的可执行环境；judge agent 先尝试完成任务；verifier 在看不到参考解的条件下合成，并用 solver trajectory 找 reward shortcut。只有通过 oracle、no-op 与 unsolved-state 检查的 verifier 才提供二元 reward。该描述将“环境失败过滤”向前推进为“环境在进入训练前先经可解性和奖励可靠性审计”，但其覆盖率与误判率尚未公开。详见 [GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)。
+
 ## 关键判断
 
 异步 Agent RL 的本质不是“换一个 RL 算法”，而是把 RL 训练变成一个分布式系统问题：调度、容错、token 对齐、KV-cache locality、环境质量都会影响最终模型能力。
+
+GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统问题的一部分：作者称 `slime` 支持全数值对齐，平均 log-prob 差异控制至 $10^{-7}$ 量级，并为长周期 rollout 自动调节 prefill/decode 比例和并发。这种数字是厂商自报，但强调了一个可复用判断：只要 policy update 依赖 rollout log-prob，训练和采样路径的微小数值漂移也可能是 agentic RL 缩放的隐性变量。
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是互补的算法层问题：在一个 agent 轨迹内部，工具反馈后的高熵 step 是否应该追加 partial rollout 探索。前者解决长尾 rollout 怎么跑得动，后者解决有限 rollout 预算投到轨迹哪里。
 
@@ -80,4 +84,3 @@ GLM-5 报告中构造了超过 10K 个 verifiable SWE environments，覆盖 Pyth
 - **FP8 KV cache for rollout**：131072 全 context 下 KV cache 主导 inference-replica 显存，存 FP8 约翻倍单 replica 并发轨迹数。release 跑 BF16 权重 + FP8 KV cache；预发布消融也试过 FP8 权重（in-flight block-wise 再量化无校准），稳定性无碍但 train-inference KL mismatch 变大，release 仍保 BF16 权重——这是「为安全牺牲一半并发」的诚实权衡。
 
 **与三家的定位**：Laguna 不做 partial rollout（K3/ Ring-2.6）也不做轨迹数量阈值的异步解耦（GLM-5），而是靠「trainer↔inference 高带宽直连 + 每 2 step 同步 + 配比自然消 staleness」把在线 RL 跑到吞吐可行。它的独有价值在 chat-template 对齐断言——这是已收录报告里最严格的「RL 训练格式 = 部署格式」工程保证。
-

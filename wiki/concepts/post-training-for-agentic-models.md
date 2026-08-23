@@ -18,6 +18,12 @@ Base model 给出知识、代码和推理基础，但 agentic model 还需要在
 
 长周期 agent rollout 有明显长尾：某些任务会跑很久，导致同步 RL 中大量 GPU 等待最慢样本。GLM-5 把 rollout inference 和 training engine 放到不同 GPU 设备上，inference engine 持续生成轨迹，达到阈值后送给 training engine 更新。为了控制异步带来的 off-policy 问题，它使用 rollout log-prob、token-level clipping、stale sample dropping 和 optimizer reset 等机制。
 
+## GLM-5.3：后训练先扩环境，再扩计算
+
+[GLM-5.3](../models/glm-5-3.md) 的官方发布博客称它与 GLM-5.2 共用 base model，增益全部来自后训练扩展。其可复用的思路不是“生成更多题”，而是把真实工作模式合成为可执行、可验证的长周期环境：research agent 收集任务模式，judge agent 验证任务可解，verifier 不看参考解生成，并用 solver trajectory 回填 reward shortcut；oracle / no-op / unsolved-state 检查通过后才把二元 reward 用于训练。
+
+这把后训练的瓶颈从 policy loss 移到**环境生产与验证**。作者同时将 `slime` 扩展到多 teacher OPD 的动态切换/预取、训练—rollout 数值对齐和 workload-aware 调度，并报告长周期 coding RL 吞吐超过 2.3 倍提升。证据目前是官方发布声明，缺少任务分布、人工参与比例与独立复现，故应把它读作 [Agentic engineering](agentic-engineering.md) 的工程路线信号，而非已验证的普适因果关系。详见 [GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)。
+
 ## MiMo-V2-Flash：MOPD
 
 [MiMo-V2-Flash](../models/mimo-v2-flash.md) 的核心是 [Multi-Teacher On-Policy Distillation](multi-teacher-on-policy-distillation.md)。它先训练多个 domain-specialized teachers，例如数学、代码、搜索、工具使用和安全；然后让 student 从自己的分布采样，并从对应 teacher 得到 token-level KL 奖励。
@@ -60,7 +66,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 **1. 合成代码环境作统一可验证任务源**。把真实 git commit 转成可验证任务——problem statement + repo checkout + 隐藏 test patch 取自 commit，commit diff 作 gold solution。**双端正确性检查**（gold 过测 + 空解失败测）滤掉 trivial test 与不测变更的 test；再按 repo 热度 + 代码质量百分位滤，从 ~236k commits 留 30–60k 任务。这批任务**同时喂 SFT（teacher 轨迹）和 RL（per-repo test suite 作 binary verifier）**——同一可验证环境贯穿两阶段，与 [KAT-Coder](../models/kat-coder.md) 的 KwaiEnv 模块化沙箱同思路，但 Laguna 强调从真实 commit 挖而非全合成。
 
-**2. CISPO + length-weighted LOO advantage**。RL 用 token-level REINFORCE surrogate + **CISPO** clipping [14]（[14]=[MiniMax-M1](../sources/minimax-m2-series.md)，CISPO 源头）+ length-weighted leave-one-out group-relative advantage。asymmetric clipping $(c_{low},c_{high})=(1,4)$，有效 ratio clip $[0,5]$。报告明说消融 vs [GRPO](agentic-reinforced-policy-optimization.md) / [GSPO](group-sequence-policy-optimization.md) 后选 CISPO 是因「最终评测质量 + 训练稳定性组合最好」——这是 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 里 CISPO 首次有公开的 vs GRPO/GSPO 消融选择理由。reward 设计只让 binary task verifier 给正 reward（1.0），其余全是小负惩罚（parsing/min-steps/tool-error per-token），长周期信用分配全靠末尾 verifier 经 advantage 传到每个 token。
+**2. CISPO + length-weighted LOO advantage**。RL 用 token-level REINFORCE surrogate + **CISPO** clipping [14]（[14]=[MiniMax-M1](../sources/minimax-m2-series.md)，CISPO 源头）+ length-weighted leave-one-out group-relative advantage。asymmetric clipping $(c_{low},c_{high})=(1,4)$，有效 ratio clip $[0,5]$。报告明说消融 vs [GRPO](agentic-reinforced-policy-optimization.md) / [GSPO](../sources/group-sequence-policy-optimization.md) 后选 CISPO 是因「最终评测质量 + 训练稳定性组合最好」——这是 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 里 CISPO 首次有公开的 vs GRPO/GSPO 消融选择理由。reward 设计只让 binary task verifier 给正 reward（1.0），其余全是小负惩罚（parsing/min-steps/tool-error per-token），长周期信用分配全靠末尾 verifier 经 advantage 传到每个 token。
 
 **3. IF judge + multi-harness 防过拟合**。agentic SFT 的关键挑战是 instruction following——没有显式 IF 监督，RL 会灾难性遗忘，超半数 agentic 任务因违反 system-message 约束在 coding 被评前就零分。用 EvolInstruct-style generator 给每任务造多个合成 system message + 专用 IF judge 逐项打分。SFT 还混 1.3B tokens 多 harness 轨迹（OpenHands / OpenCode2 / Mini-SWE-Agent），刻意保留各 harness 原生行为（subagent spawning / context compaction / planning scaffold）以利泛化——与 [Kimi K3 的 Unified White-Box RL Env](../sources/kimi-k3.md)（harness-agnostic 训练）同动机但更轻量（数据层而非 RL 配置层）。
 
@@ -79,6 +85,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 可以把这些报告的后训练看成七种互补能力：
 
 - GLM-5：如何让 agent 在真实环境中高吞吐学习。
+- GLM-5.3：如何把可验证长周期环境的生产、奖励审计和训练—rollout 系统调度一同扩展；base model 不变时，后训练规模本身仍可成为主要变量。
 - MiMo-V2-Flash：如何把多个专门 teacher 的能力合成到一个 student。
 - DeepSeek-V4：如何在超长上下文和多 reasoning mode 下做稳定蒸馏与 RL。
 - MiniMax-M2：如何把 agent harness、reward、rollout、training 和 serving 组织成可扩展系统。
