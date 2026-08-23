@@ -60,6 +60,7 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 
 - **[Kimi K3](../sources/kimi-k3.md)（Moonshot AI，2026-07）**：本机制的生产级首个开源采用者。K3 把 AttnRes 与 KDA-MLA 混合注意力 + Stable LatentMoE 并列，明确作为"layer mixing"维度（Figure 2 架构图把 AttnRes 标为跨 block 的 layer mixing 路径）。EAGLE-3 draft model 的 feature fusion 也利用 AttnRes block 输出（取 1st/4th/final AttnRes block 作低/中/高层特征）。
 - **原始工作 [57]**：K3 引用但未在报告内展开原始论文细节。N≈8 的经验结论、block size 选择依据均来自 [57]。**待追问**：[57] 的原始实验尺度是否覆盖 3T 级，N=8 在 93 层下是否仍最优。
+- **[Intern-S2-Mobius](../sources/intern-s2-mobius.md)（Shanghai AI Lab，2026-08）**：提出的 BRC 也针对层级信息瓶颈，但并不让深层 attention 聚合早层 activation。它把所有 FFN 横向拼成共享 knowledge Memory，让各层 Reasoner 检索同一参数化知识库；作者将此称为“间接”双向知识访问。因接口是共享 FFN 参数而非 depth-attention state，不能把 Mobius 的 35B conversion 结果当作 AttnRes 的独立复现或 ablation。
 
 ## 待追问
 
@@ -76,3 +77,4 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 - [Stable LatentMoE](stable-latentmoe.md)（K3 宽度维新机制，与 AttnRes 正交）
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（K3 序列维机制，与 AttnRes 正交）
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（K3 全局层底座）
+- [Intern-S2-Mobius 技术报告](../sources/intern-s2-mobius.md)（共享 FFN Memory 的 BRC，与 AttnRes 的接口边界）

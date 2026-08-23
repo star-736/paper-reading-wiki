@@ -1107,6 +1107,14 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 
 `raw/2608.15045v1.pdf`（arXiv:2608.15045v1，OpenMOSS，2026-08-15，22 页）。新增 `wiki/sources/moss-vl.md` 与 `wiki/models/moss-vl.md`，并抽取原文 Figure 2（gated cross-attention 架构）、Figure 3（XRoPE）和 Figure 4（serving latency）到 `wiki/assets/moss-vl/`。核心定位：11.3B MOSS-VL 把视觉 patch 留在独立的 gated cross-attention KV 通道，新增帧可追加 cache 而不进入正在增长的文本解码序列；XRoPE + 绝对时间戳对齐时空，Realtime-SFT 用 silence/response 状态 token、焦点/频率重加权学 timing。更新多模态训练与 agentic 评测概念页、JoyAI/Qwen3/Qwen3-VL 反链及索引；明确公开流式评测只覆盖 L2--L4，L5“生成时仍感知”目前仅定性展示。`raw/` 未改。
 
+## [2026-08-23] ingest | Intern-S2-Mobius 技术报告
+
+新增 `raw/2608.14290.pdf`（arXiv:2608.14290v1，Shanghai AI Laboratory，2026-08-14，21 页）、来源页 `wiki/sources/intern-s2-mobius.md`、模型页 `wiki/models/intern-s2-mobius.md` 与两张原文架构图（Figure 1 Transformer vs Mobius、Figure 5 RNN/Transformer/Mobius 类比）。
+
+核心定位：Mobius 将各层 FFN 横向拼成全局共享 knowledge Memory，让 Self-Attn Reasoner 借 hidden-state cache 做 latent iteration；作者将其称为间接 Backward Residual Connection。7B-A1B 配对预训练的 MMLU 等分数只需 0.626× 数据（约 1.6× data efficiency）；从 Qwen3.5-35B-A3B 转换并继续训练 1T tokens 的 35B 路线报告更短 CoT、较高吞吐和 Table 1 综合分提升。严格保留边界：latent reasoning 是短 CoT 的未证实机制解释，conversion 的等量 continued-pretraining 基线、Memory retrieval / kernel 成本、循环细节和 SFT/RL 配方均未披露；§5 自演化、world model、科学发现、SSD 分层部署是展望而非结果。
+
+更新 Attention Residuals（明确 shared FFN parameter Memory 不等于 AttnRes 的 early-layer activation attention）及 2026 技术报告比较页、索引；两张图片经 PyMuPDF 300 DPI 裁剪并以 `get_textbox` 校验图内标签，未含 caption 或脚注。`raw/` 除新增原文 PDF 外未改。
+
 ## [2026-08-23] ingest | Macaron-V1 技术报告
 
 `raw/arxiv-2608.09819.pdf`（arXiv:2608.09819v1，Mind Lab，2026-08-10，49 页）。新增 `wiki/sources/macaron-v1.md`、`wiki/models/macaron-v1.md` 与 3 张原文图：Figure 2（MoE / skills / MoL 的 capability scaling 对照）、Figure 6（MindForge rollout、HCP 与 serving 共用 harness）、Figure 7（frozen GLM-5.2 base-failure 集上的 HCP 搜索覆盖）。

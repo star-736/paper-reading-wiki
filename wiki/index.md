@@ -8,6 +8,7 @@
 
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。
 - [Macaron-V1 技术报告](sources/macaron-v1.md) - Mind Lab 的开放 agent-model 家族，以 frozen base + Mixture-of-LoRA、HCP 版本化 harness 和 MindForge RSI 为核心；当前未证明跨代持续学习增益。
+- [Intern-S2-Mobius 技术报告](sources/intern-s2-mobius.md) - 上海 AI Lab 的架构报告：用全局共享 FFN Memory 将知识存储与 Self-Attn Reasoner 解耦；7B 配对预训练报 1.6× 数据效率，35B 转换路线报更短 CoT / 更快端到端推理，但机制与公平基线仍待核。
 - [GLM-5.3 官方发布博客](sources/glm-5-3-blog.md) - 同一 GLM-5.2 base model 上只扩展后训练；公开长周期可验证环境、`slime` 对齐/调度与 coding/cyber 评测，但不是技术报告。
 - [GLM-5V-Turbo 技术报告](sources/glm-5v-turbo.md) - GLM-5V-Turbo 的 arXiv 报告，重点是 CogViT 视觉编码器、MMTP、30+ 类别多模态 RL 和 agent 框架集成（Claude Code / AutoClaw）。
 - [MiMo-V2-Flash 技术报告](sources/mimo-v2-flash.md) - MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。
@@ -71,6 +72,7 @@
 
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
 - [Macaron-V1](models/macaron-v1.md) - Mind Lab 的 agent-model 家族：Venti 用 GLM-5.2 base、Tall 用 Qwen3.6-35B-A3B base，均以四个按 turn 路由的 LoRA specialist 和 HCP harness 组成。
+- [Intern-S2-Mobius](models/intern-s2-mobius.md) - 上海 AI Lab 的 35B 级纯文本架构转换模型：全局共享 FFN knowledge Memory + 多层 Self-Attn Reasoner，主张以 latent iteration 压缩外显 CoT。
 - [GLM-5.3](models/glm-5-3.md) - Z.ai agentic coding 发布版；参数和模态未披露，官方称沿用 GLM-5.2 base model，能力增益来自后训练规模化。
 - [GLM-5V-Turbo](models/glm-5v-turbo.md) - GLM-5 家族的多模态 agent 基座模型，CogViT + MMTP + 30+ 类别多模态联合 RL，多模态（文本 + 图像 + 视频 + GUI + 文档 + 网页）。
 - [MiMo-V2-Flash](models/mimo-v2-flash.md) - 309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。
