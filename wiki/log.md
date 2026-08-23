@@ -1132,3 +1132,7 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2608.18171v1.pdf`（arXiv:2608.18171v1，Cambridge，2026-08-17，18 页）、来源页 `wiki/sources/looped-tool-calling.md`，并抽取原文 Figure 1（循环计算在组合式 BFCL 类别上的优势）到 `wiki/assets/looped-tool-calling/`。未新建模型页：论文比较既有 Ouro 与 OLMo / Llama retrofit，不发布独立模型实体。
 
 深化 Looped Transformers、Agentic Engineering 与 Agentic 评测体系：将循环计算的证据边界从 PLT coding 扩展到 tool-call DAG——多调用、顺序和 output-to-input binding 更常受益，单 API grounding 的收益小且随 backbone 变化；adaptive exit 改善平均循环次数与表现的折中。严格保留限制：Ouro 无同预训练条件 non-looped 对照，且评测仅 static single-turn。`raw/` 除新增 PDF 外未改；图片以 PyMuPDF 300 DPI 裁剪并经 `get_textbox` 校验未含 caption / 脚注。
+
+## [2026-08-23] maintenance | AGENTS.md 中文化与语言边界
+
+将 `AGENTS.md` 的人工可读仓库规则完整改为中文，并新增“中文优先、技术标识保留英文”的语言约定；命令、路径、YAML 字段、工作流名、缩写、正则和链接目标保持不变。同步明确未来机器可解析或自动生成区块不得翻译。`raw/` 未改。
