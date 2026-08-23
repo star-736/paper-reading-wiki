@@ -1136,3 +1136,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 ## [2026-08-23] maintenance | AGENTS.md 中文化与语言边界
 
 将 `AGENTS.md` 的人工可读仓库规则完整改为中文，并新增“中文优先、技术标识保留英文”的语言约定；命令、路径、YAML 字段、工作流名、缩写、正则和链接目标保持不变。同步明确未来机器可解析或自动生成区块不得翻译。`raw/` 未改。
+
+## [2026-08-23] ingest | BDH-CQ: In-Context Learning with Recurrent Latent Reasoning
+
+新增 `raw/bdh-cq-2608.09888.pdf`（arXiv:2608.09888v1，Pathway + Bielik AI + NYU，2026-08-10，17 页）、来源页 `wiki/sources/bdh-cq.md`、模型页 `wiki/models/bdh-cq.md`，并用 PyMuPDF 300 DPI 抽取 Figure 2（ARC-AGI-1 成本—准确率图）和 Figure 5（受控外推曲线）至 `wiki/assets/bdh-cq/`；裁剪不含 Figure caption 或相邻正文。
+
+深化 `wiki/concepts/looped-transformers.md`：把 BDH-CQ 纳入 recurrent latent reasoning 的相邻证据，但明确它不是 weight-tied Transformer / PLT，不能外推 CLP、shared-KV、并行 loop 或文本/agent 效率结论。核心事实限于原文：150M 系统顺序写入 demonstration-conditioned recurrent memory、在 structured latent workspace 迭代、ARC-AGI-1 public 29.5% pass@2 / 按 H200 $3/hour 计 $0.00070/task；完整 update rule、训练配方与实现 proprietary。`wiki/index.md` 已加来源和模型入口。`raw/` 除新增 PDF 外未改。

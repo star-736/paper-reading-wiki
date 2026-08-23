@@ -49,6 +49,7 @@ LoopCoder-v2 的核心贡献是量化这个代价：定义 intrinsic offset cost
 
 - **[LoopCoder-v2](../sources/loopcoder-v2.md)**（arXiv:2606.18023v1）：首个在 18T tokens 上从头训练 PLT coder 的大规模实验。7B 模型 R=2 最优（SWE-bench Verified 64.4%），R≥3 退化。gain–cost 框架 + per-loop 可解释性诊断（hidden-state dynamics / attention evolution / output-distribution shift 三镜头三角验证）。
 - **[Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md)**（arXiv:2608.18171v1）：将 latent recurrence 的评测对象扩展到 tool-call DAG。受控 SFT 中，循环深度主要改善 BFCL 的独立多调用和 NESTful 的 output-to-input 依赖绑定；API-Bank 这类单调用 grounding 任务的收益小且不稳定。Ouro 的 adaptive exit 在保持接近最佳固定深度表现时降低平均循环次数；但原生 Ouro 没有同预训练条件的 non-looped 对照，最直接的架构隔离仍来自 OLMo / Llama retrofit。
+- **[BDH-CQ](../sources/bdh-cq.md)**（arXiv:2608.09888v1）：把「从 demonstrations 得到当前任务」与「对 query 做多步 latent refinement」显式拆为 recurrent memory $S_t$ 与 workspace $H_r$。150M ARC 系统报告 29.5% pass@2 / $0.00070 per task，并以 controlled ladders 显示 propagation/copy 外推强、ordering/nesting 有边界。它是 recurrent latent reasoning 的相邻证据，**不是** weight-tied Transformer 或 PLT 的实证：update rule、共享 block、KV-cache 和 loop 并行性均未公开。
 - **Huginn-3.5B** [Geiping et al. 2025]：3.5B depth-recurrent Transformer，800B tokens 预训练，推理时最多 50 loops，等效 50B 参数计算预算。使用标准序列 loop（非 PLT），延迟随 loop count 线性增长。
 - **Scaling law** [Schwethelm et al.]：loop 一个 block r 次等效 r^0.46 个独立参数层——远低于真正加层的线性等效。这从 scaling law 角度独立支持了 loop 收益递减的结论。
 - **稳定性** [Yang et al.]：性能可能在中间 loop depth 达峰后崩溃，提出 fixed-point regularization 稳定循环动态。
@@ -67,6 +68,8 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 **工具调用给出了不同于代码生成的行为读数**：[Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 显示循环的可观察效果不只是最终 task score：增加深度可以先后修正调用数、调用顺序、catalogue 外的幻觉函数、参数名，以及对先前结果的变量引用。这使循环计算成为「内部精炼工具工作流」的候选路径；它不替代外部 planner / execution graph，而是在生成该 graph 前多做 latent refinement。其证据仍限于 static single-turn benchmark，不能直接外推为真实 agent episode 的恢复能力。
 
+**BDH-CQ 给出另一种状态分工**：[BDH-CQ](../sources/bdh-cq.md) 不是让整段 token hidden state 反复通过同一个公开 Transformer block，而是先让 demonstrations 改写 context memory，再在该 memory 条件下迭代 query workspace。它支持「in-context adaptation 和 latent refinement 可在同一 recurrent 系统共存」，却不支持 PLT 的 CLP / shared-KV 结论，也不能用来主张其低成本可迁移到文本 CoT、agent 或其他硬件。这个区分避免将「有 recurrence」误读为同一实现或同一效率曲线。
+
 ## 待追问
 
 - **PLT + 稀疏注意力 / 线性注意力**：如果 PLT 的每次 loop 内部用 DSA 或 GDN 替代 full attention，Ω(r) 会改变吗？loop-count 饱和点会移动吗？
@@ -78,6 +81,7 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 - [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) — PLT gain–cost 分析的一手出处
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) — 组合式 function calling 的循环深度证据
+- [BDH-CQ](../sources/bdh-cq.md) — recurrent memory + latent workspace 的 ARC in-context 推理证据
 - [LoopCoder-v2 模型页](../models/loopcoder-v2.md) — 7B PLT coder 模型族
 - [高效长上下文注意力](efficient-long-context-attention.md) — 正交路线：单次前向传播内的长序列效率
 - [多 token 预测](multi-token-prediction.md) — 正交路线：单次前向传播内的多 token 摊销

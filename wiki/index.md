@@ -49,6 +49,7 @@
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
 - [LoopCoder-v2](sources/loopcoder-v2.md) - 北航 + IQuest Research 的 PLT loop-count 选择研究：7B coder 从头训练 18T tokens，gain–cost 视角发现 R=2 最优（SWE-bench Verified 64.4%）、R≥3 退化，per-loop 可解释性诊断解释饱和机制。
 - [Looped Language Models Improve Compositional Tool Calling](sources/looped-tool-calling.md) - Cambridge 的循环模型工具调用研究：循环计算主要提升多调用组合和 output-to-input 依赖绑定；Ouro adaptive exit 以较低平均循环数取得更好的算力—性能折中，但证据仍限静态单轮 benchmark。
+- [BDH-CQ 技术报告](sources/bdh-cq.md) - Pathway 的 150M ARC 推理系统：演示写入 recurrent memory、查询在连续 latent workspace 中迭代，不输出中间 CoT；报告 ARC-AGI-1 29.5% pass@2、$0.00070/task 的特定成本口径效率点，核心实现仍 proprietary。
 - [MiniCPM-o 4.5 技术报告](sources/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Omni-Flow 框架沿共享时间轴对齐多模态 I/O 流，LLM 只生成文本 token 委托轻量 speech decoder 生成语音，TAIL 时间对齐交错，端侧 INT4 < 12GB。
 - [Keye-VL-2.0 技术报告](sources/keye-vl-2.md) - 快手 Keye Team 的开源 30B-A3B 多模态 MoE 模型，首个把 DSA 适配到 GQA 多模态架构（indexer MQA + aggregation GQA），256K 长视频上下文 + Cross-Modal MOPD（13 个 RL teacher，top-k overlap estimator）。
 - [JoyAI-VL-Interaction 技术报告](sources/joyai-vl-interaction.md) - JD.com 的 8B 视觉驱动交互模型：每秒自主决定说话/静默/委托后台，AdaCodec 预测式视频编码 + 4M 时间对齐数据 + 角色加权 SFT + GRPO RL，完整可部署系统，vs Doubao/Gemini 人工盲评胜率 77.6%/87.9%。
@@ -94,6 +95,7 @@
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
 - [VibeThinker-3B](models/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，MGPO + Long2Short RL + CLR，纯文本，verifiable reasoning 追平旗舰。
 - [LoopCoder-v2](models/loopcoder-v2.md) - 北航 + IQuest 的 7B PLT coder 模型族，weight-tied looped Transformer（14 层共享 block），R=2 最优（SWE-bench Verified 64.4%），纯文本。
+- [BDH-CQ](models/bdh-cq.md) - Pathway 的 150M ARC 网格推理系统：示例递归写入 memory、查询以连续 latent workspace 迭代求解；关键模型实现未公开。
 - [MiniCPM-o 4.5](models/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Qwen3-8B backbone + Whisper + speech decoder 端到端可微，Omni-Flow + TAIL，多模态（文本+图像+视频+音频输入；文本+音频输出），端侧 INT4 < 12GB。
 - [Keye-VL-2.0](models/keye-vl-2.md) - 快手开源 30B-A3B 多模态 MoE 模型，GQA+DSA 256K 长视频理解 + Cross-Modal MOPD（13 teacher），多模态（文本+图像+视频），基于 Qwen3-30B-A3B-Thinking-2507。
 - [JoyAI-VL-Interaction](models/joyai-vl-interaction.md) - JD.com 8B 视觉驱动交互模型，Qwen3-8B + Qwen3-VL ViT + AdaCodec，每秒自主决定说话/静默/委托，多模态（文本+图像+视频），完整可部署系统。
