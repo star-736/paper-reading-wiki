@@ -181,3 +181,4 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 - [Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 的 stage graph 与本文的 vLLM-native serving + 双循环架构形成对照
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) - 本文的 GRPO + answer-centered window sampling 是 agent RL 的一种流式变体
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - 本文不跑 offline benchmark 而做真实产品 head-to-head 的评测方式值得对比
+- [MOSS-VL 技术报告](moss-vl.md) - 同属持续视觉交互；MOSS-VL 以“生成时继续感知”的 L5 定义与 gated cross-attention 旁路，补出 JoyAI 的逐秒决策/委托路线没有直接量化的一条架构轴

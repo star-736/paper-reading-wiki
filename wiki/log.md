@@ -1102,3 +1102,7 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 - `wiki/index.md`：来源段 +1，概念段 +1。
 
 核心定位：Loss-Free Balancing（arXiv:2408.15664）是 MoE 负载均衡 bias 路线的一手出处：top-K 前给 routing score 加 expert-wise bias，batch 间按历史负载 sign 更新（u=1e-3），bias 不进 mixture weights、零干扰梯度；1B/100B 与 3B/200B 从零训练同时拿到更低 PPL（9.50 vs 9.56 / 7.92 vs 7.97）与数量级更好的 MaxVio_global（0.04 vs 0.72/0.52）。附带证明 Expert Choice 违反因果约束（未来 token 泄漏 K·log2((1-R)/R) bits/token，chunk 缩小→异常 loss drop，shuffle→消失），成为社区弃用 EC 于自回归 LM 的标准论据。谱系：本论文 → V3 起全系采用（V4 加 sequence-wise loss 补单序列盲区）→ K3 QB 升级为对偶 LP exact 解；Qwen3/Laguna 留在 aux-loss 阵营，两家未收敛。raw/ 未改。图文化：3 张图，PyMuPDF 300 DPI。
+
+## [2026-08-23] ingest | MOSS-VL 技术报告
+
+`raw/2608.15045v1.pdf`（arXiv:2608.15045v1，OpenMOSS，2026-08-15，22 页）。新增 `wiki/sources/moss-vl.md` 与 `wiki/models/moss-vl.md`，并抽取原文 Figure 2（gated cross-attention 架构）、Figure 3（XRoPE）和 Figure 4（serving latency）到 `wiki/assets/moss-vl/`。核心定位：11.3B MOSS-VL 把视觉 patch 留在独立的 gated cross-attention KV 通道，新增帧可追加 cache 而不进入正在增长的文本解码序列；XRoPE + 绝对时间戳对齐时空，Realtime-SFT 用 silence/response 状态 token、焦点/频率重加权学 timing。更新多模态训练与 agentic 评测概念页、JoyAI/Qwen3/Qwen3-VL 反链及索引；明确公开流式评测只覆盖 L2--L4，L5“生成时仍感知”目前仅定性展示。`raw/` 未改。

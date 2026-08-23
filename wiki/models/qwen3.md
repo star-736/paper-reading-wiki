@@ -56,11 +56,13 @@ Qwen3 的两个**真正卖点**不在架构而在后训练：
 - **Qwen3-Coder-Next**：Qwen3-Next 的编码 agent 变体，继承 3:1 hybrid。
 - **Qwen3.5-Omni**：在 Qwen3.5 hybrid 基座上做全模态（文本 + 图像 + 视频 + 音频）。
 - **[Qwen3-VL](qwen3-vl.md)**：**直接用 Qwen3 backbone**（标准 GQA Qwen3，非 Qwen3-Next hybrid）+ SigLIP-2 视觉编码器 + DeepStack 注入。这是 Qwen3 backbone 上的多模态扩展，与 hybrid 家族**走的另一条路**。
+- **[MOSS-VL](moss-vl.md)**：以 Qwen3-8B 初始化语言部分，再新增 gated cross-attention 视觉通道以支持生成期间持续接收视频帧。
 
 ## 相关页面
 
 - 来源：[Qwen3 技术报告](../sources/qwen3.md)
 - 后续家族：[Qwen3-VL](qwen3-vl.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)
+- 下游实时视觉模型：[MOSS-VL](moss-vl.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)（ARPO 用 Qwen3-8B/14B 做 deep search RL backbone；不是 Qwen3 官方报告的一部分）
 - 下游 agent 训练：[Agent-World](agent-world.md)（人大 + ByteDance Seed 以 Qwen3-8B/14B 为基座做自演化环境合成 + 多环境 GRPO RL，非 Qwen3 官方）

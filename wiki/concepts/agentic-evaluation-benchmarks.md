@@ -106,6 +106,8 @@ LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B
 
 JoyAI-VL-Interaction 则展示了另一种评测思路：**不跑 offline benchmark，直接与真实部署产品做 head-to-head 人工盲评**。它选了 Doubao 和 Gemini 的视频通话功能作为 baseline，在 6 个 event-driven 场景（监控告警 / 实时计数 / 实时翻译 / 时间感知 / 实时解说 / 长程记忆）58 个 case 上让 5 名 LLM 研究者盲评 quality + timing 两轴。这种方法的核心论点是：流式交互场景的关键维度（是否在正确时刻行动）无法被 offline video-understanding benchmark 捕捉，只有与真实 turn-based 产品在 live event-driven 设置中对打才能暴露"turn-based 结构性缺陷"这一范式差距。详见 [JoyAI-VL-Interaction 来源页](../sources/joyai-vl-interaction.md)。
 
+[MOSS-VL](../sources/moss-vl.md) 进一步把“流式”拆成可检验的能力层次：L2--L4 分别覆盖持续输入、等待正确时机、以及持久问题下的多次回应；L5 还要求模型**在生成一条回复时继续感知新帧**，从而在证据翻转时修订或截断回复。其四个公开 streaming benchmark（OVO-Bench、OmniMMI、StreamingBench、ProactiveVideoQA）只覆盖 L2--L4；报告在三项平均分第一、在三项主动发言子集领先，但 L5 仍只由 live demo 与实现定性展示。这是一个有用的评测警报：**“适时开口”与“说到一半仍能被新证据纠正”不是同一被测能力**；后者需要带时间反事实、修订正确性和中断延迟的专门协议。
+
 Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark 本身就在物理设备上跑 live 应用**。其与现有 GUI benchmark 的三点结构性差异恰好对应报告对 prior work 的三个批评：
 
 1. **全真机真应用** vs 模拟器/mock 环境——主流商业应用的反模拟器检测使许多应用无法在虚拟化下稳定运行，验证码 / 支付验证 / 登录过期 / 风控拦截等异常态更难在模拟器中复现。AndroidWorld 等模拟器 benchmark 的状态分布偏向简化环境，无法完全捕获真实应用的账号态 / 页面动态 / 业务逻辑。

@@ -48,6 +48,7 @@
 - [MiniCPM-o 4.5 技术报告](sources/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Omni-Flow 框架沿共享时间轴对齐多模态 I/O 流，LLM 只生成文本 token 委托轻量 speech decoder 生成语音，TAIL 时间对齐交错，端侧 INT4 < 12GB。
 - [Keye-VL-2.0 技术报告](sources/keye-vl-2.md) - 快手 Keye Team 的开源 30B-A3B 多模态 MoE 模型，首个把 DSA 适配到 GQA 多模态架构（indexer MQA + aggregation GQA），256K 长视频上下文 + Cross-Modal MOPD（13 个 RL teacher，top-k overlap estimator）。
 - [JoyAI-VL-Interaction 技术报告](sources/joyai-vl-interaction.md) - JD.com 的 8B 视觉驱动交互模型：每秒自主决定说话/静默/委托后台，AdaCodec 预测式视频编码 + 4M 时间对齐数据 + 角色加权 SFT + GRPO RL，完整可部署系统，vs Doubao/Gemini 人工盲评胜率 77.6%/87.9%。
+- [MOSS-VL 技术报告](sources/moss-vl.md) - OpenMOSS 的 11.3B 实时 VLM：视觉 token 留在 gated cross-attention 通道外，XRoPE 对齐时空位置，Realtime-SFT 学说话/静默/修订；流式公开基准量化 L2--L4，L5“生成时仍感知”仍待专门 benchmark。
 - [Xiaomi-GUI-0 技术报告](sources/xiaomi-gui-0.md) - 小米 SeerRay 的 native end-to-end multimodal GUI agent，真机为主的混合基础设施 + error-driven data flywheel + 三阶段训练（SFT→Step RL→Agentic RL），RealMobile 72.0% / AndroidWorld 78.9%。
 - [Agent-World 技术报告](sources/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场：Agentic Environment-Task Discovery（1978 环境 / 19822 工具，MCP/工具文档/PRD 挖主题 + graph-based + programmatic 任务合成）+ Continuous Self-Evolving Agent Training（多环境 GRPO RL + 诊断弱环境→定向扩展→continue RL 的 co-evolution），跨 23 benchmark。
 - [Qwen-AgentWorld 技术报告](sources/qwen-agent-world.md) - Qwen Team 的 native language world model（LWM），首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的 agentic 环境模拟器，三阶段 CPT→SFT→RL（"injects/activates/sharpens"）+ AgentWorldBench（5 维 rubric reference-grounded judging）+ 解耦（Sim RL 可控模拟超真实环境）/ 统一（LWM warm-up 跨任务迁移）两种 agent 增强范式。
@@ -90,6 +91,7 @@
 - [MiniCPM-o 4.5](models/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Qwen3-8B backbone + Whisper + speech decoder 端到端可微，Omni-Flow + TAIL，多模态（文本+图像+视频+音频输入；文本+音频输出），端侧 INT4 < 12GB。
 - [Keye-VL-2.0](models/keye-vl-2.md) - 快手开源 30B-A3B 多模态 MoE 模型，GQA+DSA 256K 长视频理解 + Cross-Modal MOPD（13 teacher），多模态（文本+图像+视频），基于 Qwen3-30B-A3B-Thinking-2507。
 - [JoyAI-VL-Interaction](models/joyai-vl-interaction.md) - JD.com 8B 视觉驱动交互模型，Qwen3-8B + Qwen3-VL ViT + AdaCodec，每秒自主决定说话/静默/委托，多模态（文本+图像+视频），完整可部署系统。
+- [MOSS-VL](models/moss-vl.md) - OpenMOSS 11.3B 实时视觉语言模型，Qwen3-8B + Qwen3-VL 视觉编码器，gated cross-attention 让视觉 KV 独立于解码序列，多模态（文本+图像+视频）。
 - [Xiaomi-GUI-0](models/xiaomi-gui-0.md) - 小米 SeerRay 的 native end-to-end multimodal GUI agent，基于 Qwen3-VL-30B-A3B-Instruct，真机闭环训练 + error-driven flywheel，多模态（文本+图像输入；文本输出）。
 - [Agent-World](models/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场产出（8B/14B，Qwen3 dense 基座 + 冷启动 SFT + 多环境 GRPO RL + 2 轮自演化 arena），纯文本，环境合成 + agent-environment co-evolution。
 - [Qwen-AgentWorld](models/qwen-agent-world.md) - Qwen Team 的 native language world model 家族（35B-A3B / 397B-A17B，基于 Qwen3.5），覆盖 7 域 agentic 环境模拟，三阶段 CPT→SFT→RL，纯文本（GUI 域用 accessibility tree 文本表示）。

@@ -65,11 +65,20 @@ K2.5 的 RL 同时覆盖 text 和 vision。可验证任务使用规则奖励；�
 
 训练策略上三者形成谱系：K2.5 在训练分布中长期混合低比例视觉 token（early fusion）；JoyAI-VL-Interaction 用角色加权 SFT + answer-centered window 解决沉默主导的优化问题；MiniCPM-o 4.5 采用四阶段渐进流水线（冻结基座先训语音模块 → 全解冻联合 → SFT → RL），先隔离新模态影响面再逐步打开全参数。三者共享的核心洞察是：多模态能力的稳定获取需要训练分布的长期结构设计，而非后期简单接 adapter。
 
+### MOSS-VL：以视觉 KV 旁路解除“回复时失明”
+
+[MOSS-VL](../sources/moss-vl.md) 把这条路线再拆成了一个很有用的系统边界：流式模型即使每秒都能决定是否开口，**一旦开始生成，仍可能在该次回复期间看不到新帧**。论文将这个能力层级称为 L5；它的实现不是增加更密的 polling，而是让视觉 patch 永远不进入 decoder 正在增长的自回归序列，改为 gated cross-attention 的独立 KV 通道。新帧到来后，旧帧不重编码、旧视觉 KV 不重算，下一枚生成 token 已能读到追加后的 cache。
+
+XRoPE 与绝对时间戳在这里各管一件事：前者把文本 query、视觉 key 排进一条 `(t,h,w)` 逻辑坐标线，后者提供不受 1--16 fps 动态采样影响的真实秒数。Realtime-SFT 则以 `<|silence|>` / `<|response|>` 两个 token 和 focal + inverse-frequency 加权，直接训练“什么时候该开口”；它仅占总训练 token 不足 3%，刻意叠在完整离线 VLM 基础上。
+
+这让三条实时路线的差异更清晰：JoyAI 优先解决**按秒的行为决策与后台委托**，MiniCPM-o 4.5 优先解决**含音频的全双工 I/O 流对齐**，MOSS-VL 优先解决**视觉生成期间的持续感知**。这是基于三份报告的本页原创综合，不代表三者已在同一协议下做过端到端对打；尤其 MOSS-VL 的 L5 尚无公开基准量化，论文只在 L2--L4 上报告分数。
+
 ## 相关页面
 
 - [Kimi K2.5](../models/kimi-k2.5.md)
 - [JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)
 - [MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
+- [MOSS-VL](../models/moss-vl.md)
 - [Agent Swarm](agent-swarm.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) - 训练出多模态 agent 只是上半场；vLLM-Omni 这类 serving 系统解决多阶段多模态模型如何在线运行。
