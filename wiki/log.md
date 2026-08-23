@@ -1142,3 +1142,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/bdh-cq-2608.09888.pdf`（arXiv:2608.09888v1，Pathway + Bielik AI + NYU，2026-08-10，17 页）、来源页 `wiki/sources/bdh-cq.md`、模型页 `wiki/models/bdh-cq.md`，并用 PyMuPDF 300 DPI 抽取 Figure 2（ARC-AGI-1 成本—准确率图）和 Figure 5（受控外推曲线）至 `wiki/assets/bdh-cq/`；裁剪不含 Figure caption 或相邻正文。
 
 深化 `wiki/concepts/looped-transformers.md`：把 BDH-CQ 纳入 recurrent latent reasoning 的相邻证据，但明确它不是 weight-tied Transformer / PLT，不能外推 CLP、shared-KV、并行 loop 或文本/agent 效率结论。核心事实限于原文：150M 系统顺序写入 demonstration-conditioned recurrent memory、在 structured latent workspace 迭代、ARC-AGI-1 public 29.5% pass@2 / 按 H200 $3/hour 计 $0.00070/task；完整 update rule、训练配方与实现 proprietary。`wiki/index.md` 已加来源和模型入口。`raw/` 除新增 PDF 外未改。
+
+## [2026-08-23] maintenance | Agent rules progressive disclosure
+
+将根 `AGENTS.md` 从完整规则正文改为短入口、硬约束和任务路由；细则迁入 `.agents/guides/` 的内容模型、wiki 工作流、证据与视觉、交付与并发四份按需手册，避免 `@` eager import 重新膨胀首屏上下文。同步更新 README 的入口说明。
+
+新增完整质量剔除规则：`verify` 确认低质量后直接清除 `raw/`、生成页、资产、交叉引用、索引和旧日志，不留下原因说明或新日志；Git 历史承担审计。仅证据有限但仍有价值的来源保留并降级。`raw/` 未改。
