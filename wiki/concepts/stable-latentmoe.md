@@ -66,7 +66,7 @@ K3 设 `β1=4`（gate branch）、`β2=25`（up branch）。β1·β2=100 的 bou
 
 ### 组件 3：Quantile Balancing（§ 2.3.3 + 附录 C/D）
 
-**背景**：K3 用 aux-loss-free routing（[30]）——加 expert-specific bias `b_j` 到 router score 做 Top-k 选择，但 `b_j` 不进 mixture weights `p_i`（只调 dispatch 不改 gradient-based router 优化）。原版更新 `b_{j}^{t+1} = b_j^t + γ·sign(target - load_j^t)`，`γ` 在适应慢与负载振荡间 trade-off。896 expert 下失效。
+**背景**：K3 用 aux-loss-free routing（[30]）——加 expert-specific bias `b_j` 到 router score 做 Top-k 选择，但 `b_j` 不进 mixture weights `p_i`（只调 dispatch 不改 gradient-based router 优化）。原版更新 `b_{j}^{t+1} = b_j^t + γ·sign(target - load_j^t)`，`γ` 在适应慢与负载振荡间 trade-off。896 expert 下失效。（一手出处：[Loss-Free Balancing](../sources/loss-free-balancing.md)——K3 报告的 [30] 指向 DeepSeek-V3 Technical Report，后者沿用本方法；方法原文 arXiv:2408.15664 已入 wiki，其 Algorithm 1 就是这里的 sign 更新。）
 
 **QB 推导**（附录 C，balanced assignment 对偶 LP 的 exact coordinate minimizer）：
 
@@ -113,7 +113,7 @@ margins `s_{i,j} - α_i^{(t)}` 减掉 biased cutoff，旧 bias 只通过 cutoff 
 - **[Kimi K2.5](../sources/kimi-k2.5.md)（前作）**：K2/K2.5 用 384 routed / 8 active / 1 shared 的常规 MoE（无 latent 压缩），SwiGLU + 常规 aux-loss-free bias。K3 把 expert 数翻 2.3×、active 翻 2×、加 latent 压缩 + SiTU-GLU + QB，是同族内的结构性升级。
 - **[Ling-2.6](../sources/ling-2.6.md)**：256 routed + 1 shared, 8 active，fine-grained MoE（expert intermediate=2048），前 4 层 dense FFN。规模与稀疏度都远低于 K3，未走 latent 压缩路线，也未提激活爆炸或负载失衡的专门解法——说明这两类问题在 ~1T / 256-expert 规模尚未尖锐到需要 Stable LatentMoE 级别的工程。
 - **SiTU-GLU 与 GLU/SwiGLU 家族**：SwiGLU 是当前 LLM FFN 主流（K2/Qwen3/DeepSeek 系都用）。SiTU-GLU 是首个为 3T 规模 + 极端稀疏 MoE 设计的 bounded 变体。与 hard clamping 的区别（smooth cap 保留饱和区梯度）是 K3 报告强调的训练优势点，但缺跨模型的对比 ablation。
-- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2/Qwen3 用）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。
+- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2 系 / DeepSeek-V3 起 / MiniMax-M2 / Ling-2.6 用；Qwen3 走的是 aux loss 路线而非 bias）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。完整谱系见 [MoE 负载均衡谱系](moe-load-balancing.md)。
 
 ## 为什么重要
 
@@ -136,5 +136,7 @@ margins `s_{i,j} - α_i^{(t)}` 减掉 biased cutoff，旧 bias 只通过 cutoff 
 - 模型：[Kimi K3](../models/kimi-k3.md)
 - [Attention Residuals](attention-residuals.md)（K3 深度维机制，与 Stable LatentMoE 正交）
 - [MoE 前沿模型扩展](moe-frontier-model-scaling.md)（K3 2.8T 是当前开源最大）
+- [MoE 负载均衡谱系](moe-load-balancing.md)（QB 的 sign-update 前身与 aux loss 对照路线）
+- [Loss-Free Balancing](../sources/loss-free-balancing.md)（sign update 的一手出处，arXiv:2408.15664）
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（K3 序列维机制）
 - 模型对比：[DeepSeek-V4](../models/deepseek-v4.md)（全宽 MoE 路线）、[Kimi K2.5](../models/kimi-k2.5.md)（前作，常规 MoE）、[Ling-2.6](../models/ling-2.6.md)（256-expert 规模）

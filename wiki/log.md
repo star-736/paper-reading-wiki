@@ -1077,3 +1077,28 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `wiki/sources/glm-5-3-blog.md` 与 `wiki/models/glm-5-3.md`：将其定为官方发布博客的外部佐证，而非架构报告；记录“同 GLM-5.2 base、只扩后训练”、可验证环境的生成—审计闭环、`slime` 的 OPD/对齐/调度信号，以及带 harness/预算限制的厂商自报评测。嵌入 Z.ai Code Bench effort—token 图并标明私有、不可横比。
 
 深化 `wiki/concepts/post-training-for-agentic-models.md`、`wiki/concepts/asynchronous-agent-rl.md`、`wiki/concepts/agentic-engineering.md`、`wiki/concepts/agentic-evaluation-benchmarks.md`；`wiki/models/glm-5.md` 反链并保留家族关系不确定性，`wiki/index.md` 加来源与模型入口。`raw/` 未改；新增图片资产 `wiki/assets/glm-5-3-blog/zai-code-bench-effort.png`。
+
+## [2026-08-23] ingest | Loss-Free Balancing 技术报告
+
+`raw/2408.15664v1.pdf`（arXiv:2408.15664v1，DeepSeek-AI + PKU，2024-08，14 页）。
+
+新增：
+
+- `wiki/sources/loss-free-balancing.md`：来源页（图文交错）。嵌入 Figure 1（biased gating 闭环机制）、Figure 2（aux loss 两难）、Figure 6（EC future token leakage 示意）。Table 1（方法性质矩阵）、Table 2（主结果）、Table 3/4（更新规则/乘性 bias 消融）、Table 5（架构超参，granularity 16/3 vs 4 经 vision 复核）、Table 6（softmax gate）转 Markdown；Algorithm 1（sign bias 更新）转录。待追问 6 条（GLM-5 负载均衡未披露 / M2 learnable bias 语义 / sequence-wise loss 必要性 / sigmoid gate 稳健性 / EC 批判适用边界 / MaxVio 0.04 系统意义）。
+- `wiki/concepts/moe-load-balancing.md`：概念页。三代谱系（aux loss → loss-free bias → QB exact 解）+ EC 出局论证 + 10 模型生产配置地图（逐 raw/ PDF 核实）+ 方法对比三轴。
+- `wiki/assets/loss-free-balancing/`：3 张图（fig1-biased-gating / fig2-dilemma / fig6-ec-leakage，PyMuPDF 300 DPI + 位图 bbox 精确裁剪 + vision 校验完整性）。
+
+未新建模型页：方法论文，非模型发布，按 IndexCache/MSA/DynamixSFT/Aioli 先例不配模型页。
+
+更新（含一处二手→一手升级 + 一处纠错）：
+
+- `wiki/concepts/stable-latentmoe.md`：QB 背景段的 sign 更新从二手转述（引 K3 报告 [30]）升级为原文确证——注意 K3 的 [30] 实际指向 DeepSeek-V3 Technical Report（已核 K3 PDF 参考文献），方法原文是本论文；修正旧表述「aux-loss-free sign update（K2/Qwen3 用）」——Qwen3 走 global-batch aux loss 路线，非 bias 路线；相关页面 + 两条反链。
+- `wiki/sources/deepseek-v4.md`：架构段补负载均衡配置（auxiliary-loss-free + bias update speed 0.001 + sequence-wise loss 1e-4，原文引用 Wang et al. 2024a 即本论文）。
+- `wiki/sources/minimax-m2-series.md`：补 learnable expert-specific bias 引用与待核点。
+- `wiki/sources/mimo-v2-flash.md`：补混合配置（bias 0.001 + sequence aux loss 1e-5）。
+- `wiki/sources/kimi-k3.md` / `kimi-k2.5.md`：QB 段 / 架构段补一手出处与谱系反链。
+- `wiki/sources/qwen3.md`：global-batch LBL 处标注这是 aux-loss 路线，与 bias 路线对照。
+- `wiki/sources/ling-2.6.md` / `deepseek-v2.md`：相关页面 / 待追问补谱系链接（V2 三重 aux loss = 旧世配置）。
+- `wiki/index.md`：来源段 +1，概念段 +1。
+
+核心定位：Loss-Free Balancing（arXiv:2408.15664）是 MoE 负载均衡 bias 路线的一手出处：top-K 前给 routing score 加 expert-wise bias，batch 间按历史负载 sign 更新（u=1e-3），bias 不进 mixture weights、零干扰梯度；1B/100B 与 3B/200B 从零训练同时拿到更低 PPL（9.50 vs 9.56 / 7.92 vs 7.97）与数量级更好的 MaxVio_global（0.04 vs 0.72/0.52）。附带证明 Expert Choice 违反因果约束（未来 token 泄漏 K·log2((1-R)/R) bits/token，chunk 缩小→异常 loss drop，shuffle→消失），成为社区弃用 EC 于自回归 LM 的标准论据。谱系：本论文 → V3 起全系采用（V4 加 sequence-wise loss 补单序列盲区）→ K3 QB 升级为对偶 LP exact 解；Qwen3/Laguna 留在 aux-loss 阵营，两家未收敛。raw/ 未改。图文化：3 张图，PyMuPDF 300 DPI。

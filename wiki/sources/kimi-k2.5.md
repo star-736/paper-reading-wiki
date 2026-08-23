@@ -27,6 +27,8 @@ Kimi K2.5 把开放 multimodal model 的重点从“能看图”推进到“视�
 
 K2.5 的关键经验是 early vision fusion：不要在文本 backbone 末期大量注入视觉 token，而是在整个训练过程中以较低、稳定比例混合文本和视觉 token。视觉编码器为 MoonViT-3D，支持 native-resolution 输入、NaViT-style packing，并把连续 4 帧视频合成一个时空块处理，实现约 4x 时间压缩。
 
+（MoE 侧：K2/K2.5 走 384 routed / 8 active 常规 MoE + aux-loss-free bias 路由——该方法的谱系与一手出处见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md) / [Loss-Free Balancing](loss-free-balancing.md)；K3 把 bias 更新升级为 Quantile Balancing。）
+
 后训练阶段提出 zero-vision SFT：只用文本 SFT 也能激活视觉推理和工具使用。报告认为原因是联合预训练已经建立了强视觉-文本对齐；人工设计的视觉轨迹反而可能损害泛化。随后进行 joint multimodal RL，视觉 RL 不只提升视觉任务，还改善 MMLU-Pro、GPQA-Diamond 和 LongBench v2 等文本 benchmark。
 
 ## Agent Swarm

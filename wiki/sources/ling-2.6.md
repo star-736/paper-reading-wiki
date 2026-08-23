@@ -202,6 +202,6 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 ## 相关页面
 
 - 模型：[Ling-2.6 / Ring-2.6](../models/ling-2.6.md)
-- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（Lightning Attention 的同族/对照路线）、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[多 Token 预测](../concepts/multi-token-prediction.md)
+- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（Lightning Attention 的同族/对照路线）、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[多 Token 预测](../concepts/multi-token-prediction.md)、[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（Ling-2.6 的 aux-loss-free bias 配置 γ=0.001→0.0001）、[Loss-Free Balancing](loss-free-balancing.md)（该方法一手出处）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 来源：[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照）

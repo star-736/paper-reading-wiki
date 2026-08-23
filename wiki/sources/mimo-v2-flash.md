@@ -27,6 +27,8 @@ MiMo-V2-Flash 是一个偏效率的开放权重 MoE 模型，目标是在较小�
 
 MiMo-V2-Flash 共有 48 层，其中 39 层 SWA、9 层 GA。每个 MoE 层有 256 个专家，每 token 激活 8 个，没有 shared experts。预训练总量为 27T tokens，分三阶段：22T general pre-training，4T 加强代码和合成推理数据的 mid-training，以及 1T context extension 到 256K。
 
+负载均衡是混合配置：expert bias update factor 0.001（[Loss-Free Balancing](loss-free-balancing.md) 路线）+ MoE sequence auxiliary loss 1e-5——bias 主控全局/批次均衡，轻量序列级 loss 补单序列粒度，与 DeepSeek-V4 的"纯 bias + 轻序列级 loss"同型（对照见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）。
+
 模型也使用 [多 token 预测](../concepts/multi-token-prediction.md)。预训练阶段使用一个 MTP 层；后训练阶段可复制成多步 MTP，用于 speculative decoding。每个 MTP block 只有 0.33B 参数。
 
 ## 后训练

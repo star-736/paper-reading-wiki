@@ -27,6 +27,8 @@ MiniMax-M2 Series 的主张是“低激活参数也能释放真实世界智能�
 
 M2 采用 full attention，而不是沿用 MiniMax-Text-01 中的 hybrid attention。报告中的消融显示，SWA 在部分短任务上可行，但在长上下文 agent、复杂检索和多跳任务上会损失明显，因此 M2 在前沿规模上保留 full attention。
 
+路由用 sigmoid gating + learnable expert-specific bias terms，显式引用 Loss-Free Balancing（Wang et al., 2024a）以"大幅降低对 auxiliary losses 的依赖"——谱系定位见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)；bias 是否真的进梯度可学待核（见 [Loss-Free Balancing 来源页待追问](loss-free-balancing.md)）。
+
 M2 还使用 [多 token 预测](../concepts/multi-token-prediction.md)。预训练阶段先训练单个 MTP module，继续预训练衰减阶段通过权重复制扩展到 3 个 MTP modules，并在推理中作为 speculative decoding draft path。
 
 ## 后训练与系统

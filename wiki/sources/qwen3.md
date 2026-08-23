@@ -35,7 +35,7 @@ MoE 部分相对 Qwen2.5-MoE 的改动：
 
 - **去掉 shared expert**（Qwen2.5-MoE 有，Qwen3 取消）。
 - **fine-grained expert segmentation**（沿用 Dai et al., 2024 / DeepSeek-MoE）。
-- **global-batch load balancing loss**（Qiu et al., 2025）替换 micro-batch 平衡，鼓励专家专业化。
+- **global-batch load balancing loss**（Qiu et al., 2025）替换 micro-batch 平衡，鼓励专家专业化。（注意这是 **aux-loss 路线**，与 DeepSeek 系的 auxiliary-loss-free bias 路线对照——谱系见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。）
 - 128 总专家 / 8 激活。
 
 Tokenizer：Qwen 自家 BBPE，词表 151,669。

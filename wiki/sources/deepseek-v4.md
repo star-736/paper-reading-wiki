@@ -31,6 +31,8 @@ DeepSeek-V4 继承 DeepSeekMoE 和 MTP，并加入混合 [高效长上下文注�
 
 其他关键组件包括 Manifold-Constrained Hyper-Connections（mHC）、Muon optimizer、针对 routed experts 和 CSA indexer QK path 的 FP4 quantization-aware training，以及支持 on-disk shared-prefix reuse 的异构 KV-cache 管理。
 
+负载均衡用 auxiliary-loss-free strategy（bias update speed 0.001，正是 [Loss-Free Balancing](loss-free-balancing.md) 论文的甜点值），叠加 weight 1e-4 的 sequence-wise balance loss 防单序列内极端失衡——该方法一手出处见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。
+
 DeepSeek-V4-Flash 训练 32T tokens，DeepSeek-V4-Pro 训练 33T tokens。训练从 4K 序列长度开始，逐步扩展到 16K、64K 和 1M；稀疏注意力在 dense warmup 后引入。
 
 ## 后训练：OPD 替代 mixed RL

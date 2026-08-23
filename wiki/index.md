@@ -63,6 +63,7 @@
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
+- [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
 
 ## 模型
 
@@ -108,6 +109,7 @@
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization 与 ARPO 这类 step-level rollout 采样模式。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
+- [MoE 负载均衡谱系](concepts/moe-load-balancing.md) - 从 auxiliary loss 到 Loss-Free bias 到 Quantile Balancing 的三代方法谱系 + 生产配置地图（V3/V4、K2/K3、MiniMax-M2、MiMo、Ling-2.6、Qwen3、Laguna），及 Expert Choice 因未来 token 泄漏出局的标准论据。
 - [Any-to-any 多模态 serving](concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 代表的 omni-modal serving 范式：Thinker / Talker / Vocoder、AR LLM / DiT / encoder 等多阶段模型拆成 stage graph 独立调度与传输。
 
 ## 细讲模块
