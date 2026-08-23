@@ -34,6 +34,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - [Laguna](../sources/laguna-m1-xs2.md)（Poolside，2026-05）把 agentic engineering 的瓶颈定位在**模型开发流程本身**，而非模型规模或单点算法。核心论点是「把模型开发当工业流程而非手工艺」是 frontier 模型开发最 consequential 的杠杆——M.1 预训练结束后**五周**从零交付 XS.2 是这套 Model Factory 的实证。三条原则（experiments as code / composable decoupled components / reserve human attention for novel decisions）落到 agentic coding 上具体体现为：(1) 合成代码环境把真实 git commit 转成可验证任务（双端正确性检查 + repo 热度过滤），**同一可验证环境贯穿 SFT（teacher 轨迹）与 RL（per-repo test suite 作 binary verifier）**，复用率高于分别造数据；(2) RL 用 CISPO（[MiniMax-M1](../sources/minimax-m2-series.md) 源头）+ length-weighted LOO advantage，asymmetric clip (1,4)，明说消融 vs GRPO/GSPO 后选它；(3) IF judge + multi-harness 训练（OpenHands/OpenCode2/Mini-SWE-Agent）防 scaffold 过拟合。与 [KAT-Coder](../models/kat-coder.md)（训练基础设施稳定性）/ [daVinci-Agency](../sources/davinci-agency.md)（SFT 数据结构）/ [Kimi K3 Unified White-Box RL Env](../sources/kimi-k3.md)（harness-agnostic RL 配置）互补：Laguna 解决「整个开发流程如何可复用、可由非核心团队 self-service 跑起来」这一更外层的工程问题——XS.2 的初始 imitation learning 阶段由核心后训练团队之外的人独立跑完。
 
 - Macaron-V1 把瓶颈进一步落在**model–harness 的共同版本化**：MoL 让 Chat / Agent / Coding / GenUI specialist 在 frozen base 上按 turn 路由，而 HCP 将 router、工具、skills、prompts、memory 与 workspace 变成可审计 runtime contract。其 122/122 TerminalBench base-failure task 覆盖实验只改变 HCP/skill/hook、base 全程冻结；它支持「很多失败是未被正确 elicitation 的能力」这一工程判断，却不等价于 adapter 训练、跨代持续学习或 collective intelligence 已被实证。详见 [Macaron-V1 技术报告](../sources/macaron-v1.md)。
+- [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 把瓶颈落到**每个 action token 生成前的内部计算预算**：在静态 tool-call benchmark 上，额外 recurrent depth 对多调用的函数选择、顺序与 output-to-input binding 更有帮助，而单 API grounding 增益较弱；论文的定性例子展示了前述错误的逐步修正。Ouro 的 adaptive exit 说明同一工作流中可按 token 难度分配 latent compute。这与 planner / retrieval / harness 是互补层：前者改变模型生成 action graph 前的表征精炼，后者改变模型能看见、执行和验证什么。边界是尚未覆盖 live、多轮、失败恢复的真实 episode。
 
 ## 为什么重要
 
@@ -64,4 +65,5 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Qwen-AgentWorld](../models/qwen-agent-world.md) - language world model（Sim RL 模拟器 + agent 基座 warm-up）
 - [Laguna](../models/laguna.md) - Model Factory 工业化流程 + 合成代码环境贯穿 SFT/RL + CISPO
 - [Macaron-V1](../models/macaron-v1.md) - MoL specialist composition + HCP 版本化 harness + 未闭合的 RSI 证据边界
+- [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) - 组合式 function calling 的 latent recurrence 证据
 - [GLM-5.3](../models/glm-5-3.md) - 可验证环境合成与 verifier 审计闭环

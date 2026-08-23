@@ -36,6 +36,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
 || Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
 || BFCL (v3) | 函数调用 / tool use | 测试模型选择和调用外部工具的能力。 |
+| NESTful | 嵌套 API 调用与输出到输入依赖 | 测试调用 DAG 的 dependency binding、部分 / 完整序列匹配及实际执行 Win Rate；[Looped Tool Calling](../sources/looped-tool-calling.md) 用它区分单条合理调用和端到端依赖工作流。 |
 | BFCL V4 | BFCL v3 升级版，含 WebSearch / Memory / Multi-Turn / No-live / Live / Relevant / Irrelevant 多子域 | Agent-World 用作核心 agentic tool-use 评测之一（Avg 列）；Agent-World-14B 55.8 与 DeepSeek-V3.2-685B 54.1 颇具竞争力。 |
 | MCP-Mark | 真实 MCP server 多步工具工作流评测，含 File / Github / Notion / Playground / Postgres 子域 | Agent-World 用作核心 agentic tool-use 评测之一；即便 GPT-5.2 High 也仅 53.1、Gemini-3 Pro 50.8，开源基础模型普遍 <6，是当前最难 MCP 评测之一。与 MCP-Atlas 同为 MCP tool-use benchmark 但来源不同。 |
 | MCP-Universe | MCP 工具宇宙，含 Financial Analysis / Browser Automation / Web Searching / Location Navigation / Repository Management 五子域 | Agent-World 用作 Knowledge & MCP 泛化评测，五子域均大幅超过 Qwen3-8B / EnvScaler-8B。 |
@@ -109,6 +110,8 @@ GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 c
 因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy、rollout / sampling 策略、policy optimization 算法、reward / judge 设置分别是什么。
 
 LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%--loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。
+
+[Looped Tool Calling](../sources/looped-tool-calling.md) 将同一警报带到 function-calling：BFCL 必须区分 Multiple（多候选工具、仍仅一调用）与 Parallel / Parallel-Multiple（多条独立调用）；NESTful 进一步检查 output-to-input dependency。固定 loop depth、是否有 per-token adaptive exit，以及模型是否原生 recurrent，都会改变这些子项的解释。该论文只覆盖静态单轮 split，不能把这些分数和 live / multi-turn agent benchmark 混作同一能力证据。
 
 JoyAI-VL-Interaction 则展示了另一种评测思路：**不跑 offline benchmark，直接与真实部署产品做 head-to-head 人工盲评**。它选了 Doubao 和 Gemini 的视频通话功能作为 baseline，在 6 个 event-driven 场景（监控告警 / 实时计数 / 实时翻译 / 时间感知 / 实时解说 / 长程记忆）58 个 case 上让 5 名 LLM 研究者盲评 quality + timing 两轴。这种方法的核心论点是：流式交互场景的关键维度（是否在正确时刻行动）无法被 offline video-understanding benchmark 捕捉，只有与真实 turn-based 产品在 live event-driven 设置中对打才能暴露"turn-based 结构性缺陷"这一范式差距。详见 [JoyAI-VL-Interaction 来源页](../sources/joyai-vl-interaction.md)。
 

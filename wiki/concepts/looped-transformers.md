@@ -48,6 +48,7 @@ LoopCoder-v2 的核心贡献是量化这个代价：定义 intrinsic offset cost
 ## 跨报告信号
 
 - **[LoopCoder-v2](../sources/loopcoder-v2.md)**（arXiv:2606.18023v1）：首个在 18T tokens 上从头训练 PLT coder 的大规模实验。7B 模型 R=2 最优（SWE-bench Verified 64.4%），R≥3 退化。gain–cost 框架 + per-loop 可解释性诊断（hidden-state dynamics / attention evolution / output-distribution shift 三镜头三角验证）。
+- **[Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md)**（arXiv:2608.18171v1）：将 latent recurrence 的评测对象扩展到 tool-call DAG。受控 SFT 中，循环深度主要改善 BFCL 的独立多调用和 NESTful 的 output-to-input 依赖绑定；API-Bank 这类单调用 grounding 任务的收益小且不稳定。Ouro 的 adaptive exit 在保持接近最佳固定深度表现时降低平均循环次数；但原生 Ouro 没有同预训练条件的 non-looped 对照，最直接的架构隔离仍来自 OLMo / Llama retrofit。
 - **Huginn-3.5B** [Geiping et al. 2025]：3.5B depth-recurrent Transformer，800B tokens 预训练，推理时最多 50 loops，等效 50B 参数计算预算。使用标准序列 loop（非 PLT），延迟随 loop count 线性增长。
 - **Scaling law** [Schwethelm et al.]：loop 一个 block r 次等效 r^0.46 个独立参数层——远低于真正加层的线性等效。这从 scaling law 角度独立支持了 loop 收益递减的结论。
 - **稳定性** [Yang et al.]：性能可能在中间 loop depth 达峰后崩溃，提出 fixed-point regularization 稳定循环动态。
@@ -64,6 +65,8 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 **Latent loop 与 explicit CoT 互补**：LoopCoder-v2 发现 explicit CoT + latent loop 在 R=2 时呈超加性（LiveCodeBench +26.9，远超各自单独增益之和）。两机制在不同粒度操作：CoT 分解问题为文本步骤，latent loop 精炼每步底层表征。这与 thinking models（如 [GLM-5](../models/glm-5.md) 的 thinking mode）的 explicit CoT 是互补而非竞争关系。
 
+**工具调用给出了不同于代码生成的行为读数**：[Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 显示循环的可观察效果不只是最终 task score：增加深度可以先后修正调用数、调用顺序、catalogue 外的幻觉函数、参数名，以及对先前结果的变量引用。这使循环计算成为「内部精炼工具工作流」的候选路径；它不替代外部 planner / execution graph，而是在生成该 graph 前多做 latent refinement。其证据仍限于 static single-turn benchmark，不能直接外推为真实 agent episode 的恢复能力。
+
 ## 待追问
 
 - **PLT + 稀疏注意力 / 线性注意力**：如果 PLT 的每次 loop 内部用 DSA 或 GDN 替代 full attention，Ω(r) 会改变吗？loop-count 饱和点会移动吗？
@@ -74,6 +77,7 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 ## 相关页面
 
 - [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) — PLT gain–cost 分析的一手出处
+- [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) — 组合式 function calling 的循环深度证据
 - [LoopCoder-v2 模型页](../models/loopcoder-v2.md) — 7B PLT coder 模型族
 - [高效长上下文注意力](efficient-long-context-attention.md) — 正交路线：单次前向传播内的长序列效率
 - [多 token 预测](multi-token-prediction.md) — 正交路线：单次前向传播内的多 token 摊销

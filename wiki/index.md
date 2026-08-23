@@ -47,6 +47,7 @@
 - [KVpop 技术报告](sources/kvpop.md) - NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法：future-attention target 在 eviction boundary 监督 keep-or-drop，mLSTM 延迟打分利用近未来上下文，Qwen3-8B 88% 压缩下保留 100% teacher 性能。
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
 - [LoopCoder-v2](sources/loopcoder-v2.md) - 北航 + IQuest Research 的 PLT loop-count 选择研究：7B coder 从头训练 18T tokens，gain–cost 视角发现 R=2 最优（SWE-bench Verified 64.4%）、R≥3 退化，per-loop 可解释性诊断解释饱和机制。
+- [Looped Language Models Improve Compositional Tool Calling](sources/looped-tool-calling.md) - Cambridge 的循环模型工具调用研究：循环计算主要提升多调用组合和 output-to-input 依赖绑定；Ouro adaptive exit 以较低平均循环数取得更好的算力—性能折中，但证据仍限静态单轮 benchmark。
 - [MiniCPM-o 4.5 技术报告](sources/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Omni-Flow 框架沿共享时间轴对齐多模态 I/O 流，LLM 只生成文本 token 委托轻量 speech decoder 生成语音，TAIL 时间对齐交错，端侧 INT4 < 12GB。
 - [Keye-VL-2.0 技术报告](sources/keye-vl-2.md) - 快手 Keye Team 的开源 30B-A3B 多模态 MoE 模型，首个把 DSA 适配到 GQA 多模态架构（indexer MQA + aggregation GQA），256K 长视频上下文 + Cross-Modal MOPD（13 个 RL teacher，top-k overlap estimator）。
 - [JoyAI-VL-Interaction 技术报告](sources/joyai-vl-interaction.md) - JD.com 的 8B 视觉驱动交互模型：每秒自主决定说话/静默/委托后台，AdaCodec 预测式视频编码 + 4M 时间对齐数据 + 角色加权 SFT + GRPO RL，完整可部署系统，vs Doubao/Gemini 人工盲评胜率 77.6%/87.9%。

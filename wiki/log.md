@@ -1115,6 +1115,12 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 
 更新 Attention Residuals（明确 shared FFN parameter Memory 不等于 AttnRes 的 early-layer activation attention）及 2026 技术报告比较页、索引；两张图片经 PyMuPDF 300 DPI 裁剪并以 `get_textbox` 校验图内标签，未含 caption 或脚注。`raw/` 除新增原文 PDF 外未改。
 
+## [2026-08-23] ingest | Looped Language Models Improve Compositional Tool Calling
+
+新增 `raw/2608.18171v1.pdf`（arXiv:2608.18171v1，Cambridge，2026-08-17，18 页）、来源页 `wiki/sources/looped-tool-calling.md`，并抽取原文 Figure 1（循环计算在组合式 BFCL 类别上的优势）到 `wiki/assets/looped-tool-calling/`。未新建模型页：论文比较既有 Ouro 与 OLMo / Llama retrofit，不发布独立模型实体。
+
+深化 Looped Transformers、Agentic Engineering 与 Agentic 评测体系：将循环计算的证据边界从 PLT coding 扩展到 tool-call DAG——多调用、顺序和 output-to-input binding 更常受益，单 API grounding 的收益小且随 backbone 变化；adaptive exit 改善平均循环次数与表现的折中。严格保留限制：Ouro 无同预训练条件 non-looped 对照，且评测仅 static single-turn。`raw/` 除新增 PDF 外未改；图片以 PyMuPDF 300 DPI 裁剪并经 `get_textbox` 校验未含 caption / 脚注。
+
 ## [2026-08-23] ingest | Macaron-V1 技术报告
 
 `raw/arxiv-2608.09819.pdf`（arXiv:2608.09819v1，Mind Lab，2026-08-10，49 页）。新增 `wiki/sources/macaron-v1.md`、`wiki/models/macaron-v1.md` 与 3 张原文图：Figure 2（MoE / skills / MoL 的 capability scaling 对照）、Figure 6（MindForge rollout、HCP 与 serving 共用 harness）、Figure 7（frozen GLM-5.2 base-failure 集上的 HCP 搜索覆盖）。
