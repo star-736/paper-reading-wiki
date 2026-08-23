@@ -20,6 +20,7 @@
 - [MSA 技术报告](sources/msa.md) - MiniMax Sparse Attention 的 arXiv 报告，GQA-block 级稀疏 + 每个 group 独立 top-k，1M context 下 14× prefill / 7× decode。
 - [IndexCache 技术报告](sources/indexcache.md) - 清华 + Z.ai 在 DSA 上做跨层索引复用，1/4 retention 即可在 30B 和 GLM-5 上保留质量并拿到端到端加速。
 - [Kimi Linear 技术报告](sources/kimi-linear.md) - Moonshot AI 的混合线性注意力，KDA（细粒度门 delta rule）3:1 配 Full MLA，首次在公平对比下全面追平 full attention，1M context KV 降 75%、decode 6.3×。
+- [Linear Attention Architectures 技术报告](sources/linear-attention-architectures.md) - ETH Zurich 的机制比较研究：统一 DeltaNet/GDN/KDA/GDN-2 递归记忆表述，CLVR 将内部 write value 路由到共享 residual stream；增益方向一致但仍属 single-run 初步证据。
 - [Gated Attention 技术报告](sources/gated-attention.md) - Qwen 团队系统消融 30 个门控变体，SDPA 输出 head-specific sigmoid 门最优（注入非线性 + 消除 attention sink），NeurIPS 2025 Best Paper，已用于 Qwen3-Next 系与 Trinity Large。
 - [Gated DeltaNet 技术报告](sources/gated-delta-net.md) - NVIDIA + MIT 的 ICLR 2025 论文，提出 gated delta rule（门控快速清空 + delta 定向更新互补），KDA 与 Qwen3-Next 系线性层的直接前身。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。

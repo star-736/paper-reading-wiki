@@ -60,7 +60,19 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 
 - **[Kimi K3](../sources/kimi-k3.md)（Moonshot AI，2026-07）**：本机制的生产级首个开源采用者。K3 把 AttnRes 与 KDA-MLA 混合注意力 + Stable LatentMoE 并列，明确作为"layer mixing"维度（Figure 2 架构图把 AttnRes 标为跨 block 的 layer mixing 路径）。EAGLE-3 draft model 的 feature fusion 也利用 AttnRes block 输出（取 1st/4th/final AttnRes block 作低/中/高层特征）。
 - **原始工作 [57]**：K3 引用但未在报告内展开原始论文细节。N≈8 的经验结论、block size 选择依据均来自 [57]。**待追问**：[57] 的原始实验尺度是否覆盖 3T 级，N=8 在 93 层下是否仍最优。
+- **[Linear Attention Architectures](../sources/linear-attention-architectures.md)（ETH Zurich，2026-07）**：给出适用于 DeltaNet / GDN 的另一条跨层路径 CLVR。它不对 layer outputs 做 depth attention，也不替换 residual sum；它取层内线性记忆正要写入的 $v_{l,t}$，经零初始化投影后**加到**共享 residual stream。350M–1.3B 的 single-run 结果中 CLVR 优于传 write error 的 CLER-H，但增益小且随规模 / token budget 缩小。这是“跨层可检索输出”与“跨层暴露内部写入量”两种不同接口的实证边界。
 - **[Intern-S2-Mobius](../sources/intern-s2-mobius.md)（Shanghai AI Lab，2026-08）**：提出的 BRC 也针对层级信息瓶颈，但并不让深层 attention 聚合早层 activation。它把所有 FFN 横向拼成共享 knowledge Memory，让各层 Reasoner 检索同一参数化知识库；作者将此称为“间接”双向知识访问。因接口是共享 FFN 参数而非 depth-attention state，不能把 Mobius 的 35B conversion 结果当作 AttnRes 的独立复现或 ablation。
+
+## 与 CLVR 的边界
+
+AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，但代价模型不同：
+
+| 机制 | 跨层载荷 | 融合方式 | 对线性记忆的依赖 |
+| --- | --- | --- | --- |
+| AttnRes | 早期层 / block 的输出表示 | learned softmax depth attention，替换标准 residual sum | 无；可用于一般 Transformer 深度混合 |
+| CLVR | DeltaNet-style memory 的内部 write value | 零初始化投影后加到共享 residual stream | 有；需能产生 $v_{l,t}$ 的 recurrent memory layer |
+
+因此 CLVR 不是 AttnRes 的轻量实现：前者保留 host residual path 和线性时间 token mixer，代价是只暴露局部内部量；后者让每层按深度选择任意前层表示，表达力更直接但需要保留 / 聚合 depth representations（[Linear Attention Architectures](../sources/linear-attention-architectures.md) § 4、§ 6.6）。
 
 ## 待追问
 
@@ -71,6 +83,8 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 - **与 DenseFormer / Feathers 等跨层连接工作的关系**。AttnRes 不是唯一做跨层信息流的工作，DenseFormer（dense connection）等走的是加法而非 attention。这些机制在 K3 规模下的对比缺。
 
 ## 相关页面
+
+- 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 与 AttnRes 的受控对照）
 
 - 来源：[Kimi K3 技术报告](../sources/kimi-k3.md)（§ 2.2 Attention Residuals）
 - 模型：[Kimi K3](../models/kimi-k3.md)

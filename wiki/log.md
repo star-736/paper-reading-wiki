@@ -1107,6 +1107,18 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 
 `raw/2608.15045v1.pdf`（arXiv:2608.15045v1，OpenMOSS，2026-08-15，22 页）。新增 `wiki/sources/moss-vl.md` 与 `wiki/models/moss-vl.md`，并抽取原文 Figure 2（gated cross-attention 架构）、Figure 3（XRoPE）和 Figure 4（serving latency）到 `wiki/assets/moss-vl/`。核心定位：11.3B MOSS-VL 把视觉 patch 留在独立的 gated cross-attention KV 通道，新增帧可追加 cache 而不进入正在增长的文本解码序列；XRoPE + 绝对时间戳对齐时空，Realtime-SFT 用 silence/response 状态 token、焦点/频率重加权学 timing。更新多模态训练与 agentic 评测概念页、JoyAI/Qwen3/Qwen3-VL 反链及索引；明确公开流式评测只覆盖 L2--L4，L5“生成时仍感知”目前仅定性展示。`raw/` 未改。
 
+## [2026-08-23] ingest | Linear Attention Architectures 技术报告
+
+新增 `raw/2607.07953v1.pdf`（arXiv:2607.07953v1，ETH Zurich，2026-07-08，20 页）、来源页 `wiki/sources/linear-attention-architectures.md`，并抽取原文 Figure 1（CLER：write error 注入 value target）与 Figure 2（CLVR：write value 投入 shared residual stream）。
+
+更新 `wiki/concepts/linear-attention-and-delta-rule.md` 与 `wiki/concepts/attention-residuals.md`：前者补统一的 DeltaNet/GDN/KDA/GDN-2 比较及“write error 不等于适合跨层复用的表示”；后者明确 AttnRes（depth attention 聚合 layer outputs）与 CLVR（线性记忆内部 write value 的加法路由）的接口和代价边界。未建模型 / comparison 页，避免将方法论文的受控实验模型误写成独立实体或分裂既有线性注意力主题；索引已更新。核心证据严格限于 single-run 350M–1.3B 训练实验，且无 inference benchmark。
+
+## [2026-08-23] ingest | Macaron-V1 技术报告
+
+`raw/arxiv-2608.09819.pdf`（arXiv:2608.09819v1，Mind Lab，2026-08-10，49 页）。新增 `wiki/sources/macaron-v1.md`、`wiki/models/macaron-v1.md` 与 3 张原文图：Figure 2（MoE / skills / MoL 的 capability scaling 对照）、Figure 6（MindForge rollout、HCP 与 serving 共用 harness）、Figure 7（frozen GLM-5.2 base-failure 集上的 HCP 搜索覆盖）。
+
+更新 agentic engineering、agentic 后训练、agentic 评测体系及 2026 技术报告比较页，并加入索引。核心边界已显式保留：MoL + HCP + MindForge 是可持续学习的系统设计；122/122 结果仅是冻结模型上的 adaptive harness-search coverage，非 LoRA 学习曲线、跨代持续学习或第三方 adapter collective intelligence 的证明。`raw/` 除新增原文 PDF 外未改。
+
 ## [2026-08-23] ingest | Intern-S2-Mobius 技术报告
 
 新增 `raw/2608.14290.pdf`（arXiv:2608.14290v1，Shanghai AI Laboratory，2026-08-14，21 页）、来源页 `wiki/sources/intern-s2-mobius.md`、模型页 `wiki/models/intern-s2-mobius.md` 与两张原文架构图（Figure 1 Transformer vs Mobius、Figure 5 RNN/Transformer/Mobius 类比）。
@@ -1120,9 +1132,3 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2608.18171v1.pdf`（arXiv:2608.18171v1，Cambridge，2026-08-17，18 页）、来源页 `wiki/sources/looped-tool-calling.md`，并抽取原文 Figure 1（循环计算在组合式 BFCL 类别上的优势）到 `wiki/assets/looped-tool-calling/`。未新建模型页：论文比较既有 Ouro 与 OLMo / Llama retrofit，不发布独立模型实体。
 
 深化 Looped Transformers、Agentic Engineering 与 Agentic 评测体系：将循环计算的证据边界从 PLT coding 扩展到 tool-call DAG——多调用、顺序和 output-to-input binding 更常受益，单 API grounding 的收益小且随 backbone 变化；adaptive exit 改善平均循环次数与表现的折中。严格保留限制：Ouro 无同预训练条件 non-looped 对照，且评测仅 static single-turn。`raw/` 除新增 PDF 外未改；图片以 PyMuPDF 300 DPI 裁剪并经 `get_textbox` 校验未含 caption / 脚注。
-
-## [2026-08-23] ingest | Macaron-V1 技术报告
-
-`raw/arxiv-2608.09819.pdf`（arXiv:2608.09819v1，Mind Lab，2026-08-10，49 页）。新增 `wiki/sources/macaron-v1.md`、`wiki/models/macaron-v1.md` 与 3 张原文图：Figure 2（MoE / skills / MoL 的 capability scaling 对照）、Figure 6（MindForge rollout、HCP 与 serving 共用 harness）、Figure 7（frozen GLM-5.2 base-failure 集上的 HCP 搜索覆盖）。
-
-更新 agentic engineering、agentic 后训练、agentic 评测体系及 2026 技术报告比较页，并加入索引。核心边界已显式保留：MoL + HCP + MindForge 是可持续学习的系统设计；122/122 结果仅是冻结模型上的 adaptive harness-search coverage，非 LoRA 学习曲线、跨代持续学习或第三方 adapter collective intelligence 的证明。`raw/` 除新增原文 PDF 外未改。
