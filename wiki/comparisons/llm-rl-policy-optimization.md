@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "DAPO / GSPO / SAPO / ARPO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、prompt 权重、mismatch mask、asymmetric clip。"
+description: "VAPO / DAPO / GSPO / SAPO / ARPO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、prompt 权重、mismatch mask、asymmetric clip。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -10,8 +10,9 @@ timestamp: 2026-06-25
 
 ## 为什么开这一页
 
-DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解决的不是同一个问题：
+VAPO、DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解决的不是同一个问题：
 
+- VAPO 修的是 **long-CoT value-model-based PPO 的 critic bias 与 GAE credit assignment**；
 - DAPO 补的是 **GRPO 在 long-CoT 数学 RL 大规模复现时的 recipe 缺口**；
 - GSPO 改的是 **importance ratio / clipping 的优化单元**，从 token-level 改到 sequence-level；
 - SAPO 改的是 **trust region 的形状**，从 hard clipping 改成 temperature-controlled soft gate；
@@ -24,6 +25,7 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 
 | 方法 | 论文 / 团队 | 改动层级 | 主要机制 | 解决的痛点 | 主要实验对象 | 和 GRPO 的关系 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [VAPO](../sources/vapo.md) | ByteDance Seed，2025-04 | **critic / advantage estimation + PPO recipe** | Value-Pretraining、Decoupled-GAE、Length-Adaptive GAE、Clip-Higher、token-level loss、positive-example LM loss、Group-Sampling | critic 初始化偏差、长序列 reward 衰减、长度异质性、binary reward 下正样本稀缺 | Qwen2.5-32B，AIME 2024 | 明确保留 value model；同 prompt 多采样但 advantage 来自 critic，不是 group-relative reward baseline |
 | [DAPO](../sources/dapo.md) | ByteDance Seed + 清华 AIR 等，2025-03 | **GRPO recipe / 系统工程** | Clip-Higher、Dynamic Sampling、token-level loss、Overlong Reward Shaping、DAPO-Math-17K | entropy collapse、全对/全错 prompt 零梯度、长 CoT token 权重稀释、截断 reward noise | Qwen2.5-32B，AIME 2024 | 保留 GRPO group-relative clipped objective，补齐 recipe |
 | [GSPO](../sources/group-sequence-policy-optimization.md) | Qwen Team，2025-07 | **importance ratio / clipping 单元** | sequence likelihood ratio $s_i=(\pi_\theta(y_i)/\pi_{old}(y_i))^{1/|y_i|}$，response-level clipping | token-level ratio 与 sequence-level reward 不匹配；MoE expert routing 波动使 token ratio 失效 | Qwen3-30B-A3B，AIME / LiveCodeBench / CodeForces | 用 sequence-level ratio 替代 GRPO token ratio |
 | [SAPO](../sources/soft-adaptive-policy-optimization.md) | Qwen Team，2025-12 | **soft trust region / gate 形状** | sigmoid soft gate + $sech^2$ gradient weight；$\tau_{neg}>\tau_{pos}$ | hard clipping 过脆；GSPO 整条 sequence 被裁、GRPO token 越界即零梯度 | Qwen3-30B-A3B、Qwen3-VL-30B-A3B | 保留 group-based RL，替换硬裁剪为软门控 |
@@ -32,7 +34,13 @@ DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它们解�
 | KPop / IcePop | Inclusion AI（Ling Team），2025-2026 | **训练-推理 mismatch 的 mask 形状** | IcePop：uniform fixed-ratio $[\alpha,\beta]$ + double-sided masking；KPop：symmetric binary KL divergence $D_{KL}^B(\pi_{train}\|\pi_{infer})$，两方向都要求 $\leq\phi$，单超参控制 | MoE RL 中训练-推理精度不对齐导致 token ratio 噪声；固定比率过度 mask 低概率 token | Ring-2.6-1T（1T MoE），agentic coding RL | 与 GRPO 系并列的 MoE RL 稳定化层，不替代 ratio/loss 而是控制哪些 token 参与 |
 | CISPO | MiniMax（M1），2025；[Laguna](../sources/laguna-m1-xs2.md) 采用 2026 | **importance-ratio clipping 形状（asymmetric）** | token-level REINFORCE surrogate + asymmetric clipping $(c_{low},c_{high})=(1,4)$（有效 clip $[0,5]$，只 engage 重 off-policy token）+ length-weighted LOO group-relative advantage | GRPO/GSPO 在 agentic 多轮 RL 的质量-稳定性组合不如 CISPO（Laguna 公开消融理由） | Laguna M.1（225B/23B）/ XS.2（33B/3B），agentic coding RL（SWE/terminal/math） | 源自 MiniMax-M1；Laguna 是首个公开 vs GRPO/GSPO 消融选择 CISPO 的团队 |
 
-## 关键分叉：token、sequence、step 三个「单位」
+## 关键分叉：critic、token、sequence、step 四个「单位」
+
+### VAPO：重新引入 critic，把 long-CoT credit assignment 做稳
+
+VAPO 与 DAPO / GSPO / SAPO 的第一处分叉在于 **advantage 从哪里来**。后三者主要围绕 value-model-free group-relative advantage 调整 ratio、clipping 或 recipe；VAPO 保留独立 value model，用每个 token 前缀的 value estimate 做更细粒度 credit assignment。它用 Value-Pretraining 消 critic 初始化偏差，用 $\lambda_{critic}=1$ / 独立 $\lambda_{policy}$ 的 Decoupled-GAE 分开 critic 与 actor target，再令 $\lambda_{policy}=1-1/(\alpha l)$ 适应 response 长度。
+
+VAPO 也复用了 DAPO 的 Clip-Higher 和 token-level loss，并把固定 8192 trajectories 从 8192 prompts × 1 response 改成 512 prompts × 16 responses。这个 Group-Sampling 只是 rollout allocation；VAPO 的 advantage 仍来自 critic，不能因“同 prompt 采 16 条”就归入 GRPO。论文在 Qwen2.5-32B / AIME 2024 上报告 60.4，DAPO 为 50，但没有报告 value model 的额外显存、FLOPs 或 wall-clock，因此当前只能说 update-step / benchmark efficiency 更高，不能说总训练成本更低。
 
 ### DAPO：还是 token-level GRPO，但把 recipe 做对
 
@@ -92,6 +100,7 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
+- [VAPO](../sources/vapo.md)：主要实验直接使用 Qwen2.5-32B base 且不加 SFT；这是外部 RL 算法实验，不是 Qwen2.5 / Qwen3 官方训练 recipe，也不发布独立模型实体。
 - [Qwen3-VL 技术报告](../sources/qwen3-vl.md)：原报告有 own post-training pipeline；SAPO 论文提供后续/配套 Qwen3-VL RL 训练证据，说明 SAPO 用在 Qwen3-VL-30B-A3B preliminary cold-start 上，但不替换源报告 pipeline。
 - [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本页可作为该概念页里「RL policy optimization 子谱系」的展开。
@@ -99,6 +108,8 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 
 ## 待追问
 
+- VAPO 的 Length-Adaptive GAE 能否迁移到 code / agent 长轨迹？其 $\lambda(l)$ 实现是否需要下界 clipping，论文没有说明。
+- VAPO 相对 DAPO 的 10.4 分与更少 update steps，扣除 value model 的额外显存、FLOPs 和预训练 50 steps 后，wall-clock / total-token 效率是否仍占优？
 - DAPO 的 token-level loss 与 GSPO 的 sequence-level ratio 是否冲突？一个在 loss reduction 上按 token 平均，一个在 importance ratio 上按 sequence 加权；二者能否组合，需要实验。
 - SAPO 是否会成为 GSPO 的严格替代，还是只在 outlier token 多 / hard clipping 脆的阶段更好？论文承认所有方法最终仍可能 instability。
 - ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
@@ -106,6 +117,6 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 
 ## 相关页面
 
-- 来源：[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
+- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

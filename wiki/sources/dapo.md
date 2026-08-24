@@ -100,5 +100,5 @@ Table 1 的 progressive ablation：
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
+- 相邻算法：[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

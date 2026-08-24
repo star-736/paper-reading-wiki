@@ -1148,3 +1148,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 将根 `AGENTS.md` 从完整规则正文改为短入口、硬约束和任务路由；细则迁入 `.agents/guides/` 的内容模型、wiki 工作流、证据与视觉、交付与并发四份按需手册，避免 `@` eager import 重新膨胀首屏上下文。同步更新 README 的入口说明。
 
 新增完整质量剔除规则：`verify` 确认低质量后直接清除 `raw/`、生成页、资产、交叉引用、索引和旧日志，不留下原因说明或新日志；Git 历史承担审计。仅证据有限但仍有价值的来源保留并降级。`raw/` 未改。
+
+## [2026-08-25] ingest | VAPO: Efficient and Reliable Reinforcement Learning for Advanced Reasoning Tasks
+
+新增 `raw/2504.05118v3.pdf`（arXiv:2504.05118v3，ByteDance Seed，2025-04，13 页）、来源页 `wiki/sources/vapo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（AIME 2024 update-step 曲线）与 Figure 2（response length / reward / entropy 训练动态）到 `wiki/assets/vapo/`；裁剪保留图内子图标签，未混入 Figure caption、相邻正文或页脚。未新建模型页：论文提出 RL 框架，主要实验使用既有 Qwen2.5-32B base。
+
+深化 LLM RL policy optimization 对比与 Agentic 模型后训练概念页：把 VAPO 定位为 critic / advantage estimation 轴，区别于 DAPO 的 value-model-free GRPO recipe、GSPO/SAPO 的 ratio / trust-region 轴与 ARPO 的 rollout 采样轴。原文确证七项组合（Value-Pretraining、Decoupled-GAE、Length-Adaptive GAE、Clip-Higher、token-level loss、positive-example LM loss、Group-Sampling）把 AIME 2024 avg@32 从 vanilla PPO 5 提到 60（Figure 1 报 60.4）；严格保留单 backbone / 单 benchmark、无 code / agent 结果、无 critic 总算力与 wall-clock 对比、one-at-a-time ablation 不证明独立可加等边界。`raw/` 除新增原文 PDF 外未改。

@@ -82,9 +82,11 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 不是新模型报告，而是把 Qwen2.5 / Llama3.1 / Qwen3 等 backbone 放进多轮工具环境里比较 RL 算法。它的关键观察是：模型收到外部工具反馈后，后续前 10–50 个 token entropy 会显著上升，搜索反馈的不确定性又高于 Python 反馈。因此 ARPO 不再只做完整 trajectory-level sampling，而是在高熵工具调用步从当前节点分叉 partial rollouts，并用 advantage attribution 区分共享前缀与分叉段。
 
+[VAPO](../sources/vapo.md) 从另一条 value-model-based 路线回答「long-CoT 的 credit assignment 怎么做细」：先用 Monte Carlo return 预训练 critic，再以 $\lambda_{critic}=1$ / 独立 $\lambda_{policy}$ 解耦 critic 与 actor 的 GAE target，并让 $\lambda_{policy}=1-1/(\alpha l)$ 随 response 长度自适应。它同时复用 DAPO 的 Clip-Higher / token-level loss，并用在线正确轨迹的 NLL 放大稀有正样本。在 Qwen2.5-32B / AIME 2024 上，论文报告 VAPO 60.4、DAPO 50；但没有 code / agent 结果或包含 critic 成本的 wall-clock 对比，不能外推为 value-based 方法在 agent RL 上已普遍胜出。
+
 [DAPO](../sources/dapo.md)、[GSPO](../sources/group-sequence-policy-optimization.md)、[SAPO](../sources/soft-adaptive-policy-optimization.md) 则在另一条轴上回答「group-based RL 自己怎么稳定」：DAPO 补 long-CoT GRPO recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping），GSPO 把 GRPO 的 token-level ratio 改成 sequence-level ratio 以稳定 MoE，SAPO 再用 soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity。
 
-这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；DAPO / GSPO / SAPO 关心采到的数据如何被稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
+这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；VAPO 关心 value model 与 GAE 如何给 long-CoT 做 token-level credit assignment；DAPO / GSPO / SAPO 关心 value-model-free group-based RL 如何稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
 
 ## 综合框架
 
@@ -97,7 +99,8 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - MiniMax-M2：如何把 agent harness、reward、rollout、training 和 serving 组织成可扩展系统。
 - Kimi K2.5：如何让多模态和并行 sub-agent 编排共同提升 agentic 工作流。
 - Kimi K3：如何在 3T 规模 + 1M 上下文下做 9-专家 RL + MOPD 融合 + harness-agnostic 训练 + microVM 沙箱支撑 partial rollout。
-- DAPO / GSPO / SAPO：如何把 group-based RL 的 policy update 做稳、做可扩展。
+- VAPO：如何校准 critic，并让 GAE credit assignment 适应 long-CoT 的长度异质性。
+- DAPO / GSPO / SAPO：如何把 value-model-free group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
@@ -116,6 +119,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 - 异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
 - ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
+- VAPO 的 value-based credit assignment 在多轮工具轨迹上是否仍稳定，还是 verifier 稀疏、环境随机性和 critic 成本会抵消 AIME 上的优势？
 - DAPO 的 recipe、GSPO 的 sequence-level ratio、SAPO 的 soft gate 能否组合成同一个训练栈，还是彼此在 loss reduction / ratio 单元 / clipping 形状上有冲突？
 - Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
 - “保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
