@@ -54,4 +54,5 @@ LLM backbone **直接复用 [Qwen3 base 报告](../sources/qwen3.md) 释出的 8
 - 概念：[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - 后续 RL optimizer：[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)（外部方法论文，用 Qwen3-VL-30B-A3B preliminary cold-start 展示 SAPO > GSPO / GRPO-R2；不替换本模型页的源报告事实）
 - 下游 GUI agent：[Xiaomi-GUI-0](xiaomi-gui-0.md)（以 Qwen3-VL-30B-A3B-Instruct 为基座，叠加真机闭环后训练）
+- 开源 embedding 对照：[WeMM-Embedding](wemm-embedding.md)（其报告把 Qwen3-VL-Embedding 当基线；WeMM 自己的基座是 Qwen3.5，不是本页这条 GQA 线）
 - 视觉初始化来源：[MOSS-VL](moss-vl.md)（复用本系列视觉编码器初始化，但用 gated cross-attention 而非 interleaved 视觉 token 接入 Qwen3-8B decoder）

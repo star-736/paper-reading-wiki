@@ -1166,3 +1166,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2607.07740v2.pdf`（arXiv:2607.07740v2，NVIDIA，2026-07-10，14 页）、来源页 `wiki/sources/jet-long.md`、概念页 `wiki/concepts/zero-shot-rope-context-extension.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（RULER / PG-19 / 128K 吞吐）、Figure 2（双焦点映射 + cache 修正 + inclusion–exclusion）和 Figure 3（按长度 RULER）到 `wiki/assets/jet-long/`。未新建模型页：方法论文，评测用既有 Qwen3-1.7B/4B/8B-Base 与 Jet-Nemotron。
 
 定位为与稀疏 / 线性注意力正交的位置角 OOD 轴：局部 RoPE 窗 + 解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 远程别名，短窗严格退回基座；fused CuTe kernel 是部署承重墙。Qwen3 官方 YaRN+DCA 4× 在同协议 RULER 上被超过。回链 Qwen3 / Qwen3-Next / Laguna / Kimi Linear / Kimi K3 的 YaRN 或 NoPE 叙述，并在高效长上下文注意力页加正交轴段。PDF 按仓库约定留在 gitignored 的 `raw/`。
+
+## [2026-08-29] ingest | WeMM-Embedding: WeChat Multi-Modal Embedding Technical Report
+
+新增 `raw/2608.24053v1.pdf`（arXiv:2608.24053v1，WeChat Vision / Tencent，17 页）、来源页 `wiki/sources/wemm-embedding.md`、模型页 `wiki/models/wemm-embedding.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（MMEB-v2 尺寸曲线 + 四分项柱状）、Figure 2（六类训练数据家族）和 Figure 3（2B MRL 保留率）到 `wiki/assets/wemm-embedding/`。未新建概念页：wiki 尚无第二条通用多模态 embedding 来源，机制留在来源页。
+
+Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8B 77.8，9B 80.6；内部 26 任务 2B 72.0 vs 60.9；14 组 A/B 后部署视频号/公众号/朋友圈/电商。Stage-1 最大消融是 task-consistent batching（−3.4）；Stage-2 蒸馏比 reranker 贡献大。回链 Qwen3.5 为第三条 backbone 采用，并与 InternVLA-A1.5 / Qwen-AgentWorld 互链。`raw/` 除新增原文 PDF 外未改。

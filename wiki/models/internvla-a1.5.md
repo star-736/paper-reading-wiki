@@ -45,5 +45,6 @@ InternVLA-A1.5 的核心创新不在单一组件，而在**组合方式**：
 
 - 来源：[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)
 - 架构基座：[Qwen3.5](../models/qwen3.5.md)（VLM backbone = Qwen-3.5 2B）
+- 同基座、不同任务：[WeMM-Embedding](wemm-embedding.md)（Qwen3.5 2B/4B/9B 做通用多模态 embedding）
 - [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（GDN 在 VLA 领域的采用证据）
 - [注意力门控](../concepts/attention-gating.md)（Qwen3.5 hybrid 架构的 gated attention 在 VLA 中被继承）
