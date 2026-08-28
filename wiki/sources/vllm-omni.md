@@ -119,4 +119,4 @@ vLLM-Omni 还覆盖三类非 Qwen-Omni 模型：
 
 - 概念：[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)
 - 模型 / 来源：[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)、[Qwen3-VL 技术报告](qwen3-vl.md)、[Qwen3.5](../models/qwen3.5.md)
-- 相邻系统：[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)
+- 相邻系统：[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[端侧 MoE serving](../concepts/edge-native-moe-serving.md) / [FreeToken](freetoken.md)（正交：拆 expert 驻留，不拆 omni stage）

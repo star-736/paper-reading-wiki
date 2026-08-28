@@ -80,6 +80,8 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 4. **non-AR generation 开始进入 LLM serving 语义。** DiT / diffusion 过去属于 image/video generation stack；vLLM-Omni 把 DiT 作为 stage graph 节点，与 AR LLM stage 共同调度。这是「LLM serving」向「generative model serving」扩展的信号。
 
+5. **和端侧 MoE serving 正交。** [FreeToken](../sources/freetoken.md) 拆的是单机上放不下的 expert 驻留与 miss 路径（CPU 池 + GPU LRU + $q^{\star}$），不是 Thinker/Talker/Vocoder 阶段图。读 serving 论文时先问：瓶颈是多阶段编排，还是 expert 池 × 消费级 PCIe。见 [端侧 MoE serving](edge-native-moe-serving.md)。
+
 ## 待追问
 
 - Any-to-any serving 的统一 benchmark 应该只看 JCT / RTF，还是也要纳入流式 TTFT、tail latency、输出质量、跨 stage backpressure？
@@ -89,6 +91,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)
 - 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
-- 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)
+- 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)

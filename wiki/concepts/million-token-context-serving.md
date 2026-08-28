@@ -49,6 +49,8 @@ GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregatio
 
 [vLLM-Omni](../sources/vllm-omni.md) 把 disaggregation 从本页的「长上下文 KV / prefix / state cache」推广到 [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)：stage 间不只传 KV cache，还传 multimodal embeddings、Thinker hidden states、Talker codec tokens、audio/image tensors。两者共用的系统直觉是：模型能力越依赖长上下文或多阶段流水线，serving 就越不能是单个 monolithic generate loop。
 
+端侧还有第三条压力：[FreeToken](../sources/freetoken.md) 指出 hybrid-attention（V4-Flash 的 SWA、Qwen3.6 的 GDN）把过去压成少量 recurrent state，checkpoint 很贵；agent harness 又几乎每轮在 thinking / tool-call 边界改写历史，稀疏 checkpoint 一旦落在编辑点之后就整段作废。它把有限状态预算锚在这些 semantic 边界上，和本页 DeepSeek-V4 的 on-disk compressed KV 解决的是同一类 prefix reuse，对象从「压缩 KV 块」换成「recurrent state + 会被 OpenClaw/OpenCode 切开的特殊 token」。Expert 池搬运则是正交瓶颈，见 [端侧 MoE serving](edge-native-moe-serving.md)。
+
 ## 关键判断
 
 百万 token 能力最终是模型架构和服务系统共同决定的。只看 benchmark 上“支持 1M context”不够，还要看：

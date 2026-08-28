@@ -1154,3 +1154,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2504.05118v3.pdf`（arXiv:2504.05118v3，ByteDance Seed，2025-04，13 页）、来源页 `wiki/sources/vapo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（AIME 2024 update-step 曲线）与 Figure 2（response length / reward / entropy 训练动态）到 `wiki/assets/vapo/`；裁剪保留图内子图标签，未混入 Figure caption、相邻正文或页脚。未新建模型页：论文提出 RL 框架，主要实验使用既有 Qwen2.5-32B base。
 
 深化 LLM RL policy optimization 对比与 Agentic 模型后训练概念页：把 VAPO 定位为 critic / advantage estimation 轴，区别于 DAPO 的 value-model-free GRPO recipe、GSPO/SAPO 的 ratio / trust-region 轴与 ARPO 的 rollout 采样轴。原文确证七项组合（Value-Pretraining、Decoupled-GAE、Length-Adaptive GAE、Clip-Higher、token-level loss、positive-example LM loss、Group-Sampling）把 AIME 2024 avg@32 从 vanilla PPO 5 提到 60（Figure 1 报 60.4）；严格保留单 backbone / 单 benchmark、无 code / agent 结果、无 critic 总算力与 wall-clock 对比、one-at-a-time ablation 不证明独立可加等边界。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-08-29] ingest | FreeToken: Edge-Native MoE Serving
+
+新增 `raw/2608.16157v1.pdf`（arXiv:2608.16157v1，16 页）、来源页 `wiki/sources/freetoken.md`、概念页 `wiki/concepts/edge-native-moe-serving.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（成本–能力 Pareto + 三档硬件 decode）、Figure 2（prefill 双缓冲 / semantic checkpoint / $q^{\star}$ decode）与 Figure 3（RTX 5090 四工作负载）到 `wiki/assets/freetoken/`。未建模型页：系统论文。
+
+定位为与 vLLM-Omni stage graph 正交的端侧 expert-offload 轴。Headline：4060 笔记本 35B 39.3 tok/s；5090 上 V4-Flash 22–25 tok/s；PRO 6000 上 GLM-5.2 753B 14.9 vs llama.cpp 7.3。回链 DeepSeek-V4、GLM-5 / GLM-5.3（753B ≠ 744B）、MoE 扩展、百万 token 上下文、any-to-any serving。`raw/` 除新增原文 PDF 外未改。

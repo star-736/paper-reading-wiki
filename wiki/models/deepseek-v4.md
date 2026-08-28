@@ -40,6 +40,8 @@ DeepSeek-V4 的定义性特征是混合压缩注意力：
 
 DeepSeek-V4 是当前知识库中最典型的“把上下文长度当成系统问题处理”的案例。它的百万 token 主张依赖架构、优化器、kernel、KV-cache layout 和 serving 策略共同成立。
 
+端侧落地是另一层：[FreeToken](../sources/freetoken.md) 用官方 MXFP4 checkpoint 在 RTX 5090 上把 V4-Flash 跑到 22–25 tok/s（相对最强端侧基线 1.5–1.9×），说明 13B 激活进 32GB 之后，瓶颈转到约 140 GB expert 池的 PCIe 搬运和 agent re-prefill，而不是「模型能不能装进消费级 GPU」。详见 [端侧 MoE serving](../concepts/edge-native-moe-serving.md)。
+
 ## 相关页面
 
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
@@ -47,3 +49,4 @@ DeepSeek-V4 是当前知识库中最典型的“把上下文长度当成系统�
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 - [2026 开放模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
 - [DSpark 技术报告](../sources/dspark.md) — V4 生产端 MTP-1 的替代品
+- [FreeToken](../sources/freetoken.md) / [端侧 MoE serving](../concepts/edge-native-moe-serving.md) — V4-Flash 在消费级 GPU 上的 expert-offload serving

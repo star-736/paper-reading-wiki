@@ -30,6 +30,8 @@ GLM-5.3 的可沉淀定位是**后训练缩放的结果样本**：发布页把�
 
 它也把 [异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的工程瓶颈推进到训练—rollout 一致性和资源调度：多 teacher OPD 的预取、local-storage 分层缓存、以及按 rollout 工作负载自动调 prefill/decode 比例与并发。博客只给出结果级描述，不能据此复原算法或系统实现。
 
+端侧 serving 证据来自另一篇系统论文，不要读成 GLM-5.3 的架构披露：[FreeToken](../sources/freetoken.md) 服务的是 **GLM-5.2** 权重（文中 753B / 40B active，NVFP4，433 GB），单卡 RTX PRO 6000 上 14.9 tok/s（llama.cpp 7.3）。这与本页「参数未披露」和 [GLM-5](glm-5.md) 技术报告的 744B 都不是同一口径。
+
 ## 相关页面
 
 - [GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)
@@ -38,3 +40,4 @@ GLM-5.3 的可沉淀定位是**后训练缩放的结果样本**：发布页把�
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- [FreeToken](../sources/freetoken.md) / [端侧 MoE serving](../concepts/edge-native-moe-serving.md) — GLM-5.2 753B-A40B 的单卡工作站 serving 数字；不是本页后训练结果

@@ -43,3 +43,4 @@ GLM-5 的差异点不只是模型规模，而是完整 agent stack：长上下�
 - [GLM-5.3](glm-5-3.md) - 后续发布版；官方称其沿用 GLM-5.2 base model，不能据此直接推定与本页 GLM-5 的架构关系
 - [GLM-5V-Turbo](glm-5v-turbo.md) - GLM-5 家族的多模态扩展
 - [2026 开放模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
+- [FreeToken](../sources/freetoken.md) 服务的是 GLM-5.2 753B，不要与本页 744B 画等号；见 [GLM-5.3](glm-5-3.md)

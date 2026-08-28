@@ -29,6 +29,7 @@
 - [Qwen3 技术报告](sources/qwen3.md) - Qwen 系列 2025-05 基座报告（arXiv:2505.09388），标准 GQA + RoPE + RMSNorm + MoE，36T tokens / 119 语言；后训练核心 = 统一 thinking/non-thinking 双模式 + thinking budget + Strong-to-Weak Distillation 完胜 RL（1/10 GPU 时长）。Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的基座前作。
 - [Qwen3-VL 技术报告](sources/qwen3-vl.md) - Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。
 - [vLLM-Omni 技术报告](sources/vllm-omni.md) - 面向 any-to-any 多模态模型的 fully disaggregated serving 系统：stage graph 拆分 AR / DiT / encoder 等阶段，独立批处理、资源配置与 unified connector 传输，Qwen3-Omni JCT 最高降 91.4%。
+- [FreeToken](sources/freetoken.md) - 端侧 MoE serving：CPU 常驻 expert 池 + GPU 共享 LRU + 带宽自适应 $q^{\star}$ 分流 miss，8GB 笔记本到单卡工作站交互式服务 35B–753B；相对 llama.cpp / KTransformers decode 1.3–2.3×。
 - [Thinking Machines Lab On-Policy Distillation 博客](sources/thinking-machines-on-policy-distillation.md) - Kevin Lu 2025-10-27 发表，GLM-5（ref [28]）/ MiMo MOPD 共同引用的 OPD 算法源头。Per-token reverse KL、三方对照表（SFT / RL / OPD = off-policy+dense / on-policy+sparse / on-policy+dense）、`O(1)` vs `O(N)` bits/episode 信息论分析、personalization 召回实验是 GLM-5 cross-stage distillation 思路的直接来源。
 - [Agentic Reinforced Policy Optimization](sources/agentic-reinforced-policy-optimization.md) - 人大 + 快手的 agentic RL 算法论文：发现工具反馈后 token entropy spike，用 entropy-based adaptive rollout 在高熵工具调用步分叉 partial rollouts，并用 advantage attribution 学 step-level tool-use 行为。
 - [VAPO 技术报告](sources/vapo.md) - ByteDance Seed 的 long-CoT value-model-based PPO：校准 critic、解耦 actor/critic GAE 并按 response 长度自适应 $\lambda$，Qwen2.5-32B 的 AIME 2024 avg@32 报 60.4；证据仍限单 backbone / 单 benchmark。
@@ -122,6 +123,7 @@
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
 - [MoE 负载均衡谱系](concepts/moe-load-balancing.md) - 从 auxiliary loss 到 Loss-Free bias 到 Quantile Balancing 的三代方法谱系 + 生产配置地图（V3/V4、K2/K3、MiniMax-M2、MiMo、Ling-2.6、Qwen3、Laguna），及 Expert Choice 因未来 token 泄漏出局的标准论据。
 - [Any-to-any 多模态 serving](concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 代表的 omni-modal serving 范式：Thinker / Talker / Vocoder、AR LLM / DiT / encoder 等多阶段模型拆成 stage graph 独立调度与传输。
+- [端侧 MoE serving](concepts/edge-native-moe-serving.md) - 消费级机器上的 expert-offload：host 池做 source of truth，GPU LRU 跟踪路由局部性，$q^{\star}$ 按实测 PCIe/主机带宽分流 miss；与 any-to-any stage graph 正交。
 
 ## 细讲模块
 

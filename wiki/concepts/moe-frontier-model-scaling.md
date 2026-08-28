@@ -52,3 +52,4 @@ Mach-Mind-4-Flash 以 35B 总参 / 3B 激活成为已收录 agentic MoE 中激�
 - 总专家数增加后，expert routing 稳定性与通信开销更重要。
 - Quantization 和 KV-cache 设计可能主导实际 serving cost。
 - 对 agentic model，rollout 调度、MTP 接受率和工具等待时间也会改变“有效成本”。
+- **端侧 expert 池是另一项系统成本**：[FreeToken](../sources/freetoken.md) 表明 V4-Flash 的 13B 激活能进 32GB，但 ~140 GB expert 池仍要靠 CPU 常驻 + PCIe/CPU 分流；Kimi-K3 则因 594 GB 超出消费级内存，不在这条可部署前沿上。激活参数表读的是计算预算，不是「这台机器能不能 serve」。见 [端侧 MoE serving](edge-native-moe-serving.md)。
