@@ -61,7 +61,7 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 - **S1 General Stage**：>30T tokens，seq_len 4096，通识语言/世界知识。
 - **S2 Reasoning Stage**：~5T 高质量 tokens，seq_len 4096，提高 STEM / 代码 / 推理 / 合成数据占比，**LR decay 加速**。
-- **S3 Long Context Stage**：数百 B tokens，seq_len **4096 → 32768**。长上下文语料 75% 落在 16k–32k、25% 落在 4k–16k。RoPE 基频 **10,000 → 1,000,000**（ABF 技术，Xiong et al., 2023）；推理时再叠 **YARN + Dual Chunk Attention (DCA)**，把有效序列长度再放大 4×（即 128K）。
+- **S3 Long Context Stage**：数百 B tokens，seq_len **4096 → 32768**。长上下文语料 75% 落在 16k–32k、25% 落在 4k–16k。RoPE 基频 **10,000 → 1,000,000**（ABF 技术，Xiong et al., 2023）；推理时再叠 **YARN + Dual Chunk Attention (DCA)**，把有效序列长度再放大 4×（即 128K）。这套 32K 训练窗 + YaRN factor=4 的推理路径，后来被 [Jet-Long](jet-long.md) 当作零样本基线：在 Qwen3-1.7B/4B/8B-Base 上 RULER 全面落后动态分组，1.7B 上 YaRN 甚至低于不扩展的 Base。4B/8B 模型卡上的 128K 来自这套推理扩展，不是 S3 再训到 128K。谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
 
 数据扩张技巧：
 
@@ -162,6 +162,7 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 - 模型：[Qwen3](../models/qwen3.md)
 - 同家族后续：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Qwen3.5](../models/qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
+- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)（官方 YaRN+DCA 4× 与 Jet-Long 对照）
+- 零样本长上下文替代：[Jet-Long](jet-long.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)（用 Qwen3-8B/14B 做 deep search RL backbone，但不是 Qwen3 官方报告的一部分）
 - 后续 RL optimizer：[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)（Qwen 团队 2025-07/12 方法论文，声称用于 latest Qwen3 / Qwen3-VL 训练；不是本报告正文的 Stage 2 GRPO 事实）

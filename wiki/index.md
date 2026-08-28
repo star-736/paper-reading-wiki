@@ -72,6 +72,7 @@
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
 - [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
+- [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 
 ## 模型
 
@@ -117,7 +118,7 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
-- [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比。
+- [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment 与 ARPO 这类 step-level rollout 采样模式。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
@@ -138,6 +139,7 @@
 - [Agent Swarm](concepts/agent-swarm.md) - Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。
 - [多模态 Agentic 训练](concepts/multimodal-agentic-training.md) - Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。
 - [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、Kascade、HySparse 等如何让多数层共用 anchor 层选好的 top-k 索引。
+- [零样本 RoPE 上下文扩展](concepts/zero-shot-rope-context-extension.md) - 不微调、只改位置映射让 RoPE 模型用过训练窗：YaRN / Self-Extend / DCA / Jet-Long 动态分组，以及 Kimi 系 NoPE 旁路。
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。

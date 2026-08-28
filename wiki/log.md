@@ -1160,3 +1160,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2608.16157v1.pdf`（arXiv:2608.16157v1，16 页）、来源页 `wiki/sources/freetoken.md`、概念页 `wiki/concepts/edge-native-moe-serving.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（成本–能力 Pareto + 三档硬件 decode）、Figure 2（prefill 双缓冲 / semantic checkpoint / $q^{\star}$ decode）与 Figure 3（RTX 5090 四工作负载）到 `wiki/assets/freetoken/`。未建模型页：系统论文。
 
 定位为与 vLLM-Omni stage graph 正交的端侧 expert-offload 轴。Headline：4060 笔记本 35B 39.3 tok/s；5090 上 V4-Flash 22–25 tok/s；PRO 6000 上 GLM-5.2 753B 14.9 vs llama.cpp 7.3。回链 DeepSeek-V4、GLM-5 / GLM-5.3（753B ≠ 744B）、MoE 扩展、百万 token 上下文、any-to-any serving。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-08-29] ingest | Jet-Long: Efficient Long-Context Extension with Dynamic Bifocal RoPE
+
+新增 `raw/2607.07740v2.pdf`（arXiv:2607.07740v2，NVIDIA，2026-07-10，14 页）、来源页 `wiki/sources/jet-long.md`、概念页 `wiki/concepts/zero-shot-rope-context-extension.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（RULER / PG-19 / 128K 吞吐）、Figure 2（双焦点映射 + cache 修正 + inclusion–exclusion）和 Figure 3（按长度 RULER）到 `wiki/assets/jet-long/`。未新建模型页：方法论文，评测用既有 Qwen3-1.7B/4B/8B-Base 与 Jet-Nemotron。
+
+定位为与稀疏 / 线性注意力正交的位置角 OOD 轴：局部 RoPE 窗 + 解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 远程别名，短窗严格退回基座；fused CuTe kernel 是部署承重墙。Qwen3 官方 YaRN+DCA 4× 在同协议 RULER 上被超过。回链 Qwen3 / Qwen3-Next / Laguna / Kimi Linear / Kimi K3 的 YaRN 或 NoPE 叙述，并在高效长上下文注意力页加正交轴段。PDF 按仓库约定留在 gitignored 的 `raw/`。

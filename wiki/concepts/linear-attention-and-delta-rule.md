@@ -114,6 +114,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 - **[InternVLA-A1.5](../models/internvla-a1.5.md)（上海 AI Lab，2026-07，VLA 机器人操作）**：GDN 混合注意力跨出语言/多模态对话、进入**机器人实时控制**领域的采用证据。该模型用 Qwen3.5 2B（3:1 GDN:full attention）做 VLM backbone，处理多视角图像 token 序列做机器人操作决策。GDN 降 KV-cache I/O 的价值在实时控制的多视角图像序列场景同样成立。论文明写 backbone "employs an efficient hybrid attention mechanism that interleaves 3 Gated DeltaNet linear attention layers with 1 standard full attention layer"（§ 2，原文确证）。这是 GDN 作为通用 token mixer（不只服务于语言模型）的信号。
 - **[Ling-2.6](../sources/ling-2.6.md)（Inclusion AI，2026-06，万亿参数 agentic）**：另一条混合线性注意力生产路线，但线性层用的**不是 GDN/KDA 的 delta rule 家族**，而是 **Lightning Attention**（Qin et al. 2024，FlashLinearAttention kernel），gating 机制不同。混合比例为 **7:1**（7 Lightning Attention : 1 MLA），比 Kimi Linear / Qwen3-Next 的 3:1 更激进——scaling law 实验在 M=2/4/8/16 中选 M=8 最优，M=16 已退化，说明线性注意力仍有容量上限。全局层选 MLA（与 Kimi Linear 同路、与 Qwen3-Next 的 gated attention 不同）。独特之处是 **retrofit 而非从头训练**：从 Ling-2.0 的 GQA checkpoint 经四阶段迁移（Lightning Attention 转换 -> MLA 转换，含 QK Norm absorption + Partial RoPE adaptation）无损转换为 hybrid 架构。Lightning Attention 的内部机制（是否也用 delta rule、还是纯 gated linear recurrence）报告未展开，待追问。
 - 混合而非纯线性：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next 保留 1/4 的全局 gated attention 层、Ling-2.6 保留 1/8 的全局 MLA 层、**Kimi K3 保留 1/4 的 Gated MLA 层**维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。混合比例本身成为新的架构超参：3:1（Kimi Linear/K3/Qwen）vs 7:1（Ling-2.6），选哪个取决于线性注意力变体的质量和模型规模。K3 在 3T 规模仍选 3:1，说明 KDA 升级（scaled sigmoid）提升了线性层质量但未到能再压低全局层比例的程度。
+- **RoPE 扩展可叠在 hybrid 的 softmax 层上**。[Jet-Long](../sources/jet-long.md) 把动态双焦点 RoPE 零样本迁到 Jet-Nemotron（softmax 与线性层交错），不重训就把 128K RULER 从崩盘拉回 ~33 分。它只改仍带 RoPE 的 softmax 层；线性层的位置信息仍靠 decay。这是 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md) 与本页的交叉点，不是线性注意力本身的贡献。
 - **门的两种含义别混**：线性注意力里的「门」（GDN/KDA 的遗忘门 $\alpha_t$）控制 RNN 状态记忆寿命；softmax 注意力里的「门」（见 [注意力门控](attention-gating.md)）是给 SDPA 输出注入非线性 + 去 attention sink。同名不同事。
 
 ## 为什么重要
@@ -138,5 +139,6 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 - [注意力门控](attention-gating.md)
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（Kimi Linear 的全局层底座）
 - [高效长上下文注意力](efficient-long-context-attention.md)
+- [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（hybrid softmax 层上的 Jet-Long 迁移）
 - [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)（正交的另一条路线）
 - 模型：[Kimi Linear](../models/kimi-linear.md)、[Kimi K3](../models/kimi-k3.md)（3T 级 KDA 生产采用）、[InternVLA-A1.5](../models/internvla-a1.5.md)（VLA 机器人，用 Qwen3.5 backbone）

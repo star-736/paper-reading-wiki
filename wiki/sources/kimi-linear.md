@@ -56,7 +56,7 @@ $$S_t = \left(I - \beta_t k_t k_t^\top\right)\mathrm{Diag}(\alpha_t)\,S_{t-1} + 
   | w/o convolution layer | 9.29 | 5.70 |
 
   读法：比例越高（线性层越多）验证 PPL 越差（15:1 最差 5.82），但 3:1 已优于纯 MLA（0:1 的 5.77）且接近 1:1，是质量/吞吐甜点；输出门和卷积层的消融（去掉或换 swish）都使 PPL 变差，印证 KDA 的 sigmoid 输出门 + ShortConv 设计有效。
-- **NoPE for MLA layers**：所有全局 MLA 层不加位置编码，把位置/recency 编码的责任全交给 KDA 层。好处：MLA 层推理时可退化成高效的纯 MQA；长上下文训练不必调 RoPE 频率或用 YaRN。
+- **NoPE for MLA layers**：所有全局 MLA 层不加位置编码，把位置/recency 编码的责任全交给 KDA 层。好处：MLA 层推理时可退化成高效的纯 MQA；长上下文训练不必调 RoPE 频率或用 YaRN。这是 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md) 里「绕开 RoPE」的架构级解，不是给现成 RoPE checkpoint 的推理补丁。
 
 **训练配置**：backbone 沿用 Moonlight，MoE sparsity 32（256 expert 选 8，含 1 shared expert），48B 总参 / 3B 激活，首层为 dense；优化器 Muon；公平对比的主实验用 1.4T token。
 

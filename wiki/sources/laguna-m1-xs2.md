@@ -189,13 +189,14 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - CISPO 在 Laguna 的 asymmetric (1,4) clip 与 MiniMax-M1 原文的 clip 设置是否一致？Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
 - 合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2505.04034) 等的规模可比性未对照。
 - Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？
-- 256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。
+- 256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。这条末端零样本缩放与 [Jet-Long](jet-long.md) 的动态分组是同一轴上的不同旋钮，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)；Laguna 没有同协议对照。
 
 ## 相关页面
 
 - [数据混合优化](../concepts/data-mixture-optimization.md) — AutoMixer 是 DoReMi/DoGE/RegMix/TANDEM 谱系的产业落地变体
 - [注意力门控](../concepts/attention-gating.md) — XS.2 用 softplus per-head gating [67]=Gated Attention 报告
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md) — 3:1 SWA/GA 混合（vs Gemma 4 的 5:1）+ 消融
+- [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md) — 128K 的 YaRN（仅 GA 层）和 256K 的 RoPE scale 翻倍都属于这一轴
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md) — M.1 225.8B/23.4B、XS.2 33.4B/3B
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) — 三阶段 + CISPO + 合成代码环境 + IF judge + multi-harness
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md) — TITO + trainer↔inference 权重同步 + FP8 KV cache rollout

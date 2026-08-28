@@ -74,7 +74,7 @@ Kimi K3 相对 Kimi K2 是一次结构性大改，不是单纯放大：
 
 **Gated MLA（已据 § 2.1.2 核实）**：
 
-- **NoPE**：所有 MLA 层不用显式位置编码（沿用 Kimi Linear 的混合设计）。位置信息全靠 KDA 的 recurrent gating + decay 隐式编码。好处：扩展上下文长度时**不需要改位置编码参数**（不用 retune RoPE base、不用 YaRN），1M 外推零修改。
+- **NoPE**：所有 MLA 层不用显式位置编码（沿用 Kimi Linear 的混合设计）。位置信息全靠 KDA 的 recurrent gating + decay 隐式编码。好处：扩展上下文长度时**不需要改位置编码参数**（不用 retune RoPE base、不用 YaRN），1M 外推零修改。与 [Jet-Long](jet-long.md) 给 RoPE checkpoint 打推理补丁是同一问题的另一头，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
 - **Full-rank output gate**：与 KDA 同款 input-dependent channel-wise 全秩门（`y = W_o[Sigmoid(W_g x) ⊙ ~o]`），让每个 token 能调制从全局注意力读出的通道。
 - **FP32 attention output**：纠正 flash attention 的 biased rounding error，attention 输出在训练时保持 FP32。代价是 on-chip footprint 翻倍，故重新设计 kernel 把它与 KV staging buffer 重叠（而非 query tile），腾出 shared memory 给更深的 KV pipeline。
 
@@ -278,6 +278,6 @@ Anthropic/OpenAI 拒绝 cyber 任务，故仅对比 GLM-5.2。
 ## 相关页面
 
 - 模型：[Kimi K3](../models/kimi-k3.md)
-- 概念：[Attention Residuals](../concepts/attention-residuals.md)（新机制）、[Stable LatentMoE](../concepts/stable-latentmoe.md)（新机制）、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（KDA 升级）、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)（Gated MLA）、[注意力门控](../concepts/attention-gating.md)（full-rank 门）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)（2.8T 最大开源）、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)（9 teacher MOPD）、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)（3-stage + white-box env）、[多 token 预测](../concepts/multi-token-prediction.md)（MTP→EAGLE-3 LK loss）、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)（partial rollout + AgentENV）
+- 概念：[Attention Residuals](../concepts/attention-residuals.md)（新机制）、[Stable LatentMoE](../concepts/stable-latentmoe.md)（新机制）、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（KDA 升级）、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)（Gated MLA）、[注意力门控](../concepts/attention-gating.md)（full-rank 门）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)（2.8T 最大开源）、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)（9 teacher MOPD）、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)（3-stage + white-box env）、[多 token 预测](../concepts/multi-token-prediction.md)（MTP→EAGLE-3 LK loss）、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)（partial rollout + AgentENV）、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)（MLA NoPE 躲开 YaRN）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - 同族前作：[Kimi K2.5 技术报告](../sources/kimi-k2.5.md)、[Kimi Linear 技术报告](../sources/kimi-linear.md)（KDA 首次提出）

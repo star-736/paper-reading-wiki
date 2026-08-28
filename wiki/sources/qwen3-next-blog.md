@@ -35,7 +35,7 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 - **MoE**：512 total experts（10 routed + 1 shared），对比 Qwen3 的 128 experts / 8 routed；80B 总参 / ~3B 激活。
 - **MTP**：原生 **Multi-Token Prediction**，高接受率 speculative decoding，并做多步训练保持训练/推理一致。
 - **训练效率**：15T token（Qwen3 36T 语料的均匀子集），GPU 时低于 Qwen3-30A-3B 的 80%、仅 Qwen3-32B 的 9.3% 算力；32K+ 上下文推理吞吐 >10×。
-- **长上下文**：原生 262,144 token，YaRN 外推验证到 1M。
+- **长上下文**：原生 262,144 token，YaRN 外推验证到 1M。这里 YaRN 作用在已经 256K 训过的 hybrid 栈上，与 [Qwen3](qwen3.md) 从 32K 零样本 4× 不是同一难度；谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
 
 ## 评测要点
 
@@ -49,6 +49,6 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 ## 相关页面
 
 - 机制一手出处：[Gated DeltaNet 报告](gated-delta-net.md)、[Gated Attention 报告](gated-attention.md)
-- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)
+- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)
 - 模型：[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)
 - 同家族来源：[Qwen3-Coder-Next 技术报告](qwen3-coder-next.md)、[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)

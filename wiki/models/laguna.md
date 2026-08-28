@@ -72,6 +72,7 @@ M.1 SWE-bench Verified 追平 Devstral 2（79.0）超 GLM-4.7（76.2）/DeepSeek
 - 来源：[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
+- [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)
 - [注意力门控](../concepts/attention-gating.md)
 - [数据混合优化](../concepts/data-mixture-optimization.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

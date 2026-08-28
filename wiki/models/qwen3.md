@@ -22,7 +22,7 @@ Qwen3 是 Qwen 团队（Alibaba）2025-05 释出的开源大模型家族，**标
 | 总参 / 激活 | 0.6B / 1.7B / 4B / 8B / 14B / 32B（dense）；30B-A3B（48 层）/ 235B-A22B（94 层）（MoE） |
 | 注意力 | **标准 GQA**（Q/KV head 见下表）+ RoPE + RMSNorm pre-norm + SwiGLU，去 QKV-bias，加 **QK-Norm** |
 | MoE | 128 expert / 8 active，**无 shared expert**（与 Qwen2.5-MoE 不同），fine-grained segmentation，**global-batch load balancing loss** |
-| 上下文 | 32K（0.6B / 1.7B）或 128K（其余）；推理叠 YARN + DCA 可再 4× 扩到 ~512K（论文原话 four-fold inference） |
+| 上下文 | 原生训练窗 32K（S3）；0.6B / 1.7B 模型卡标 32K，其余标 128K。128K 来自推理叠 YARN + DCA 把 32K 再 4×，不是再训到 128K。同协议下 [Jet-Long](../sources/jet-long.md) 在 1.7B/4B/8B-Base 的 RULER 上超过这套 YaRN 配方 |
 | 训练 token | **36T**（Qwen2.5 是 18T） |
 | 语言 | **119 种**（Qwen2.5 是 29 种） |
 | Tokenizer | Qwen BBPE，词表 151,669 |
@@ -63,7 +63,7 @@ Qwen3 的两个**真正卖点**不在架构而在后训练：
 - 来源：[Qwen3 技术报告](../sources/qwen3.md)
 - 后续家族：[Qwen3-VL](qwen3-vl.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)
 - 下游实时视觉模型：[MOSS-VL](moss-vl.md)
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
+- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)（ARPO 用 Qwen3-8B/14B 做 deep search RL backbone；不是 Qwen3 官方报告的一部分）
 - 下游 agent 训练：[Agent-World](agent-world.md)（人大 + ByteDance Seed 以 Qwen3-8B/14B 为基座做自演化环境合成 + 多环境 GRPO RL，非 Qwen3 官方）
 - 后续 RL optimizer：[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)（Qwen 团队后续方法论文；不是 Qwen3 2025-05 报告正文）
