@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "百万 Token 上下文服务"
-description: "DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse。"
+description: "DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse；engine 侧由 LMCache 把 paged KV 做成可跨查询/跨引擎搬运的一层。"
 tags: ["concept", "million-token-context-serving"]
 timestamp: 2026-06-06
 ---
@@ -45,11 +45,13 @@ DeepSeek-V4 使用 on-disk KV cache 处理 shared-prefix requests，减少重复
 
 GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregation 也服务于长上下文 agent 推理。DP-aware routing 让同一 rollout 固定到同一 DP rank，避免多轮工具调用时重复 prefill；PD disaggregation 把 prefill 和 decode 分开，避免长前缀 prefill 干扰正在 decode 的 rollout。
 
-## 与 vLLM-Omni 的关系
+## 与其他 serving 系统的关系
 
 [vLLM-Omni](../sources/vllm-omni.md) 把 disaggregation 从本页的「长上下文 KV / prefix / state cache」推广到 [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)：stage 间不只传 KV cache，还传 multimodal embeddings、Thinker hidden states、Talker codec tokens、audio/image tensors。两者共用的系统直觉是：模型能力越依赖长上下文或多阶段流水线，serving 就越不能是单个 monolithic generate loop。
 
 端侧还有第三条压力：[FreeToken](../sources/freetoken.md) 指出 hybrid-attention（V4-Flash 的 SWA、Qwen3.6 的 GDN）把过去压成少量 recurrent state，checkpoint 很贵；agent harness 又几乎每轮在 thinking / tool-call 边界改写历史，稀疏 checkpoint 一旦落在编辑点之后就整段作废。它把有限状态预算锚在这些 semantic 边界上，和本页 DeepSeek-V4 的 on-disk compressed KV 解决的是同一类 prefix reuse，对象从「压缩 KV 块」换成「recurrent state + 会被 OpenClaw/OpenCode 切开的特殊 token」。Expert 池搬运则是正交瓶颈，见 [端侧 MoE serving](edge-native-moe-serving.md)。
+
+第四条是 **engine 侧 I/O 层**：[LMCache](../sources/lmcache.md) 不改 CSA/HCA/SWA 的 cache policy，而是把任意 paged KV 从 GPU 抽出，按远大于 16-token page 的 chunk 在 CPU / 盘 / RDMA / NVLink 上搬，同时服务跨查询 prefix reuse 和 PD disaggregation。V4 的压缩块减小体积，LMCache 决定这体积能不能按时离开再回来；截断 / 滑动窗口会把 prefix hit 打穿（Company F 约 85%→45%），与 FreeToken 的 semantic-anchor 是同一条「谁改历史谁负责失效」约束。完整抽象见 [KV cache 层](kv-cache-layer.md)。
 
 ## 关键判断
 
@@ -61,4 +63,10 @@ GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregatio
 - 长上下文 RL 和 OPD 是否能承受数据与内存压力；
 - 推理中断后是否能正确恢复，而不引入 length bias；
 - **speculative decoding 是否能承受高并发**：[DSpark](../sources/dspark.md) 在 V4 生产端替换 MTP-1 显示，静态多 token drafter 在长 context + 高并发下反而拖垮吞吐；需要 confidence-scheduled、随负载在线截断的 verification 才能把"长 draft block 的高 acceptance"翻译成实际加速。这一档是 1M context 主张能落到用户感知速度的最后一公里。
+- **paged KV 离开 GPU 时 I/O 粒度是否独立于模型 cache policy**：[LMCache](../sources/lmcache.md) 显示 vLLM native page-by-page CPU offload / PD 传输出于 16-token page 吃不满带宽（400 vs 88 Gbps）；远程加载相对 prefill 的胜负还随带宽 × 长度 crossover 翻转。
+
+## 相关页面
+
+- 来源：[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)、[LMCache 技术报告](../sources/lmcache.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[FreeToken](../sources/freetoken.md)、[DSpark 技术报告](../sources/dspark.md)
+- 相邻概念：[KV cache 层](kv-cache-layer.md)、[Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)
 

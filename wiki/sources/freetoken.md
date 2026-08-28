@@ -115,5 +115,5 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 
 ## 相关页面
 
-- 概念：[端侧 MoE serving](../concepts/edge-native-moe-serving.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)
+- 概念：[端侧 MoE serving](../concepts/edge-native-moe-serving.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)、[KV cache 层](../concepts/kv-cache-layer.md)（正交：LMCache 搬 paged KV，本文搬 expert 权重；prefix 失效条件相交）
 - 被服务的模型：[DeepSeek-V4](../models/deepseek-v4.md)（V4-Flash 284B-A13B，MXFP4）、[GLM-5.3](../models/glm-5-3.md)（讨论 GLM-5.2 base；本文服务的是 GLM-5.2 753B-A40B NVFP4，参数口径不要与 [GLM-5](../models/glm-5.md) 的 744B 混用）

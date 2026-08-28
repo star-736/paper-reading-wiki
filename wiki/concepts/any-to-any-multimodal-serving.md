@@ -82,6 +82,8 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 5. **和端侧 MoE serving 正交。** [FreeToken](../sources/freetoken.md) 拆的是单机上放不下的 expert 驻留与 miss 路径（CPU 池 + GPU LRU + $q^{\star}$），不是 Thinker/Talker/Vocoder 阶段图。读 serving 论文时先问：瓶颈是多阶段编排，还是 expert 池 × 消费级 PCIe。见 [端侧 MoE serving](edge-native-moe-serving.md)。
 
+6. **和 KV cache 层正交但同源。** [LMCache](../sources/lmcache.md) 是 vLLM PD KV transfer 的生产实现：搬的仍是 paged K/V，用 chunked DMA 吃满带宽。vLLM-Omni 的 unified connector 把同一「边上传中间态」扩到 hidden / codec / 音视频 tensor。先问这条边传的是 KV 还是别的激活。见 [KV cache 层](kv-cache-layer.md)。
+
 ## 待追问
 
 - Any-to-any serving 的统一 benchmark 应该只看 JCT / RTF，还是也要纳入流式 TTFT、tail latency、输出质量、跨 stage backpressure？
@@ -91,6 +93,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)、[LMCache 技术报告](../sources/lmcache.md)
 - 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
-- 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)
+- 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)、[KV cache 层](kv-cache-layer.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)

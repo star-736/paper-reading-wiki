@@ -30,6 +30,7 @@
 - [Qwen3-VL 技术报告](sources/qwen3-vl.md) - Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。
 - [vLLM-Omni 技术报告](sources/vllm-omni.md) - 面向 any-to-any 多模态模型的 fully disaggregated serving 系统：stage graph 拆分 AR / DiT / encoder 等阶段，独立批处理、资源配置与 unified connector 传输，Qwen3-Omni JCT 最高降 91.4%。
 - [FreeToken](sources/freetoken.md) - 端侧 MoE serving：CPU 常驻 expert 池 + GPU 共享 LRU + 带宽自适应 $q^{\star}$ 分流 miss，8GB 笔记本到单卡工作站交互式服务 35B–753B；相对 llama.cpp / KTransformers decode 1.3–2.3×。
+- [LMCache 技术报告](sources/lmcache.md) - 企业级 KV cache 层：从 vLLM/SGLang 抽出 paged KV，chunked I/O + layer-wise pipelining 做跨查询复用和 PD 传输；同 TTFT 吞吐 2.3–14×，CPU 加载带宽 400 vs 88 Gbps。
 - [Thinking Machines Lab On-Policy Distillation 博客](sources/thinking-machines-on-policy-distillation.md) - Kevin Lu 2025-10-27 发表，GLM-5（ref [28]）/ MiMo MOPD 共同引用的 OPD 算法源头。Per-token reverse KL、三方对照表（SFT / RL / OPD = off-policy+dense / on-policy+sparse / on-policy+dense）、`O(1)` vs `O(N)` bits/episode 信息论分析、personalization 召回实验是 GLM-5 cross-stage distillation 思路的直接来源。
 - [Agentic Reinforced Policy Optimization](sources/agentic-reinforced-policy-optimization.md) - 人大 + 快手的 agentic RL 算法论文：发现工具反馈后 token entropy spike，用 entropy-based adaptive rollout 在高熵工具调用步分叉 partial rollouts，并用 advantage attribution 学 step-level tool-use 行为。
 - [VAPO 技术报告](sources/vapo.md) - ByteDance Seed 的 long-CoT value-model-based PPO：校准 critic、解耦 actor/critic GAE 并按 response 长度自适应 $\lambda$，Qwen2.5-32B 的 AIME 2024 avg@32 报 60.4；证据仍限单 backbone / 单 benchmark。
@@ -127,6 +128,7 @@
 - [MoE 负载均衡谱系](concepts/moe-load-balancing.md) - 从 auxiliary loss 到 Loss-Free bias 到 Quantile Balancing 的三代方法谱系 + 生产配置地图（V3/V4、K2/K3、MiniMax-M2、MiMo、Ling-2.6、Qwen3、Laguna），及 Expert Choice 因未来 token 泄漏出局的标准论据。
 - [Any-to-any 多模态 serving](concepts/any-to-any-multimodal-serving.md) - vLLM-Omni 代表的 omni-modal serving 范式：Thinker / Talker / Vocoder、AR LLM / DiT / encoder 等多阶段模型拆成 stage graph 独立调度与传输。
 - [端侧 MoE serving](concepts/edge-native-moe-serving.md) - 消费级机器上的 expert-offload：host 池做 source of truth，GPU LRU 跟踪路由局部性，$q^{\star}$ 按实测 PCIe/主机带宽分流 miss；与 any-to-any stage graph 正交。
+- [KV cache 层](concepts/kv-cache-layer.md) - 把 KV cache 从 engine 内部状态提升为可 offload、跨查询复用、跨引擎传输的一等数据；LMCache 是当前开源实现，与模型侧异构 KV 压缩、多模态 stage 传输、端侧 expert offload 正交。
 
 ## 细讲模块
 
@@ -135,7 +137,7 @@
 - [异步 Agent RL](concepts/asynchronous-agent-rl.md) - GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent。
 - [Agentic Reinforced Policy Optimization](concepts/agentic-reinforced-policy-optimization.md) - ARPO 如何用工具反馈后的 entropy spike 指导 partial rollout 分叉，并做共享/分叉段 advantage attribution。
 - [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。
-- [百万 token 上下文服务](concepts/million-token-context-serving.md) - DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse。
+- [百万 token 上下文服务](concepts/million-token-context-serving.md) - DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse；engine 侧 I/O 见 KV cache 层。
 - [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、UniClawBench 等 benchmark 的作用和可比性风险；含 UniClawBench 的 capability-driven / 三角色闭环差异化定位。
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
 - [Agent Swarm](concepts/agent-swarm.md) - Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。

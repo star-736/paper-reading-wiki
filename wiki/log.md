@@ -1172,3 +1172,9 @@ TODO.md 清空（全部已完成项移除，留 header + "当前无待办"）。
 新增 `raw/2608.24053v1.pdf`（arXiv:2608.24053v1，WeChat Vision / Tencent，17 页）、来源页 `wiki/sources/wemm-embedding.md`、模型页 `wiki/models/wemm-embedding.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（MMEB-v2 尺寸曲线 + 四分项柱状）、Figure 2（六类训练数据家族）和 Figure 3（2B MRL 保留率）到 `wiki/assets/wemm-embedding/`。未新建概念页：wiki 尚无第二条通用多模态 embedding 来源，机制留在来源页。
 
 Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8B 77.8，9B 80.6；内部 26 任务 2B 72.0 vs 60.9；14 组 A/B 后部署视频号/公众号/朋友圈/电商。Stage-1 最大消融是 task-consistent batching（−3.4）；Stage-2 蒸馏比 reranker 贡献大。回链 Qwen3.5 为第三条 backbone 采用，并与 InternVLA-A1.5 / Qwen-AgentWorld 互链。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-08-29] ingest | LMCache: An Efficient KV Cache Layer for Enterprise-Scale LLM Inference
+
+新增 `raw/2510.09665v2.pdf`（arXiv:2510.09665v2，Tensormesh + UChicago，19 页）、来源页 `wiki/sources/lmcache.md`、概念页 `wiki/concepts/kv-cache-layer.md`，并用 PyMuPDF 300 DPI 抽取 Figure 2（context caching vs PD）、Figure 5（engine–layer–storage 夹心）、Figure 6（端到端架构）和 Figure 8（五模型 CPU offload e2e）到 `wiki/assets/lmcache/`。未建模型页：系统论文。
+
+定位为与 vLLM-Omni stage graph、FreeToken expert-offload 正交的第三条 serving 轴：把 paged KV 做成可跨查询复用、跨引擎传输的一等数据。Headline：同 TTFT 吞吐 2.3–14×；CPU 加载 400 vs 88 Gbps；生产课截断把 prefix hit 从约 85% 打到 45%。回链百万 token 上下文、any-to-any serving、端侧 MoE serving、vLLM-Omni、FreeToken、JoyAI。PDF 按仓库约定留在 gitignored 的 `raw/`。

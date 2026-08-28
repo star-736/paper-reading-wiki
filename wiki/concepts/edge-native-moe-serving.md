@@ -40,6 +40,8 @@ FreeToken 把 [GLM-5.2](../models/glm-5-3.md)（文中 753B / 40B active，NVFP4
 
 [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) 解决的是 datacenter 里 Thinker / Talker / Vocoder 等多阶段图如何拆 engine、传 hidden/codec、按 stage 配资源。[端侧 MoE serving](edge-native-moe-serving.md) 解决的是单机上 expert 池放不下时，如何用 CPU 带宽补 PCIe、并在 agent 改写上下文后保住 prefix。两者都反对「一个 monolithic generate loop」，但拆的对象不同：前者拆 **模型阶段**，后者拆 **expert 驻留与 miss 路径**。Kimi-K3 在 FreeToken Figure 1 里被标为超出消费级内存（594 GB），说明这条轴目前的上界仍是 host 内存，不是 GPU 算力。
 
+第三条正交轴是 [KV cache 层](kv-cache-layer.md)：[LMCache](../sources/lmcache.md) offload 的是已算好的 paged K/V，不是 expert 权重。两端侧语义却相交——FreeToken 的 semantic-anchor 与 LMCache 生产课「截断毁掉 prefix hit」都在说：谁改历史，谁就要接受 cache key 失效。
+
 ## 为什么重要
 
 1. **开源权重 ≠ 开源可部署。** 前沿 MoE 的能力差距在缩小，可及性差距（谁买得起集群 / API）没有同速缩小。端侧 serving 是把已收录的 V4-Flash / GLM-5.2 级模型变成个人机器上可交互软件的那一层。
@@ -56,6 +58,6 @@ FreeToken 把 [GLM-5.2](../models/glm-5-3.md)（文中 753B / 40B active，NVFP4
 
 ## 相关页面
 
-- 来源：[FreeToken](../sources/freetoken.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)
+- 来源：[FreeToken](../sources/freetoken.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)、[LMCache 技术报告](../sources/lmcache.md)
 - 模型：[DeepSeek-V4](../models/deepseek-v4.md)、[GLM-5.3](../models/glm-5-3.md)、[GLM-5](../models/glm-5.md)（不要把 753B 与 744B 画等号）
-- 相邻概念：[Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)、[百万 token 上下文服务](million-token-context-serving.md)、[MoE 前沿模型扩展](moe-frontier-model-scaling.md)
+- 相邻概念：[Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)、[百万 token 上下文服务](million-token-context-serving.md)、[KV cache 层](kv-cache-layer.md)、[MoE 前沿模型扩展](moe-frontier-model-scaling.md)

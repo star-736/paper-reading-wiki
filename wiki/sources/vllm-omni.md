@@ -105,7 +105,7 @@ vLLM-Omni 还覆盖三类非 Qwen-Omni 模型：
 
 - 对 [Qwen3.5-Omni 技术报告](qwen3.5-omni.md)：Qwen3.5-Omni 页解释模型自身的 Thinker / Talker / Hybrid Attention MoE；本页解释这类 omni model 如何被拆成 Thinker / Talker / Vocoder 等 serving stages 并独立调度。
 - 对 [Qwen3-VL 技术报告](qwen3-vl.md)：Qwen3-VL 是 multimodal input → text output 的 VL 模型；vLLM-Omni 关注 multimodal input + multimodal output 的 any-to-any serving，边界更宽。
-- 对 [百万 token 上下文服务](../concepts/million-token-context-serving.md)：DeepSeek-V4 页关注长上下文 KV / prefix / disk cache；vLLM-Omni 把 disaggregation 从 prefill-decode KV transfer 扩展到多模态 stage 间 hidden / embedding / tensor transfer。
+- 对 [百万 token 上下文服务](../concepts/million-token-context-serving.md) / [KV cache 层](../concepts/kv-cache-layer.md)：DeepSeek-V4 关注长上下文 KV / prefix / disk cache；[LMCache](lmcache.md) 是 PD KV transfer 的生产 I/O 层（chunked DMA，已被 vLLM production stack 等采用）。vLLM-Omni 把同一「边上传中间态」从 KV 扩到 hidden / embedding / codec / 音视频 tensor。
 - 对 [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)：Kimi K2.5 页关注多模态 agent 如何训练；vLLM-Omni 是运行时基础设施：让「看、听、说、画」的多 stage 模型能高吞吐 serve。
 
 ## 待追问
@@ -119,4 +119,4 @@ vLLM-Omni 还覆盖三类非 Qwen-Omni 模型：
 
 - 概念：[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)
 - 模型 / 来源：[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)、[Qwen3-VL 技术报告](qwen3-vl.md)、[Qwen3.5](../models/qwen3.5.md)
-- 相邻系统：[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[端侧 MoE serving](../concepts/edge-native-moe-serving.md) / [FreeToken](freetoken.md)（正交：拆 expert 驻留，不拆 omni stage）
+- 相邻系统：[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[端侧 MoE serving](../concepts/edge-native-moe-serving.md) / [FreeToken](freetoken.md)（正交：拆 expert 驻留，不拆 omni stage）、[LMCache 技术报告](lmcache.md)（同源：搬 KV；Omni 把 payload 扩到非 KV 中间态）
