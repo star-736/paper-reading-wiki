@@ -33,7 +33,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | AIME / HMMT / BeyondAIME | 数学竞赛与高难数学推理 | DAPO、GSPO、SAPO 常用来追踪 long-CoT / reasoning RL 的 policy optimization 效果；读数时要看 avg@k / pass@k、采样次数和是否只用 rule-based reward。 |
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
-| OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力。 |
+| OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力；[UI-Mate-27B](../sources/ui-mate.md) 在 OSWorld-Verified 报 77.0%（开源对照中高于 Kimi-K2.6 73.1%）。 |
 || Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
 || BFCL (v3) | 函数调用 / tool use | 测试模型选择和调用外部工具的能力。 |
 | NESTful | 嵌套 API 调用与输出到输入依赖 | 测试调用 DAG 的 dependency binding、部分 / 完整序列匹配及实际执行 Win Rate；[Looped Tool Calling](../sources/looped-tool-calling.md) 用它区分单条合理调用和端到端依赖工作流。 |
@@ -58,6 +58,8 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | MMSearch / MMSearch-Plus | 多模态搜索 / 带来源溯源的多模态搜索 | GLM-5V-Turbo MMSearch 72.9 / MMSearch-Plus 30.0，前者较 GLM-4.6V 近八倍提升。 |
 | AndroidWorld | Android GUI 环境中的动态 agent 任务 | GLM-5V-Turbo 75.7 vs Kimi K2.5 43.1 vs Claude Opus 4.6 62.0；Xiaomi-GUI-0 78.9（超过 UI-Venus-1.5-30B-A3B 77.6）。 |
 | RealMobile | 真机 GUI agent benchmark，100 任务 / 14 应用 / 4 能力域 / 57% 跨应用，细粒度 sub-goal + veto + 双验证（XPath + logical semantic rules） | Xiaomi-GUI-0 自建，72.0% success / 85.8% progress。开源最强对手 MAI-UI-8B 仅 33%，接近 Gemini 3.1 Pro 85% / Seed 2.0 Pro 80%。 |
+| WindowsAgentArena | Windows 桌面 computer-use，任务特定 evaluator | [UI-Mate-27B](../sources/ui-mate.md) 66.2%，开源对照高于 Kimi-K2.6 63.3%；9B 相对 Qwen3.5-9B 基座 +24.2。 |
+| OSWorkerBench | 100 个长程办公任务 / 41 应用 / 10 职位族；指令-only 与示范引导成对协议；67 Long-Memory、49 Multi-App | [UI-Mate](../sources/ui-mate.md) 自建。指令-only：27B 41.0% 严格 / 76.9% 进度。33-task self-demo 把严格成功从 17.2% 抬到 35.4%；45-task variant-demo 未进主表。 |
 | MobileBench-OL | 中文真机在线 GUI agent benchmark，测任务执行 / 推理 / 噪声鲁棒性 | Xiaomi-GUI-0 引用为 prior real-device work。 |
 | WebVoyager | 端到端 web agent | GLM-5V-Turbo 88.5 vs Kimi K2.5 84.3 vs Claude Opus 4.6 88.0。 |
 | Ainstain Bench | 科学计算编程，测试模型能否实现和操控科研工作流中的计算程序 | Seed2.0 Model Card 新建，归入 Science Discovery 评测维度。Seed2.0 Pro 47.7，超过 GPT-5.2（41.3）和 Claude-Sonnet-4.5（33.7）。 |
@@ -124,6 +126,8 @@ Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark
 3. **双验证框架**——XML structure matching（XPath 查 UI hierarchy）+ logical semantic rules（sequential constraints 保证操作顺序 + consistency constraints 验证跨步信息传递如"QQ 音乐搜的歌必须和小红书歌单匹配"）。纯 XPath 对 UI 变化脆弱，纯代码检查需应用特定代码，双验证在 robustness 和 scalability 间平衡。
 
 按能力域分解的结果揭示了一个跨模型共性：**Safety & Reflection 是所有模型最弱域**（Gemini 3.1 Pro 也仅 62.5%），安全感知和自纠正行为是当前 GUI agent 的共同瓶颈。而 Foundation 域 Xiaomi-GUI-0 达 100%，与 Gemini 3.1 Pro / Seed 2.0 Pro 并列——基础 UI 操作已接近饱和，不再区分能力。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
+
+[UI-Mate](../sources/ui-mate.md) 的 OSWorkerBench 把 GUI 评测推进到另一条轴：**示范可用性是与模型、harness、预算同量级的变量**。它不替代 OSWorld / WindowsAgentArena 的指令-only 协议，而是在同一目标上增加一条受控对照：指令、初始环境、步数预算和可执行 verifier 全部固定，只开关一条多模态示范。读分时要分开两套示范资源——33-task self-demo 来自同任务强 agent 成功 rollout，测的是执行路径能否被用上；45-task variant-demo 来自相关但非同一任务的真人录屏，才测程序迁移，且本报告没有系统汇总。另有选择偏差：OSWorld-Subset-30 按「UI-Mate 无示范失败、参考 agent 能解」筛选，+25.5 pp 不能当成随机子集的无偏增益。进度与严格成功可差 35 pp 以上，说明终态漏字段会把「大部分做对」打成失败——这与 Xiaomi RealMobile 的 sub-goal + veto 是同一类诊断需求，平台分别是桌面办公 mock-app 与移动真机。详见 [UI-Mate 来源页](../sources/ui-mate.md)。
 
 Agent-World 则展示了第三种评测思路：**把评测本身做成动态诊断 arena，而非静态 benchmark**。它不只在 23 个公开 benchmark 上打分，更把自建的 1978 环境 / 19822 工具生态同时当作训练源与诊断 arena——每轮按层次分类分层采样 K=5 环境/一级类别构造评测集，重新合成全新可验证任务（graph-based + programmatic，配 rubric 或可执行 `V_code`），环境与任务跨轮动态变化防过拟合。agentic diagnosis agent 从失败 trace + 错误分布 + 环境元数据定位弱环境与错误模式，输出定向任务生成指南驱动下一轮训练。这与 JoyAI（与真实产品 head-to-head 盲评）、Xiaomi-GUI-0（真机 live 应用评测）形成对照：JoyAI 解决"流式交互的 turn-based 结构性缺陷无法被 offline benchmark 捕捉"，Xiaomi-GUI-0 解决"模拟器状态分布偏离真实部署"，Agent-World 解决"静态评测无法持续诊断能力缺口并驱动定向学习"——三者都承认静态 offline benchmark 有盲区，但分别从交互范式、部署分布、诊断-学习闭环三个角度突围。另有一个对 benchmark 解读有用的发现：Agent-World 的环境数量 scaling 实验（0→2000 环境，四代表域均分 18.4%→38.5%）首次量化了"训练环境多样性"作为独立性能变量的作用——读 agent benchmark 分数时，除 model / framework / context / sampling 外，**训练时见过的环境多样性与自演化轮数**也是同量级变量。详见 [Agent-World 来源页](../sources/agent-world.md)。
 

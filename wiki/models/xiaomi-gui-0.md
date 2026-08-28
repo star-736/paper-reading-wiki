@@ -43,6 +43,7 @@ Xiaomi-GUI-0 是小米 SeerRay Team 开发的 native end-to-end multimodal GUI a
 
 - 基于 [Qwen3-VL](qwen3-vl.md) 家族的 30B-A3B-Instruct 变体，叠加 GUI agent 专用后训练。
 - 与通用 agentic 模型（[GLM-5](glm-5.md) / [MiMo-V2-Flash](mimo-v2-flash.md) / [DeepSeek-V4](deepseek-v4.md) / [MiniMax-M2](minimax-m2-series.md) / [Kimi K2.5](kimi-k2.5.md)）不同，Xiaomi-GUI-0 不追求通用 reasoning / coding 能力，而是专攻移动 GUI 交互。但其三阶段训练和 error-driven flywheel 的方法论与通用 agentic model 的后训练趋势一致。
+- 与桌面 foundation GUI agent [UI-Mate](ui-mate.md) 对照：两者都做截图→动作的 end-to-end GUI，但 Xiaomi 优化真机异常态与错误恢复，UI-Mate 优化可验证办公环境和 in-context 示范。评测不可直接比——RealMobile 是移动真机，OSWorkerBench 是桌面 mock-app 办公流。
 - 训练中复用 [GSPO](../sources/group-sequence-policy-optimization.md) 和 [DAPO](../sources/dapo.md) 的 dynamic sampling，是 LLM RL policy optimization 方法在 GUI agent 领域的直接应用。
 
 ## 相关页面
@@ -54,3 +55,4 @@ Xiaomi-GUI-0 是小米 SeerRay Team 开发的 native end-to-end multimodal GUI a
 - [Agentic Engineering](../concepts/agentic-engineering.md) - GUI agent 作为 agentic engineering 的移动端分支
 - [Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md) - Step RL / Agentic RL 的优化框架
 - [DAPO](../sources/dapo.md) - dynamic sampling 来源
+- [UI-Mate](ui-mate.md) - 桌面 CUA + DemoCUA 对照

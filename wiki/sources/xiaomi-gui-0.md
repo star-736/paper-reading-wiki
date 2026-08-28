@@ -199,3 +199,10 @@ top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-a
 - Agentic RL 阶段"数千任务"的具体规模和来源——是否包含线上真实用户请求的脱敏版本？
 - Step RL 的 cascade reward 三值设计（−1.0 / −0.5 / 1.0）是否限制了 reward 信号的表达力——是否有尝试更多层级或连续 reward 的消融？
 - RealMobile 的 100 任务是否足够稳定——4 次运行均值的方差是多少？跨应用任务的评测方差是否显著高于单应用？
+
+## 相关页面
+
+- 模型：[Xiaomi-GUI-0](../models/xiaomi-gui-0.md)
+- 桌面 GUI 对照：[UI-Mate 技术报告](ui-mate.md)
+- 基座：[Qwen3-VL](../models/qwen3-vl.md)
+- 概念：[Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

@@ -1178,3 +1178,9 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 新增 `raw/2510.09665v2.pdf`（arXiv:2510.09665v2，Tensormesh + UChicago，19 页）、来源页 `wiki/sources/lmcache.md`、概念页 `wiki/concepts/kv-cache-layer.md`，并用 PyMuPDF 300 DPI 抽取 Figure 2（context caching vs PD）、Figure 5（engine–layer–storage 夹心）、Figure 6（端到端架构）和 Figure 8（五模型 CPU offload e2e）到 `wiki/assets/lmcache/`。未建模型页：系统论文。
 
 定位为与 vLLM-Omni stage graph、FreeToken expert-offload 正交的第三条 serving 轴：把 paged KV 做成可跨查询复用、跨引擎传输的一等数据。Headline：同 TTFT 吞吐 2.3–14×；CPU 加载 400 vs 88 Gbps；生产课截断把 prefix hit 从约 85% 打到 45%。回链百万 token 上下文、any-to-any serving、端侧 MoE serving、vLLM-Omni、FreeToken、JoyAI。PDF 按仓库约定留在 gitignored 的 `raw/`。
+
+## [2026-08-29] ingest | UI-Mate 技术报告
+
+新增 `raw/2608.15930v1.pdf`（arXiv:2608.15930v1，Tencent HY Frontier，50 页）、来源页 `wiki/sources/ui-mate.md`、模型页 `wiki/models/ui-mate.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（总览+分数）、Figure 2（数据飞轮）、Figure 4（agentic RL）、Figure 5（DemoCUA 表示）与 Figure 9（OSWorkerBench 覆盖）到 `wiki/assets/ui-mate/`。
+
+核心定位：开源权重桌面 foundation GUI agent（9B / 27B）。训练瓶颈用环境接地飞轮 + 可验证 RL bundle 回应；交互瓶颈用 DemoCUA 把录屏蒸馏成 live 截图可否决的 subtask workflow。Headline：OSWorld-Verified 77.0%、WindowsAgentArena 66.2%；OSWorkerBench 指令-only 41.0% / 76.9%，相对 Qwen3.6-27B 基座 +17.7 / +24.5。33-task self-demo 严格成功 17.2%→35.4%；45-task variant-demo 未进主表。OSWorld-Subset 按本模型失败筛选，增益带选择偏差。回链 Xiaomi-GUI-0（移动真机对照）、Qwen3.5 9B 基座、agentic engineering / 后训练 / 评测体系 / agent harness。未新建 GUI 概念页。`raw/` 除新增原文 PDF 外未改。

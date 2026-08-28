@@ -46,3 +46,4 @@ Qwen3.5 把 Qwen3-Next 引入的「3 GDN : 1 gated-attention」混合栈推到�
 - 作为 backbone 被采用：[InternVLA-A1.5](internvla-a1.5.md)（VLA 机器人模型，用 Qwen-3.5 2B 做 VLM backbone）
 - 作为 backbone 被采用：[Qwen-AgentWorld](qwen-agent-world.md)（native language world model，35B-A3B / 397B-A17B 基于 Qwen3.5 checkpoint 做三阶段 CPT→SFT→RL）
 - 作为 backbone 被采用：[WeMM-Embedding](wemm-embedding.md)（微信视觉通用多模态 embedding，2B/4B/9B 基于对应尺寸 Qwen3.5 natively multimodal checkpoint）
+- 作为 backbone 被采用：[UI-Mate](ui-mate.md)（9B GUI agent 基于 Qwen3.5-9B；同报告的 27B 变体基于 Qwen3.6-27B，不在本家族页）
