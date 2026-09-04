@@ -134,4 +134,5 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)：OPD 算法源头，本博客的互补前作。
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 机制 + 跨家共用 OPD 数学依据（七层论证）。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：5 家 OPD 用法分歧（目的 / KL 形式 / pipeline 位置）。
+- [DPO](dpo.md)：离线偏好闭式解，不在本博客的 SFT / RL / OPD 三轴里（off-policy 成对比较，不是 teacher 分布蒸馏）。
 - [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Qwen3 技术报告](qwen3.md)：本博客引用的 pipeline 趋势来源。

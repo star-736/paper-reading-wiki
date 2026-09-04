@@ -103,6 +103,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - Kimi K3：如何在 3T 规模 + 1M 上下文下做 9-专家 RL + MOPD 融合 + harness-agnostic 训练 + microVM 沙箱支撑 partial rollout。
 - VAPO：如何校准 critic，并让 GAE credit assignment 适应 long-CoT 的长度异质性。
 - DAPO / GSPO / SAPO：如何把 value-model-free group-based RL 的 policy update 做稳、做可扩展。
+- [DPO](../sources/dpo.md)：如何把 KL-constrained RLHF 收成离线偏好对上的一条 logistic 损失，不再训独立 RM、也不在训练环里采样。这是 2023 的闭式偏好路线；已收录的 2026 报告几乎都改走 RLVR / GRPO 家族和 MOPD，本条只作历史对照，避免与 DAPO 撞名。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
@@ -129,3 +130,4 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
 - “保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
 - Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
+- 2026 报告几乎不用 [DPO](../sources/dpo.md)：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？仓库里还没有一手来源回答。

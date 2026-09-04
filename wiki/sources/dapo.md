@@ -86,7 +86,7 @@ Table 1 的 progressive ablation：
 
 ## 与其他页面的关系
 
-- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：DAPO 是「工程 recipe 派」——仍在 GRPO/token-level clipped objective 上做可靠性补丁。
+- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：DAPO 是「工程 recipe 派」——仍在 GRPO/token-level clipped objective 上做可靠性补丁。检索时不要和 [DPO](dpo.md)（2023 离线偏好闭式解）混淆。
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)：ARPO 的 Table 1 把 DAPO 当 trajectory-level RL baseline；DAPO 解决 long-CoT 数学 RL，ARPO 解决多轮工具 agent 的 step-level exploration。
 - [Qwen3 技术报告](qwen3.md)：Qwen3 报告后训练 Stage 2 仍写 GRPO；DAPO 是 Qwen2.5-32B 上的外部开源 RL recipe，不能回写成 Qwen3 官方方法。
 
@@ -100,5 +100,5 @@ Table 1 的 progressive ablation：
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)（附录把 DAPO recipe 接到 agent step-level advantage）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
+- 相邻算法：[DPO](dpo.md)（名字易混，离线偏好而非 GRPO）、[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)（附录把 DAPO recipe 接到 agent step-level advantage）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

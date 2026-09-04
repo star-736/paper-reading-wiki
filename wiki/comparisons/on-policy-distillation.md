@@ -14,6 +14,8 @@ timestamp: 2026-06-23
 
 **核心共识**（这 6 家都同意的事，也就是 OPD 之所以叫 OPD）：student 从**自己当前策略**采样轨迹，再用 teacher 在这些**student 轨迹**上的输出分布做监督--以此对齐部署分布、避开离线蒸馏的 exposure bias。off-policy 蒸馏（student 学 teacher 生成的静态数据）是它的对照组。
 
+[DPO](../sources/dpo.md) 也常被说成「不用 RL」，但不是 OPD：它优化的是离线偏好对上的 Bradley-Terry 分类损失，训练时不从当前策略采样。OPD 的对照是 SFT（off-policy + dense）和 RL（on-policy + sparse），不是 DPO。
+
 **核心分歧**：OPD 究竟是
 
 1. 把多个领域 RL teacher **融合**进一个 student（MiMo、DeepSeek-V4），
@@ -128,5 +130,6 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Thinking Machines Lab On-Policy Distillation 博客](../sources/thinking-machines-on-policy-distillation.md)：GLM-5/MiMo 共同引用的 OPD 算法源头页（Kevin Lu 2025-10-27），含 reverse-KL "unhackable"、O(1) vs O(N) bits/episode、phase-alternating 框架、personalization 召回实验等本数学依据节多处引用的一手出处。
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](../sources/nrehiew-sft-rl-opd.md)：分布视角三轴框架 + on-policy 承重墙对照实验 + OPSD + student 超越 teacher 机制。本页 MiMo Table 7 的 domain-level 分析和 pipeline 趋势观察引用自该博客。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：5 家后训练范式总览，OPD 是其中一支。
+- [DPO](../sources/dpo.md)：同样绕开 PPO 回路，但是离线偏好分类，不是 on-policy reverse-KL。
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)：GLM-5 在 cross-stage distillation 之前的 RL 阶段。
 - [MiMo-V2-Flash 技术报告](../sources/mimo-v2-flash.md) / [DeepSeek-V4 技术报告](../sources/deepseek-v4.md) / [Qwen3 技术报告](../sources/qwen3.md) / [Qwen3-VL 技术报告](../sources/qwen3-vl.md) / [GLM-5 技术报告](../sources/glm-5.md)：源页。

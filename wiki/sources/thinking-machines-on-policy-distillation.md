@@ -146,4 +146,5 @@ training_client.forward_backward(trajectories, loss_fn="importance_sampling")
 
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)（含数学依据节，跨家 OPD 共用骨架）
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)（5 家技术报告 OPD 用法分歧）
+- [DPO](dpo.md)：同样常被说成「不用 RL」，但是离线 Bradley-Terry 分类，不是本博客的 on-policy reverse-KL。
 - [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [Qwen3 技术报告](qwen3.md) / [Qwen3-VL 技术报告](qwen3-vl.md) / [DeepSeek-V4 技术报告](deepseek-v4.md)：直接引用或应用本博客算法的技术报告。

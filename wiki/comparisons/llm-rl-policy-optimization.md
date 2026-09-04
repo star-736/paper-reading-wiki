@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage、prompt 权重、mismatch mask、asymmetric clip。"
+description: "VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage、prompt 权重、mismatch mask、asymmetric clip。DPO 是离线偏好闭式解，与 DAPO 同名不同族，单独成节。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -21,6 +21,8 @@ VAPO、DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它
 - MGPO 改的是 **prompt-level 的梯度权重**，用最大熵权重降权全对/全错 prompt，聚焦能力边界 prompt。
 
 如果把它们都简写成「比 GRPO 更好」，检索时会混掉层级。本页按抽象层级拆开。
+
+**不要把 DPO 和 DAPO 混在一起。** [DPO](../sources/dpo.md)（Rafailov et al.，NeurIPS 2023）是离线偏好对上的闭式分类损失，目标是绕开 RL；[DAPO](../sources/dapo.md)（ByteDance Seed，2025）是 on-policy GRPO 的大规模 recipe。本页主表只收 RL 轴上的方法。DPO 的位置见下文「离线偏好：DPO 不在这张 RL 表里」。
 
 ## 一张表
 
@@ -105,6 +107,22 @@ CISPO（源自 [MiniMax-M1](../sources/minimax-m2-series.md)）和前述方法�
 
 CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-policy 的方向不对称——向低概率方向（$\rho<1$，$\pi_\theta<\pi_{old}$，模型变不爱生成）比向高概率方向更该容忍还是更该约束？$(c_{low},c_{high})=(1,4)$ 给的 $[0,5]$ 有效区间意味着 $\rho$ 下到 0 完全不裁、上到 5 才裁——即**几乎不约束「模型变不爱生成旧 token」**（下界 $1-c_{low}=0$），只约束「模型过分偏爱旧 token」（上界 $1+c_{high}=5$）。这与 DAPO Clip-Higher 放宽上界防探索 token 被压死的动机相反：CISPO 放宽的是下界。两者是否互补、还是冲突，需实验。CISPO 与 GSPO/SAPO 的关系也待澄清——CISPO 仍是 token-level ratio，理论上可与 GSPO 的 sequence-level 单元或 SAPO 的 soft gate 组合，但 Laguna 未做这层消融。
 
+## 离线偏好：DPO 不在这张 RL 表里
+
+上面每一行都还在 **on-policy RL** 里改东西：advantage 从哪来、ratio 按什么单元 clip、batch 里哪些 prompt/token 进梯度。 [DPO](../sources/dpo.md) 问的是前一个问题：**KL-constrained reward max 能不能根本不跑 RL。**
+
+它的回答是闭式的。最优策略 $\pi_r\propto\pi_{\mathrm{ref}}\exp(r/\beta)$ 反解出 $r=\beta\log(\pi/\pi_{\mathrm{ref}})+\beta\log Z$；Bradley-Terry 只看奖励差，$Z$ 消掉，得到对静态 $(y_w,y_l)$ 的 logistic 损失。训练时不采样、不拟合独立 RM、不需要 critic。这和 DAPO 的 Clip-Higher / Dynamic Sampling 没有共同改动点。
+
+和本页方法的分叉有三层：
+
+| | DPO | 本页 RL 方法（DAPO / GSPO / …） |
+| --- | --- | --- |
+| 数据 | 离线偏好对，来自 $\pi_{\mathrm{ref}}$ / $\pi_{\mathrm{SFT}}$ | 当前策略 on-policy rollout |
+| 监督 | 成对比较（Bradley-Terry） | 可验证奖励 / group-relative advantage / critic |
+| 优化 | 一条分类损失，无 RL 环 | clipped policy gradient（或 value-based PPO） |
+
+它和 [OPD](on-policy-distillation.md) 也常被一起说成「不用 RL」，但 OPD 的监督是 teacher 在 **student 自己采样轨迹** 上的 reverse-KL，不是离线偏好标签。DPO 原文实验停在 6B、情感 / 摘要 / 单轮对话；2026 已收录报告的后训练主轴已经换到 RLVR + MOPD。把 DPO 放进本页是为了挡住「搜 DPO 落到 DAPO」和「把闭式偏好当 GRPO 变体」两条检索事故，不是主张它仍是当前 agentic 栈的一等算法。
+
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
@@ -123,9 +141,10 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 - ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
 - GiGPO 的状态匹配在开放工具 / GUI / 仓库编辑里是否还能维持 ALFWorld 那种 >65% 重复率？与 ARPO 同一预算对照仍然缺失。
 - MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
+- 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？本页没有一手来源回答。
 
 ## 相关页面
 
-- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
+- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

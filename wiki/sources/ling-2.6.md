@@ -116,7 +116,7 @@ Ling-2.6 采用 **specialization-then-distillation** 范式：
    - *Reasoning specialist*：expert SFT（保留最短正确答案、prune 过度反思）+ RL（Evo-CoT + Dynamic Length Penalty + Semantic Redundancy Penalty）
    - *Agentic specialist*：expert SFT + [GSPO](../sources/group-sequence-policy-optimization.md)（process reward 对齐工具调用序列 + zlib 压缩比惩罚重复输出）+ Dynamic Pass Rating (DPR) 自适应课程
 3. **Specialist Distillation**：把 domain-specific 能力蒸馏回统一模型。
-4. **Bidirectional Preference Alignment**：正向激励 + 负向惩罚集成在单一 reward model 中；focus reward 机制监控 on-policy saturation，动态把训练权重从饱和维度转移到待改善维度。
+4. **Bidirectional Preference Alignment**：正向激励 + 负向惩罚集成在单一 reward model 中；focus reward 机制监控 on-policy saturation，动态把训练权重从饱和维度转移到待改善维度。这是显式 RM 路线，不是 [DPO](dpo.md) 的无 RM 闭式解。
 
 ### Ring-2.6 后训练
 
@@ -204,4 +204,5 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 - 模型：[Ling-2.6 / Ring-2.6](../models/ling-2.6.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（Lightning Attention 的同族/对照路线）、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[多 Token 预测](../concepts/multi-token-prediction.md)、[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（Ling-2.6 的 aux-loss-free bias 配置 γ=0.001→0.0001）、[Loss-Free Balancing](loss-free-balancing.md)（该方法一手出处）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
+- 相邻算法：[DPO](dpo.md)（Bidirectional Preference Alignment 用显式 RM，不是 DPO）
 - 来源：[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照）

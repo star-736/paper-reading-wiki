@@ -1185,6 +1185,12 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 
 核心定位：开源权重桌面 foundation GUI agent（9B / 27B）。训练瓶颈用环境接地飞轮 + 可验证 RL bundle 回应；交互瓶颈用 DemoCUA 把录屏蒸馏成 live 截图可否决的 subtask workflow。Headline：OSWorld-Verified 77.0%、WindowsAgentArena 66.2%；OSWorkerBench 指令-only 41.0% / 76.9%，相对 Qwen3.6-27B 基座 +17.7 / +24.5。33-task self-demo 严格成功 17.2%→35.4%；45-task variant-demo 未进主表。OSWorld-Subset 按本模型失败筛选，增益带选择偏差。回链 Xiaomi-GUI-0（移动真机对照）、Qwen3.5 9B 基座、agentic engineering / 后训练 / 评测体系 / agent harness。未新建 GUI 概念页。`raw/` 除新增原文 PDF 外未改。
 
+## [2026-09-05] ingest | DPO: Direct Preference Optimization
+
+新增 `raw/Rafailov 等 - 2023 - Direct Preference Optimization Your Language Model is Secretly a Reward Model.pdf`（arXiv:2305.18290v3，Stanford，NeurIPS 2023，27 页）、来源页 `wiki/sources/dpo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（RLHF vs DPO 流水线）、Figure 2（IMDb reward–KL 前沿 + TL;DR win rate）、Figure 3（Anthropic-HH win rate）到 `wiki/assets/dpo/`。未建模型页：算法论文，最大实验约 6B。未建概念页：机制留在来源页，避免与 DAPO / OPD 近亲化。
+
+核心定位：把 KL-constrained RLHF 最优策略写成闭式，Bradley-Terry 偏好差消去 $Z(x)$，PPO 回路收成 logistic 分类损失；隐式奖励 $\hat r=\beta\log(\pi/\pi_{\mathrm{ref}})$。Headline：IMDb 上 reward–KL 前沿优于 PPO 与 PPO-GT；TL;DR GPT-4 win rate 约 61% vs PPO 57%；HH 上 DPO 是唯一超过 test chosen 的可训练方法。边界：离线偏好对、训练不采样、非 RLVR、非 agent。回链 LLM RL 对比页（DPO≠DAPO 专节）、后训练概念页、OPD 对比、DAPO / Ling-2.6 / Thinking Machines / nrehiew。`raw/` 除新增原文 PDF 外未改。
+
 ## [2026-09-05] ingest | GiGPO: Group-in-Group Policy Optimization
 
 新增 `raw/Feng 等 - 2025 - Group-in-Group Policy Optimization for LLM Agent Training.pdf`（arXiv:2505.10978v3，NTU + Skywork，NeurIPS 2025，27 页）、来源页 `wiki/sources/gigpo.md`、概念页 `wiki/concepts/group-in-group-policy-optimization.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–7 到 `wiki/assets/gigpo/`。未建模型页：算法论文，主实验用既有 Qwen2.5-Instruct。
