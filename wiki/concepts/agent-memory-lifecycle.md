@@ -74,3 +74,4 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 - [Mi-Memory 技术报告](../sources/mi-memory.md)——本概念的主要来源
 - [Agentic engineering](agentic-engineering.md)——procedural hooks 与 tool-skill memory 的关系
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)——memory benchmark 的可比性风险
+- [Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)——proactive harness 把 event / affair / profile / feedback memory 分开，用批准与忽略校准介入时机；不是全生命周期审计系统，只覆盖 Expansion（通知作证据）和一层轻量 Evolution（反馈改阈值）

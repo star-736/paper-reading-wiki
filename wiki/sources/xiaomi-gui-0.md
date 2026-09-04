@@ -204,5 +204,6 @@ top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-a
 
 - 模型：[Xiaomi-GUI-0](../models/xiaomi-gui-0.md)
 - 桌面 GUI 对照：[UI-Mate 技术报告](ui-mate.md)
+- 跨域真机对照：[Qwen-UI-Agent 技术报告](qwen-ui-agent.md)（同一真机方向，但对方把真机嵌进跨域 foundation agent；RealMobile ≠ MobileWorld-Real）
 - 基座：[Qwen3-VL](../models/qwen3-vl.md)
 - 概念：[Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

@@ -33,7 +33,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | AIME / HMMT / BeyondAIME | 数学竞赛与高难数学推理 | DAPO、GSPO、SAPO 常用来追踪 long-CoT / reasoning RL 的 policy optimization 效果；读数时要看 avg@k / pass@k、采样次数和是否只用 rule-based reward。 |
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
-| OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力；[UI-Mate-27B](../sources/ui-mate.md) 在 OSWorld-Verified 报 77.0%（开源对照中高于 Kimi-K2.6 73.1%）。 |
+| OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力；[UI-Mate-27B](../sources/ui-mate.md) 在 OSWorld-Verified 报 77.0%；[Qwen-UI-Agent-27B](../sources/qwen-ui-agent.md) 报 79.5% / WebArena 73.6%（WebArena 为修正参考答案后的自复跑）。 |
 | ALFWorld | 文本 embodied 家务：最多 50 步，六类 Pick / Look / Clean / Heat / Cool / Pick2 | [GiGPO](../sources/gigpo.md) 的长周期主台；Qwen2.5-7B 上 GiGPO w/ std 总体成功率 90.8 vs GRPO 77.6。动作集合是 admissible list，比开放工具干净。 |
 | WebShop | 模拟电商 HTML：搜索、翻页、购买，最多 15 步 | GiGPO 的 web 交互主台；1.5B 上还用来验证接 DAPO recipe 的 `GiGPO_dynamic`（成功率 75.0 vs DAPO 66.1 vs GRPO 56.8）。 |
 || Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
@@ -60,6 +60,10 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | MMSearch / MMSearch-Plus | 多模态搜索 / 带来源溯源的多模态搜索 | GLM-5V-Turbo MMSearch 72.9 / MMSearch-Plus 30.0，前者较 GLM-4.6V 近八倍提升。 |
 | AndroidWorld | Android GUI 环境中的动态 agent 任务 | GLM-5V-Turbo 75.7 vs Kimi K2.5 43.1 vs Claude Opus 4.6 62.0；Xiaomi-GUI-0 78.9（超过 UI-Venus-1.5-30B-A3B 77.6）。 |
 | RealMobile | 真机 GUI agent benchmark，100 任务 / 14 应用 / 4 能力域 / 57% 跨应用，细粒度 sub-goal + veto + 双验证（XPath + logical semantic rules） | Xiaomi-GUI-0 自建，72.0% success / 85.8% progress。开源最强对手 MAI-UI-8B 仅 33%，接近 Gemini 3.1 Pro 85% / Seed 2.0 Pro 80%。 |
+| MobileWorld | 模拟 Android 长程跨应用 GUI；GUI-only 子集 117 任务、标准 50-step | [Qwen-UI-Agent-27B](../sources/qwen-ui-agent.md) 82.1%（100-step 85.5%）；Seed 2.1 Pro 73.2%。 |
+| MobileWorld-Real | 中文真机 409 任务 / 104 应用 / 7 域；AutoJudge 三分类（pass / failed / env_error），环境错误排出分母 | [Qwen-UI-Agent](../sources/qwen-ui-agent.md) 自建。27B 92.2%；Seed 2.1 Pro 88.7%。与 RealMobile 都是真机，任务集、judge 和分母规则不同，不可直接比。 |
+| AndroidDaily | 真机高频日常 Android 任务 | [Qwen-UI-Agent-27B](../sources/qwen-ui-agent.md) 97.5%；Seed 2.1 Pro 95.2%。 |
+| OSWorld-v2 | 更长程桌面工作流；同时报 partial progress 与 binary completion | [Qwen-UI-Agent-27B](../sources/qwen-ui-agent.md) 40.0 / 13.9 / 135.8 steps（batched）；Opus 4.8 54.8 / 20.6；MiniMax M3 22.3 / 4.6 / 326.7（single）。 |
 | WindowsAgentArena | Windows 桌面 computer-use，任务特定 evaluator | [UI-Mate-27B](../sources/ui-mate.md) 66.2%，开源对照高于 Kimi-K2.6 63.3%；9B 相对 Qwen3.5-9B 基座 +24.2。 |
 | OSWorkerBench | 100 个长程办公任务 / 41 应用 / 10 职位族；指令-only 与示范引导成对协议；67 Long-Memory、49 Multi-App | [UI-Mate](../sources/ui-mate.md) 自建。指令-only：27B 41.0% 严格 / 76.9% 进度。33-task self-demo 把严格成功从 17.2% 抬到 35.4%；45-task variant-demo 未进主表。 |
 | MobileBench-OL | 中文真机在线 GUI agent benchmark，测任务执行 / 推理 / 噪声鲁棒性 | Xiaomi-GUI-0 引用为 prior real-device work。 |
@@ -128,6 +132,8 @@ Xiaomi-GUI-0 的 RealMobile 则把"真机评测"推到另一极端：**benchmark
 3. **双验证框架**——XML structure matching（XPath 查 UI hierarchy）+ logical semantic rules（sequential constraints 保证操作顺序 + consistency constraints 验证跨步信息传递如"QQ 音乐搜的歌必须和小红书歌单匹配"）。纯 XPath 对 UI 变化脆弱，纯代码检查需应用特定代码，双验证在 robustness 和 scalability 间平衡。
 
 按能力域分解的结果揭示了一个跨模型共性：**Safety & Reflection 是所有模型最弱域**（Gemini 3.1 Pro 也仅 62.5%），安全感知和自纠正行为是当前 GUI agent 的共同瓶颈。而 Foundation 域 Xiaomi-GUI-0 达 100%，与 Gemini 3.1 Pro / Seed 2.0 Pro 并列——基础 UI 操作已接近饱和，不再区分能力。详见 [Xiaomi-GUI-0 来源页](../sources/xiaomi-gui-0.md)。
+
+[Qwen-UI-Agent](../sources/qwen-ui-agent.md) 的 MobileWorld-Real 把真机评测再推到中文超应用生态：**409 任务 / 104 应用，且用 AutoJudge 把环境故障从成功率分母里拿掉**。它与 Xiaomi RealMobile 同属 live 真机，但诊断目标不同：RealMobile 用 sub-goal + veto 分解能力域；MobileWorld-Real 用五路 VLM 多数票标 `pass` / `failed` / `env_error`，并在 666 条专家标注上报 92.8% exact-match。读分时要把环境错误排出分母、把 AutoJudge 残差当成真机 SOTA 的噪声上界。对 Qwen 3.7 Plus 全部真机失败的归因进一步说明模拟器分数的盲区：执行能力缺口 40.3%（深入口 / 循环 / 丢状态），真实场景 52.0%（UI 误读 / 弹窗 / 物理控件）。OSWorld-v2 则把桌面评测拆成 partial vs binary，并让 batched GUI+CLI 的步数成为一等变量（Qwen-UI-Agent 135.8 vs MiniMax M3 326.7）。WebArena 数字来自修正参考答案后的自复跑，表内标了 ∗ 的对照才可比。详见 [Qwen-UI-Agent 来源页](../sources/qwen-ui-agent.md)。
 
 [UI-Mate](../sources/ui-mate.md) 的 OSWorkerBench 把 GUI 评测推进到另一条轴：**示范可用性是与模型、harness、预算同量级的变量**。它不替代 OSWorld / WindowsAgentArena 的指令-only 协议，而是在同一目标上增加一条受控对照：指令、初始环境、步数预算和可执行 verifier 全部固定，只开关一条多模态示范。读分时要分开两套示范资源——33-task self-demo 来自同任务强 agent 成功 rollout，测的是执行路径能否被用上；45-task variant-demo 来自相关但非同一任务的真人录屏，才测程序迁移，且本报告没有系统汇总。另有选择偏差：OSWorld-Subset-30 按「UI-Mate 无示范失败、参考 agent 能解」筛选，+25.5 pp 不能当成随机子集的无偏增益。进度与严格成功可差 35 pp 以上，说明终态漏字段会把「大部分做对」打成失败——这与 Xiaomi RealMobile 的 sub-goal + veto 是同一类诊断需求，平台分别是桌面办公 mock-app 与移动真机。详见 [UI-Mate 来源页](../sources/ui-mate.md)。
 

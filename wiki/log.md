@@ -1196,3 +1196,9 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 新增 `raw/Feng 等 - 2025 - Group-in-Group Policy Optimization for LLM Agent Training.pdf`（arXiv:2505.10978v3，NTU + Skywork，NeurIPS 2025，27 页）、来源页 `wiki/sources/gigpo.md`、概念页 `wiki/concepts/group-in-group-policy-optimization.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–7 到 `wiki/assets/gigpo/`。未建模型页：算法论文，主实验用既有 Qwen2.5-Instruct。
 
 定位为 critic-free 的 episode + 同状态 step 组 advantage，与 ARPO 的高熵 partial rollout 正交：不追加采样，无重复状态时退回 GRPO。Headline：相对 GRPO，1.5B ALFWorld +13.3 / WebShop 成功率 +10.6 个百分点，7B +12.6 / +9.1；search QA 平均 3B 42.1 / 7B 47.2。回链 LLM RL 对比、后训练、ARPO、DAPO、评测体系。PDF 按仓库约定留在 gitignored 的 `raw/`。
+
+## [2026-09-05] ingest | Qwen-UI-Agent 技术报告
+
+新增 `raw/2607.28227v1.pdf`（arXiv:2607.28227v1，MAI-UI Team / Alibaba Token Hub，56 页）、来源页 `wiki/sources/qwen-ui-agent.md`、模型页 `wiki/models/qwen-ui-agent.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–6 到 `wiki/assets/qwen-ui-agent/`。未新建 GUI 概念页。
+
+核心定位：real-world-centric foundation GUI agent（27B / 35B-A3B / 4B）。真机+约 10,000 并发沙箱、hybrid GUI+CLI 批动作、AutoResearch 飞轮、Action RL→Online GRPO，以及 proactive / 跨平台 harness。Headline：MobileWorld 82.1%、MobileWorld-Real 92.2%、AndroidDaily 97.5%、OSWorld-Verified 79.5%、WebArena 73.6%。27B 基座按 Table 9 为 Qwen3.5-27B。回链 Xiaomi-GUI-0、UI-Mate、Qwen3.5、agentic engineering / 后训练 / 评测体系 / agent harness / 记忆生命周期。`raw/` 除新增原文 PDF 外未改。

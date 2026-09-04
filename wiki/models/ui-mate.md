@@ -37,6 +37,7 @@ UI-Mate 是腾讯 HY Frontier Team 发布的 **foundation GUI agent** 家族。�
 ## 与相关模型的关系
 
 - 与 [Xiaomi-GUI-0](xiaomi-gui-0.md) 同属 GUI agent，但平台和瓶颈不同：Xiaomi 做移动真机分布对齐和 error-driven 恢复监督；UI-Mate 做桌面 CUA 的可验证环境规模化，以及「一条示范如何变成可靠程序」的交互协议。
+- 与 [Qwen-UI-Agent](qwen-ui-agent.md) 同报 OSWorld-Verified（本页 77.0%，对方 79.5%），但对方主打 hybrid GUI+CLI 批动作和 proactive harness，本页主打 DemoCUA；是否同评测协议未交叉核实。
 - 9B 明确叠在 [Qwen3.5](qwen3.5.md) 上；27B 叠在 Qwen3.6-27B 上，wiki 尚无该基座的一手架构页。
 - 通用 multimodal agent（[GLM-5V-Turbo](glm-5v-turbo.md) / [Kimi K2.5](kimi-k2.5.md)）把 GUI 当多能力之一；UI-Mate 把 computer-use 当主任务，并单独训练示范条件化策略。
 - RL 是 GRPO 变体而不是 [GSPO](../sources/group-sequence-policy-optimization.md)；异步 mismatch 过滤复用 IcePop 思路，见 [Ling-2.6](ling-2.6.md)。
@@ -45,6 +46,7 @@ UI-Mate 是腾讯 HY Frontier Team 发布的 **foundation GUI agent** 家族。�
 
 - [UI-Mate 技术报告](../sources/ui-mate.md) - 来源页（图文交错）
 - [Xiaomi-GUI-0](xiaomi-gui-0.md) - 移动真机 GUI agent 对照
+- [Qwen-UI-Agent](qwen-ui-agent.md) - 跨域 GUI agent + hybrid CLI 对照
 - [Qwen3.5](qwen3.5.md) - 9B 基座家族
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - OSWorkerBench
