@@ -56,7 +56,7 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 - 与 [Kimi Linear](kimi-linear.md) 是「门控」这条主线的两个独立证据：Kimi Linear 在 KDA 输出端也用了 data-dependent sigmoid 输出门来缓解 attention sink，与本文 G1 输出门同源。两者一起支撑 [注意力门控](../concepts/attention-gating.md) 这个概念页。
 - 本文是 softmax 注意力上的「门控」，区别于线性注意力里的「遗忘门 / decay 门」（GDN、KDA）——同名「gating」在两条路线里目标不同（这里是非线性 + 去 sink，那里是控制 RNN 状态记忆寿命）。这层区分写在 [注意力门控](../concepts/attention-gating.md) 里。
 - attention sink 的消除对长上下文外推有用，与 [高效长上下文注意力](../concepts/efficient-long-context-attention.md) 关心的长上下文质量有交集，但本文不改注意力复杂度（仍是 full softmax），所以它是「质量/稳定性」改进而非「效率」路线。
-- **采用谱系**：G1 输出门已落到 Qwen3-Next、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)（均与 [GDN 线性层](gated-delta-net.md) 配成 3:1 混合栈），以及非 Qwen 的 Trinity Large（常规全注意力栈）。完整采用表见 [注意力门控](../concepts/attention-gating.md) 的跨报告信号。
+- **采用谱系**：G1 输出门已落到 Qwen3-Next、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3.8-Flash-Next](qwen3.8-next.md)（均与 [GDN 线性层](gated-delta-net.md) 配成 3:1 混合栈），以及非 Qwen 的 Trinity Large（常规全注意力栈）。3.8 还把同类 sigmoid 门用在残差读（Gated Residual）。完整采用表见 [注意力门控](../concepts/attention-gating.md) 的跨报告信号。
 
 ## 待追问
 

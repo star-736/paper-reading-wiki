@@ -38,10 +38,10 @@ Qwen3.5 把 Qwen3-Next 引入的「3 GDN : 1 gated-attention」混合栈推到�
 
 ## 相关页面
 
-- 来源：[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Gated Attention 技术报告](../sources/gated-attention.md)、[Gated DeltaNet 报告](../sources/gated-delta-net.md)、[Qwen3-Next 官方博客](../sources/qwen3-next-blog.md)、[Qwen3 技术报告](../sources/qwen3.md)（标准 GQA 前作）
+- 来源：[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Gated Attention 技术报告](../sources/gated-attention.md)、[Gated DeltaNet 报告](../sources/gated-delta-net.md)、[Qwen3-Next 官方博客](../sources/qwen3-next-blog.md)、[Qwen3 技术报告](../sources/qwen3.md)（标准 GQA 前作）、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（下一代 125B/6B，3:1 换成 GDN+QSA）
 - 同家族：[Qwen3](qwen3.md)（标准 GQA 前作）、[Qwen3-VL](qwen3-vl.md)（多模态分支，走 Qwen3 backbone 而非 hybrid）
 - 概念：[注意力门控](../concepts/attention-gating.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)
-- 同家族：[Qwen3-Coder-Next](qwen3-coder-next.md)（Qwen3-Next 的编码变体）
+- 同家族：[Qwen3-Coder-Next](qwen3-coder-next.md)（Qwen3-Next 的编码变体）、[Qwen3.8-Flash-Next](qwen3.8-flash-next.md)（下一代效率点，纯文本架构报告）
 - 同思路对照：[Kimi Linear](kimi-linear.md)（全局层用 MLA）
 - 作为 backbone 被采用：[InternVLA-A1.5](internvla-a1.5.md)（VLA 机器人模型，用 Qwen-3.5 2B 做 VLM backbone）
 - 作为 backbone 被采用：[Qwen-AgentWorld](qwen-agent-world.md)（native language world model，35B-A3B / 397B-A17B 基于 Qwen3.5 checkpoint 做三阶段 CPT→SFT→RL）

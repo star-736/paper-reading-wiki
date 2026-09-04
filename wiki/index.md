@@ -78,6 +78,7 @@
 - [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
+- [Qwen3.8-Next 架构报告](sources/qwen3.8-next.md) - Qwen3.8-Flash-Next：125B/6B + 51B 主机 n-gram，3:1 GDN + QSA、Gated Residual、Muon；14 项 base 8 胜 6 负追平 397B-A17B，约 1/9 训练 FLOPs。
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
 
@@ -96,7 +97,8 @@
 - [Kimi Linear](models/kimi-linear.md) - 48B 总参数 / 3B 激活参数的混合线性注意力 MoE 研究模型，KDA:MLA = 3:1，验证线性注意力可 drop-in 替换 full attention。
 - [Qwen3-Coder-Next](models/qwen3-coder-next.md) - 79.7B 总参 / ~3B 激活的编码 agent 模型，基于 Qwen3-Next，3 GDN : 1 gated-attention 混合栈（已据 HF config 核实），纯文本。
 - [Qwen3.5](models/qwen3.5.md) - Qwen3.5 多模态 Hybrid MoE 家族（397B-A17B 旗舰到 0.8B dense），3 GDN : 1 gated-attention，Qwen3.5-Omni 的架构基座。
-- [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的 LLM 前作。
+- [Qwen3.8-Flash-Next](models/qwen3.8-flash-next.md) - Qwen 125B/6B 激活 MoE（+51B 主机 n-gram），3:1 GDN + QSA 与 Gated Residual；架构报告只覆盖预训练 base。
+- [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL/3.8-Flash-Next 的 LLM 前作。
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
 - [InternVLA-A1.5](models/internvla-a1.5.md) - 上海 AI Lab 统一 VLA 机器人模型，Qwen-3.5 2B（3:1 GDN:full attention）做 backbone + 460M unified expert + latent foresight，GDN 混合注意力在机器人控制领域的采用。
@@ -163,7 +165,7 @@
 
 ## 比较
 
-- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2 和 Kimi K2.5 的横向比较。
-- [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
+- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
+- [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage 的"目的 / KL 形式 / pipeline 位置"三轴对比，附 Qwen3-8B Table 21 OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage；含 DPO 与 DAPO 的同名不同族对照。

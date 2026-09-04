@@ -42,9 +42,13 @@ timestamp: 2026-06-19
 
 IndexCache 的作者明确说明本工作只动第一条；如果叠加 KV 共享，需要重新评估 S 层经过 sharing-aware 训练后是否还和 KV 共享假设兼容。
 
+## 跨层共享不是压 indexer 的唯一办法
+
+[Qwen3.8-Flash-Next](../sources/qwen3.8-next.md) 的 QSA 把 IndexShare（training-aware 跨层复用）当成对照，而不是采用它。设定是 3:1 GDN hybrid：两个全局层之间隔着三层 GDN。Fig. 5a 上 QSA 用 $r=4$ 层内压缩在相对 indexer 延迟 0.25 追平 full attention；IndexShare 即使只在相邻全局层间共享、相对延迟 0.5，仍低于基线。作者的解释是 hybrid 对跨层相似度的依赖更弱，层内压缩更合适（原文确证，§2.1.2）。这没有否定 IndexCache 在纯 DSA / 全稀疏栈上的结果，只说明 **oracle 层被线性层隔开时，跨层复用的前提会变差**。
+
 ## 相关页面
 
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
 - [高效长上下文注意力](efficient-long-context-attention.md)
 - [百万 token 上下文服务](million-token-context-serving.md)
-- 来源：[IndexCache](../sources/indexcache.md)
+- 来源：[IndexCache](../sources/indexcache.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)

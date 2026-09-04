@@ -44,11 +44,11 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 
 ## 待追问
 
-- 博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字--这些在不存在的 base report 里才可能有，目前无从核实。
+- 博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字。**部分补上**：[Qwen3.8-Next 架构报告](qwen3.8-next.md) Table 1 在 25B-A3B（400B@4K + 80B@32K）上 GDN hybrid 平均 53.81 vs SWA hybrid 51.15 vs full attention 49.87；作者写明这只能 motivate hybrid，不能拆开每一项增益。Mamba2 对照仍缺。该表是 3.8 的消融，不是 2025-09 的 Qwen3-Next 原实验。
 
 ## 相关页面
 
 - 机制一手出处：[Gated DeltaNet 报告](gated-delta-net.md)、[Gated Attention 报告](gated-attention.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)
 - 模型：[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)
-- 同家族来源：[Qwen3-Coder-Next 技术报告](qwen3-coder-next.md)、[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)
+- 同家族来源：[Qwen3-Coder-Next 技术报告](qwen3-coder-next.md)、[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](qwen3.8-next.md)

@@ -30,6 +30,7 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | [GLM-OCR](../models/glm-ocr.md) | 训练 + 推理共用（共享参数多头） | k 个共享参数辅助头预测未来 k token，训练 10 tokens/step，推理平均 5.2 tokens/step，~50% 吞吐提升。与 GLM-5 共享参数思路一致（引用 [GLM-5](../sources/glm-5.md)）。PDF 吞吐 1.86 pages/s 约为 MinerU2.5 的 3.9×。MTP 还带来结构化输出质量收益——鼓励模型向前规划，产出更少「破损」表格标签。 |
 | [Ling-2.6](../models/ling-2.6.md) | 继续训练 MTP + 参数共享 | post-training 阶段引入两个额外 MTP 层继续训练。MTP-3-share（参数共享 + 仅第一层梯度回传 base model）accept length 从 MTP-1 的 2.71 提升到 3.31。发现仅第一层 MTP 预测所有后续 token 也有改善，说明新引入的 MTP 层训练不足，参数共享 + 梯度隔离是有效的补偿。配合 linghe fused-kernel，FP8 BS=1 下 MTP+linghe 比 baseline +119%。 |
 | [Kimi K3](../models/kimi-k3.md) | 预训练 MTP 层 → EAGLE-3 draft | 预训练 MTP 层（结构镜像一个 backbone block）被 fine-tune 成 EAGLE-3 风格 draft model（target 冻结，只训 draft 层 + feature-fusion 投影）。draft 输入融合 target model 低/中/高层特征（取自第 1、4、最后一个 AttnRes block 输出），`W_E3` 初始化为 `[0 0 I]`（初始等价高层特征，逐渐学入低/中频）。**直接优化 LK loss**（acceptance rate 负对数 `L_LK = -log Σ_x min(p(x), q(x))`），而非传统 KL surrogate——理由是 capacity-limited draft 上最小化 KL 不保证最大化 acceptance rate。训练时按 EAGLE-3 test protocol unroll 7 步。QAT 配置（MXFP4 权重 + MXFP8 激活）。 |
+| [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | backbone 与 MTP 全局层都换成 QSA；draft **复用 top-k 指数** | 显式跟随 GLM-5 的跨步 index reuse。四步 speculative 上 mean accepted length 4.06 → 4.07（Table 4），作者写成「无显著变化」。这是稀疏注意力叠 MTP 时「mask 算一次、draft 几步共用」的又一个生产点，不是新的 MTP 训练目标。 |
 
 ## MiMo 的经验
 

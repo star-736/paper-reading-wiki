@@ -62,6 +62,7 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 - **原始工作 [57]**：K3 引用但未在报告内展开原始论文细节。N≈8 的经验结论、block size 选择依据均来自 [57]。**待追问**：[57] 的原始实验尺度是否覆盖 3T 级，N=8 在 93 层下是否仍最优。
 - **[Linear Attention Architectures](../sources/linear-attention-architectures.md)（ETH Zurich，2026-07）**：给出适用于 DeltaNet / GDN 的另一条跨层路径 CLVR。它不对 layer outputs 做 depth attention，也不替换 residual sum；它取层内线性记忆正要写入的 $v_{l,t}$，经零初始化投影后**加到**共享 residual stream。350M–1.3B 的 single-run 结果中 CLVR 优于传 write error 的 CLER-H，但增益小且随规模 / token budget 缩小。这是“跨层可检索输出”与“跨层暴露内部写入量”两种不同接口的实证边界。
 - **[Intern-S2-Mobius](../sources/intern-s2-mobius.md)（Shanghai AI Lab，2026-08）**：提出的 BRC 也针对层级信息瓶颈，但并不让深层 attention 聚合早层 activation。它把所有 FFN 横向拼成共享 knowledge Memory，让各层 Reasoner 检索同一参数化知识库；作者将此称为“间接”双向知识访问。因接口是共享 FFN 参数而非 depth-attention state，不能把 Mobius 的 35B conversion 结果当作 AttnRes 的独立复现或 ablation。
+- **[Qwen3.8-Flash-Next](../sources/qwen3.8-next.md) 的 Gated Residual（Qwen，2026-08）**：同一「单残差流是深度瓶颈」问题的另一家族。GR 把残差加宽到 4 支，elementwise sigmoid 门读、每支一个标量写，**丢掉支路混合矩阵 $H_{res}$**（HC / mHC 把容量花在这里）。28 层上 Full AttnRes 与 GR 都到 loss 1.762，Block AttnRes $S=4$ 差 0.011；48 层 GR 1.707 vs Block $S=4$ 的 1.711（Table 6）。Qwen 选 GR 的公开理由是去掉 $H_{res}$ 少一次残差整读，以及门提供的稳定性，不是下游全面胜过 AttnRes。路径分解显示一支走长程（典型跳 10.9 层，多送到 softmax 全局层）、三支走局部——和 AttnRes 的 learned softmax 选层不同，是加宽累加器 + 门，不是 depth attention。
 
 ## 与 CLVR 的边界
 
@@ -71,6 +72,7 @@ AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，�
 | --- | --- | --- | --- |
 | AttnRes | 早期层 / block 的输出表示 | learned softmax depth attention，替换标准 residual sum | 无；可用于一般 Transformer 深度混合 |
 | CLVR | DeltaNet-style memory 的内部 write value | 零初始化投影后加到共享 residual stream | 有；需能产生 $v_{l,t}$ 的 recurrent memory layer |
+| GR | 4 支加宽残差上的过去 block 输出 | elementwise 门读 + 标量写；无 $H_{res}$，无 depth softmax | 无；Qwen 用在 GDN hybrid，但算子本身不依赖线性记忆 |
 
 因此 CLVR 不是 AttnRes 的轻量实现：前者保留 host residual path 和线性时间 token mixer，代价是只暴露局部内部量；后者让每层按深度选择任意前层表示，表达力更直接但需要保留 / 聚合 depth representations（[Linear Attention Architectures](../sources/linear-attention-architectures.md) § 4、§ 6.6）。
 
@@ -86,8 +88,8 @@ AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，�
 
 - 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 与 AttnRes 的受控对照）
 
-- 来源：[Kimi K3 技术报告](../sources/kimi-k3.md)（§ 2.2 Attention Residuals）
-- 模型：[Kimi K3](../models/kimi-k3.md)
+- 来源：[Kimi K3 技术报告](../sources/kimi-k3.md)（§ 2.2 Attention Residuals）、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（Gated Residual，与 AttnRes 同预算对照）
+- 模型：[Kimi K3](../models/kimi-k3.md)、[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)
 - [Stable LatentMoE](stable-latentmoe.md)（K3 宽度维新机制，与 AttnRes 正交）
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（K3 序列维机制，与 AttnRes 正交）
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（K3 全局层底座）

@@ -46,7 +46,7 @@ GDN 把两者合成 **gated delta rule**，一个规则同时拥有「快速清�
 ## 与已有沉淀的关系
 
 - **GDN → KDA 这条线是本 wiki 线性注意力页的主轴**。[Kimi Linear](kimi-linear.md) 的 KDA 明确是「extends Gated DeltaNet with a finer-grained gating mechanism」——把 GDN 的 **head-wise 标量门** $\alpha_t$ 升级成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$。本报告把那条演进链的中间一环从二手转述升级为 tier-1 原文确证，详见 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)。
-- **GDN 是 Qwen3-Next 系列线性层的底座**。[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md) 的 hybrid 栈里那一支「线性层」就是 GDN 模块。
+- **GDN 是 Qwen3-Next 系列线性层的底座**。[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3.8-Flash-Next](qwen3.8-next.md) 的 hybrid 栈里那一支「线性层」就是 GDN 模块。3.8 把输出门改成 sigmoid，并给出 25B-A3B 上 GDN hybrid vs SWA hybrid vs full attention 的表。
 - **混合思路同源**：GDN 论文自己就提出「GDN 层 + 滑窗注意力 / Mamba2 层」的混合架构；Kimi Linear（GDN-style 线性 + MLA）、Qwen3-Next（GDN + gated attention）都是这一思路在生产模型上的放大。
 
 ## 待追问

@@ -19,7 +19,7 @@ timestamp: 2026-06-06
 | 路线 | 代表方案 / 模型 | 核心思想 | 主要收益 | 主要风险 |
 | --- | --- | --- | --- | --- |
 | 内容稀疏（token 级） | DSA / [GLM-5](../models/glm-5.md) / [Keye-VL-2.0](../models/keye-vl-2.md) | lightning indexer 给 query 选 top-k token，所有 query head 共享一个 top-k。Keye-VL-2.0 首次把 DSA 从 MLA 适配到 GQA backbone（indexer MQA + aggregation GQA），256K 多模态上下文下 prefill 降至 0.32×、decode 降至 0.20×。 | 长程信息访问自适应；可从 dense checkpoint 继续训练得到；Keye-VL-2.0 证明 DSA 不依赖 MLA。 | indexer 的 top-k 稳定性会影响 RL；indexer 自身仍是 O(NL²)。 |
-| 内容稀疏（block 级） | [MSA](../sources/msa.md) / MiniMax-M3 | 在 GQA 之上加 Index Branch，每个 GQA group 独立选 n 个 KV 块。 | 块级 IO 更规整，KV-outer kernel 易拿到 1M context 14× prefill / 7× decode；对 GQA 改动小。 | 评测仅在 109B-MoE 预训练上做过，RL 后训练阶段稳定性还没有公开数据。 |
+| 内容稀疏（block 级） | [MSA](../sources/msa.md) / MiniMax-M3；**QSA** / [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | MSA：GQA 上 Index Branch，每 group 独立选 n 个 KV 块（B=128）。QSA：只替换 3:1 GDN hybrid 的全局层，indexer 先把 key AvgPool 成 $r=4$ micro-block 再展开回 token（$K=2048$）。 | MSA 块级 IO 规整，1M context 14× prefill / 7× decode。QSA 把 indexer 从 $O(n^2)$ 降到 $O(n^2/r)$，1M kernel 相对 GQA prefill 7.6× / decode 4.9×；短任务不掉、RULER 512K–1M 与 MRCR 反而升。 | MSA 评测停在预训练。QSA 是 CPT 从 dense 全局层改过来，没有 from-scratch sparse，也没有 RL 稳定性数据；加速是 attention kernel 级。 |
 | 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) / [Gemma 4](../models/gemma-4.md) / [Laguna](../models/laguna.md) / [Unlimited OCR](../models/unlimited-ocr.md) | 5 个 SWA 层配 1 个 GA 层（Gemma 4 E2B 用 4:1）；Laguna XS.2 用 3:1（更偏全局）。Gemma 4 额外在全局层做 key-as-value + p-RoPE + KV sharing，全局 KV cache -37.5%。Unlimited OCR 的 R-SWA 更激进：全部层用 SWA，但把 reference token（视觉+prompt）排除在滑动窗口之外全局固定可见，KV cache 恒定 $L_m + n$ 不随输出增长。 | 架构简单，KV 和 attention 成本下降。Unlimited OCR 在 6144 token 输出时 TPS 比 DeepSeek OCR 高 35%，KV cache 完全恒定。 | 对需要任意长程交互的任务可能不如内容自适应。Unlimited OCR 的 128-token 窗口对跨页远距离引用（如第 20 页引用第 1 页的图表编号）覆盖力不足，除非信息经 reference token 间接传递。 |
 | 压缩注意力 | [DeepSeek-V4](../models/deepseek-v4.md) | CSA/HCA 先压缩 KV，再做稀疏或密集注意力。 | 支持 1M context，KV-cache 极大降低。 | 架构、kernel、cache 管理复杂。 |
 | 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md)；Lightning Attention / [Ling-2.6](../models/ling-2.6.md) | 大多数层用线性注意力（RNN 固定状态，无随长度增长的 KV），少数层保留全局 [MLA](multi-head-latent-attention.md)。Kimi Linear 用 3:1（KDA:MLA）；Ling-2.6 用 7:1（Lightning Attention:MLA），更激进的比例经 scaling law 实验确定。Ling-2.6 独特之处是从 GQA checkpoint retrofit 而非从头训练。 | decode 时线性层无 KV cache，Kimi Linear 1M context KV 降 75%、吞吐 6.3×；Ling-2.6 256K context decode throughput 为 Nemotron-3-Super 1.3×、GLM-4.5-Air 4.3×。 | 固定状态容量有限，长程精确检索靠全局层兜底（Kimi 1/4、Ling-2.6 1/8）；Ling-2.6 的 M=16（15:1）已退化，说明线性注意力比例有上限；线性层在长 trajectory RL 上的稳健性证据仍有限。 |
@@ -43,7 +43,7 @@ DeepSeek-V4 的 CSA/HCA 更激进。CSA 每 `m` 个 token 压缩成一个 KV ent
 
 ## 一个常被忽略的瓶颈：indexer 自身
 
-DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(L·k)，但 indexer 自身仍然是 O(L²) per layer，N 层叠加是 O(NL²)。在 30B-A3B DSA 模型上，长上下文 prefill 阶段 indexer 能占到总延迟的 50–81%。把这一项进一步降下来不是靠改 indexer，而是靠[跨层索引复用](cross-layer-index-reuse.md)：让多数层跳过 indexer，直接继承前一个 anchor 层选好的 top-k。[IndexCache](../sources/indexcache.md) 是这条思路在 DSA 上的首个系统化实现，30B 模型可去掉 75% indexer 计算，GLM-5 上能拿到 ≥1.3× 端到端加速。
+DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(L·k)，但 indexer 自身仍然是 O(L²) per layer，N 层叠加是 O(NL²)。在 30B-A3B DSA 模型上，长上下文 prefill 阶段 indexer 能占到总延迟的 50–81%。把这一项进一步降下来有两条路。一条是[跨层索引复用](cross-layer-index-reuse.md)：让多数层跳过 indexer，直接继承前一个 anchor 层选好的 top-k。[IndexCache](../sources/indexcache.md) 是这条思路在 DSA 上的首个系统化实现，30B 模型可去掉 75% indexer 计算，GLM-5 上能拿到 ≥1.3× 端到端加速。另一条是 **层内压缩**：[QSA](../sources/qwen3.8-next.md) 不共享跨层 index，而是把 key 压成 micro-block 再打分；Qwen 给出的理由是 3:1 GDN hybrid 里全局层被 GDN 隔开，跨层相似度不够支撑 IndexShare（Fig. 5a 上 QSA@0.25 追平 dense，IndexShare@0.5 仍低）。两条路正交，目前没有「QSA + IndexCache」的叠加实验。
 
 ## 对比判断
 
@@ -63,7 +63,7 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 
 - [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（位置角 OOD，与本页的计算/KV 轴正交）
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）
-- [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
+- [DeepSeek Sparse Attention](deepseek-sparse-attention.md)（含 QSA 的层内压缩分叉）
 - [跨层索引复用](cross-layer-index-reuse.md)
 - [百万 token 上下文服务](million-token-context-serving.md)
 - [条件记忆](conditional-memory.md)（不改注意力核，卸掉局部 $N$-gram）

@@ -10,7 +10,7 @@ timestamp: 2026-06-06
 
 ## 范围
 
-本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[Macaron-V1](../sources/macaron-v1.md)、[GLM-5V-Turbo](../sources/glm-5v-turbo.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Kimi K3](../sources/kimi-k3.md)、[Intern-S2-Mobius](../sources/intern-s2-mobius.md)、[Gemma 4](../sources/gemma-4.md)、[Laguna](../sources/laguna-m1-xs2.md) 和 [Seed2.0](../sources/seed2.md)。
+本页比较当前沉淀的报告：[GLM-5](../sources/glm-5.md)、[Macaron-V1](../sources/macaron-v1.md)、[GLM-5V-Turbo](../sources/glm-5v-turbo.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[Kimi K3](../sources/kimi-k3.md)、[Intern-S2-Mobius](../sources/intern-s2-mobius.md)、[Gemma 4](../sources/gemma-4.md)、[Laguna](../sources/laguna-m1-xs2.md)、[Seed2.0](../sources/seed2.md) 和 [Qwen3.8-Flash-Next](../sources/qwen3.8-next.md)。
 
 注：Seed2.0 是 Model Card 而非技术报告，不含架构/训练/参数量信息，因此下表对应列为空白。其价值在部署洞察和评测框架，见 [Seed2.0 Model Card](../sources/seed2.md)。
 
@@ -31,6 +31,7 @@ timestamp: 2026-06-06
 | Seed2.0 | 面向大规模生产部署的多模态模型族 | 未披露（Pro/Lite/Mini 三档） | 未披露 | 未披露 | 未披露（Model Card 不含训练细节） |
 | Ling-2.6 / Ring-2.6 | 万亿参数 agentic 双线（instant + thinking） | flash ~104B/~5B；1T ~1T/~8B | 256K | 7:1 Lightning Attention + MLA（retrofit from GQA） | Ling: specialization-then-distillation + token efficiency；Ring: KPop RL + 异步 RL |
 | Laguna M.1 / XS.2 | 长周期 agentic coding + Model Factory 工业化流程 | M.1 225.8B/23.4B；XS.2 33.4B/3B | 256K（RoPE scale 翻倍无训练） | M.1 逐层 GA；XS.2 3:1 SWA/GA + softplus per-head gating | mid-train→SFT→agentic RL(CISPO)；AutoMixer 数据混合；合成代码环境贯穿 SFT/RL |
+| Qwen3.8-Flash-Next | 用更小激活预算保住 397B-A17B 级预训练质量 | 125B / 6B（+51B 主机 n-gram） | CPT 256K；QSA 评到 1M | 3:1 GDN + QSA（全局层 CPT 稀疏化）+ Gated Residual | 本报告只有 base；Muon 预训练，无 SFT/RL 配方 |
 
 ## 主综合
 
@@ -71,6 +72,7 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 - Ling-2.6 / Ring-2.6 认为**不必从头训练也能换架构**——从已投入 20T tokens 的 GQA checkpoint 经四阶段 smooth retrofit 迁移到 7:1 hybrid linear attention + MLA，配合 token efficiency 后训练（~4× token efficiency）和 KPop 异步 agentic RL，在万亿参数规模同时拿下效率、token 质量和 agentic 能力。其双线设计（Ling instant / Ring thinking）把"快速响应"和"深度推理"解耦为两个优化目标。
 - Kimi K3 认为**开源前沿要同时 push 两条 scaling 轴**——预训练 foundation 扩到 3T 级（2.8T/104B active，首个开源 3T）+ RL/reasoning effort/long-horizon interaction 推到 1M context。架构沿序列（KDA scaled sigmoid + Gated MLA NoPE）、深度（Attention Residuals）、宽度（Stable LatentMoE：LatentMoE + SiTU-GLU + Quantile Balancing）三轴重新设计，综合拿到 2.5× scaling efficiency。后训练 9-专家 RL（3 域 × 3 effort）+ MOPD 融合 + Unified White-Box RL Env（harness-agnostic）+ AgentENV microVM 沙箱支撑 1M partial rollout。仍承认落后 Claude Fable 5 / GPT-5.6 Sol，但 WebDev Arena 首个开源登顶、多项 benchmark #1。
 - Laguna 认为**模型开发流程本身是 frontier 竞争的主杠杆**——不追绝对规模（M.1 225.8B/23.4B、XS.2 33.4B/3B 都非最大），而把 Model Factory 工业化流程当核心：M.1 预训练结束后五周从零交付 XS.2，四项架构改动（3:1 SWA/GA、WSD、expert 调制、dense 层 3→1）全靠 16B proxy 消融后翻配置 flag。把 [AutoMixer 数据混合优化](../concepts/data-mixture-optimization.md) + [Gated Attention](../concepts/attention-gating.md) + CISPO RL + 合成代码环境等已有成果组合进可配置流水线，XS.2 以 3B 激活在 SWE-bench Verified 73.4 略胜 Qwen3.6-35B-A3B。是「工艺→工业」转型在 agentic coding 域的干净样本。
+- Qwen3.8-Flash-Next 认为**架构、效率和优化是同一个设计问题**：3:1 GDN 混合在 CPT 把全局层换成 QSA，残差加宽成 GR，容量加在主机 n-gram 上，Muon 把最优 LR/batch 上推。Headline 是 6B 激活、约 1/9 FLOPs 在 14 项 base 上 8 胜 6 负追平 397B/17B。它几乎不谈 agent 后训练；价值在预训练配方和「loss 与下游会分叉」的消融纪律。
 
 这意味着后续比较不应只看 SWE-bench 或 HLE 分数，而要比较“模型 + agent harness + context strategy + serving system”的整体能力。
 

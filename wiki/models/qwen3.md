@@ -10,7 +10,7 @@ timestamp: 2026-06-22
 
 ## 身份
 
-Qwen3 是 Qwen 团队（Alibaba）2025-05 释出的开源大模型家族，**标准 Transformer 架构**（GQA + RoPE + RMSNorm + SwiGLU），是后续 [Qwen3-Next](../sources/qwen3-next-blog.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md) 的**直接前作与 LLM backbone**。本页只覆盖 [Qwen3 技术报告](../sources/qwen3.md) 释出的 8 个原始变体；hybrid GDN/gated-attention 一脉是 Qwen3-Next 之后才引入的，那部分请见 Qwen3.5 / Qwen3-Coder-Next 页。
+Qwen3 是 Qwen 团队（Alibaba）2025-05 释出的开源大模型家族，**标准 Transformer 架构**（GQA + RoPE + RMSNorm + SwiGLU），是后续 [Qwen3-Next](../sources/qwen3-next-blog.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)、[Qwen3.8-Flash-Next](qwen3.8-flash-next.md) 的**直接前作与 LLM backbone**。本页只覆盖 [Qwen3 技术报告](../sources/qwen3.md) 释出的 8 个原始变体；hybrid GDN/gated-attention 一脉是 Qwen3-Next 之后才引入的，那部分请见 Qwen3.5 / Qwen3-Coder-Next / Qwen3.8-Flash-Next 页。
 
 ## 关键事实
 

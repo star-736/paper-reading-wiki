@@ -15,7 +15,7 @@ resource: "../../raw/Yang 等 - 2025 - Qwen3 technical report.pdf"
 - 标题：Qwen3 Technical Report
 - 团队 / 日期：Qwen Team（Alibaba），2025-05-15（arXiv:2505.09388v1，2025-05-14 提交）
 - 模型链接：[Qwen3 on HuggingFace](https://huggingface.co/Qwen)、[QwenLM/Qwen3](https://github.com/QwenLM/Qwen3)
-- 系列定位：Qwen3 是 **Qwen3-Next / Qwen3.5 / Qwen3-Coder-Next / Qwen3.5-Omni / Qwen3-VL 的基座前作**——架构上还是「标准 GQA + RoPE + RMSNorm + SwiGLU + MoE」一脉，hybrid linear attention（GDN）/ gated full attention 那一套是后续 Qwen3-Next 才引入的。本报告本身**不含** linear attention 或 gated attention。
+- 系列定位：Qwen3 是 **Qwen3-Next / Qwen3.5 / Qwen3-Coder-Next / Qwen3.5-Omni / Qwen3-VL / Qwen3.8-Flash-Next 的基座前作**——架构上还是「标准 GQA + RoPE + RMSNorm + SwiGLU + MoE」一脉，hybrid linear attention（GDN）/ gated full attention 那一套是后续 Qwen3-Next 才引入的。本报告本身**不含** linear attention 或 gated attention。
 
 ## 核心结论
 

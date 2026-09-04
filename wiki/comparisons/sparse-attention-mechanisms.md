@@ -38,6 +38,7 @@ timestamp: 2026-06-19
 | InfLLM-V2 | — | 块级，无参数选择 + sliding window | 共享 | 每层独立 | 无（参数自由） | 零样本 dense→sparse 切换 |
 | CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
 | [IndexCache](../sources/indexcache.md)（叠加在 DSA 上） | MLA + DSA | token（继承 DSA） | 共享（继承 DSA） | **F 层算、S 层复用 anchor top-k**（1/4 retention 起步） | 无新训练（training-free 贪心搜索）/ 多层 KL 蒸馏（training-aware） | 干掉 indexer 自己的 O(NL²) 项 |
+| **QSA**（[Qwen3.8-Flash-Next](../sources/qwen3.8-next.md)） | GQA / 3:1 GDN hybrid 的全局层 | **micro-block**（$r=4$，展开回 token；$K=2048$） | indexer **MQA 4 query / 1 key**，core 仍 GQA | **不跨层共享**；作者认为 hybrid 里 GDN 打断层间相似度 | dense warmup 只训 indexer（~2B）+ 联合 sparse CPT（~200B@256K） | 层内压缩把 indexer 从 $O(n^2)$ 降到 $O(n^2/r)$；1M kernel 相对 GQA prefill 7.6× / decode 4.9× |
 
 ![IndexCache Figure 2：标准 DSA 与 IndexCache 推理循环对比。(a) Standard DSA--每层都跑 INDEXER -> Top-k -> SparseAttn，N 层 N 次 indexer 调用。(b) IndexCache--引入 pattern c：F 层正常算 indexer 并把结果存入 T_cache，S 层直接复用 T_cache（▷ reuse），只需一个临时缓冲存一份 index tensor，无额外 GPU 显存。](../assets/indexcache/fig2-inference-loop-comparison.png)
 
@@ -67,17 +68,18 @@ timestamp: 2026-06-19
 
 ## 几个值得记住的判断
 
-**粒度 vs 跨头共享 是耦合的**。block-level + per-group 让单个 group 内 query head 都看同一组 KV 块，是在"不让组间共享拖慢 kernel"的前提下保住检索多样性。如果想要 token-level 又每 head 独立，访存模式会碎到无法做 tensor-core MMA；这是为什么 DSA 选了 token-level 就只能"所有 head 共享"，而 MSA 选 block-level 就能放开"每 group 独立"——两条路都是 IO/质量的折中产物。**主注意力稀疏化和 indexer 跨层复用是两件独立的事**。DSA 把主注意力从 O(L²) 压到 O(L·k)，但 lightning indexer 自己仍是 O(L²)/层、O(NL²)/模型；30B-A3B DSA 的 prefill 50–81% 时间花在 indexer 上。MSA 同理（Index Branch 仍是 per-token 全量打分）。把 indexer 自己的成本压下去要靠跨层复用——而跨层复用又有两个亚种：依赖 full-attention 作 oracle（Kascade、HySparse、TidalDecode）和依赖稀疏 indexer 作 oracle（IndexCache，第一次系统化）。详见 [跨层索引复用](../concepts/cross-layer-index-reuse.md)。
+**粒度 vs 跨头共享 是耦合的**。block-level + per-group 让单个 group 内 query head 都看同一组 KV 块，是在"不让组间共享拖慢 kernel"的前提下保住检索多样性。如果想要 token-level 又每 head 独立，访存模式会碎到无法做 tensor-core MMA；这是为什么 DSA 选了 token-level 就只能"所有 head 共享"，而 MSA 选 block-level 就能放开"每 group 独立"——两条路都是 IO/质量的折中产物。**主注意力稀疏化和 indexer 跨层复用是两件独立的事**。DSA 把主注意力从 O(L²) 压到 O(L·k)，但 lightning indexer 自己仍是 O(L²)/层、O(NL²)/模型；30B-A3B DSA 的 prefill 50–81% 时间花在 indexer 上。MSA 同理（Index Branch 仍是 per-token 全量打分）。把 indexer 自己的成本压下去有两条路：跨层复用，或 **层内压缩 key 序列**。[QSA](../sources/qwen3.8-next.md) 走后一条，$r=4$ 的 AvgPool 把 indexer 打成 $O(n^2/r)$，再展开成 token 级 mask；在 3:1 GDN hybrid 上，它在相对 indexer 延迟 0.25 时追平 dense，而 training-aware IndexShare 在 0.5 仍低于基线（原文 Fig. 5a）。跨层复用仍有两个亚种：依赖 full-attention 作 oracle（Kascade、HySparse、TidalDecode）和依赖稀疏 indexer 作 oracle（IndexCache，第一次系统化）。详见 [跨层索引复用](../concepts/cross-layer-index-reuse.md)。
 
 **多层 KL 蒸馏 = 对均值分布的单 KL（梯度等价）**。这条事实在 MSA（同一层多 head 取平均）和 IndexCache（同一 anchor 多层取平均）里都被独立用到。意味着只要 teacher 与待训练 q 不依赖参数，多 KL 项都可以直接折叠成对质心分布的 KL，便于推断"indexer 学到的是什么"——不是过拟合到某一层/某一 head，而是被服务集合的注意力质心。
 
-**RL 稳定性是第二轴评判**。GLM-5 报告显式提到 DSA 在 RL 阶段会因为 top-k 算子非确定性导致训练/推理 selection 不一致、entropy 几步崩塌；处理方式是 deterministic `torch.topk` + 默认冻结 indexer。MSA 论文本身止于 pretraining，Outlook 那节明说「把 selector-only 设计扩展到 pretraining 之外的场景、包括 reinforcement-learning post-training 和 agentic deployment」是待做工作。换句话说，MSA / NSA / MoBA 在 RL 阶段的稳定性目前是 open problem，部署到 agentic post-training 时这是必查项。
+**RL 稳定性是第二轴评判**。GLM-5 报告显式提到 DSA 在 RL 阶段会因为 top-k 算子非确定性导致训练/推理 selection 不一致、entropy 几步崩塌；处理方式是 deterministic `torch.topk` + 默认冻结 indexer。MSA 论文本身止于 pretraining，Outlook 那节明说「把 selector-only 设计扩展到 pretraining 之外的场景、包括 reinforcement-learning post-training 和 agentic deployment」是待做工作。QSA 同样只覆盖 CPT（dense distillation → sparse training），没有 RL 数字。换句话说，MSA / NSA / MoBA / QSA 在 RL 阶段的稳定性目前是 open problem，部署到 agentic post-training 时这是必查项。
 
 **部署前要看的是 4 件事，不是 1 件**：主注意力 FLOPs + indexer/选择器 FLOPs + KV-cache 访存 + RL/serving 稳定性。光看主注意力的 28× / 90% 这种数字会忽略另外 3 项中可能反吃掉的成本。
 
 ## 选哪个
 
 - 已经有 GQA full-attention checkpoint，想低成本上长上下文：MSA-CPT 路线最直接。
+- 已经是 3:1 GDN hybrid、全局层仍 dense：QSA 的 CPT（~2B indexer warmup + ~200B@256K）把那 1/4 换成 micro-block 稀疏，并在 hybrid 上压过 IndexShare；不要把它当成 IndexCache 的替代。
 - 已经有 MLA + DSA 的 production stack，想再榨一档延迟：叠 IndexCache，1/4 retention 是公开数据下的甜点。
 - 目标是百万 token + 共享前缀复用：CSA/HCA + 异构 KV-cache（DeepSeek-V4 路线）系统更完整，但实现复杂度也最高。
 - 训练预算紧张，希望最小新增结构：MoBA / InfLLM-V2 这种"少新增参数、靠主任务梯度学"的方案值得评估。
@@ -88,7 +90,7 @@ timestamp: 2026-06-19
 - [跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
-- 来源：[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)、[KVpop](../sources/kvpop.md)
+- 来源：[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
 
 ## eviction vs. sparse retrieval
 

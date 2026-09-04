@@ -31,10 +31,13 @@ timestamp: 2026-06-06
 | [Mach-Mind-4-Flash](../models/mach-mind-4-flash.md) | 35B | 3B | 继承 [Qwen3.5-35B-A3B](../models/qwen3.5.md) 架构（后训练不改预训练权重）。 |
 | [Laguna M.1](../models/laguna.md) | 225.8B | 23.4B | 256 routed + 1 shared（token-choice，routed ×2.5 系数）；3 底部 dense 层；每层 global attention；Muon + cosine。 |
 | [Laguna XS.2](../models/laguna.md) | 33.4B | 3B | 8 of 256 routed + 1 shared；1 底部 dense 层；**3:1 SWA/GA + softplus per-head gating**；WSD + AutoMixer 数据混合；Apache 2.0 开源。 |
+| [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | 125B（+51B 主机 n-gram） | 6B | expert 数未披露；3:1 GDN/QSA + Gated Residual；n-gram 表不进加速器常驻。相对 397B/17B 前作约 1/3 激活、1/9 训练 FLOPs。 |
 
 ## 解释
 
 这些报告的激活参数大致落在 9.8B 到 49B。设计前沿不再只是“模型更大”，而是如何组合稀疏激活、长上下文注意力、后训练、agent scaffold 和 serving 基础设施。
+
+[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) 把比较从「总参 / 激活」扩到第三个数：51B n-gram 表放在主机上，几乎不加每 token FLOPs。125B/6B 的激活低于 MiniMax-M2 的 9.8B，但 embedding 参数不算进加速器常驻；和 FreeToken 讨论的 expert 池 offload 是另一类「不在 GPU 上的参数」。
 
 [Engram](../sources/engram.md) 把加速器外的 hashed $N$-gram 表写成可优化的分配问题：固定 $P_{\text{tot}}$ 与 $P_{\text{act}}$，inactive 预算按 $\rho$ 在 MoE experts 与表之间切。U 形律的最优点大约是 20–25% 给表（$\rho\approx 75\%$–$80\%$），纯 MoE 不是最优。Qwen3.8-Next 的 iso-param 消融（Table 8）显示同样从 expert 抠给 n-gram 时下游没有清楚收益，生产选择把 51B 表叠在 MoE 预算之上。两条证据都支持「条件记忆不是更小的 MoE」，但「该重分配还是该外加」没有交叉复现。见 [条件记忆](conditional-memory.md)。
 

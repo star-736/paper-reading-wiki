@@ -73,7 +73,7 @@ $$L^\text{multi}_I = \sum_t \frac{1}{m+1}\sum_{j=0}^m D_\text{KL}(p_t^{(\ell+j)}
 
 - 贪心找出的"关键层"在不同 DSA 模型间是否稳定？论文说同一模型下与 calibration 数据无关，但跨模型迁移性还没有数据。
 - 1/8 retention 时即便用搜索 pattern，Long Avg 也从 50.2 掉到 46.1。压缩极限在哪里、是否能用更激进的 training-aware 进一步推进？
-- IndexCache 的核心依赖"indexer 输出跨层稳定"。如果将来稀疏注意力换成 MSA 这类 group-shared block-level 选择，跨层稳定性的形式和量级是否相同？论文 §5.2 提到 MoBA 和 NSA 也可能受益但未实验。
+- IndexCache 的核心依赖"indexer 输出跨层稳定"。如果将来稀疏注意力换成 MSA 这类 group-shared block-level 选择，跨层稳定性的形式和量级是否相同？论文 §5.2 提到 MoBA 和 NSA 也可能受益但未实验。[Qwen3.8-Next](qwen3.8-next.md) 后来在 3:1 GDN hybrid 上测了 training-aware IndexShare：被 GDN 隔开的全局层共享 index，相对延迟 0.5 仍低于 dense，而层内压缩的 QSA 在 0.25 追平。这支持「跨层稳定」在 hybrid 栈上会变弱，但实验不是 IndexCache 原论文的 greedy/F-S pattern。
 - F 层之外的 S 层在 training-aware 下"主动适应"了继承的索引——这种适应是否会让 KV cache cross-layer sharing（如 HySparse、MiniCache）变得更难，因为 S 层对 KV 的依赖结构变了。
 
 ## 与已有沉淀的关系

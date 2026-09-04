@@ -1197,6 +1197,12 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 
 定位为 critic-free 的 episode + 同状态 step 组 advantage，与 ARPO 的高熵 partial rollout 正交：不追加采样，无重复状态时退回 GRPO。Headline：相对 GRPO，1.5B ALFWorld +13.3 / WebShop 成功率 +10.6 个百分点，7B +12.6 / +9.1；search QA 平均 3B 42.1 / 7B 47.2。回链 LLM RL 对比、后训练、ARPO、DAPO、评测体系。PDF 按仓库约定留在 gitignored 的 `raw/`。
 
+## [2026-09-05] ingest | Qwen3.8-Next Architecture
+
+新增 `raw/2608.30320v1.pdf`（arXiv:2608.30320v1，Qwen Team，28 页）、来源页 `wiki/sources/qwen3.8-next.md`、模型页 `wiki/models/qwen3.8-flash-next.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（总览）、Figure 2（GDN mixer）、Figure 3（QSA）、Figure 6（1M kernel 延迟）与 Figure 7（GR 跨层路径）到 `wiki/assets/qwen3.8-next/`。未新建概念页：QSA 归入既有稀疏注意力比较，GR 作为 AttnRes 的相邻残差家族写回。
+
+Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，最大落后 2.6 分，约 1/9 训练 FLOPs。四件组件是 3:1 GDN 混合、CPT 上的 QSA（$r=4$ micro-block indexer）、四支 Gated Residual、Layer 2 n-gram。QSA 相对 IndexShare 的对照支持 hybrid 栈更适合层内压缩。Muon + GR 取消 batch-size warmup，全尺寸训练未用 qk-clip。报告无 SFT/RL，expert 配置未披露。`raw/` 除新增原文 PDF 外未改。
+
 ## [2026-09-05] ingest | Qwen-UI-Agent 技术报告
 
 新增 `raw/2607.28227v1.pdf`（arXiv:2607.28227v1，MAI-UI Team / Alibaba Token Hub，56 页）、来源页 `wiki/sources/qwen-ui-agent.md`、模型页 `wiki/models/qwen-ui-agent.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–6 到 `wiki/assets/qwen-ui-agent/`。未新建 GUI 概念页。
