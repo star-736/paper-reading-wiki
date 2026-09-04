@@ -96,16 +96,17 @@ OOD：把 TL;DR 上训好的 DPO / PPO 直接评 CNN/DailyMail 新闻摘要（Ta
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：OPD 也常被说成「不用 RL」，但 OPD 是 **on-policy 轨迹 + teacher 分布上的 reverse-KL**；DPO 是 **off-policy 偏好对 + Bradley-Terry 分类**。两者都绕开 PPO 回路，监督来源不同。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：2026 年已收录报告的后训练主轴是 RLVR / GRPO 家族和 MOPD，不是 DPO。DPO 是这条轴之前的离线偏好闭式解。
 - [Ling-2.6](ling-2.6.md) 的 Bidirectional Preference Alignment 把正负向信号放进**显式 reward model**，不是本页的无 RM 闭式路线。
+- [Iterative RPO](iterative-rpo.md)：在本页 Eq. 7 上给 winner 再加一条长度归一化 NLL（TRL `rpo_alpha`）。动机是纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。
 
 ## 待追问
 
 - 论文只做到 6B、单轮文本。DPO 在 2025–2026 的 agentic / RLVR 栈里几乎不出现，是因为静态偏好对覆盖不了可验证环境，还是后续文献里的 length bias、likelihood displacement 已经把它挤出生产？本仓库目前没有一手来源回答这个问题。
 - 无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$，对公开偏好集（HH、TL;DR）的分布偏移有多大？论文没有量化。
 - Figure 3 右图后期 win rate 轻微回落，论文问这是不是 reward over-optimization 在 DPO 里的对应物，没有下结论。
-- IPO / KTO / ORPO / SimPO 等后续偏好方法与 Eq. 7 的关系，原文没有讨论；不能把它们写成本论文的推论。
+- IPO / KTO / ORPO / SimPO 等后续偏好方法与 Eq. 7 的关系，原文没有讨论；不能把它们写成本论文的推论。[Iterative RPO](iterative-rpo.md) 是其中已核的一手来源（DPO+NLL），其余仍未 ingest。
 
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)、[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
-- 相邻算法：[DAPO](dapo.md)（名字易混）、[VAPO](vapo.md)、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
+- 相邻算法：[DAPO](dapo.md)（名字易混）、[Iterative RPO](iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[VAPO](vapo.md)、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)

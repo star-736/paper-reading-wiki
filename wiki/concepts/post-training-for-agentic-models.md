@@ -104,6 +104,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - VAPO：如何校准 critic，并让 GAE credit assignment 适应 long-CoT 的长度异质性。
 - DAPO / GSPO / SAPO：如何把 value-model-free group-based RL 的 policy update 做稳、做可扩展。
 - [DPO](../sources/dpo.md)：如何把 KL-constrained RLHF 收成离线偏好对上的一条 logistic 损失，不再训独立 RM、也不在训练环里采样。这是 2023 的闭式偏好路线；已收录的 2026 报告几乎都改走 RLVR / GRPO 家族和 MOPD，本条只作历史对照，避免与 DAPO 撞名。
+- [Iterative RPO](../sources/iterative-rpo.md)：如何在 DPO 上给 winner 再加一条 SFT（TRL `rpo_alpha`）。纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。与 VAPO 的 positive-example NLL 同构，只是挂在 DPO 而不是 PPO。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。

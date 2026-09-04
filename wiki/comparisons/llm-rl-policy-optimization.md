@@ -123,6 +123,8 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 
 它和 [OPD](on-policy-distillation.md) 也常被一起说成「不用 RL」，但 OPD 的监督是 teacher 在 **student 自己采样轨迹** 上的 reverse-KL，不是离线偏好标签。DPO 原文实验停在 6B、情感 / 摘要 / 单轮对话；2026 已收录报告的后训练主轴已经换到 RLVR + MOPD。把 DPO 放进本页是为了挡住「搜 DPO 落到 DAPO」和「把闭式偏好当 GRPO 变体」两条检索事故，不是主张它仍是当前 agentic 栈的一等算法。
 
+[Iterative RPO](../sources/iterative-rpo.md)（Pang et al.，TRL `rpo_alpha`）仍在这条离线偏好轴上，只是给 winner 再加长度归一化 NLL：$\mathcal{L}=\mathcal{L}_{\mathrm{DPO}}+\alpha\mathcal{L}_{\mathrm{NLL}}(y_w)$，$\alpha=1$。动机是纯 DPO 会压低 chosen logprob。完整论文还按最终答案对错重新采样 pair 并迭代；TRL 默认只实现损失项。它和 [VAPO](../sources/vapo.md) 的 positive-example LM loss 同构（正样本再 SFT），一个挂 DPO、一个挂 PPO。不要把它写进上表当 GRPO 变体，也不要和 Regularized Preference Optimization（SFT 权重约 0.005）或 ORPO 混名。
+
 ## 与模型报告的关系
 
 - [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
@@ -145,6 +147,6 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 
 ## 相关页面
 
-- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
+- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

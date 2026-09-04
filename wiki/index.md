@@ -36,6 +36,7 @@
 - [VAPO 技术报告](sources/vapo.md) - ByteDance Seed 的 long-CoT value-model-based PPO：校准 critic、解耦 actor/critic GAE 并按 response 长度自适应 $\lambda$，Qwen2.5-32B 的 AIME 2024 avg@32 报 60.4；证据仍限单 backbone / 单 benchmark。
 - [DAPO 技术报告](sources/dapo.md) - ByteDance Seed + 清华 AIR 等开源大规模 LLM RL 系统，四件套（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）把 Qwen2.5-32B AIME24 avg@32 从 naive GRPO 30 提到 50。
 - [DPO](sources/dpo.md) - Stanford 的 NeurIPS 2023 论文：把 KL-constrained RLHF 的最优策略写成闭式，用 Bradley-Terry 偏好差消去配分函数，把 PPO 回路收成一条 logistic 分类损失。最大实验 6B；与 DAPO 同名不同族。
+- [Iterative RPO](sources/iterative-rpo.md) - Meta FAIR + NYU：DPO 上给 winner 再加长度归一化 NLL（TRL `rpo_alpha=1.0`），按最终答案对错造 pair 并迭代；Llama-2-70B-Chat 的 GSM8K 55.6→81.6。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
 - [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
@@ -170,4 +171,4 @@
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage 的"目的 / KL 形式 / pipeline 位置"三轴对比，附 Qwen3-8B Table 21 OPD vs RL 对照。
-- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage；含 DPO 与 DAPO 的同名不同族对照。
+- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage；含 DPO 与 DAPO 的同名不同族对照，以及 Iterative RPO（TRL `rpo_alpha`）。

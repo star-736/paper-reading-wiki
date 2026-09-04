@@ -1220,3 +1220,9 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 新增 `raw/2601.07372v2.pdf`（arXiv:2601.07372v2，DeepSeek-AI + 北大，35 页）、来源页 `wiki/sources/engram.md`、概念页 `wiki/concepts/conditional-memory.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–6 到 `wiki/assets/engram/`。未建模型页：研究配置 Engram-27B/40B，不是生产实体。
 
 定位为 MoE 之外的第二条稀疏轴：hashed $N$-gram 做 $O(1)$ 静态查找。Headline：U 形分配 $\rho\approx 75\%$–$80\%$ 优于纯 MoE；iso-param 27B 相对 MoE-27B 为 BBH +5.0、CMMLU +4.0、HumanEval +3.0；100B 表主机预取吞吐掉 1.9%/2.8%。与 Qwen3.8-Next 主机 n-gram 对照：两边都认为 lookup 不是更小的 MoE，但 iso-param 该不该从 expert 重分配结论相反。回链 MoE 扩展、负载均衡、长上下文注意力、Mobius、注意力门控。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-05] ingest | Iterative RPO: Iterative Reasoning Preference Optimization
+
+新增 `raw/Pang 等 - 2024 - Iterative Reasoning Preference Optimization.pdf`（arXiv:2404.19733v3，Meta FAIR + NYU，13 页）、来源页 `wiki/sources/iterative-rpo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（迭代流水线）、Figure 2（SFT 抬高 rejected）、Figure 3（纯 DPO 压低 chosen logprob）到 `wiki/assets/iterative-rpo/`。未建模型页：算法论文。未建概念页：机制留在来源页，避免与 Regularized PO / ORPO 近亲化。
+
+核心定位：DPO + winner 上的长度归一化 NLL，即 Hugging Face TRL 的 `rpo_alpha`（论文 $\alpha=1$）。Headline：Llama-2-70B-Chat 的 GSM8K 55.6→81.6（maj@32 88.7）；同数据纯 DPO 61.8。回链 DPO、VAPO positive-example NLL、后训练概念页、LLM RL 对比页的离线偏好节。`raw/` 除新增原文 PDF 外未改。

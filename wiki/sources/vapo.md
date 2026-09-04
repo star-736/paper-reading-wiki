@@ -75,7 +75,7 @@ $$
 L(\theta)=L_{PPO}(\theta)+\mu L_{NLL}(\theta),\qquad \mu=0.1.
 $$
 
-这不是离线 SFT：正样本来自在线 rollout，目标是让稀有正确轨迹被更强地模仿。Group-Sampling 则把固定 trajectory 预算集中到较少 prompts 的多次生成上。论文把收益归因于更丰富的同题对比信号，但没有单独分析 NLL 与 group sampling 是否因相同正样本而耦合（§4.3、§5.2）。
+这不是离线 SFT：正样本来自在线 rollout，目标是让稀有正确轨迹被更强地模仿。Group-Sampling 则把固定 trajectory 预算集中到较少 prompts 的多次生成上。论文把收益归因于更丰富的同题对比信号，但没有单独分析 NLL 与 group sampling 是否因相同正样本而耦合（§4.3、§5.2）。与 [Iterative RPO](iterative-rpo.md) 的 DPO+NLL 是同一类「正样本再 SFT 一遍」补丁，VAPO 加在 PPO 上且 $\mu=0.1$，Iterative RPO 加在 DPO 上且 $\alpha=1$。
 
 ## 评测要点
 
@@ -102,5 +102,5 @@ Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AI
 ## 相关页面
 
 - 对比：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DAPO](dapo.md)、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- 相邻算法：[DAPO](dapo.md)、[Iterative RPO](iterative-rpo.md)（DPO 上的正样本 NLL）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
