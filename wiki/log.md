@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-09-05] ingest | MMSearch-R1 技术报告
+
+ByteDance + NTU 的首个端到端 RL 多模态搜索框架（arXiv:2506.20670）。创建来源页 `sources/mmsearch-r1.md`、模型页 `models/mmsearch-r1.md`，提取 5 张核心图表，更新"Agentic 模型的后训练"概念页（新增 MMSearch-R1 条目 + 将 DeepMMSearch-R1 的 MMSearch-R1 引用从裸 URL 改为 wiki 链接），同步更新 DeepMMSearch-R1 来源页的相关页面链接。
+
 ## [2026-06-06] ingest | GLM-5、MiMo-V2-Flash、DeepSeek-V4 技术报告
 
 初始化 `wiki/` 知识库结构，并沉淀三份原始技术报告：
@@ -1250,3 +1254,17 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 `raw/2607.00272v1.pdf`（arXiv:2607.00272v1，NVIDIA GEAR 等，43 页）。新建 `wiki/sources/aspire.md`、`wiki/concepts/embodied-skill-self-evolution.md`；抽 Figure 1/2/3/4/5 到 `wiki/assets/aspire/`。不建模型页：产出是 skill library，不是权重。
 
 定位：code-as-policy 三件套（执行引擎 / 技能库 / 进化搜索），冻结 Claude Opus 4.6 写程序。Headline 为成功率百分点（Table 2–5）：LIBERO-Pro Object 相对 CaP-Agent0 约 +77；Robosuite handover 20→92；BEHAVIOR-1K Radio Task 56→88；LIBERO-Pro Long 零样本 Overall 30.5% vs CaP 3.8%。回链 VLA、agent-harness、记忆生命周期。`raw/` 仅新增该 PDF。
+
+## [2026-09-05] ingest | DeepMMSearch-R1 技术报告
+
+沉淀 Apple + Johns Hopkins 的多模态 web search 训练方法论文（arXiv:2510.12801）。
+
+- `raw/deepmmsearch-r1-2510.12801.pdf`（新增）
+- `wiki/sources/deepmmsearch-r1.md`（新增）——来源页，含工具链、SFT/GRPO 训练、主结果表和消融实验。
+- `wiki/models/deepmmsearch-r1.md`（新增）——模型页，基于 Qwen2.5-VL-7B-Instruct 的 search-augmented agent。
+- `wiki/assets/deepmmsearch-r1/fig1-search-comparison.png`（新增）——Figure 1 裁剪。
+- `wiki/assets/deepmmsearch-r1/fig2-data-pipeline.png`（新增）——Figure 2 裁剪。
+- `wiki/assets/deepmmsearch-r1/fig3-ablation.png`（新增）——Figure 3 裁剪。
+- `wiki/concepts/agentic-engineering.md`（更新）——新增跨报告信号。
+- `wiki/concepts/post-training-for-agentic-models.md`（更新）——新增跨报告信号。
+- `wiki/index.md`（更新）——新增来源页和模型页条目。

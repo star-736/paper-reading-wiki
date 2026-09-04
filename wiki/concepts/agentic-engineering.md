@@ -39,11 +39,13 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 把瓶颈落到**每个 action token 生成前的内部计算预算**：在静态 tool-call benchmark 上，额外 recurrent depth 对多调用的函数选择、顺序与 output-to-input binding 更有帮助，而单 API grounding 增益较弱；论文的定性例子展示了前述错误的逐步修正。Ouro 的 adaptive exit 说明同一工作流中可按 token 难度分配 latent compute。这与 planner / retrieval / harness 是互补层：前者改变模型生成 action graph 前的表征精炼，后者改变模型能看见、执行和验证什么。边界是尚未覆盖 live、多轮、失败恢复的真实 episode。
 - [Prime Agent](../sources/prime-agent.md) 把瓶颈定位在 **harness 作为评测膜**：不把一种工作流写死，而是用持久 IPython REPL、异步 `rlm()` 递归 subagent 和 Continual Harness，让冻结模型把 test-time compute 变成程序、子 session 和可修订技能。ARC-AGI-3 上 Prime Agent + Opus 5 报 95.5% RHAE，对照官方 ARC harness 30.2%，但作者承认 native 复跑低于官方分，因此这是 situating 而非已隔离因果。与 Macaron 的 HCP 搜索同属「冻结 L0、改 runtime」；细讲见 [Agent harness](agent-harness.md)。
 
+- [DeepMMSearch-R1](../sources/deepmmsearch-r1.md)（Apple + JHU，2025-10）把 agentic engineering 的瓶颈定位在**多模态搜索的工具使用精度**而非模型规模。核心论点是：现有 search-equipped MLLM 只支持单次调用和整图搜索，在真实知识密集 VQA 中效率低。DeepMMSearch-R1 用 Grounding DINO 做裁剪图像搜索（消除背景噪声）+ 多轮文本搜索（self-reflection / self-correction），SFT + GRPO 两阶段训练使工具调用更精准（裁剪搜索 -37%，多轮文本搜索 +2.6%）。6 benchmark 平均 57.13 超 RAG workflow +21pp。与 [GLM-5V-Turbo](../sources/glm-5v-turbo.md)（多模态 GUI agent）互补：GLM-5V-Turbo 解决 GUI 截图交互，DeepMMSearch-R1 解决 web 知识检索。
+
 ## 为什么重要
 
 Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要管理上下文、使用工具、吸收环境反馈、记住先前动作，并在长历史中保持稳定推理。
 
-新增两篇报告后，一个更清晰的趋势是：agentic 能力越来越依赖运行系统。MiniMax 的 Forge 说明训练系统要能承受长尾 rollout、black-box scaffold 和大规模可验证反馈；Kimi 的 Agent Swarm 说明推理时也可以通过并行 sub-agent 改变任务复杂度和上下文形态。ARPO 进一步说明，哪怕不改 harness，**rollout 预算在轨迹内部的分配方式**也会影响 tool-use 行为学习：工具反馈后的高熵节点比完整轨迹开头更值得追加探索。
+新增两篇报告后，一个更清晰的趋势是：agentic 能力越来越依赖运行系统。MiniMax 的 Forge 说明训练系统要能承受长尾 rollout、black-box scaffold 和大规模可验证反馈；Kimi 的 Agent Swarm 说明推理时也可以通过并行 sub-agent 改变任务复杂度和上下文形态。ARPO 进一步说明，哪怕不改 harness，**rollout 预算在轨迹内部的分配方式**也会影响 tool-use 行为学习：工具反馈后的高熵节点比完整轨迹开头更值得追加探索。DeepMMSearch-R1 则从另一个角度说明：**工具调用的结构化协议 + RL 精炼**可以让模型在知识密集任务中更高效地使用搜索工具——不是调用更多次，而是更精准。
 
 ## 待追问
 

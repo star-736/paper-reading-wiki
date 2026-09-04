@@ -85,6 +85,8 @@
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。
+- [MMSearch-R1 技术报告](sources/mmsearch-r1.md) - ByteDance + NTU 的首个端到端 RL 多模态搜索框架：GRPO 教 LMM 按需发起图像搜索与文本搜索，search penalty 抑制过度搜索，FVQA 数据集，5 benchmark 平均 54.6% 超同尺寸 RAG。
+- [DeepMMSearch-R1 技术报告](sources/deepmmsearch-r1.md) - Apple + Johns Hopkins 的多模态 web search 训练方法：SFT + GRPO 两阶段教 MLLM 做多轮文本搜索与裁剪图像搜索，DeepMMSearchVQA 数据集，6 benchmark 平均 57.13 超 RAG workflow +21pp。
 - [Qwen3.8-Next 架构报告](sources/qwen3.8-next.md) - Qwen3.8-Flash-Next：125B/6B + 51B 主机 n-gram，3:1 GDN + QSA、Gated Residual、Muon；14 项 base 8 胜 6 负追平 397B-A17B，约 1/9 训练 FLOPs。
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
@@ -134,6 +136,8 @@
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
 - [Mach-Mind-4-Flash](models/mach-mind-4-flash.md) - 理想汽车 35B / 3B 激活的 agentic MoE 模型，基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练 + 统一 RL/OPD loss + MOPD 融合 + HMPO token 效率，纯文本。
 - [Kimi K3](models/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.78T/104B 激活），Hybrid KDA-MLA（3:1）+ Attention Residuals + Stable LatentMoE（896 routed/16 active）+ MoonViT-V2 原生视觉 + 1M 上下文，多模态（文本+图像+视频）。
+- [MMSearch-R1](models/mmsearch-r1.md) - ByteDance + NTU 的 7B 按需多模态搜索模型，基于 Qwen2.5-VL-7B-Instruct + GRPO RL，支持图像搜索和文本搜索，5 benchmark 平均 54.6%，搜索率 67.1%。
+- [DeepMMSearch-R1](models/deepmmsearch-r1.md) - Apple 的多模态 web search 模型，基于 Qwen2.5-VL-7B-Instruct，SFT+GRPO 训练做多轮文本搜索与裁剪图像搜索，6 benchmark 平均 57.13。
 - [Laguna](models/laguna.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程，3:1 SWA/GA + softplus 门控 + WSD + AutoMixer + CISPO RL，XS.2 Apache 2.0 开源，纯文本。
 - [WeMM-Embedding](models/wemm-embedding.md) - 腾讯微信视觉的通用多模态 embedding 家族（2B/4B/9B），基于 Qwen3.5，文本/图像/视频/视觉文档/交错输入，不支持音频，已部署微信推荐与搜索。
 
