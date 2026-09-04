@@ -113,6 +113,7 @@ Figure 8 的 scaling 分析给出三个实用结论：
 
 - 与 [GiGPO](gigpo.md) 的关系：两者都针对多轮 agent 的 step-level 信号。ARPO **追加**高熵节点的 partial rollout；GiGPO **不追加**采样，只对已有 group 做同状态对照。目前没有同表实验。
 - 与 [异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的关系：GLM-5 解决的是长尾 rollout 的**系统调度 / off-policy 控制**；ARPO 解决的是 rollout 预算在轨迹内部怎么分配，属于**算法层采样结构**。
+- 与 [SAO](single-rollout-asynchronous-optimization.md) 的关系：SAO 问异步下还要不要组，ARPO 默认还在 group 里把预算投到高熵工具步。没有同表。
 - 与 [Forge Agent-Native RL](../concepts/forge-agent-native-rl.md) 的关系：Forge 把 agent harness、工具、上下文、reward 接成训练系统；ARPO 假设已有工具环境，进一步问「哪些 tool-use step 值得追加探索」。两者可互补，而非同一层级替代。
 - 与 [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) 的关系：ARPO 把 GAIA / WebWalkerQA / HLE / XBench 作为 deep search 主评测，同时用 AIME、MATH、HotpotQA、2Wiki、MuSiQue、Bamboogle 等覆盖 reasoning 与 multi-hop QA。
 - 与 [Qwen3](../models/qwen3.md) 的关系：Qwen3 在本论文里是被 ARPO 训练的 backbone（8B/14B deep search），不是 Qwen3 官方报告的一部分；只能作为「外部后训练算法在 Qwen3 backbone 上验证」的证据。
@@ -126,7 +127,7 @@ Figure 8 的 scaling 分析给出三个实用结论：
 
 ## 相关页面
 
-- 概念：[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)
+- 概念：[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
-- 相邻算法：[GiGPO](gigpo.md)
+- 相邻算法：[GiGPO](gigpo.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)

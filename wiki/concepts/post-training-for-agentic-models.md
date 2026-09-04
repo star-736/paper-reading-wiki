@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "Agentic 模型的后训练"
-description: "面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization、ARPO 这类 step-level rollout 采样，以及 GiGPO 这类同状态 step 组 advantage。"
+description: "面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization、ARPO 这类 step-level rollout 采样、GiGPO 这类同状态 step 组 advantage，以及 SAO 这类异步单 rollout。"
 tags: ["concept", "post-training-for-agentic-models"]
 timestamp: 2026-06-06
 ---
@@ -88,7 +88,9 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 [GiGPO](../sources/gigpo.md) 和 ARPO 相邻但花钱位置相反：它不追加 partial rollout，而是在已经按同一初始状态采好的轨迹组上，用重复环境状态做 anchor grouping，把 step-level 相对优势加到轨迹级 GRPO 信号上。ALFWorld / WebShop 上相对 GRPO 约 +13 / +9 个百分点，无重复状态时退回 GRPO。附录的 `GiGPO_dynamic` 把 DAPO recipe 接进去，用来支持层次优势与单轮 group 技巧正交。
 
-这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；GiGPO 关心同一组轨迹里如何用状态碰撞拆 step-level credit；VAPO 关心 value model 与 GAE 如何给 long-CoT 做 token-level credit assignment；DAPO / GSPO / SAPO 关心 value-model-free group-based RL 如何稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
+[SAO](../sources/single-rollout-asynchronous-optimization.md) 问的是更前面的问题：异步长周期下还要不要组。它把 GRPO 的组采样换成 group size = 1，轨迹完成即训；没有组内相对奖励后把 critic 请回来，并用 DIS 把 $\pi_\theta/\pi_{\mathrm{rollout}}$ 出界的 token mask 掉。Qwen3-30B-A3B 上 vanilla GRPO 约 160 step 崩，SAO 报告约 1000 step；作者写已部署到 GLM-5.2 的 agentic RL pipeline。这和 GLM-5 报告里的 DIS 是同一层机制的算法论文，不要和 [SAPO](../sources/soft-adaptive-policy-optimization.md) 混名。
+
+这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；SAO 关心异步下组采样是否还成立，以及单条轨迹的 critic 怎么训；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；GiGPO 关心同一组轨迹里如何用状态碰撞拆 step-level credit；VAPO 关心 value model 与 GAE 如何给 long-CoT 做 token-level credit assignment；DAPO / GSPO / SAPO 关心 value-model-free group-based RL 如何稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
 
 ## 综合框架
 
@@ -107,6 +109,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - [Iterative RPO](../sources/iterative-rpo.md)：如何在 DPO 上给 winner 再加一条 SFT（TRL `rpo_alpha`）。纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。与 VAPO 的 positive-example NLL 同构，只是挂在 DPO 而不是 PPO。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
+- SAO：如何在异步下放弃组采样，用 DIS + critic 让单条轨迹也能稳定更新。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 - KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。

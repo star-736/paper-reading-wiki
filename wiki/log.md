@@ -1226,3 +1226,9 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 新增 `raw/Pang 等 - 2024 - Iterative Reasoning Preference Optimization.pdf`（arXiv:2404.19733v3，Meta FAIR + NYU，13 页）、来源页 `wiki/sources/iterative-rpo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（迭代流水线）、Figure 2（SFT 抬高 rejected）、Figure 3（纯 DPO 压低 chosen logprob）到 `wiki/assets/iterative-rpo/`。未建模型页：算法论文。未建概念页：机制留在来源页，避免与 Regularized PO / ORPO 近亲化。
 
 核心定位：DPO + winner 上的长度归一化 NLL，即 Hugging Face TRL 的 `rpo_alpha`（论文 $\alpha=1$）。Headline：Llama-2-70B-Chat 的 GSM8K 55.6→81.6（maj@32 88.7）；同数据纯 DPO 61.8。回链 DPO、VAPO positive-example NLL、后训练概念页、LLM RL 对比页的离线偏好节。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-05] ingest | Single-Rollout Asynchronous Optimization（SAO）
+
+新增 `raw/Hou 等 - 2026 - Single-Rollout Asynchronous Optimization for Agentic Reinforcement Learning.pdf`（arXiv:2607.07508v1，清华 / Z.AI intern，14 页）。来源 `wiki/sources/single-rollout-asynchronous-optimization.md`、概念 `wiki/concepts/single-rollout-asynchronous-optimization.md`；资产 Figure 1–5（overview、柱状结果、训练曲线、critic 动态、在线文风切换），PyMuPDF 300 DPI。未建模型页：算法论文。
+
+核心：异步下用 group size = 1 替代 GRPO 组采样；DIS 用 $\pi_\theta/\pi_{\mathrm{rollout}}$ 出界 mask，丢掉 $\pi_{\theta_{\mathrm{old}}}$；critic 以更快更新、冻结 attention、Skip-Observation GAE 补单条轨迹方差。Headline：vanilla GRPO ~160 step 崩，SAO 约 1000 step；Qwen3-30B-A3B 上 AIME 2025 97.3、SWE-Verified 29.8；声明用于 GLM-5.2。不要和 SAPO 混名；GLM-5.3 博客的 compaction 不在该 PDF。回链异步 Agent RL、后训练、LLM RL 对比、GLM-5 / 5.3、VAPO、ARPO、GiGPO。`raw/` 仅新增该 PDF。

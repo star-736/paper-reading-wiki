@@ -29,7 +29,7 @@ Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2
 
 ## 后训练与系统
 
-博客称 GLM-5.3 延续了 GLM-5.2 的 SAO with compaction，并以开源 `slime` 承载后训练：Megatron 负责训练、SGLang 负责 rollout，数学、代码、sandbox、verifier 和 agent 环境以数据生成接入同一 dataflow，而非为每类任务改写训练循环（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。
+博客称 GLM-5.3 延续了 GLM-5.2 的 SAO with compaction，并以开源 `slime` 承载后训练：Megatron 负责训练、SGLang 负责 rollout，数学、代码、sandbox、verifier 和 agent 环境以数据生成接入同一 dataflow，而非为每类任务改写训练循环（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。SAO 的算法定义见 [Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)；该论文声明用于 GLM-5.2，但 **compaction 不在论文正文**，本页不能把它回写成算法机制。
 
 该版本还公开了三项系统侧扩展：
 
@@ -71,4 +71,5 @@ Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2
 - [Agentic engineering](../concepts/agentic-engineering.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)
+- [Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

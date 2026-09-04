@@ -21,7 +21,7 @@ GLM-5.3 是 Z.ai 发布的 agentic coding / cyber 能力模型。官方发布博
 | 模态 | 未披露；发布页只覆盖 coding / cyber agent，不能据此推断模型输入模态 |
 | Base model | 与 GLM-5.2 相同（官方发布声明） |
 | 主要增益来源 | 后训练环境、任务多样性和训练计算量扩展（官方发布声明） |
-| RL stack | SAO with compaction；`slime`（Megatron training + SGLang rollout） |
+| RL stack | [SAO](../sources/single-rollout-asynchronous-optimization.md) with compaction（发布声明）；`slime`（Megatron training + SGLang rollout） |
 | Reasoning effort | `low` / `high` / `max`；发布页称不再支持关闭 thinking |
 
 ## 技术身份
@@ -39,5 +39,6 @@ GLM-5.3 的可沉淀定位是**后训练缩放的结果样本**：发布页把�
 - [Agentic engineering](../concepts/agentic-engineering.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)
+- [Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md) — GLM-5.2 pipeline 的算法论文；compaction 不在该 PDF
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - [FreeToken](../sources/freetoken.md) / [端侧 MoE serving](../concepts/edge-native-moe-serving.md) — GLM-5.2 753B-A40B 的单卡工作站 serving 数字；不是本页后训练结果

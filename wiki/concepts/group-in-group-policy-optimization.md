@@ -20,6 +20,7 @@ Group-in-Group Policy Optimization（GiGPO）是 [GiGPO 论文](../sources/gigpo
 - **[DAPO](../sources/dapo.md)**：补的是单轮 long-CoT GRPO 的 recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）。GiGPO 附录把 DAPO 技巧接到自己身上（`GiGPO_dynamic`），WebShop / 1.5B 成功率从 DAPO 的 66.1 再到 75.0，用来支持「层次优势与单轮 group 技巧可叠加」。
 - **[VAPO](../sources/vapo.md)**：用独立 critic + Length-Adaptive GAE 给 long-CoT 做 token-level credit。GiGPO 拒绝 critic，用「重复状态 ≈ 免费对照实验」代替 value estimate。没有共同 backbone / 共同任务。
 - **GLM-5 / Forge / Laguna 的 agent RL 系统**：关心 rollout 吞吐、harness 接入、异步 off-policy。GiGPO 假设已经能同步采到同一初始状态的一组轨迹；它不解决调度，只改这组轨迹内部的 advantage。
+- **[SAO](single-rollout-asynchronous-optimization.md)**：认为异步下不该再等一组。GiGPO 的 $A^S$ 依赖组内状态碰撞；SAO 用 critic 换掉组。
 
 ## 为什么重要
 
@@ -55,6 +56,7 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 
 - 来源：[GiGPO](../sources/gigpo.md)
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- [Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)

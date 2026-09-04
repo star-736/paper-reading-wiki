@@ -135,6 +135,7 @@ verl-agent 宣称的能力包括：step-wise 多轮（不拼接全历史）、�
 - 与 [ARPO](agentic-reinforced-policy-optimization.md) 的关系：两者都针对多轮 agent 的 step-level 信号，但不在同一层。ARPO **多花 rollout**：在高熵工具步分叉 partial trajectories。GiGPO **不花额外 rollout**：对已经采到的 group 做同状态对照。理论上可叠加；论文没有和 ARPO 对照。
 - 与 [DAPO](dapo.md) 的关系：Appendix E.4 的 `GiGPO_dynamic` 是目前 wiki 里少有的「group-based recipe × agent step-level advantage」同表证据。
 - 与 [VAPO](vapo.md) 的关系：VAPO 用 critic + GAE 给 long-CoT 做 token-level credit；GiGPO 坚持 critic-free，用重复状态代替 value model。没有共同实验。
+- 与 [SAO](single-rollout-asynchronous-optimization.md) 的关系：GiGPO 依赖同一初始状态的一组轨迹；SAO 认为异步下这组轨迹不该等齐。一个要组，一个拆组。
 - 与 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 的关系：GiGPO 应放在 **advantage 的构造单元** 轴——episode 组 + 同状态 step 组——而不是 ratio / clipping / 采样位置轴。
 
 ## 待追问
@@ -149,6 +150,6 @@ verl-agent 宣称的能力包括：step-wise 多轮（不拼接全历史）、�
 ## 相关页面
 
 - 概念：[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DAPO](dapo.md)、[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- 相邻算法：[DAPO](dapo.md)、[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)

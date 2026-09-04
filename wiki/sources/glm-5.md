@@ -35,7 +35,7 @@ GLM-5 使用 DeepSeek Sparse Attention（DSA）实现 [高效长上下文注意�
 
 > on-policy cross-stage distillation 的算法形式与 MiMo MOPD 高度相似（reverse-KL log-ratio 当 advantage 塞进 GRPO 框架，公式 2），同样是**多 teacher × prompt 路由 × KL 当 loss**——SFT / Reasoning RL / General RL 三个阶段的 final checkpoint 都当 teacher，prompt 按其归属阶段路由到对应 teacher 算 KL。差别不在 teacher 数量，在 teacher 性质：MiMo / V4 的 teacher 是**横向**专门训出来的领域专家，GLM-5 的 teacher 是**纵向**自己流水线上各阶段留下的快照——融合的是同一个 student 不同时间点的能力，对应问题是 sequential RL 阶段间的能力遗忘。一个有意思的工程后果：advantage 直接来自 teacher gap 而非 group 内对比，所以 GRPO group size 可降到 1（§3.5 原文）。算法源头是 [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（§3.5 reference [28]）；详见 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md) 轴一第三类。
 
-两个关键稳定性机制是 Token-in-Token-out（TITO）和 direct double-sided importance sampling。TITO 避免重新分词带来的轨迹错位；double-sided importance sampling 用 token 级裁剪控制异步 off-policy 偏差。
+两个关键稳定性机制是 Token-in-Token-out（TITO）和 direct double-sided importance sampling。TITO 避免重新分词带来的轨迹错位；double-sided importance sampling 用 token 级裁剪控制异步 off-policy 偏差。后续算法论文 [SAO](single-rollout-asynchronous-optimization.md) 把 DIS 形式化，并加上单 rollout 与 critic 设计；作者写已部署到 GLM-5.2 的 agentic RL pipeline。本报告本身没有使用 SAO 这个名字。
 
 ## 评测要点
 

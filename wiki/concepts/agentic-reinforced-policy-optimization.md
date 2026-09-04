@@ -20,6 +20,7 @@ Agentic Reinforced Policy Optimization（ARPO）是 [Agentic Reinforced Policy O
 - **MiniMax-M2 的 [Forge Agent-Native RL](forge-agent-native-rl.md)**：重点是把任意 agent scaffold、工具、上下文管理和 reward 接成可训练环境，LLM completion 是 action，工具与 context state transition 是 environment。它解决「怎么接入和调度 agent 环境」。
 - **ARPO**：重点是轨迹内部的采样结构。论文观察到工具反馈后 entropy spike，于是从高熵 tool-call step 分叉 partial rollouts，试图让模型学到 step-level tool-use behavior。
 - **[GiGPO](group-in-group-policy-optimization.md)**：同样针对 step-level 信号，但不追加采样。它把 group 内重复环境状态收成对照，用折扣回报算微优势。和 ARPO 正交，目前没有同表对照。
+- **[SAO](single-rollout-asynchronous-optimization.md)**：放弃 group，单条轨迹立即更新。ARPO 仍在组内分配探索预算；两者问的不是同一层问题。
 - **[Agentic 评测体系](agentic-evaluation-benchmarks.md)**：ARPO 的 deep search 评测覆盖 GAIA / WebWalkerQA / HLE / XBench；数学与知识推理覆盖 AIME、MATH、HotpotQA、2Wiki、MuSiQue、Bamboogle 等。它强化了一个已有结论：同名 benchmark 分数要连同 agent harness、search/browser 设置和 judge 一起看。
 
 ## 为什么重要
@@ -56,6 +57,7 @@ ARPO 把 agentic RL 的问题拆得更细：trajectory-level RL 假设「完整�
 
 - 来源：[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)
 - [Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
+- [Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [异步 Agent RL](asynchronous-agent-rl.md)
 - [Forge Agent-Native RL](forge-agent-native-rl.md)

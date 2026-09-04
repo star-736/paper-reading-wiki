@@ -102,5 +102,5 @@ Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AI
 ## 相关页面
 
 - 对比：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DAPO](dapo.md)、[Iterative RPO](iterative-rpo.md)（DPO 上的正样本 NLL）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- 相邻算法：[DAPO](dapo.md)、[Iterative RPO](iterative-rpo.md)（DPO 上的正样本 NLL）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步下采用 Length-Adaptive GAE；无 DIS 的 vanilla VAPO 在该文中约 90 step 崩）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

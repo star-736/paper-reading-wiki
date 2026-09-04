@@ -14,7 +14,7 @@ resource: "../../raw/Gao 等 - 2025 - Soft adaptive policy optimization.pdf"
 - 文件：`raw/Gao 等 - 2025 - Soft adaptive policy optimization.pdf`
 - 标题：Soft Adaptive Policy Optimization
 - 团队 / 日期：Qwen Team, Alibaba Inc.；2025-12-02
-- 定位：LLM RL policy optimization 方法论文；不是新模型技术报告。论文称 SAPO 被用于 Qwen3-VL model series 的 RL 训练。
+- 定位：LLM RL policy optimization 方法论文；不是新模型技术报告。论文称 SAPO 被用于 Qwen3-VL model series 的 RL 训练。不要和 [SAO](single-rollout-asynchronous-optimization.md)（Single-Rollout Asynchronous Optimization）混名。
 
 ## 核心结论
 
@@ -119,5 +119,5 @@ Qwen3-VL 实验评测四项：AIME25（Pass@1 with 32 samples）、LiveCodeBench
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[DAPO](dapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- 相邻算法：[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[DAPO](dapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步单 rollout，不是 soft gate）
 - 模型/来源：[Qwen3-VL 技术报告](qwen3-vl.md)、[Qwen3 技术报告](qwen3.md)

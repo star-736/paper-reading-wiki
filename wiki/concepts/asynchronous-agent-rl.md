@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "异步 Agent RL"
-description: "GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent。"
+description: "GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent；SAO 把 DIS 做成单 rollout 算法。"
 tags: ["concept", "asynchronous-agent-rl"]
 timestamp: 2026-06-06
 ---
@@ -53,6 +53,8 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 
 [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是互补的算法层问题：在一个 agent 轨迹内部，工具反馈后的高熵 step 是否应该追加 partial rollout 探索。前者解决长尾 rollout 怎么跑得动，后者解决有限 rollout 预算投到轨迹哪里。
 
+[SAO](single-rollout-asynchronous-optimization.md) 把上面「系统机制」里的 DIS 收成一篇独立算法论文，并论证 **GRPO 组采样在异步下是结构错配**：组必须等最慢样本，等于把 straggler 屏障请回来。它的回答是 group size = 1，轨迹完成即训；没有组内 baseline 之后把 critic 请回来（更快 value 更新、冻结 attention、Skip-Observation GAE）。消融把贡献拆开：DIS 让 GRPO 也能跑满约 1000 step，单 rollout + critic 才在约 400 step 后继续拉开。详见来源页 [Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)。GLM-5.3 博客写的「SAO with compaction」是发布声明，compaction 不在该 PDF。
+
 ## 跨报告信号：Kimi K3 的 partial rollout + AgentENV
 
 [Kimi K3](../sources/kimi-k3.md) 在 1M 上下文 agentic RL 上走了与 GLM-5 / Ring-2.6 同源但工程更重的 partial rollout 路线：
@@ -84,3 +86,10 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 - **FP8 KV cache for rollout**：131072 全 context 下 KV cache 主导 inference-replica 显存，存 FP8 约翻倍单 replica 并发轨迹数。release 跑 BF16 权重 + FP8 KV cache；预发布消融也试过 FP8 权重（in-flight block-wise 再量化无校准），稳定性无碍但 train-inference KL mismatch 变大，release 仍保 BF16 权重——这是「为安全牺牲一半并发」的诚实权衡。
 
 **与三家的定位**：Laguna 不做 partial rollout（K3/ Ring-2.6）也不做轨迹数量阈值的异步解耦（GLM-5），而是靠「trainer↔inference 高带宽直连 + 每 2 step 同步 + 配比自然消 staleness」把在线 RL 跑到吞吐可行。它的独有价值在 chat-template 对齐断言——这是已收录报告里最严格的「RL 训练格式 = 部署格式」工程保证。
+
+## 相关页面
+
+- 算法：[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
+- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)
+- [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
+- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
