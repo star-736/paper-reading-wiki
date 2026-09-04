@@ -3,7 +3,7 @@ type: Concept
 title: "Agent harness"
 description: "模型与世界之间的执行膜：标准化执行、恢复、验证和资源记账，把策略构造留给模型；跨报告里它已经是与权重同量级的性能变量。"
 tags: ["concept", "agent-harness", "rlm", "continual-harness"]
-timestamp: 2026-08-29
+timestamp: 2026-09-05
 ---
 
 # Agent harness
@@ -48,6 +48,12 @@ timestamp: 2026-08-29
 
 这些和 Prime Agent 的「先做一张表达性膜再 co-train」方向相反但互补：前者防止模型绑死在一种 CLI，后者假设当前模型还不会用满一张更强的膜。
 
+### ASPIRE：具身侧的 coding agent 膜
+
+[ASPIRE](../sources/aspire.md) 把 coding agent、机器人执行引擎和 skill library 当成具身侧的膜。内侧标准化的是 per-primitive 多模态 traces、允许的感知/规划/控制 API，以及 coordinator 对可复用修复的入库审计；外侧仍把「写哪份程序、补哪处失败」留给冻结的 coder（仿真 Claude Opus 4.6，真机 GPT-5.5）。底层策略网络若存在也不被更新——对照表里的 OpenVLA / π0 / π0.5 只是评测基线。
+
+与 Prime Agent / Macaron 的同构：L0 不动，改的是可复用程序（这里是 skill library 里的 code-as-policy 修复，不是 HCP TOML 或 REPL skill）。差异：痕迹是机器人感知–运动与接触动力学，不是终端日志；sim-to-real 运的是 know-how（in-context 指导），不是像素或权重。详见 [具身 skill 自进化](embodied-skill-self-evolution.md)。
+
 ### Agent Swarm：编排策略 ≠ 执行膜
 
 [Agent Swarm](agent-swarm.md) 是 Kimi K2.5 里被 PARL 训出来的 orchestrator 策略：动态创建 frozen subagent、按 critical path 并行。Prime Agent 的递归 subagent 是同一 daemon 上的持久 session 加消息队列，**没有**报告 RL 训练编排器。Kimi 改的是「谁被梯度更新」；Prime Agent 改的是「子 agent 是否作为可恢复计算节点存在」。两者都做 context sharding，但一层是学到的拆任务，一层是 runtime 语义。
@@ -55,7 +61,7 @@ timestamp: 2026-08-29
 ## 为什么重要
 
 1. **Agent 分数默认是 (model, harness, budget, context policy) 的联合。** UniClawBench 和 Prime Agent 从两个方向重复这件事：换框架可以超过换模型；换一张更表达的膜可以大幅改变 ARC-AGI-3 曲线形状。[UI-Mate](../sources/ui-mate.md) 再加一维：同一 verifier 下开关一条示范，严格成功可以从 17.2% 到 35.4%。[Qwen-UI-Agent](../sources/qwen-ui-agent.md) 则把「何时开始、在哪台设备继续」也放进膜，但还没有成对消融。读 [Agentic 评测体系](agentic-evaluation-benchmarks.md) 时，harness 和示范都不能再当脚注。
-2. **冻结权重仍能改可达策略集。** Macaron 的 HCP 搜索和 Prime Agent 的 Continual Harness 都在 L0 不动时扩展策略。这不是持续学习已经发生，而是「elicit vs 学会」必须分开记账。
+2. **冻结权重仍能改可达策略集。** Macaron 的 HCP 搜索和 Prime Agent 的 Continual Harness 都在 L0 不动时扩展策略。[ASPIRE](../sources/aspire.md) 把同一判断搬到机器人：改 skill library 而不是 VLA 权重。这不是持续学习已经发生，而是「elicit vs 学会」必须分开记账。
 3. **持久化会保存作弊。** Prime Agent 的 Factorio RCON skill 说明：refinement / memory 若没有独立校验和 rollback，self-improvement 会把 specification exploit 写成可复用程序。这是 [Agent 记忆生命周期](agent-memory-lifecycle.md) 的 gate/rollback 在 agent runtime 上的对应物。
 4. **训练与评测正在抢同一层。** 一边随机化、多 harness、harness-agnostic RL，一边把评测膜做得更表达、更可记账。后续 model–harness co-learning 若真发生，这两条线会撞到同一组 primitive（工具 schema、上下文管理、subagent API）。
 
@@ -70,6 +76,6 @@ timestamp: 2026-08-29
 
 ## 相关页面
 
-- 来源：[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)
-- 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)
+- 来源：[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[ASPIRE](../sources/aspire.md)
+- 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

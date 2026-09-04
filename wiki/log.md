@@ -1201,7 +1201,7 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 
 新增 `raw/Feng 等 - 2025 - Group-in-Group Policy Optimization for LLM Agent Training.pdf`（arXiv:2505.10978v3，NTU + Skywork，NeurIPS 2025，27 页）、来源页 `wiki/sources/gigpo.md`、概念页 `wiki/concepts/group-in-group-policy-optimization.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–7 到 `wiki/assets/gigpo/`。未建模型页：算法论文，主实验用既有 Qwen2.5-Instruct。
 
-定位为 critic-free 的 episode + 同状态 step 组 advantage，与 ARPO 的高熵 partial rollout 正交：不追加采样，无重复状态时退回 GRPO。Headline：相对 GRPO，1.5B ALFWorld +13.3 / WebShop 成功率 +10.6 个百分点，7B +12.6 / +9.1；search QA 平均 3B 42.1 / 7B 47.2。回链 LLM RL 对比、后训练、ARPO、DAPO、评测体系。PDF 按仓库约定留在 gitignored 的 `raw/`。
+定位为 critic-free 的 episode + 同状态 step 组 advantage，与 ARPO 的高熵 partial rollout 正交：不追加采样，无重复状态时退回 GRPO。Headline：相对 GRPO，1.5B ALFWorld +13.3 / WebShop 成功率 +10.6 个百分点，7B +12.6 / +9.1；search QA 平均 3B 42.1 / 7B 47.2。回链 LLM RL 对比、后训练、ARPO、DAPO、评测体系。`raw/` 除新增原文 PDF 外未改。
 
 ## [2026-09-05] ingest | Qwen3.8-Next Architecture
 
@@ -1221,14 +1221,32 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 
 定位为 MoE 之外的第二条稀疏轴：hashed $N$-gram 做 $O(1)$ 静态查找。Headline：U 形分配 $\rho\approx 75\%$–$80\%$ 优于纯 MoE；iso-param 27B 相对 MoE-27B 为 BBH +5.0、CMMLU +4.0、HumanEval +3.0；100B 表主机预取吞吐掉 1.9%/2.8%。与 Qwen3.8-Next 主机 n-gram 对照：两边都认为 lookup 不是更小的 MoE，但 iso-param 该不该从 expert 重分配结论相反。回链 MoE 扩展、负载均衡、长上下文注意力、Mobius、注意力门控。`raw/` 除新增原文 PDF 外未改。
 
+## [2026-09-05] ingest | OpenVLA
+
+新增 `raw/2406.09246v3.pdf`（arXiv:2406.09246v3，CoRL 2024）。新建来源 `wiki/sources/openvla.md`、模型 `wiki/models/openvla.md`、概念 `wiki/concepts/vision-language-action.md`；资产 `wiki/assets/openvla/`（Figure 2 架构 + Figure 3 Bridge 结果，PyMuPDF 300 DPI）。
+
+机制：Prismatic-7B（Llama-2-7B + DINOv2/SigLIP）把 7 维动作量化成 256-bin token，在 OpenX 约 970k 真实轨迹上全量 next-token；29 任务以 7B 超 RT-2-X 55B 约 16.5 个百分点（Table 4+6）。概念页用 OpenVLA 作离散 token 基线，用已有 InternVLA-A1.5 作 MoT + flow-matching 对照；π0/π0.5 未 ingest，只进待追问。回链 InternVLA 来源/模型页；未硬链 Qwen3.5。`raw/` 仅新增该 PDF。
+
 ## [2026-09-05] ingest | Iterative RPO: Iterative Reasoning Preference Optimization
 
 新增 `raw/Pang 等 - 2024 - Iterative Reasoning Preference Optimization.pdf`（arXiv:2404.19733v3，Meta FAIR + NYU，13 页）、来源页 `wiki/sources/iterative-rpo.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（迭代流水线）、Figure 2（SFT 抬高 rejected）、Figure 3（纯 DPO 压低 chosen logprob）到 `wiki/assets/iterative-rpo/`。未建模型页：算法论文。未建概念页：机制留在来源页，避免与 Regularized PO / ORPO 近亲化。
 
 核心定位：DPO + winner 上的长度归一化 NLL，即 Hugging Face TRL 的 `rpo_alpha`（论文 $\alpha=1$）。Headline：Llama-2-70B-Chat 的 GSM8K 55.6→81.6（maj@32 88.7）；同数据纯 DPO 61.8。回链 DPO、VAPO positive-example NLL、后训练概念页、LLM RL 对比页的离线偏好节。`raw/` 除新增原文 PDF 外未改。
 
+## [2026-09-05] ingest | π0 与 π0.5
+
+新增 `raw/2410.24164v4.pdf`（arXiv:2410.24164v4，RSS 2025）与 `raw/2504.16054v1.pdf`（arXiv:2504.16054v1）。来源 `wiki/sources/pi0.md`、`wiki/sources/pi0.5.md`，模型 `wiki/models/pi0.md`、`wiki/models/pi0.5.md`；资产 `wiki/assets/pi0/`（Figure 3 框架 + Figure 7 out-of-box）与 `wiki/assets/pi0.5/`（Figure 3 两阶段、Figure 7 真家、Figure 12 vs π0），PyMuPDF 300 DPI。
+
+π0：PaliGemma + 300M flow matching action expert，7 配置 × 68 任务、约 10,000 小时；原文把 OpenVLA 重训到同一混合物作对照。π0.5：同一 expert，FAST 预训练 + 异构 co-training + 统一 subtask，未见过的家里做长周期家务。deepen 概念页三条动作头（离散 token / flow expert / 开世界 co-training）；回链 OpenVLA 与 InternVLA-A1.5。未 ingest AtomicVLA、EmbodiedSkills、π0.7。`raw/` 仅新增这两份 PDF。
+
 ## [2026-09-05] ingest | Single-Rollout Asynchronous Optimization（SAO）
 
 新增 `raw/Hou 等 - 2026 - Single-Rollout Asynchronous Optimization for Agentic Reinforcement Learning.pdf`（arXiv:2607.07508v1，清华 / Z.AI intern，14 页）。来源 `wiki/sources/single-rollout-asynchronous-optimization.md`、概念 `wiki/concepts/single-rollout-asynchronous-optimization.md`；资产 Figure 1–5（overview、柱状结果、训练曲线、critic 动态、在线文风切换），PyMuPDF 300 DPI。未建模型页：算法论文。
 
 核心：异步下用 group size = 1 替代 GRPO 组采样；DIS 用 $\pi_\theta/\pi_{\mathrm{rollout}}$ 出界 mask，丢掉 $\pi_{\theta_{\mathrm{old}}}$；critic 以更快更新、冻结 attention、Skip-Observation GAE 补单条轨迹方差。Headline：vanilla GRPO ~160 step 崩，SAO 约 1000 step；Qwen3-30B-A3B 上 AIME 2025 97.3、SWE-Verified 29.8；声明用于 GLM-5.2。不要和 SAPO 混名；GLM-5.3 博客的 compaction 不在该 PDF。回链异步 Agent RL、后训练、LLM RL 对比、GLM-5 / 5.3、VAPO、ARPO、GiGPO。`raw/` 仅新增该 PDF。
+
+## [2026-09-05] ingest | ASPIRE: Agentic /Skills Discovery for Robotics
+
+`raw/2607.00272v1.pdf`（arXiv:2607.00272v1，NVIDIA GEAR 等，43 页）。新建 `wiki/sources/aspire.md`、`wiki/concepts/embodied-skill-self-evolution.md`；抽 Figure 1/2/3/4/5 到 `wiki/assets/aspire/`。不建模型页：产出是 skill library，不是权重。
+
+定位：code-as-policy 三件套（执行引擎 / 技能库 / 进化搜索），冻结 Claude Opus 4.6 写程序。Headline 为成功率百分点（Table 2–5）：LIBERO-Pro Object 相对 CaP-Agent0 约 +77；Robosuite handover 20→92；BEHAVIOR-1K Radio Task 56→88；LIBERO-Pro Long 零样本 Overall 30.5% vs CaP 3.8%。回链 VLA、agent-harness、记忆生命周期。`raw/` 仅新增该 PDF。

@@ -26,7 +26,7 @@ InternVLA-A1.5 是一个统一 VLA（Vision-Language-Action）模型，把视觉
 2. **Mixture-of-Transformers（MoT）**：VLM 和轻量 unified expert 只通过共享 full attention 层交互，各自维护独立的 GDN 线性注意力层，避免异质目标干扰。
 3. **Latent foresight**：用 learnable foresight tokens 从 frozen 预训练视频生成模型（WAN2.2-5B）蒸馏时空先验，推理时丢弃视频模型，零额外延迟。
 
-在 6 项仿真 benchmark（LIBERO、RoboTwin 2.0、EBench、SimplerEnv、LIBERO-Plus、DOMINO）上全部最优或高度竞争；真实世界 4 项任务（3 项指令跟随 + 1 项长周期化学实验 MOF）上组合泛化和长周期执行领先 π0.5 和 Motus。
+在 6 项仿真 benchmark（LIBERO、RoboTwin 2.0、EBench、SimplerEnv、LIBERO-Plus、DOMINO）上全部最优或高度竞争；真实世界 4 项任务（3 项指令跟随 + 1 项长周期化学实验 MOF）上组合泛化和长周期执行领先 [π0.5](pi0.5.md) 和 Motus。这些 π0.5 数字是本报告的重测，不是 π0.5 原文的家庭家务协议。
 
 ## 架构与训练
 
@@ -137,6 +137,10 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 ## 相关页面
 
 - 模型：[InternVLA-A1.5](../models/internvla-a1.5.md)
+- 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（通用 VLA 定义；本页是 2026 的 MoT + flow-matching 实例，不是入门定义）
+- 开源离散动作 token 基线：[OpenVLA](../models/openvla.md) · [来源](openvla.md)（7 维 × 256-bin 自回归；与本页 Stage 2 连续动作不是同一套）
+- 真机/LIBERO-Plus 对照的开世界 VLA：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)（PaliGemma + flow expert + 异构 co-training；本页数字是重测）
+- 连续 flow 前作：[π0](pi0.md)
 - 架构基座：[Qwen3.5](../models/qwen3.5.md)（VLM backbone = Qwen-3.5 2B，3:1 GDN:full attention 混合）
 - [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（GDN 在 VLA 领域的采用证据）
 - [注意力门控](../concepts/attention-gating.md)（Qwen3.5 hybrid 架构的 gated attention 在 VLA 中被继承）

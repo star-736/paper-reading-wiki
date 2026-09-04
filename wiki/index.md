@@ -45,6 +45,10 @@
 - [TANDEM](sources/tandem.md) - JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy + 动态 reference）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。
 - [Gemma 4 技术报告](sources/gemma-4.md) - Google DeepMind 的 Gemma 4 arXiv 报告，原生多模态 dense + MoE 家族（E2B~31B），重点是 encoder-free 12B、5:1 SWA/GA + key-as-value + p-RoPE 长上下文、MTP drafter 和 QAT 量化。
 - [InternVLA-A1.5 技术报告](sources/internvla-a1.5.md) - 上海 AI Lab 的统一 VLA 机器人模型，Qwen-3.5 2B backbone + 460M unified expert + latent foresight（frozen WAN2.2 蒸馏），6 项仿真 benchmark 全部最优。
+- [OpenVLA](sources/openvla.md) - 开源 7B VLA（CoRL 2024）：Prismatic-7B 把 7 维动作写成 256-bin token，Open X-Embodiment 约 970k 真实轨迹全量 fine-tune；29 任务上以 7B 超过 RT-2-X 55B。
+- [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
+- [π0.5](sources/pi0.5.md) - π0 的开世界后作（CoRL 2025）：异构 co-training（多机器人 + web/语义 + subtask）+ 统一高低层，在未见过的家里做长周期家务。
+- [ASPIRE](sources/aspire.md) - NVIDIA GEAR 的 code-as-policy 具身 skill 自进化：执行引擎 + 技能库 + 进化搜索；不是 VLA 动作头，冻结 Claude Opus 4.6 写/改程序。
 - [HunyuanOCR-1.5 技术报告](sources/hunyuan-ocr-1.5.md) - 腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，DFlash block-diffusion 推测解码（Transformers 6.37× / vLLM 2.14×）+ Agentic Data Flow 数据构造 + 三组件 reward RL。
 - [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
 - [KAT-Coder-V2 技术报告](sources/kat-coder-v2.md) - 快手 KwaiKAT 的 agentic coding 模型，Specialize-then-Unify 五域分治 + KwaiEnv 模块化沙箱 + MCLA 稳定 MoE RL + Tree Training 6.2× 加速 + OPD 专家融合。
@@ -105,6 +109,9 @@
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
 - [InternVLA-A1.5](models/internvla-a1.5.md) - 上海 AI Lab 统一 VLA 机器人模型，Qwen-3.5 2B（3:1 GDN:full attention）做 backbone + 460M unified expert + latent foresight，GDN 混合注意力在机器人控制领域的采用。
+- [OpenVLA](models/openvla.md) - 开源 7B VLA：Llama-2-7B + DINOv2/SigLIP，图像+指令→离散动作 token→连续 7D 控制；后续 skill 论文对照的离散 token 基线。
+- [π0](models/pi0.md) - Physical Intelligence 3.3B VLA：PaliGemma + flow matching action expert，多路图像+语言+本体感觉→连续动作块，最高 50 Hz。
+- [π0.5](models/pi0.5.md) - π0 的开世界 VLA：同一 flow expert，加异构 co-training 与统一 subtask 头；多路图像+语言→subtask 文本+连续动作。
 - [HunyuanOCR-1.5](models/hunyuan-ocr-1.5.md) - 腾讯轻量端到端 OCR VLM（1B），DFlash block-diffusion 推测解码 + Agentic Data Flow 数据构造，OmniDocBench v1.6 总分 94.74。
 - [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
@@ -133,6 +140,8 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
+- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。
+- [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；与 VLA 改权重、软件 agent 的终端 skill 文件对照。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO 这类同状态 step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。

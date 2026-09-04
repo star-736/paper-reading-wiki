@@ -33,7 +33,7 @@ InternVLA-A1.5 是上海 AI Laboratory / Physical Intelligence Team 的统一 VL
 
 InternVLA-A1.5 的核心创新不在单一组件，而在**组合方式**：
 
-1. **VLM 语义不侵蚀**：与 π0.5 类似，VLM backbone 在加动作目标后仍持续训练 VQA 和 subtask 预测，所有目标统一到 chat template 的 next-token loss。论文 lesson 1："prompt design matters"——把 state、control mode、action cast 进 VLM 原生 chat template，保留预训练表示。
+1. **VLM 语义不侵蚀**：与 [π0.5](pi0.5.md) 类似，VLM backbone 在加动作目标后仍持续训练 VQA 和 subtask 预测，所有目标统一到 chat template 的 next-token loss。论文 lesson 1："prompt design matters"——把 state、control mode、action cast 进 VLM 原生 chat template，保留预训练表示。
 2. **MoT 解耦异质目标**：VLM 和 unified expert 共享 full attention 层但各自独立 GDN 层。语义处理和动作/foresight 处理在大部分层互不干扰，只在全局 full attention 层汇总。
 3. **Latent foresight 而非像素生成**：不从零学像素级未来预测，而是用 50 个 learnable tokens 从 frozen WAN2.2-5B 蒸馏时空先验。论文 lesson 2："a handful of latent tokens is enough to encode the future information that action learning needs"——policy 只学"想象什么"，预训练视频模型已知道"世界怎么演化"。
 
@@ -44,6 +44,10 @@ InternVLA-A1.5 的核心创新不在单一组件，而在**组合方式**：
 ## 相关页面
 
 - 来源：[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)
+- 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
+- 开源离散动作 token 基线：[OpenVLA](openvla.md)（Llama-2-7B + 256-bin；本页是 MoT + flow-matching，不是它的换皮）
+- 真机对照：[π0.5](pi0.5.md)（开世界 co-training；本报告表内分数是重测）
+- 连续 flow 前作：[π0](pi0.md)
 - 架构基座：[Qwen3.5](../models/qwen3.5.md)（VLM backbone = Qwen-3.5 2B）
 - 同基座、不同任务：[WeMM-Embedding](wemm-embedding.md)（Qwen3.5 2B/4B/9B 做通用多模态 embedding）
 - [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（GDN 在 VLA 领域的采用证据）
