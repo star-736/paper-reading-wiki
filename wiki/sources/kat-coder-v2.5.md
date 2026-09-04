@@ -149,3 +149,4 @@ V2.5 的 MOPD 与 V2 的 OPD 在算法骨架上一致（reverse-KL + on-policy�
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- [Agent harness](../concepts/agent-harness.md) - harness randomization 是训练侧防止 scaffold 过拟合；与 Prime Agent 的表达性评测膜互补

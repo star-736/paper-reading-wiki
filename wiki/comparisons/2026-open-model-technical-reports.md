@@ -53,7 +53,7 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 1. 长上下文机制：[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md) -> [百万 token 上下文服务](../concepts/million-token-context-serving.md)。
 2. 后训练机制：[异步 Agent RL](../concepts/asynchronous-agent-rl.md) -> [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) -> [Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)。
 3. 并行与多模态 agent：[Agent Swarm](../concepts/agent-swarm.md) -> [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)。
-4. 评测解释：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)。
+4. 评测解释：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) -> [Agent harness](../concepts/agent-harness.md)。
 
 ## 二版综合
 
@@ -75,6 +75,8 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 - Qwen3.8-Flash-Next 认为**架构、效率和优化是同一个设计问题**：3:1 GDN 混合在 CPT 把全局层换成 QSA，残差加宽成 GR，容量加在主机 n-gram 上，Muon 把最优 LR/batch 上推。Headline 是 6B 激活、约 1/9 FLOPs 在 14 项 base 上 8 胜 6 负追平 397B/17B。它几乎不谈 agent 后训练；价值在预训练配方和「loss 与下游会分叉」的消融纪律。
 
 这意味着后续比较不应只看 SWE-bench 或 HLE 分数，而要比较“模型 + agent harness + context strategy + serving system”的整体能力。
+
+[Prime Agent](../sources/prime-agent.md) 不是模型报告，但把最后这一句做成了可检查的评测膜：固定 Opus 5，官方 ARC harness 30.2% vs Prime Agent 95.5% RHAE。作者同时写明 native-harness 复跑低于官方分，所以这是 situating 而不是已隔离因果。它与 Macaron 的 HCP 搜索一起说明：2026 的 agent 分数里，harness 已经不能再当脚注。细讲见 [Agent harness](../concepts/agent-harness.md)。
 
 ## 后续问题
 

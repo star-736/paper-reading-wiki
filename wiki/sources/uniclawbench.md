@@ -121,4 +121,6 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 
 - 概念：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)（UniClawBench 作为 capability-driven benchmark 补充进来）
 - 概念：[Agentic engineering](../concepts/agentic-engineering.md)（proactive agent 平台背景）
+- 概念：[Agent harness](../concepts/agent-harness.md)（framework > model 是 harness 作为一等变量的评测侧证据）
+- 来源：[Prime Agent 技术报告](prime-agent.md)（同模型换膜的另一条证据，主台是 ARC-AGI-3 而非真实世界 Docker 任务）
 - 模型：[Kimi K2.5](../models/kimi-k2.5.md)（Kimi-2.6 为评测模型之一）

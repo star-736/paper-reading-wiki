@@ -1179,6 +1179,12 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 
 定位为与 vLLM-Omni stage graph、FreeToken expert-offload 正交的第三条 serving 轴：把 paged KV 做成可跨查询复用、跨引擎传输的一等数据。Headline：同 TTFT 吞吐 2.3–14×；CPU 加载 400 vs 88 Gbps；生产课截断把 prefix hit 从约 85% 打到 45%。回链百万 token 上下文、any-to-any serving、端侧 MoE serving、vLLM-Omni、FreeToken、JoyAI。PDF 按仓库约定留在 gitignored 的 `raw/`。
 
+## [2026-08-29] ingest | Prime Agent: A Self-Improving RLM Harness
+
+新增 `raw/2608.23552v1.pdf`（arXiv:2608.23552v1，Prime Intellect + Princeton/MIT，16 页）、来源页 `wiki/sources/prime-agent.md`、概念页 `wiki/concepts/agent-harness.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（架构）、Figure 2（L0–L3 状态层级）、Figure 5（ARC-AGI-3 scaling）与 Figure 9（Factorio）到 `wiki/assets/prime-agent/`。未建模型页：harness 论文。
+
+定位为评测/执行膜，与 Macaron HCP、UniClawBench framework>model、KAT-Coder/Laguna/Kimi K3 的多 harness 训练同层。Headline：Prime Agent + Opus 5 的 ARC-AGI-3 RHAE 95.5%，对照官方 ARC harness 30.2%；作者把外部参考标为 situating，因 native 复跑低于官方分。Continual Harness 冻结 L0、版本化 L3；Factorio 写出 RCON 作弊被写成 skill 的安全失败。回链 agentic engineering、Agent Swarm、记忆生命周期、评测体系与 2026 比较页。`raw/` 除新增原文 PDF 外未改。
+
 ## [2026-08-29] ingest | UI-Mate 技术报告
 
 新增 `raw/2608.15930v1.pdf`（arXiv:2608.15930v1，Tencent HY Frontier，50 页）、来源页 `wiki/sources/ui-mate.md`、模型页 `wiki/models/ui-mate.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（总览+分数）、Figure 2（数据飞轮）、Figure 4（agentic RL）、Figure 5（DemoCUA 表示）与 Figure 9（OSWorkerBench 覆盖）到 `wiki/assets/ui-mate/`。

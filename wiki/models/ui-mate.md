@@ -50,4 +50,5 @@ UI-Mate 是腾讯 HY Frontier Team 发布的 **foundation GUI agent** 家族。�
 - [Qwen3.5](qwen3.5.md) - 9B 基座家族
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - OSWorkerBench
+- [Agent harness](../concepts/agent-harness.md) - DemoCUA workflow 作为执行膜
 - [Agentic Engineering](../concepts/agentic-engineering.md)

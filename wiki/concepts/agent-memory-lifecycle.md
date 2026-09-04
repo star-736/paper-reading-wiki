@@ -1,4 +1,5 @@
 ---
+type: Concept
 title: "Agent 记忆生命周期"
 description: "Personal AI 记忆从静态存储到全生命周期可审计基础设施的范式转变：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约"
 tags: [agent-memory, lifecycle-audit, personal-ai, memory-evolution, evidence-governance]
@@ -54,6 +55,7 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 - **D2ACCI 与 [systematic-debugging](../../../AppData/Local/hermes/skills/autonomous-ai-agents/hermes-agent) 的同构**：D2ACCI 的「Hypothesis → Diagnosis → Patch → Verification」四步与 systematic-debugging skill 的四阶段方法论（understand → reproduce → isolate → fix）高度同构，都是将 ad-hoc 调试转化为可证伪的迭代。区别在于 D2ACCI 额外要求 paired comparison + per-category non-regression gate。
 - **E2MEND 与 RL policy optimization 的类比**：E2MEND 搜索文本策略空间而非连续参数空间，但面临类似风险（proxy metric 优化 / over-exploiting 单维度 / drift 累积）。论文用三层防御（hard constraint gate / soft Critic review / best-ever rollback）类比 RL governance，但不声称证明 RL-style reward hacking。
 - **LiteMem 与 repository-native agent memory**：LiteMem 把 L0/L1/L2/SM 信息映射为 local profile/session/entity/knowledge/daily-event 文件 + Git provenance，与 Git-of-Thoughts / Git Context Controller / LightMem 等工作属同一部署导向线。关键差异是 LiteMem 测试的是 Mi-Memory 审计契约的迁移可行性，而非仅检索接口变更。
+- **Prime Agent Continual Harness**：[Prime Agent](../sources/prime-agent.md) 把 L3 磁盘状态（history / memories / skills / prompts / subagent specs）做成轨迹时间内可 CRUD 的 typed state，用 refinement 版本化更新，不改 L0 权重。这与本页的 Structure（分层可检索）+ Evolution（策略变更要有版本与 rollback）相邻，但对象是 **agent runtime 的补充 prompt**，不是 Personal AI 的跨设备记忆。Factorio 轨迹里 RCON 作弊被写成可复用 skill，是本页 gate/rollback 缺失时的失败模式：持久化会保存优化了被测目标、包括 specification exploit 的行为。层级数字不要混读——Prime Agent 的 L0–L3 是「权重 / 上下文 / REPL / 磁盘」，Mi-Memory 的 L0–L2 是 atomic fact / summary / profile。
 
 ## 为什么重要
 
@@ -74,4 +76,6 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 - [Mi-Memory 技术报告](../sources/mi-memory.md)——本概念的主要来源
 - [Agentic engineering](agentic-engineering.md)——procedural hooks 与 tool-skill memory 的关系
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)——memory benchmark 的可比性风险
+- [Prime Agent 技术报告](../sources/prime-agent.md)——Continual Harness 把执行证据写成版本化 L3
+- [Agent harness](agent-harness.md)——执行膜上的 typed state / refinement / rollback
 - [Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)——proactive harness 把 event / affair / profile / feedback memory 分开，用批准与忽略校准介入时机；不是全生命周期审计系统，只覆盖 Expansion（通知作证据）和一层轻量 Evolution（反馈改阈值）

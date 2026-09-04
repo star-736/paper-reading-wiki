@@ -49,3 +49,22 @@ Kimi K2.5 单 agent 在 BrowseComp 为 60.6；使用 Agent Swarm 后为 78.4。W
 ## 与 Forge 的区别
 
 [Forge](forge-agent-native-rl.md) 是训练基础设施，可以接入各种 white-box 或 black-box agent。Agent Swarm 是 Kimi K2.5 里被 RL 训练出来的编排策略。前者解决“怎么大规模训练 agent”；后者解决“agent 运行时如何把任务并行化”。
+
+## 与 Prime Agent 递归 subagent 的区别
+
+[Prime Agent](../sources/prime-agent.md) 也做并行子 agent，但改的是 **runtime 语义** 而不是 RL 目标。`rlm()` 立刻返回 handle，子节点是 daemon 上可恢复的持久 session，用异步队列与 parent / children / siblings 通信；Factorio 的 Sonnet 5 轨迹创建 633 个 depth-one subagent、最多 7 个并发，记录的是浅而反复变宽的专项，而不是更深递归（原文确证，Prime Agent §2.3–§2.4、§3.5、Figure 9）。
+
+| | Agent Swarm (Kimi K2.5) | Prime Agent subagents |
+| --- | --- | --- |
+| 谁被训练 | orchestrator（PARL）；subagent 冻结 | 都不训；L0 固定 |
+| 子节点身份 | 固定策略 checkpoint 的一次执行 | 带独立 kernel / history 的持久 session |
+| 协调 | orchestrator 分配任务并聚合结果 | daemon 中介的 A2A 队列；人可经 Agents View 介入 |
+| 成本口径 | critical steps（关键路径） | root + descendants 的 token / 时间 / 费用一并记账 |
+
+两者都做 context sharding，但 Swarm 把「何时拆任务」变成可学习策略，Prime Agent 把「子 agent 是否作为计算节点存在」变成 harness primitive。细讲见 [Agent harness](agent-harness.md)。
+
+## 相关页面
+
+- 模型：[Kimi K2.5](../models/kimi-k2.5.md)
+- 来源：[Prime Agent 技术报告](../sources/prime-agent.md)
+- 相邻概念：[Forge Agent-Native RL](forge-agent-native-rl.md)、[Agent harness](agent-harness.md)、[Agentic engineering](agentic-engineering.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)

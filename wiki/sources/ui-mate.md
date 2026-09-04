@@ -159,6 +159,6 @@ OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：�
 - 模型：[UI-Mate](../models/ui-mate.md)
 - 相邻 GUI：[Xiaomi-GUI-0 技术报告](xiaomi-gui-0.md)（移动真机闭环，对照本报告的桌面 CUA + 示范协议）；[Qwen-UI-Agent 技术报告](qwen-ui-agent.md)（OSWorld-Verified 79.5% vs 本页 77.0%；hybrid CLI + proactive harness，无 DemoCUA）
 - 基座：[Qwen3.5](../models/qwen3.5.md)（9B）
-- 概念：[Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- 概念：[Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)、[Agent harness](../concepts/agent-harness.md)
 - 异步 / 组相对 RL：[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)
 - IcePop 前作对照：[Ling and Ring 2.6 技术报告](ling-2.6.md)

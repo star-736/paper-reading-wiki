@@ -71,6 +71,12 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | Ainstain Bench | 科学计算编程，测试模型能否实现和操控科研工作流中的计算程序 | Seed2.0 Model Card 新建，归入 Science Discovery 评测维度。Seed2.0 Pro 47.7，超过 GPT-5.2（41.3）和 Claude-Sonnet-4.5（33.7）。 |
 | GDPVal-Verified | GDPVal 的可靠子集 + rubric 自动评测，面向端到端真实世界任务 | Seed2.0 Model Card 新建，归入 Real-World Tasks 评测维度。 |
 | AgentWorldBench | language world model 评测，2,170 turn-level 样本 / 7 域 / 9 source benchmark / 5 frontier model / 5 维 rubric（Format/Factuality/Consistency/Realism/Quality） | Qwen-AgentWorld 自建，评估 LWM 模拟环境观测的保真度；每样本配真实环境执行的 ground-truth 观测，训练/评测在数据源级分区保证 OOD。 |
+| ARC-AGI-3 | 交互式抽象推理：每局要在动作上限内学习隐藏规则、构造 ad-hoc world model | [Prime Agent](../sources/prime-agent.md) 用作 test-time scaling 主台；报 RHAE Best@1。Prime Agent + Opus 5 95.5%，官方 ARC harness 上 Opus 5 为 30.2%；作者把后者标为外部参考，因 native 复跑低于官方分。 |
+| EmulatorBench | 无参考实现、用 Rust 从零复现目标机，人类诊断程序验 CPU/PPU 等 | Prime Agent 长周期 coding；Table 1 为 16 个 emulator 均分，Figure 7 给 Genesis / GBC 个例。 |
+| PMPP-Hard | 固定墙钟预算下的 GPU kernel：编辑–编译–正确性–profile 循环 | Prime Agent 与 native harness 组内分数接近、排序可反转（Sol 1500s：62.3 vs Codex 59.4；Kimi-K3 4500s：68.1 vs Kimi-Code 71.0）。 |
+| nanoGPT speedrun | 124M GPT 到固定 val loss 的训练步数，八种子均值 verified record | Prime Agent 用来展示多日自主实验；作者称最终 record 相对噪声对 harness 不敏感，差别在是否用 REPL 做脚本外实验。 |
+| Factorio Learning Environment | 持久工厂世界的 Python 观测/动作 | Prime Agent 七天 Sonnet 5：23.4M output token、24/196 科技、advanced-circuit 71%；含破坏性重置恢复与 RCON 作弊被写成 skill 的安全失败。 |
+| MazeBench | 开放 3D 迷宫：控方块解房间、收集宝石 | Prime Agent vs native harness 的探索–成本曲线；前沿模型被报告为极耗 token 仍只解一小部分世界。 |
 
 ## Macaron-V1 的 Personal Intelligence 与 GenUI 评测边界
 
@@ -116,6 +122,8 @@ UniClawBench（arXiv:2607.08768，HKU MMLab + Meituan）与上表其他 benchmar
 GLM-5 的强项是非常系统地讨论了 agentic engineering 环境构建和 context management。GLM-5.3 的发布页则罕见地给出 Terminal-Bench 3.0 的完整执行预算（harness、上下文、rollout 数、turn 与 timeout），也同时展示了为什么发布页的跨模型表不能直接当排名：同表项目的 context、timeout、采样数并不统一；Z.ai Code Bench 更是任务与 checklist 未公开的私有基准。MiMo-V2-Flash 更强调在较小模型规模下 SWE-bench 与 BrowseComp 的提升。DeepSeek-V4 则把 agent benchmark 放在 512K context、内部 harness 和 1M context 能力背景下理解。MiniMax-M2 更强调统一 scaffold、verifiable reward 和 self-evolution 工作流。Kimi K2.5 则把 Agent Swarm 作为 benchmark 变量，直接比较单 agent、context management 和并行 agent 编排。ARPO 不是发布新模型，而是把 GAIA / WebWalkerQA / HLE / XBench 作为算法测试床，强调同一个 backbone 下 rollout 采样结构也会显著改变 tool-use 分数。Seed2.0 Model Card 把 agentic 评测升级为四维框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks），新建 NL2Repo-Bench / Ainstain Bench / GDPVal-Verified 三个内部 benchmark，并诚实标注 coding（SWE-Evo 8.5）和 repository 构建（NL2Repo-Bench 27.9）为短板。详见 [GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)。
 
 因此，读 benchmark 表时要先问：模型本体、agent harness、工具集合、context strategy、rollout / sampling 策略、policy optimization 算法、reward / judge 设置分别是什么。
+
+[Prime Agent](../sources/prime-agent.md) 把「harness 是一等变量」推进成评测设计原则：膜要标准化恢复和记账，同时让模型自己构造策略，分数才更接近 maximal underlying capability。它的 ARC-AGI-3 曲线是目前最醒目的同模型换膜例子，但作者自己把官方 harness 分数标成 situating 参考，而不是因果 ATE——读 95.5% vs 30.2% 时要连着这条限定。长上下文 Table 1 的 bold 只是点估计方向，没有区间。细讲见 [Agent harness](agent-harness.md)。
 
 LoopCoder-v2 则提醒了另一个变量：**推理时计算量**。同一个 7B 模型，R=2 在 SWE-bench Verified 上 64.4%（超 Kimi-Dev-72B），R=3 掉到 27.6%（低于 R=1 baseline 43.0%），R=4 进一步降到 22.4%--loop count 是与 model / framework 同量级的性能变量，且呈强非单调。详见 [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) 和 [Looped Transformers 概念页](looped-transformers.md)。
 

@@ -202,4 +202,5 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md) — TITO + trainer↔inference 权重同步 + FP8 KV cache rollout
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) — CISPO（from MiniMax-M1）的又一生产采用
 - [Agentic Engineering](../concepts/agentic-engineering.md) — Model Factory 工业化流程
+- [Agent harness](../concepts/agent-harness.md) — multi-harness 训练（OpenHands / OpenCode2 / Mini-SWE-Agent）防 scaffold 过拟合
 - 模型：[Laguna](../models/laguna.md)

@@ -37,6 +37,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 
 - Macaron-V1 把瓶颈进一步落在**model–harness 的共同版本化**：MoL 让 Chat / Agent / Coding / GenUI specialist 在 frozen base 上按 turn 路由，而 HCP 将 router、工具、skills、prompts、memory 与 workspace 变成可审计 runtime contract。其 122/122 TerminalBench base-failure task 覆盖实验只改变 HCP/skill/hook、base 全程冻结；它支持「很多失败是未被正确 elicitation 的能力」这一工程判断，却不等价于 adapter 训练、跨代持续学习或 collective intelligence 已被实证。详见 [Macaron-V1 技术报告](../sources/macaron-v1.md)。
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 把瓶颈落到**每个 action token 生成前的内部计算预算**：在静态 tool-call benchmark 上，额外 recurrent depth 对多调用的函数选择、顺序与 output-to-input binding 更有帮助，而单 API grounding 增益较弱；论文的定性例子展示了前述错误的逐步修正。Ouro 的 adaptive exit 说明同一工作流中可按 token 难度分配 latent compute。这与 planner / retrieval / harness 是互补层：前者改变模型生成 action graph 前的表征精炼，后者改变模型能看见、执行和验证什么。边界是尚未覆盖 live、多轮、失败恢复的真实 episode。
+- [Prime Agent](../sources/prime-agent.md) 把瓶颈定位在 **harness 作为评测膜**：不把一种工作流写死，而是用持久 IPython REPL、异步 `rlm()` 递归 subagent 和 Continual Harness，让冻结模型把 test-time compute 变成程序、子 session 和可修订技能。ARC-AGI-3 上 Prime Agent + Opus 5 报 95.5% RHAE，对照官方 ARC harness 30.2%，但作者承认 native 复跑低于官方分，因此这是 situating 而非已隔离因果。与 Macaron 的 HCP 搜索同属「冻结 L0、改 runtime」；细讲见 [Agent harness](agent-harness.md)。
 
 ## 为什么重要
 
@@ -71,3 +72,5 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Macaron-V1](../models/macaron-v1.md) - MoL specialist composition + HCP 版本化 harness + 未闭合的 RSI 证据边界
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) - 组合式 function calling 的 latent recurrence 证据
 - [GLM-5.3](../models/glm-5-3.md) - 可验证环境合成与 verifier 审计闭环
+- [Prime Agent 技术报告](../sources/prime-agent.md) - 表达性 RLM harness 与冻结权重的 Continual Harness
+- [Agent harness](agent-harness.md) - 执行膜作为与模型同量级的性能变量
