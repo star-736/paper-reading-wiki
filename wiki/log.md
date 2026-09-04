@@ -1184,3 +1184,9 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 新增 `raw/2608.15930v1.pdf`（arXiv:2608.15930v1，Tencent HY Frontier，50 页）、来源页 `wiki/sources/ui-mate.md`、模型页 `wiki/models/ui-mate.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（总览+分数）、Figure 2（数据飞轮）、Figure 4（agentic RL）、Figure 5（DemoCUA 表示）与 Figure 9（OSWorkerBench 覆盖）到 `wiki/assets/ui-mate/`。
 
 核心定位：开源权重桌面 foundation GUI agent（9B / 27B）。训练瓶颈用环境接地飞轮 + 可验证 RL bundle 回应；交互瓶颈用 DemoCUA 把录屏蒸馏成 live 截图可否决的 subtask workflow。Headline：OSWorld-Verified 77.0%、WindowsAgentArena 66.2%；OSWorkerBench 指令-only 41.0% / 76.9%，相对 Qwen3.6-27B 基座 +17.7 / +24.5。33-task self-demo 严格成功 17.2%→35.4%；45-task variant-demo 未进主表。OSWorld-Subset 按本模型失败筛选，增益带选择偏差。回链 Xiaomi-GUI-0（移动真机对照）、Qwen3.5 9B 基座、agentic engineering / 后训练 / 评测体系 / agent harness。未新建 GUI 概念页。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-05] ingest | GiGPO: Group-in-Group Policy Optimization
+
+新增 `raw/Feng 等 - 2025 - Group-in-Group Policy Optimization for LLM Agent Training.pdf`（arXiv:2505.10978v3，NTU + Skywork，NeurIPS 2025，27 页）、来源页 `wiki/sources/gigpo.md`、概念页 `wiki/concepts/group-in-group-policy-optimization.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–7 到 `wiki/assets/gigpo/`。未建模型页：算法论文，主实验用既有 Qwen2.5-Instruct。
+
+定位为 critic-free 的 episode + 同状态 step 组 advantage，与 ARPO 的高熵 partial rollout 正交：不追加采样，无重复状态时退回 GRPO。Headline：相对 GRPO，1.5B ALFWorld +13.3 / WebShop 成功率 +10.6 个百分点，7B +12.6 / +9.1；search QA 平均 3B 42.1 / 7B 47.2。回链 LLM RL 对比、后训练、ARPO、DAPO、评测体系。PDF 按仓库约定留在 gitignored 的 `raw/`。

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "Agentic 模型的后训练"
-description: "面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization 与 ARPO 这类 step-level rollout 采样模式。"
+description: "面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization、ARPO 这类 step-level rollout 采样，以及 GiGPO 这类同状态 step 组 advantage。"
 tags: ["concept", "post-training-for-agentic-models"]
 timestamp: 2026-06-06
 ---
@@ -86,7 +86,9 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 [DAPO](../sources/dapo.md)、[GSPO](../sources/group-sequence-policy-optimization.md)、[SAPO](../sources/soft-adaptive-policy-optimization.md) 则在另一条轴上回答「group-based RL 自己怎么稳定」：DAPO 补 long-CoT GRPO recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping），GSPO 把 GRPO 的 token-level ratio 改成 sequence-level ratio 以稳定 MoE，SAPO 再用 soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity。
 
-这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；VAPO 关心 value model 与 GAE 如何给 long-CoT 做 token-level credit assignment；DAPO / GSPO / SAPO 关心 value-model-free group-based RL 如何稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
+[GiGPO](../sources/gigpo.md) 和 ARPO 相邻但花钱位置相反：它不追加 partial rollout，而是在已经按同一初始状态采好的轨迹组上，用重复环境状态做 anchor grouping，把 step-level 相对优势加到轨迹级 GRPO 信号上。ALFWorld / WebShop 上相对 GRPO 约 +13 / +9 个百分点，无重复状态时退回 GRPO。附录的 `GiGPO_dynamic` 把 DAPO recipe 接进去，用来支持层次优势与单轮 group 技巧正交。
+
+这补上了现有几条路线之间的空档：GLM-5 / Forge 关心 rollout 系统如何高吞吐、低偏差地跑起来；ARPO 关心 rollout 预算在一条 agent 轨迹内部应该投到哪里；GiGPO 关心同一组轨迹里如何用状态碰撞拆 step-level credit；VAPO 关心 value model 与 GAE 如何给 long-CoT 做 token-level credit assignment；DAPO / GSPO / SAPO 关心 value-model-free group-based RL 如何稳定、高效地转成 policy update。详见 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)。
 
 ## 综合框架
 
@@ -102,6 +104,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - VAPO：如何校准 critic，并让 GAE credit assignment 适应 long-CoT 的长度异质性。
 - DAPO / GSPO / SAPO：如何把 value-model-free group-based RL 的 policy update 做稳、做可扩展。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
+- GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 - KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。
@@ -120,6 +123,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 - 异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
 - ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
+- GiGPO 的状态匹配在 SWE / GUI 开放轨迹上是否还能维持 ALFWorld 那种高重复率？与 ARPO 同一预算对照仍然缺失。
 - VAPO 的 value-based credit assignment 在多轮工具轨迹上是否仍稳定，还是 verifier 稀疏、环境随机性和 critic 成本会抵消 AIME 上的优势？
 - DAPO 的 recipe、GSPO 的 sequence-level ratio、SAPO 的 soft gate 能否组合成同一个训练栈，还是彼此在 loss reduction / ratio 单元 / clipping 形状上有冲突？
 - Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？

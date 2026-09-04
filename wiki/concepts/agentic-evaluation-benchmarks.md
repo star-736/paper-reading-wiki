@@ -34,6 +34,8 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
 | OSWorld / WebArena | GUI 与网页环境中的 computer-use | Kimi K2.5 用来测试视觉-操作结合的 agent 能力；[UI-Mate-27B](../sources/ui-mate.md) 在 OSWorld-Verified 报 77.0%（开源对照中高于 Kimi-K2.6 73.1%）。 |
+| ALFWorld | 文本 embodied 家务：最多 50 步，六类 Pick / Look / Clean / Heat / Cool / Pick2 | [GiGPO](../sources/gigpo.md) 的长周期主台；Qwen2.5-7B 上 GiGPO w/ std 总体成功率 90.8 vs GRPO 77.6。动作集合是 admissible list，比开放工具干净。 |
+| WebShop | 模拟电商 HTML：搜索、翻页、购买，最多 15 步 | GiGPO 的 web 交互主台；1.5B 上还用来验证接 DAPO recipe 的 `GiGPO_dynamic`（成功率 75.0 vs DAPO 66.1 vs GRPO 56.8）。 |
 || Mind2Web | 真实网页中的任务完成 | 测试 web agent 的端到端任务执行能力。 |
 || BFCL (v3) | 函数调用 / tool use | 测试模型选择和调用外部工具的能力。 |
 | NESTful | 嵌套 API 调用与输出到输入依赖 | 测试调用 DAG 的 dependency binding、部分 / 完整序列匹配及实际执行 Win Rate；[Looped Tool Calling](../sources/looped-tool-calling.md) 用它区分单条合理调用和端到端依赖工作流。 |

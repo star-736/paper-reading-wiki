@@ -19,6 +19,7 @@ Agentic Reinforced Policy Optimization（ARPO）是 [Agentic Reinforced Policy O
 - **GLM-5 的 [异步 Agent RL](asynchronous-agent-rl.md)**：重点是长尾 agent rollout 的训练系统问题——rollout engine / training engine 解耦、stale sample dropping、token-level clipping、TITO、DP-aware routing。它默认还是在真实环境里大规模收轨迹，核心瓶颈是吞吐和 off-policy 控制。
 - **MiniMax-M2 的 [Forge Agent-Native RL](forge-agent-native-rl.md)**：重点是把任意 agent scaffold、工具、上下文管理和 reward 接成可训练环境，LLM completion 是 action，工具与 context state transition 是 environment。它解决「怎么接入和调度 agent 环境」。
 - **ARPO**：重点是轨迹内部的采样结构。论文观察到工具反馈后 entropy spike，于是从高熵 tool-call step 分叉 partial rollouts，试图让模型学到 step-level tool-use behavior。
+- **[GiGPO](group-in-group-policy-optimization.md)**：同样针对 step-level 信号，但不追加采样。它把 group 内重复环境状态收成对照，用折扣回报算微优势。和 ARPO 正交，目前没有同表对照。
 - **[Agentic 评测体系](agentic-evaluation-benchmarks.md)**：ARPO 的 deep search 评测覆盖 GAIA / WebWalkerQA / HLE / XBench；数学与知识推理覆盖 AIME、MATH、HotpotQA、2Wiki、MuSiQue、Bamboogle 等。它强化了一个已有结论：同名 benchmark 分数要连同 agent harness、search/browser 设置和 judge 一起看。
 
 ## 为什么重要
@@ -54,6 +55,7 @@ ARPO 把 agentic RL 的问题拆得更细：trajectory-level RL 假设「完整�
 ## 相关页面
 
 - 来源：[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)
+- [Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [异步 Agent RL](asynchronous-agent-rl.md)
 - [Forge Agent-Native RL](forge-agent-native-rl.md)
