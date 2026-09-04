@@ -38,9 +38,11 @@ Intern-S2-Mobius 是 Shanghai AI Laboratory 提出的 Foundation Model 架构 Mo
 - 不是 [Attention Residuals](../concepts/attention-residuals.md)：后者 attention 聚合先前层的**激活**，Mobius 共享的是 FFN **知识向量参数库**。
 - 不是 [Looped Transformers](../concepts/looped-transformers.md)：两者都有 recurrent latent computation，但报告未称 Mobius 的 Reasoner 跨层共享同一套参数。
 - 不是 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)：它保留 Self-Attn，优化目标是让每次 attention 从更大的共享知识库获得更高信息密度，而不是把 token mixer 线性化。
+- 不是 [条件记忆](../concepts/conditional-memory.md)：[Engram](../sources/engram.md) 的 Memory 是 hashed $N$-gram 表，Mobius 的 Memory 是可稀疏激活的 FFN 参数库。
 
 ## 相关页面
 
 - 来源：[Intern-S2-Mobius 技术报告](../sources/intern-s2-mobius.md)
 - [Attention Residuals](../concepts/attention-residuals.md)
+- [条件记忆](../concepts/conditional-memory.md)
 - [2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

@@ -79,6 +79,7 @@
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
+- [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
 
 ## 模型
 
@@ -158,6 +159,7 @@
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
+- [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的第二条稀疏轴：用 $O(1)$ 查找取静态局部模式，而不是用深度重建；DeepSeek Engram 与 Qwen3.8-Next 主机 n-gram 是两个实例，iso-param 该不该从 expert 重分配仍有分歧。
 
 ## 比较
 

@@ -37,7 +37,7 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 | Laguna XS.2 | aux loss | Qiu et al. 2025 aux loss（只在非 padding token 上算） | [Laguna 报告](../sources/laguna-m1-xs2.md) |
 | GLM-5 | 未披露 | 报告只提 256 experts / 80 层为减 EP 通信开销，未写负载均衡方法 | [GLM-5 报告](../sources/glm-5.md) |
 
-读法：**bias 路线是 DeepSeek 系及 Kimi 系的家族传统**（同源于本论文，作者重叠），aux loss 路线在 Qwen 系仍有强生命力（global-batch 口径是它对"鼓励专家专业化"的回答），两家并未收敛到单一答案。MiMo/V4 的混合配置（bias + 轻序列级 loss）暗示纯 bias 在**单序列粒度**上有盲区——原论文只测了 global/batch 口径。
+读法：**bias 路线是 DeepSeek 系及 Kimi 系的家族传统**（同源于本论文，作者重叠），aux loss 路线在 Qwen 系仍有强生命力（global-batch 口径是它对"鼓励专家专业化"的回答），两家并未收敛到单一答案。MiMo/V4 的混合配置（bias + 轻序列级 loss）暗示纯 bias 在**单序列粒度**上有盲区——原论文只测了 global/batch 口径。[Engram](../sources/engram.md) 的 27B/40B 研究模型同样写 Loss-Free（Appendix A），不是生产部署，只说明 DeepSeek 方法论文继续沿用这条配方。
 
 ## 方法对比三轴
 
@@ -69,3 +69,4 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 - aux loss 阵营：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)、[DeepSeek-V2](../sources/deepseek-v2.md)（旧世三重 loss）
 - bias 阵营采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
 - 上位概念：[MoE 前沿模型扩展](moe-frontier-model-scaling.md)
+- 研究模型沿用：[Engram](../sources/engram.md)

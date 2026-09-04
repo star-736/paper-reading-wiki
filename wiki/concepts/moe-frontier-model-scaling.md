@@ -36,6 +36,8 @@ timestamp: 2026-06-06
 
 这些报告的激活参数大致落在 9.8B 到 49B。设计前沿不再只是“模型更大”，而是如何组合稀疏激活、长上下文注意力、后训练、agent scaffold 和 serving 基础设施。
 
+[Engram](../sources/engram.md) 把加速器外的 hashed $N$-gram 表写成可优化的分配问题：固定 $P_{\text{tot}}$ 与 $P_{\text{act}}$，inactive 预算按 $\rho$ 在 MoE experts 与表之间切。U 形律的最优点大约是 20–25% 给表（$\rho\approx 75\%$–$80\%$），纯 MoE 不是最优。Qwen3.8-Next 的 iso-param 消融（Table 8）显示同样从 expert 抠给 n-gram 时下游没有清楚收益，生产选择把 51B 表叠在 MoE 预算之上。两条证据都支持「条件记忆不是更小的 MoE」，但「该重分配还是该外加」没有交叉复现。见 [条件记忆](conditional-memory.md)。
+
 MiniMax-M2 是当前知识库里激活参数最低的前沿 agentic 案例，它用 Forge、数据和系统优化补足约 10B active 的模型预算。Kimi K2.5 则处在 1T total / 32B active 层级，并把视觉编码器和 Agent Swarm 纳入整体能力。
 
 Kimi K3 把开源前沿推到 **2.78T / 104.2B active**——首个 3T 级开源模型，激活参数也最大（104B vs DeepSeek-V4-Pro 49B、K2.5 32B）。支撑这个规模的关键不是单纯加 expert，而是 [Stable LatentMoE](stable-latentmoe.md)：LatentMoE 把 routed expert 解耦到 latent 空间（ℓ=d/2）压通信，Normalized + SiTU-GLU 压激活爆炸，Quantile Balancing 解 896-expert 负载失衡。K3 的 896 routed / 16 active（sparsity 56）是当前 wiki 收录最稀疏的 MoE，比 DeepSeek-V4-Pro 的 384/6（sparsity 64）更激进且 expert 池更大。配 MoonEP 完美平衡 EP（E/R 冗余 bound 证明 tight）做 3T 级预训练。

@@ -71,4 +71,5 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
 - 来源：[Gated Attention 技术报告](../sources/gated-attention.md)、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（full-rank 门同时用在 KDA + Gated MLA）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（softplus per-head gating 落地）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（线性注意力里的「门」是另一回事；Qwen3-Next 系把 gated attention 和 GDN 配在一起）
 - [高效长上下文注意力](efficient-long-context-attention.md)（去 sink 改善长度外推）
+- [条件记忆](conditional-memory.md)（Engram / Qwen n-gram 的 fusion 门作用在检索向量上，不是 SDPA 输出门）
 - 模型：[Kimi Linear](../models/kimi-linear.md)

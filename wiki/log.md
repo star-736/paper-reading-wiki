@@ -1202,3 +1202,9 @@ Headline：2B/4B/9B 基于 Qwen3.5；MMEB-v2 2B 77.9 已超 Qwen3-VL-Embedding-8
 新增 `raw/2607.28227v1.pdf`（arXiv:2607.28227v1，MAI-UI Team / Alibaba Token Hub，56 页）、来源页 `wiki/sources/qwen-ui-agent.md`、模型页 `wiki/models/qwen-ui-agent.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–6 到 `wiki/assets/qwen-ui-agent/`。未新建 GUI 概念页。
 
 核心定位：real-world-centric foundation GUI agent（27B / 35B-A3B / 4B）。真机+约 10,000 并发沙箱、hybrid GUI+CLI 批动作、AutoResearch 飞轮、Action RL→Online GRPO，以及 proactive / 跨平台 harness。Headline：MobileWorld 82.1%、MobileWorld-Real 92.2%、AndroidDaily 97.5%、OSWorld-Verified 79.5%、WebArena 73.6%。27B 基座按 Table 9 为 Qwen3.5-27B。回链 Xiaomi-GUI-0、UI-Mate、Qwen3.5、agentic engineering / 后训练 / 评测体系 / agent harness / 记忆生命周期。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-05] ingest | Engram: Conditional Memory via Scalable Lookup
+
+新增 `raw/2601.07372v2.pdf`（arXiv:2601.07372v2，DeepSeek-AI + 北大，35 页）、来源页 `wiki/sources/engram.md`、概念页 `wiki/concepts/conditional-memory.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1–6 到 `wiki/assets/engram/`。未建模型页：研究配置 Engram-27B/40B，不是生产实体。
+
+定位为 MoE 之外的第二条稀疏轴：hashed $N$-gram 做 $O(1)$ 静态查找。Headline：U 形分配 $\rho\approx 75\%$–$80\%$ 优于纯 MoE；iso-param 27B 相对 MoE-27B 为 BBH +5.0、CMMLU +4.0、HumanEval +3.0；100B 表主机预取吞吐掉 1.9%/2.8%。与 Qwen3.8-Next 主机 n-gram 对照：两边都认为 lookup 不是更小的 MoE，但 iso-param 该不该从 expert 重分配结论相反。回链 MoE 扩展、负载均衡、长上下文注意力、Mobius、注意力门控。`raw/` 除新增原文 PDF 外未改。

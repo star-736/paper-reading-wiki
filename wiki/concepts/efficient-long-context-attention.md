@@ -51,6 +51,10 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 
 无论选哪条路线，都得把"主注意力 + indexer/选择器 + KV-cache 访存"当成三件互相影响的事情一起算账，光看主注意力的 FLOPs reduction 是不够的。
 
+## 正交轴：把局部模式从注意力里卸掉
+
+上表回答的是「注意力算哪些 token」。[条件记忆](conditional-memory.md) 不改注意力核，而是用 hashed $N$-gram 查找接管局部、静态的依赖，让注意力去做全局上下文。[Engram](../sources/engram.md) 在 32K YaRN 扩展上，iso-loss 对照把 Multi-Query NIAH 从 84.2 拉到 97.0、Variable Tracking 从 77.0 拉到 87.2（Table 2）。这不是稀疏注意力的替代，也不能外推到 1M agent 轨迹；它说明长上下文分数还可以来自「别把注意力预算花在套话上」。
+
 ## 正交轴：位置编码还在不在训练网格上
 
 上表六条路线回答的是「算哪些 token、KV 多大」。另一件独立的事是：RoPE 的旋转角一旦越出预训练窗，即使仍做 dense softmax，长窗也会崩。开源权重的默认补丁是 YaRN / NTK / Self-Extend / DCA 这类**零样本位置重映射**，不改注意力核、不改 KV 布局。[Jet-Long](../sources/jet-long.md) 把这条轴写成解析式动态分组，并在 Qwen3-1.7B/4B/8B-Base 上打赢官方 YaRN factor=4 配方。Kimi 系则走另一头：全局 MLA 用 NoPE，从根上躲开 YaRN。细节见 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)。两条轴可叠加（Jet-Long 已迁到 softmax+线性 hybrid），但目前没有 DSA / MLA 上的实验。
@@ -62,5 +66,6 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
 - [跨层索引复用](cross-layer-index-reuse.md)
 - [百万 token 上下文服务](million-token-context-serving.md)
+- [条件记忆](conditional-memory.md)（不改注意力核，卸掉局部 $N$-gram）
 - [2026 开放模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
 

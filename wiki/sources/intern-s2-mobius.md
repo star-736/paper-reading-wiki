@@ -42,6 +42,8 @@ Mobius 的主张不是把 Self-Attention 换成线性层或稀疏 attention，�
 
 这和 [Attention Residuals](../concepts/attention-residuals.md) 的边界要分清：AttnRes 是**从先前层的激活表示**作 depth attention；Mobius 的 BRC 是**所有层访问共享的 FFN 参数/知识向量库**。两者都试图缓和层级信息瓶颈，但接口、状态和计算代价不同。
 
+也不是 [条件记忆](../concepts/conditional-memory.md) / [Engram](engram.md)：Engram 用确定性 hash 查静态 $N$-gram 表，$O(1)$ 查找、可主机预取；Mobius 的 Memory 仍是 FFN，Reasoner 用计算去读。都在说「别把知识重建耗在深度上」，一个是 lookup 原语，一个是共享参数库。
+
 ![Figure 5：上半把 RNN 在 token 维由递归传播改为 Transformer 的全局映射；下半类比地把 Transformer 各层绑定的 Self-Attn/FFN 改成各 Reasoner 访问共享知识 Memory。图中明确标出 global address space 与 sparse activation。](../assets/intern-s2-mobius/fig5-rnn-transformer-mobius.png)
 
 > Figure 5（原文截图，§4）：“The comparison between RNN, Transformer, and Mobius.” 作者的核心类比是把 token 维的全局映射原则移到“knowledge dimension”，并非证明 Mobius 已实现双向 layer activation。
@@ -86,6 +88,7 @@ Figure 6 显示，从头训练的 Mobius-7B 专家激活较均匀；由 Qwen3.5 
 
 - 模型：[Intern-S2-Mobius](../models/intern-s2-mobius.md)
 - [Attention Residuals](../concepts/attention-residuals.md)（与 BRC 的跨层信息接口边界）
+- [条件记忆](../concepts/conditional-memory.md) / [Engram](engram.md)（hash lookup，不是共享 FFN Memory）
 - [Looped Transformers](../concepts/looped-transformers.md)（Mobius 采用 latent recurrence，但不等同参数共享 loop）
 - [多 token 预测](../concepts/multi-token-prediction.md)（原生支持多 token 解码的主张）
 - [2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
