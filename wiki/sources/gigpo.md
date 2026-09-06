@@ -132,6 +132,7 @@ verl-agent 宣称的能力包括：step-wise 多轮（不拼接全历史）、�
 
 ## 与现有 wiki 页的关系
 
+- 与 [HGPO](hierarchy-of-groups-policy-optimization.md) 的关系：HGPO 保留 GiGPO 的同 state、零额外 rollout 起点，但指出 finite-memory step-wise policy 里相同当前 state 可能有不同 effective prompt；因此把 $A^S$ 所在的 state group 再按共同历史建嵌套组、加权聚合。它在自己的 ALFWorld / WebShop tracking 中观察到这一混杂，尚未证明 GiGPO 在所有环境中都会受相同程度影响。
 - 与 [ARPO](agentic-reinforced-policy-optimization.md) 的关系：两者都针对多轮 agent 的 step-level 信号，但不在同一层。ARPO **多花 rollout**：在高熵工具步分叉 partial trajectories。GiGPO **不花额外 rollout**：对已经采到的 group 做同状态对照。理论上可叠加；论文没有和 ARPO 对照。
 - 与 [DAPO](dapo.md) 的关系：Appendix E.4 的 `GiGPO_dynamic` 是目前 wiki 里少有的「group-based recipe × agent step-level advantage」同表证据。
 - 与 [VAPO](vapo.md) 的关系：VAPO 用 critic + GAE 给 long-CoT 做 token-level credit；GiGPO 坚持 critic-free，用重复状态代替 value model。没有共同实验。

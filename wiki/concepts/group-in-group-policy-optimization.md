@@ -17,6 +17,7 @@ Group-in-Group Policy Optimization（GiGPO）是 [GiGPO 论文](../sources/gigpo
 ## 跨报告信号
 
 - **[ARPO](agentic-reinforced-policy-optimization.md)**：同样针对多轮 agent 的 step 信号，但花钱的位置相反。ARPO 在工具反馈后的高熵节点**额外分叉** partial rollouts；GiGPO **不追加采样**，只对已有 group 做 hashmap 分组。两者都承认 trajectory-level GRPO 太粗，解法正交，论文之间没有对照。
+- **[HGPO](hierarchy-of-groups-policy-optimization.md)**：接受 GiGPO 的“同 state 碰撞可免费分配 step credit”，但指出在 finite-memory step-wise prompt 中，相同当前 state 仍可能对应不同历史上下文。它不加 rollout，而把 $G^S$ 再按 0…$K$ 段共同历史拆为嵌套组、加权聚合。HGPO 的受控环境结果支持这一补充条件值得检查；不等于 GiGPO 原论文已经证明其 anchor 必然失效。
 - **[DAPO](../sources/dapo.md)**：补的是单轮 long-CoT GRPO 的 recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）。GiGPO 附录把 DAPO 技巧接到自己身上（`GiGPO_dynamic`），WebShop / 1.5B 成功率从 DAPO 的 66.1 再到 75.0，用来支持「层次优势与单轮 group 技巧可叠加」。
 - **[VAPO](../sources/vapo.md)**：用独立 critic + Length-Adaptive GAE 给 long-CoT 做 token-level credit。GiGPO 拒绝 critic，用「重复状态 ≈ 免费对照实验」代替 value estimate。没有共同 backbone / 共同任务。
 - **GLM-5 / Forge / Laguna 的 agent RL 系统**：关心 rollout 吞吐、harness 接入、异步 off-policy。GiGPO 假设已经能同步采到同一初始状态的一组轨迹；它不解决调度，只改这组轨迹内部的 advantage。
@@ -57,6 +58,7 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 - 来源：[GiGPO](../sources/gigpo.md)
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
 - [Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
+- [Hierarchy-of-Groups Policy Optimization](hierarchy-of-groups-policy-optimization.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)

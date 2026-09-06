@@ -89,6 +89,7 @@
 - [DeepMMSearch-R1 技术报告](sources/deepmmsearch-r1.md) - Apple + Johns Hopkins 的多模态 web search 训练方法：SFT + GRPO 两阶段教 MLLM 做多轮文本搜索与裁剪图像搜索，DeepMMSearchVQA 数据集，6 benchmark 平均 57.13 超 RAG workflow +21pp。
 - [Qwen3.8-Next 架构报告](sources/qwen3.8-next.md) - Qwen3.8-Flash-Next：125B/6B + 51B 主机 n-gram，3:1 GDN + QSA、Gated Residual、Muon；14 项 base 8 胜 6 负追平 397B-A17B，约 1/9 训练 FLOPs。
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
+- [Hierarchy-of-Groups Policy Optimization（HGPO）](sources/hierarchy-of-groups-policy-optimization.md) - NTU + 东南大学的 ICLR 2026 论文：指出 finite-memory step-wise RL 中同 state step 也可能历史不一致；用历史层次 group + 深度权重 advantage，在不新增 rollout 下交换 bias / variance。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
 
 ## 模型
@@ -147,7 +148,7 @@
 - [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。
 - [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；与 VLA 改权重、软件 agent 的终端 skill 文件对照。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
-- [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO 这类同状态 step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
+- [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
 - [MoE 负载均衡谱系](concepts/moe-load-balancing.md) - 从 auxiliary loss 到 Loss-Free bias 到 Quantile Balancing 的三代方法谱系 + 生产配置地图（V3/V4、K2/K3、MiniMax-M2、MiMo、Ling-2.6、Qwen3、Laguna），及 Expert Choice 因未来 token 泄漏出局的标准论据。
@@ -162,6 +163,7 @@
 - [异步 Agent RL](concepts/asynchronous-agent-rl.md) - GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent；SAO 把 DIS 做成单 rollout 算法。
 - [Agentic Reinforced Policy Optimization](concepts/agentic-reinforced-policy-optimization.md) - ARPO 如何用工具反馈后的 entropy spike 指导 partial rollout 分叉，并做共享/分叉段 advantage attribution。
 - [Group-in-Group Policy Optimization](concepts/group-in-group-policy-optimization.md) - GiGPO 如何在已有 GRPO 轨迹组上用重复环境状态构造 step-level 对照组，不追加 rollout。
+- [Hierarchy-of-Groups Policy Optimization](concepts/hierarchy-of-groups-policy-optimization.md) - HGPO 如何把同 state 的 step group 再按共同历史拆成嵌套层次，并用深度加权 advantage 控制 prompt-context bias / 小组方差。
 - [Single-Rollout Asynchronous Optimization](concepts/single-rollout-asynchronous-optimization.md) - SAO 如何用单条 rollout 替代组采样，并用 DIS mask 与加速 critic 稳定异步 agentic RL。
 - [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。
 - [百万 token 上下文服务](concepts/million-token-context-serving.md) - DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse；engine 侧 I/O 见 KV cache 层。
@@ -186,4 +188,4 @@
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage 的"目的 / KL 形式 / pipeline 位置"三轴对比，附 Qwen3-8B Table 21 OPD vs RL 对照。
-- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照，以及 Iterative RPO（TRL `rpo_alpha`）。
+- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照，以及 Iterative RPO（TRL `rpo_alpha`）。

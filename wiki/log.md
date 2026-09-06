@@ -1268,3 +1268,9 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 - `wiki/concepts/agentic-engineering.md`（更新）——新增跨报告信号。
 - `wiki/concepts/post-training-for-agentic-models.md`（更新）——新增跨报告信号。
 - `wiki/index.md`（更新）——新增来源页和模型页条目。
+
+## [2026-09-07] ingest | Hierarchy-of-Groups Policy Optimization（HGPO）
+
+新增 `raw/2602.22817v1.pdf`（arXiv:2602.22817v1，ICLR 2026，22 页）、来源页 `wiki/sources/hierarchy-of-groups-policy-optimization.md`、概念页 `wiki/concepts/hierarchy-of-groups-policy-optimization.md`，并以 PyMuPDF 300 DPI 抽取 Figure 3 到 `wiki/assets/hierarchy-of-groups-policy-optimization/`。
+
+核心：HGPO 在同 state step group 内继续按最近 $0\ldots K$ 段历史建嵌套组，聚合各层 relative advantage，以固定深度权重交换 context bias 与小组方差；不增加 rollout、critic 或额外模型。主证据为 Qwen2.5-1.5B/7B 在 ALFWorld / WebShop，7B 少数单项不高于 GiGPO。回链 GiGPO、agentic 后训练和 LLM RL 对比；不建模型页，因为论文不发布独立模型。`raw/` 除新增原文 PDF 外未改。

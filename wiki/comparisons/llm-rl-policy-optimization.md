@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / SAO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、同状态 step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip。DPO 是离线偏好闭式解，与 DAPO 同名不同族，单独成节。"
+description: "VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / KPop / CISPO 等 LLM RL policy optimization 方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip。DPO 是离线偏好闭式解，与 DAPO 同名不同族，单独成节。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -18,6 +18,7 @@ VAPO、DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它
 - SAPO 改的是 **trust region 的形状**，从 hard clipping 改成 temperature-controlled soft gate；
 - ARPO 改的是 **agentic rollout 的采样位置**，从完整轨迹采样改到工具反馈后的高熵 step 分叉；
 - GiGPO 改的是 **advantage 的构造单元**，在已有轨迹组上用重复环境状态做 step-level 对照，不追加 rollout；
+- HGPO 改的是 **step-group 的条件变量**，把同 state 对照再按共同历史拆成层次组，用 bias–variance 权重聚合，不追加 rollout；
 - SAO 改的是 **异步下的采样单元**：放弃组采样，单条轨迹立即更新，并用 DIS mask + critic 换回 baseline；
 - MGPO 改的是 **prompt-level 的梯度权重**，用最大熵权重降权全对/全错 prompt，聚焦能力边界 prompt。
 
@@ -35,6 +36,7 @@ VAPO、DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它
 | [SAPO](../sources/soft-adaptive-policy-optimization.md) | Qwen Team，2025-12 | **soft trust region / gate 形状** | sigmoid soft gate + $sech^2$ gradient weight；$\tau_{neg}>\tau_{pos}$ | hard clipping 过脆；GSPO 整条 sequence 被裁、GRPO token 越界即零梯度 | Qwen3-30B-A3B、Qwen3-VL-30B-A3B | 保留 group-based RL，替换硬裁剪为软门控 |
 | [ARPO](../sources/agentic-reinforced-policy-optimization.md) | 人大 + 快手，2025-07 | **agentic rollout 采样结构** | 工具反馈后监控 token entropy，在高熵 tool-call step 分叉 partial rollouts；advantage attribution | trajectory-level RL 忽略工具反馈后的 step-level 决策 | Qwen2.5 / Llama3.1 / Qwen3，math/QA/deep search | 把 DAPO/GRPO/REINFORCE++ 当 trajectory-level baseline |
 | [GiGPO](../sources/gigpo.md) | NTU + Skywork，NeurIPS 2025 | **advantage 构造（episode + 同状态 step 组）** | 轨迹级 $A^E$ + anchor state grouping 的 $A^S$；折扣回报；不额外 rollout | 长周期稀疏奖励下轨迹级 GRPO 抹掉 step 好坏 | Qwen2.5-1.5B/3B/7B-Instruct，ALFWorld / WebShop / search QA | 保留 GRPO group 与 clipped objective；无重复状态时退回 GRPO |
+| [HGPO](../sources/hierarchy-of-groups-policy-optimization.md) | NTU + 东南大学，ICLR 2026 | **advantage 构造（按历史一致性嵌套的 step 组）** | 同 state 的 $0\ldots K$-context groups；每层 relative advantage；按深度加权；不额外 rollout | finite-memory step-wise policy 中同 state step 的 effective prompt 不一致，令 GiGPO 式 state group baseline 偏差 | Qwen2.5-1.5B/7B-Instruct，ALFWorld / WebShop | 保留 group 和逐步 clipped objective；最高层组稀少，固定 $\alpha$ 权重交换 bias / variance |
 | [SAO](../sources/single-rollout-asynchronous-optimization.md) | 清华 + Z.AI，2026-07 | **异步采样单元 + critic 回流 + DIS mask** | group size = 1；$r_t=\pi_\theta/\pi_{\mathrm{rollout}}$ 出界则 mask；更快 critic、冻结 attention、Skip-Observation GAE | 组采样在异步下引入 straggler 与更重 off-policy；单条轨迹没有组内 baseline | Qwen3-30B-A3B，TIR 数学 / SWE-Bench Verified；声明用于 GLM-5.2 | 放弃 GRPO 组；DIS 可单独接到 GRPO 上救命；完整 SAO 再加 critic |
 | [MGPO](../sources/vibethinker-3b.md) | Sina Weibo，2025-11（VibeThinker-1.5B）-> 2026-06（3B） | **prompt-level 梯度权重** | 最大熵权重 $w(q)=\exp(-\gamma D_{ME}(p(q)\|0.5))$ 降权全对/全错 prompt；GRPO clipped objective + on-policy | 全对/全错 prompt 零梯度浪费；training-inference probability mismatch | Qwen2.5-Coder-3B（VibeThinker-3B），AIME/LiveCodeBench | 保留 GRPO group-relative clipped objective，加 prompt-level weight |
 | KPop / IcePop | Inclusion AI（Ling Team），2025-2026 | **训练-推理 mismatch 的 mask 形状** | IcePop：uniform fixed-ratio $[\alpha,\beta]$ + double-sided masking；KPop：symmetric binary KL divergence $D_{KL}^B(\pi_{train}\|\pi_{infer})$，两方向都要求 $\leq\phi$，单超参控制 | MoE RL 中训练-推理精度不对齐导致 token ratio 噪声；固定比率过度 mask 低概率 token | Ring-2.6-1T（1T MoE），agentic coding RL | 与 GRPO 系并列的 MoE RL 稳定化层，不替代 ratio/loss 而是控制哪些 token 参与 |
@@ -82,6 +84,14 @@ ARPO 和前三者不在同一轴上。它不主要讨论 token ratio 或 clippin
 [GiGPO](../sources/gigpo.md) 和 ARPO 问的是相邻问题——多轮 agent 的 step 好坏怎么分开——但花钱的位置相反。ARPO 在高熵工具步**额外分叉**；GiGPO 假设 group 已经按同一任务、同一初始状态采好，然后用重复环境状态做 **anchor state grouping**，把同一 $s$ 上的不同动作收成 step-level 组，用折扣回报算 $A^S$，再与轨迹级 $A^E$ 相加。
 
 因此 GiGPO 改的是 **advantage 的构造单元**，不是采样图，也不是 importance ratio 的粒度（逐步 $\rho_\theta(a_t)$ 仍在）。无状态重复时 $A^S=0$，算法退回 GRPO；这是作者标明的下界，不是额外保证。附录把 DAPO 的 dynamic sampling + clip-higher 接到 GiGPO 上（`GiGPO_dynamic`），WebShop / 1.5B 成功率 GRPO 56.8 → DAPO 66.1 → 75.0，用来支持它与单轮 group recipe 正交。主实验是 ALFWorld / WebShop / search QA 上的 Qwen2.5-Instruct，不是 SWE 或生产 harness。
+
+### HGPO：不否定 state group，而是补上它漏掉的历史条件
+
+[HGPO](../sources/hierarchy-of-groups-policy-optimization.md) 以 GiGPO 的 step group 为 0-context 下界：共享当前 state 的 step 先在一起，但再检查最近 $1\ldots K$ 段 state history 是否也一致。历史越长的 group 更接近同一 effective prompt，却更小、更容易有高方差；因此 HGPO 不只取最深的 Oracle-like group，而是对每层 group-relative advantage 以 $(k+1)^\alpha$ 加权。它仍是同一组完整 rollout 上的离线 hashing，也仍使用逐步 clipped importance ratio；改动完全在 advantage estimator。
+
+这与 GiGPO 的差别不是“又多一层 hierarchy”这么简单。GiGPO 将 episode advantage 与 same-state $A^S$ 相加；HGPO 用多个 history-conditioned $A_k^H$ 取代这两项，且 Table 5 显示再塞回 trajectory-level advantage 在多数格子会下降。HGPO 的 Figure 2 将不同 history 的 same-state comparison 与 Oracle comparison 的 advantage 差作为其偏差证据，但只在自己的 ALFWorld / WebShop training 统计，不能据此断言所有 GiGPO 应用均有同等问题。
+
+HGPO 主表在 1.5B 的收益更明显；7B / $K=4$ 的 ALFWorld OOD 和 WebShop score 反而略低于 GiGPO。故当前最佳表述是：它在两种受控环境中提供了**history consistency 是可操作 credit-assignment 轴**的证据，不是对 state grouping 的统一替代。固定 $\alpha$、稀少的 deep group、摘要/latent memory 未定义怎样 hash，以及与 ARPO 的同预算比较，都仍缺少证据。
 
 ### SAO：不争组内怎么拆 step，而争异步下还要不要组
 
@@ -153,12 +163,13 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 - SAPO 是否会成为 GSPO 的严格替代，还是只在 outlier token 多 / hard clipping 脆的阶段更好？论文承认所有方法最终仍可能 instability。
 - ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
 - GiGPO 的状态匹配在开放工具 / GUI / 仓库编辑里是否还能维持 ALFWorld 那种 >65% 重复率？与 ARPO 同一预算对照仍然缺失。
+- HGPO 的 $k$-state history 能否代表真实 memory prompt？summary / retrieval memory 的层次相似度、deep-group covariance 与 uncertainty-weighted aggregation 仍无实验。
 - SAO 的 frozen-attention critic 在 dense 模型上是否还成立？DIS 硬 mask 与 SAPO soft gate、CISPO detached clip 能否组合？
 - MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
 - 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？本页没有一手来源回答。
 
 ## 相关页面
 
-- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
+- 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
+- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)
