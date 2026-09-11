@@ -6,6 +6,7 @@
 
 ## 来源
 
+- [YOCO：You Only Cache Once](sources/yoco.md) - Microsoft Research + 清华的 decoder-decoder 架构：前半生成全局 KV、后半共享读取，精确 prefill early exit；V4.1 CED 明确引用的前作，含 1M 单针与 128K 多针的证据边界。
 - [DeepSeek-V4.1-Flash 技术报告](sources/deepseek-v41-flash.md) - 原生图文 MoE：CED 减 prefill、CSA2 跨层共享 + FP4 将全局 KV 压到 890 bytes/token，近似 SWA replay 降持久缓存；196B Engram 与 40+ teacher 最终 OPD。
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。
 - [Macaron-V1 技术报告](sources/macaron-v1.md) - Mind Lab 的开放 agent-model 家族，以 frozen base + Mixture-of-LoRA、HCP 版本化 harness 和 MindForge RSI 为核心；当前未证明跨代持续学习增益。
@@ -98,6 +99,7 @@
 
 ## 模型
 
+- [YOCO-3B / YOCO-3B-1M](models/yoco.md) - 26 层 dense 研究模型，gated-retention self-decoder 与共享 KV cross-decoder 各半；1.6T 预训练后扩至 1M，纯文本。
 - [DeepSeek-V4.1-Flash](models/deepseek-v41-flash.md) - 552B backbone + 196B Engram，prefill/decode 激活 8B/16B，1M 上下文，图像+文本输入、文本输出。
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
 - [Macaron-V1](models/macaron-v1.md) - Mind Lab 的 agent-model 家族：Venti 用 GLM-5.2 base、Tall 用 Qwen3.6-35B-A3B base，均以四个按 turn 路由的 LoRA specialist 和 HCP harness 组成。

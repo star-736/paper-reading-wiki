@@ -43,6 +43,8 @@ DeepSeek-V4 的 CSA/HCA 更激进。CSA 每 `m` 个 token 压缩成一个 KV ent
 
 ### DeepSeek-V4.1：跨层 KV 共享与重选分离
 
+其 CED 的直接前作是 [YOCO](../sources/yoco.md)（V4.1 §2.2 明确引用）。YOCO §2–3 用固定状态的 self-decoder 生成一份全局 KV，后半各层通过自己的 Q 做 dense causal cross-attention；由计算依赖允许精确跳过历史 prompt 的后半前向。它提供的是“全局 KV 生成与读取解耦”，并不是 top-k 稀疏选择，且全局缓存仍随序列增长。V4.1 则进一步将稀疏检索、共享与逐层局部 SWA 组合起来。
+
 原文确证（[DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §2.2–2.3、§4.2.1）：CSA2 用 Full / Reindex / Reuse 静态层模式分别控制新建全局 KV、重新选 top-k 和复用 top-k；所有层仍计算自己的 main Q 和 SWA KV。encoder 以压缩率 2 建三份全局缓存，decoder 以压缩率 1 共享由 encoder 末端投影的缓存。main KV + indexer K 的共享降低存储，索引复用降低计算；不能把两项收益混称为 IndexCache 式索引复用。
 
 decoder 首个 Full 索引器还按块最大分数选最多 16,384 个候选位置，后续 Reindex 各自从中选 top-512；候选限制在后训练引入。首个索引器仍扫描全部历史，因此全模型 decode 并非严格常数复杂度。配合 FP4，报告全局 KV 为 890 bytes/token，约 V4-Flash 的 1/4；CED 减少 prefill 和 SWA 近似重放降低持久缓存则是另外两个维度，见[百万 token 上下文服务](million-token-context-serving.md)。

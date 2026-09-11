@@ -43,6 +43,14 @@ DeepSeek-V4 使用 on-disk KV cache 处理 shared-prefix requests，减少重复
 
 ## DeepSeek-V4.1：用有界近似重放替代长期 SWA 存储
 
+### 前作 YOCO：精确 prefill early exit 的结构条件
+
+原文确证（[YOCO](../sources/yoco.md) §2.2–2.3、Figure 3）：self-decoder 末端生成共享全局 K/V，cross-decoder 历史位置的输出不会成为未来所需的新 K/V，因而为建立缓存可以跳过历史位置的后半计算。生成当前 logits 的位置仍须经过后半网络。前半的固定大小状态仍存在，“only cache once”只指全局 KV 的份数。
+
+V4.1 §2.2 明确受 YOCO 启发，但在 decoder 保留逐层局部 SWA，使纯粹提前退出不再足以准备所有状态。**本页综合**：YOCO 的精确优化来自取消该依赖，V4.1 的有界重放则在保留该依赖的架构上接受近似，二者不能混称“无损重放”。
+
+### V4.1 的存储与恢复策略
+
 原文确证（[DeepSeek-V4.1-Flash 报告](../sources/deepseek-v41-flash.md) §3.2.1–3.2.2）：V4 生产部署把全局 KV 与 prompt/output 末端 SWA checkpoint 分别持久化，SWA 约占持久缓存一半；精确 Zero SWA recovery 所需的 $L\times W$ token 重算过贵。V4.1 只重放末尾 $W=128$ tokens，并截断段前 SWA 依赖，接受近似状态。
 
 | 状态 | 存放与恢复 |

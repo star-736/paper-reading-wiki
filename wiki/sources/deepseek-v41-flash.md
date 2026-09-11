@@ -34,6 +34,8 @@ resource: "../../raw/DeepSeek_V41_Tech_Report.pdf"
 
 ### CED：全局 KV 在 encoder 末端生成，局部 KV 保留逐层深度
 
+**直接前作是 [YOCO（You Only Cache Once）](yoco.md)**：本报告 §2.2 明确写 CED 受 YoCo（Sun et al., 2024）启发。YOCO 用前半 self-decoder 生成一份全局 K/V，后半 cross-decoder 共用；其后半不保留本层历史 SWA，所以 prefill early exit 不改变数学输出。V4.1 保留后半逐层 SWA，必须额外准备局部状态；128-token bounded replay 是近似补齐，不能沿用 YOCO 的精确等价结论。对照见 [YOCO 来源页](yoco.md#与-deepseek-v41-ced-的关系)。
+
 ![Figure 3：40 层网络分为各 20 层的 causal encoder 与 decoder；encoder 前两层只用 SWA，其余采用 CSA2，decoder 共享由 encoder 末端状态投影的全局 KV，并接入 Engram、Single-Pass mHC、DSpark 和分层索引器。](../assets/deepseek-v41-flash/architecture.png)
 
 > Figure 3，PDF p.7，原图注节译：40 层网络分为各 20 层的 causal encoder 和 decoder；CSA2(ratio, mode) 指定压缩率与运行模式，所有 FFN 使用标准 DeepSeekMoE。

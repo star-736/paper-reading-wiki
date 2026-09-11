@@ -1304,3 +1304,9 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第一层补 λ
 定位：把标准 KD 的 forward KLD 换成 reverse KLD（理由：生成任务输出空间的 mode 数远超 student 容量），用 Policy Gradient Theorem 求该目标的梯度（$R_t$ 累积 log-ratio 当 reward），并配 single-step decomposition / teacher-mixed sampling（α=0.2）/ length normalization 三个技巧；`§A.1` 另给最大熵 IRL 与 reverse KLD 近似等价的推导。记录 student 多处 R-L 反超 teacher（作者归因于 exposure bias，无直接消融）、ECE 更接近 teacher、长回答子集优势更大、distinct 4-gram 与 LM loss 持平。
 
 deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 MiniLLM 使用同一类连续 toy 的事实（其 `Figure 2`，即该表两篇源头都未在离散词表场景验证过该刻画）、第三层补 ExAccErr 量化证据、并把「OPD 的 entropy collapse 比 RL 更剧烈」的 Gu et al. 归属降级（MiniLLM 原文无该对照）；两处裸链接（概念页、nrehiew 页）改为相对链接，GKD 来源页的「MiniLLM（待收录）」改为相对链接，OPD 对比页相关页面补反链，同步 `wiki/index.md` 的来源与模型入口。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-12] ingest | YOCO：You Only Cache Once
+
+新增原文 `raw/2405.05254v2.pdf`（20 页）、YOCO 来源页、YOCO-3B / YOCO-3B-1M 模型页及 Figure 2/3/9 三张图；沉淀全局 KV 共享、gated retention、精确 prefill early exit 与训练/评测口径。
+
+重读 V4.1 §2.2，补上 CED 明确引用 YOCO 的关系，区分精确提前退出和逐层 SWA 的近似重放；回链高效长上下文注意力、百万 token 服务并同步索引。记录 1M 单针 / 128K 多针、prefill / 端到端吞吐差异及 v2 引言的 early-exit 笔误。`raw/` 除新增该 PDF 外未改。
