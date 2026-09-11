@@ -28,7 +28,7 @@ OpenVLA 把已有视觉语言模型（VLM）直接 fine-tune 成机器人控制�
 
 ### 标准 VLA 配方
 
-论文把 VLA 写成：在互联网规模视觉语言数据上预训练的 VLM，再接到机器人动作预测（§2 “Vision-Language-Action Models”）。OpenVLA 的动作头不是另接连续回归网络，而是把连续动作写进语言模型词表，按语言 token 一样做 next-token 预测（§3.2，沿用 RT-2 / Brohan et al. 的离散化）。
+论文把 VLA 写成：在互联网规模视觉语言数据上预训练的 VLM，再接到机器人动作预测（§2 “Vision-Language-Action Models”）。这个类别的出处是 [RT-2](rt-2.md)。OpenVLA 的动作头不是另接连续回归网络，而是把连续动作写进语言模型词表，按语言 token 一样做 next-token 预测（§3.2，沿用 RT-2 的离散化）。
 
 ![OpenVLA Figure 2：模型架构。左侧输入第三人称图像和语言指令「Put eggplant in bowl」；① DINOv2 与 SigLIP 并行编码图像 patch，特征通道维拼接后经 ② MLP Projector 映入语言嵌入空间；语言指令经 Llama Tokenizer 变成文本 token；③ Llama 2 7B 自回归预测动作 token，经 Action De-Tokenizer 还原为 7 维连续控制（Δx、Δθ、ΔGrip）。](../assets/openvla/fig2-architecture.png)
 
@@ -53,7 +53,7 @@ OpenVLA 的 VLM 不是凭空搭的，而是 fine-tune 已有的 Prismatic-7B（�
 
 - 每维动作单独量化成 **256 个 bin**；bin 宽均匀划分该维训练数据的 **1%–99% 分位数**（不用 min-max，以免离群点撑开区间、降低有效分辨率）。
 - \(N\) 维动作得到 \(N\) 个 \(\in\{0,\ldots,255\}\) 的整数。OpenVLA 的控制是 **7 维**（Figure 2：\(\Delta x, \Delta\theta, \Delta\mathrm{Grip}\)）。
-- Llama tokenizer 只预留约 100 个 special token，不够 256 个动作 token；做法是 **覆盖词表中最少使用的最后 256 个 token**（同样沿用 RT-2）。
+- Llama tokenizer 只预留约 100 个 special token，不够 256 个动作 token；做法是 **覆盖词表中最少使用的最后 256 个 token**（沿用 [RT-2](rt-2.md) 在 PaLM-E 上的低频 token 覆盖，不是 PaLI-X 的整数 token 映射）。
 - 训练目标是标准 next-token 交叉熵，**只在动作 token 上计 loss**，不计输入图像/指令 token。
 - 推理：模型吐出动作 token → Action De-Tokenizer 反量化成连续控制，闭环执行（Figure 2、§3.5）。
 
@@ -144,13 +144,14 @@ LIBERO 是附录 E 的**目标套件监督微调**（不是 zero-shot），每�
 
 - 离散 256-bin 自回归动作头，相对后续 flow-matching 连续动作到底损失了多少精度与高频控制能力？OpenVLA 原文没有这场比较。[π0](pi0.md) §VI-A 把 OpenVLA 重训到 π 混合物，归因于「不支持 action chunking / 高频」——那是 π 协议，不是本页 Bridge/Google robot 表。
 - §6 自己问的 action chunking：加上之后能否补齐相对 Diffusion Policy 的灵巧度，而不放弃语言接地优势？
-- RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。
+- RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。原版 [RT-2](rt-2.md) Table 6 已显示同 backbone 上 co-fine-tune > 只 fine-tune；RT-2-X 尚未单独 ingest。
 - 单臂 7D 末端 + 单第三人称图这条数据约束，后续 skill / 双臂 / 长周期组合论文要改哪一层（观察、动作空间，还是只改后训练）？
 
 ## 相关页面
 
 - 模型：[OpenVLA](../models/openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
+- VLA 定义、封闭离散 token 前作：[RT-2](rt-2.md) · [模型](../models/rt-2.md)（本页对照的是后续 RT-2-X，不是原版厨房 RT-2）
 - 连续 flow + action expert：[π0](pi0.md) / [模型](../models/pi0.md)（原文 §VI-A 在 π 混合物上对照过本模型）
 - 开世界 co-training：[π0.5](pi0.5.md)
 - 本库后续 VLA 实例（MoT + 连续动作，不是 256-bin）：[InternVLA-A1.5 技术报告](internvla-a1.5.md) / [InternVLA-A1.5](../models/internvla-a1.5.md)

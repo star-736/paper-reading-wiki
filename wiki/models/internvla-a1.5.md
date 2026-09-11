@@ -45,6 +45,7 @@ InternVLA-A1.5 的核心创新不在单一组件，而在**组合方式**：
 
 - 来源：[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
+- VLA 定义出处：[RT-2](rt-2.md)
 - 开源离散动作 token 基线：[OpenVLA](openvla.md)（Llama-2-7B + 256-bin；本页是 MoT + flow-matching，不是它的换皮）
 - 真机对照：[π0.5](pi0.5.md)（开世界 co-training；本报告表内分数是重测）
 - 连续 flow 前作：[π0](pi0.md)

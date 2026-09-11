@@ -60,7 +60,7 @@ resource: "raw/2410.24164v4.pdf"
 预训练得到「会一点、能恢复」的 base；复杂任务再在更窄、更高质量的数据上 fine-tune（§V-A）。论文把这写成 LLM 式的 pre-training / post-training：只训高质量数据不会恢复错误，只跑预训练又不够流畅。
 
 - 最简单下游大约 **5 小时** 数据，最复杂 **100 小时以上**（§V-A）。
-- 语言跟随实验把 base fine-tune 到收拾桌子 / 摆桌子 / 装袋；可吃人类逐步指令，或另接一个高层 VLM 产出中间语言命令（§V-B，类似 SayCan）。**高层策略不是 π0 自己**，与 [π0.5](pi0.5.md) 的统一 subtask 头不同。
+- 语言跟随实验把 base fine-tune 到收拾桌子 / 摆桌子 / 装袋；可吃人类逐步指令，或另接一个高层 VLM 产出中间语言命令（§V-B，类似 [SayCan](saycan.md)）。**高层策略不是 π0 自己**，与 [π0.5](pi0.5.md) 的统一 subtask 头不同。
 - 新技能实验（叠碗、叠毛巾、保鲜盒进微波炉、换纸巾、Franka 往抽屉装东西）比较从预训练 fine-tune vs 从零，以及 OpenVLA / Octo 公开 checkpoint、ACT、Diffusion Policy（§VI-C）。
 - 没有 LLM 意义上的 RLHF / RLVR。
 
@@ -96,5 +96,7 @@ RTX 4090、3 相机：图像编码 14 ms + 观察前向 32 ms + 10 步 flow 27 m
 - 模型：[π0](../models/pi0.md)
 - 开世界后作：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)
 - 离散动作 token 基线：[OpenVLA](openvla.md) · [模型](../models/openvla.md)
+- VLA 定义、封闭离散 token：[RT-2](rt-2.md) · [模型](../models/rt-2.md)
+- 高层 VLM 外挂所类比的分层 planner：[SayCan](saycan.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 把 π0.5 当真机对照的后续实例：[InternVLA-A1.5](internvla-a1.5.md)

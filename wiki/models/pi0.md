@@ -42,5 +42,7 @@ timestamp: 2026-09-05
 - 来源：[π0 论文](../sources/pi0.md)
 - 开世界后作：[π0.5](pi0.5.md)
 - 离散 token 基线：[OpenVLA](openvla.md)
+- 封闭离散 token 前作：[RT-2](rt-2.md)
+- 高层 VLM 外挂所类比：[SayCan](../sources/saycan.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 真机表里对照 π0.5 的后续模型：[InternVLA-A1.5](internvla-a1.5.md)

@@ -34,7 +34,7 @@ OpenVLA 是 Stanford 等团队发布的开源 7B **Vision-Language-Action（VLA�
 
 1. **动作就是语言 token**。连续 7D 控制按分位数切成 256 个 bin，当普通词来自回归；没有单独的扩散/flow 动作专家。这与 [π0](pi0.md) / [InternVLA-A1.5](internvla-a1.5.md) Stage 2 的 flow-matching 连续 chunk 不是同一条路；InternVLA / π0.5 预训练用的 FAST 离散 token 也只是过渡配方，不是本页的 256-bin。
 2. **视觉塔要为控制解冻**。Prismatic 原论文倾向冻结视觉编码器；OpenVLA 发现 VLA 训练必须 fine-tune 视觉塔，否则空间细节不够（§3.4）。融合 DINOv2（空间）+ SigLIP（语义）是选 Prismatic 而不是 LLaVA / IDEFICS-1 的主因。
-3. **开源 + 可微调**。相对 RT-2-X：更小（7B vs 55B）、数据更多（970k vs 350k）、提供 LoRA / 量化，消费级 GPU 能做下游适配。语义泛化仍弱于做了互联网 co-training 的封闭模型（§5.1）。
+3. **开源 + 可微调**。相对 RT-2-X：更小（7B vs 55B）、数据更多（970k vs 350k）、提供 LoRA / 量化，消费级 GPU 能做下游适配。语义泛化仍弱于做了互联网 co-training 的封闭模型（§5.1）。原版 [RT-2](rt-2.md) 就是那种 co-fine-tune 配方；OpenVLA 评测打的是 OXE 上的 RT-2-X，不是 RT-1 厨房数据上的原版。
 
 **不要误读的边界**：评测里的「multimodal / language grounding」指第三人称图像 + 语言指令，不是音频。Google robot / WidowX 是操作机械臂。LIBERO 数字（Table 12）是附录里对仿真套件做 LoRA 微调，不是 zero-shot，也不能直接和 [InternVLA-A1.5](internvla-a1.5.md) 后来报的 LIBERO 98.9 比——数据清洗、是否多套件联合训练、动作头都不同。
 
@@ -42,6 +42,7 @@ OpenVLA 是 Stanford 等团队发布的开源 7B **Vision-Language-Action（VLA�
 
 - 来源：[OpenVLA](../sources/openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
+- 封闭离散 token 前作：[RT-2](rt-2.md)
 - 连续 flow + action expert：[π0](pi0.md)
 - 开世界 co-training：[π0.5](pi0.5.md)
 - 后续实例（MoT + 连续动作，不是近亲重复）：[InternVLA-A1.5](internvla-a1.5.md)

@@ -1,5 +1,13 @@
 # 日志
 
+## [2026-09-12] ingest | SayCan
+
+Robotics at Google + Everyday Robots（arXiv:2204.01691v2）。新增 `raw/2204.01691v2.pdf`、来源页 `sources/saycan.md`，提取 Figure 1/2/3/5/6。不建模型页：产出是 LLM × affordance 规划环，低层是 BC-Z / MT-Opt。Headline：101 条厨房指令上 PaLM-SayCan 规划 84% / 执行 74%；No VF 规划 67%，BC NL 执行 0%。钉死不是 VLA。更新 VLA、RT-2、具身 skill 自进化，以及 π0 / ASPIRE / EmbodiedSkills 反链。
+
+## [2026-09-12] ingest | RT-2
+
+Google DeepMind 的 VLA 定义文（arXiv:2307.15818v1）。新增 `raw/2307.15818v1.pdf`、来源页 `sources/rt-2.md`、模型页 `models/rt-2.md`，提取 Figure 1/2/4/6/7。Headline：动作写成 text token，PaLI-X/PaLM-E 与网页 VQA co-fine-tune；未见平均 62% vs RT-1 32%，涌现评测 60% vs 17%。钉死与 OpenVLA 对照的 RT-2-X 不是本页。更新 VLA 概念页，回链 OpenVLA / π0 / InternVLA-A1.5。
+
 ## [2026-09-12] ingest | EmbodiedSkills
 
 浙大等的 VLA 上层框架（arXiv:2609.01281v1）。新增 `raw/2609.01281v1.pdf`、来源页 `sources/embodied-skills.md`，提取 Figure 1–4。不建模型页：产出是 executable-skill 接口和 AgentLoop，低层是任务特化 OpenPI/π0.5，高层是未给尺寸的 Qwen3-VL。Headline 86.20% / 97.40% 记为低层执行成绩；AgentLoop 证据落在消融（去验证 −38.0 pp、去 subtask −51.8 pp）。更新 VLA、具身 skill 自进化、Agent harness，以及 ASPIRE / π0.5 / Qwen3-VL / InternVLA-A1.5 反链。

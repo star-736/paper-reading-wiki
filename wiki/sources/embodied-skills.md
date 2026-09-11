@@ -174,5 +174,6 @@ Stack Blocks Three 是极端例子：Full 92，w/o Verify / w/o Subtask / 1 chun
 - 低层执行器：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md) · [π0](pi0.md)
 - 高层 VLM：[Qwen3-VL](qwen3-vl.md) · [模型](../models/qwen3-vl.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md) · [Agent harness](../concepts/agent-harness.md) · [具身 skill 自进化](../concepts/embodied-skill-self-evolution.md)
+- 另一套「提案 × 可行性」因式，低层不是 VLA：[SayCan](saycan.md)
 - 不要混名的程序库路线：[ASPIRE](aspire.md)
 - 另一套 RoboTwin 2.0 数字（协议不同，勿横比）：[InternVLA-A1.5](internvla-a1.5.md)

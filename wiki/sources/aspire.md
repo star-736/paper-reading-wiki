@@ -177,5 +177,6 @@ BEHAVIOR-1K（Table 4，25 held-out seed；Aspire 在 seed 26–35 攒库，评�
 
 - 概念：[具身 skill 自进化](../concepts/embodied-skill-self-evolution.md) · [Vision-Language-Action](../concepts/vision-language-action.md) · [Agent harness](../concepts/agent-harness.md) · [Agent 记忆生命周期](../concepts/agent-memory-lifecycle.md)
 - 对照、不是程序库：[EmbodiedSkills](embodied-skills.md)
+- 固定技能表 + value function，库不扩张：[SayCan](saycan.md)
 - 评测表里的 VLA 对照（不是前作）：[OpenVLA](openvla.md) · [π0](pi0.md) · [π0.5](pi0.5.md)
 - 软件侧「冻结权重、改可复用程序」：[Prime Agent](prime-agent.md) · [Macaron-V1](macaron-v1.md)

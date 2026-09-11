@@ -48,6 +48,8 @@
 - [TANDEM](sources/tandem.md) - JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy + 动态 reference）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。
 - [Gemma 4 技术报告](sources/gemma-4.md) - Google DeepMind 的 Gemma 4 arXiv 报告，原生多模态 dense + MoE 家族（E2B~31B），重点是 encoder-free 12B、5:1 SWA/GA + key-as-value + p-RoPE 长上下文、MTP drafter 和 QAT 量化。
 - [InternVLA-A1.5 技术报告](sources/internvla-a1.5.md) - 上海 AI Lab 的统一 VLA 机器人模型，Qwen-3.5 2B backbone + 460M unified expert + latent foresight（frozen WAN2.2 蒸馏），6 项仿真 benchmark 全部最优。
+- [SayCan](sources/saycan.md) - Robotics at Google 的分层接地（CoRL 2022）：LLM 打「有没有用」× 技能 value function 打「能不能做」；厨房 101 条指令规划 84%、执行 74%。不是 VLA，LLM 不输出末端动作。
+- [RT-2](sources/rt-2.md) - Google DeepMind 的 VLA 定义文（CoRL 2023）：动作写成 text token，PaLI-X / PaLM-E 与互联网 VQA co-fine-tune；未见平均 62% vs RT-1 32%。不是 OpenVLA 对照的 RT-2-X。
 - [OpenVLA](sources/openvla.md) - 开源 7B VLA（CoRL 2024）：Prismatic-7B 把 7 维动作写成 256-bin token，Open X-Embodiment 约 970k 真实轨迹全量 fine-tune；29 任务上以 7B 超过 RT-2-X 55B。
 - [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
 - [π0.5](sources/pi0.5.md) - π0 的开世界后作（CoRL 2025）：异构 co-training（多机器人 + web/语义 + subtask）+ 统一高低层，在未见过的家里做长周期家务。
@@ -81,7 +83,7 @@
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
 - [Mach-Mind-4-Flash 技术报告](sources/mach-mind-4-flash.md) - 理想汽车的 35B MoE agentic 模型（3B 激活），基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练（三轨并行 RL + MOPD 融合 + HMPO token 效率），统一 RL/OPD 训练框架。
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
-- [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
+- [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体（其 reverse-KL 转述已由 [OPSD 原文](sources/opsd.md) 校准）、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
 - [Kimi K3 技术报告](sources/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.8T/104B 激活），KDA scaled sigmoid + Attention Residuals + Stable LatentMoE + 原生视觉 + 1M 上下文，2.5× scaling efficiency，9-专家 RL + MOPD + AgentENV microVM 沙箱。
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
@@ -99,6 +101,7 @@
 - [Miles v0.1](sources/miles-v0-1.md) - RadixArk 的生产级后训练系统报告（建立在 `slime` 上、rollout 侧绑定 SGLang）：把吞吐（affinity 路由 + fully async 调度 + staleness 丢组）与保真（TITO session server、R3、低精度契约、TIS/clip-or-pop、true-on-policy alignment）拆成两条工程轴，另含三种权重同步传输、LoRA RL / OPD / diffusion 复用同一组组件，案例是 GLM-5.2 744B 在 64 张 GB300 上的 fully async agentic RL（中位 step 263 s）。
 - [GKD：On-Policy Distillation of Language Models](sources/generalized-knowledge-distillation.md) - Google DeepMind 的 ICLR 2024 源头论文：把自回归 LM 蒸馏重写成 imitation learning，给出「student 数据比例 λ × 发散度 D」两个旋钮的统一目标（supervised / on-policy KD、ImitKD、f-distill 都是实例）。校准两处口径——on-policy 标准实例用 teacher-first 方向、最优发散度 task-dependent；并提供 wiki 现有 forward/reverse KL 行为对照表的一手出处（Figure A.16）与适用边界。
 - [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
+- [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping，不是生产 OPD 的 reverse KL。Qwen3-1.7B/4B/8B LoRA，相对 GRPO 更省 token。
 
 ## 模型
 
@@ -123,6 +126,7 @@
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
 - [InternVLA-A1.5](models/internvla-a1.5.md) - 上海 AI Lab 统一 VLA 机器人模型，Qwen-3.5 2B（3:1 GDN:full attention）做 backbone + 460M unified expert + latent foresight，GDN 混合注意力在机器人控制领域的采用。
+- [RT-2](models/rt-2.md) - Google DeepMind 封闭 VLA 家族（PaLI-X 5B/55B、PaLM-E 12B）：8 维均匀 256-bin text token，网页+RT-1 厨房数据 co-fine-tune；VLA 一词的出处。
 - [OpenVLA](models/openvla.md) - 开源 7B VLA：Llama-2-7B + DINOv2/SigLIP，图像+指令→离散动作 token→连续 7D 控制；后续 skill 论文对照的离散 token 基线。
 - [π0](models/pi0.md) - Physical Intelligence 3.3B VLA：PaliGemma + flow matching action expert，多路图像+语言+本体感觉→连续动作块，最高 50 Hz。
 - [π0.5](models/pi0.5.md) - π0 的开世界 VLA：同一 flow expert，加异构 co-training 与统一 subtask 头；多路图像+语言→subtask 文本+连续动作。
@@ -158,7 +162,7 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
-- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。EmbodiedSkills 是叠在 π0.5 上的 AgentLoop，不是第四种动作头。
+- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。SayCan 是分层 LLM planner（不是 VLA）；RT-2 造词并封闭落地离散 token + 网页 co-fine-tune；OpenVLA 开源 256-bin；π0 连续 flow + action expert；π0.5 开世界 co-training + 统一 subtask。EmbodiedSkills 是叠在 π0.5 上的 AgentLoop，不是第四种动作头。
 - [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；EmbodiedSkills 是另一条路：固定 typed 合同 + AgentLoop，不扩张程序库。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA/HCA 与 V4.1 CSA2 跨层 KV/索引共享；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。

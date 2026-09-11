@@ -17,6 +17,7 @@ timestamp: 2026-09-12
 三个对比要先分清：
 
 - **与 [VLA](vision-language-action.md)**：VLA 更新的是动作网络权重（离散 bin / flow expert / co-training）。ASPIRE 对照表里出现 OpenVLA / π0 / π0.5，但系统本身写/改程序、把经验写入 skill library，coder 权重冻结（Claude Opus 4.6；§3.1、§5）。不要把它读成第四种动作头。
+- **与 [SayCan](../sources/saycan.md)**：那边的 skill 是评测时**固定**的语言条件策略 + value function，LLM 只在这张表上打分；库不会因失败写入新条目。ASPIRE 的库会扩张。不要用 SayCan 的 84% 规划去填程序库表。
 - **与软件 agent 的 skill 文件**（[Macaron HCP](../sources/macaron-v1.md) / [Prime Agent](../sources/prime-agent.md) L3 skills）：对象从终端、工具、REPL 变成机器人感知–运动与接触动力学。同构的是「L0 不动、改可复用程序」；差异是痕迹是多模态 robot trace，sim-to-real 运的是 know-how 而不是像素或权重。
 - **与 [EmbodiedSkills](../sources/embodied-skills.md)**：那边的 skill 是 **固定 typed 执行合同**（输入/输出 schema + 前提 + 失败映射），由 guarded runtime 先验后验；库不随任务扩张。低层仍是可替换的 [π0.5](../models/pi0.5.md)，高层 Qwen3-VL scheduler 在冻结 VLA 上 SFT。这是 VLA 上层的 [harness](agent-harness.md)，不是本页的程序库自进化。
 - **未 ingest 的近邻只作外部线索**：EmbodiSkill（清华 AIR + MSR，arXiv:2605.10332，frozen LLM 的 skill-aware reflection）、AtomicVLA（VLA + atomic skill-MoE）。本页没有读过它们的 PDF，不能编机制，也不能和 ASPIRE / EmbodiedSkills 混名。
@@ -27,6 +28,7 @@ timestamp: 2026-09-12
 - **[Agent harness](agent-harness.md)**：Prime Agent / Macaron 已经证明冻结 L0 时改 runtime 程序可以扩展可达策略。ASPIRE 把同一层膜接到机器人执行引擎：膜标准化的是 traces、API 与 admission，策略构造仍留给 coding agent。
 - **[Agent 记忆生命周期](agent-memory-lifecycle.md)**：技能库是持久记忆；coordinator 的审计与 debug 验证是一层 gate。ASPIRE §5 自己写还没有 pruning / ranking / 再验证，Table 6 出现随库增大的非单调，对应「gate 有、rollback/淘汰不足」。
 - **[EmbodiedSkills](../sources/embodied-skills.md)（2026，VLA 上层合同，不是本页实例）**：六相 AgentLoop + policy–runtime 分离。RoboTwin 2.0 86.20% / LIBERO 97.40% 是任务特化低层 π0.5 的执行成绩；环的证据是消融（去验证 48.2、去 subtask 34.4、单 chunk 19.5）。技能集合按相配置，没有 coordinator 晋升新修复。入口仍是 [VLA](vision-language-action.md) 和 [Agent harness](agent-harness.md)。
+- **[SayCan](../sources/saycan.md)（2022，固定技能表 + affordance，不是本页实例）**：LLM × value function 选下一步，技能集合在评测中固定（加抽屉技能是改选项集和 prompt，不是进化搜索）。规划 84% / 执行 74% 是厨房 101 条指令，协议不能和 ASPIRE 的 LIBERO-Pro 横比。
 - **VLA 页里的 OpenVLA / π0 / π0.5 / InternVLA-A1.5**：提供低层动作头对照。后续若有论文把「技能」写成 token 或 MoE expert，应回到 [VLA](vision-language-action.md) 的三条动作头，而不是本页的程序库。
 
 ## 为什么重要
@@ -47,5 +49,6 @@ timestamp: 2026-09-12
 - 已 ingest 实例：[ASPIRE](../sources/aspire.md)
 - 对照、不是本页实例：[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Vision-Language-Action](vision-language-action.md)、[Agent harness](agent-harness.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)
+- 固定技能表 + value function，不是本页：[SayCan](../sources/saycan.md)
 - VLA 对照来源：[OpenVLA](../sources/openvla.md)、[π0](../sources/pi0.md)、[π0.5](../sources/pi0.5.md)
 - 软件侧 skill / harness：[Prime Agent](../sources/prime-agent.md)、[Macaron-V1](../sources/macaron-v1.md)
