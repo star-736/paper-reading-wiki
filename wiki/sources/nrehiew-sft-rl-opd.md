@@ -95,12 +95,12 @@ resource: "../../raw/nrehiew-sft-rl-opd.md"
 
 ### 5. Student 为什么能超越 Teacher
 
-不是新现象（[Agarwal et al. 2023](https://arxiv.org/pdf/2306.13649) 在 GSM8K 上已报告），作者给出两个假设：
+不是新现象（[GKD](generalized-knowledge-distillation.md) 在 GSM8K 上已报告，见其 `§A.1` 自蒸馏实验），作者给出两个假设：
 
 1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议。student 的错误不一定是 teacher 的错误；如果只训 teacher 生成的轨迹，student 可能在自己很少访问的分布区域收到监督。OPD 让 teacher 针对 student 的实际状态给建议。
 2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
 
-**熵坍缩**：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 的预期行为，[Gu et al., 2023](https://arxiv.org/abs/2306.08543)）。RL 的 reward 缓慢上升；OPD 的 reward 上升更突然，伴随熵的急剧坍缩。这部分是推测性的。
+**熵坍缩**：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 的预期行为，博客指向 [MiniLLM](minillm.md)）。RL 的 reward 缓慢上升；OPD 的 reward 上升更突然，伴随熵的急剧坍缩。这部分是推测性的；**注意 MiniLLM 原文并未做 OPD vs RL 的熵曲线对照**，该归属已在 [MOPD 概念页](../concepts/multi-teacher-on-policy-distillation.md) 降级。
 
 ### 6. 为什么 RL 和 OPD 泛化更好
 

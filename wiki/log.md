@@ -1288,3 +1288,19 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 定位是「吞吐 / 保真」两条工程轴：affinity 路由与 fully async 调度解决长尾，TITO session server、R3、低精度契约、TIS/clip-or-pop、true-on-policy alignment 解决采样与训练的概率一致性。另含三种权重同步传输（broadcast / P2P / disk-delta）与 LoRA RL、OPD、SFT、diffusion 复用同一组组件。
 
 新建概念页 `wiki/concepts/train-rollout-consistency.md`（五层手段与成本阶梯，含 GLM-5.3 的 $10^{-7}$ 与 Miles 的 KL 0.0369 口径待澄清）与 `wiki/concepts/rl-weight-synchronization.md`（P2P 收益随 fleet 宽度而非模型规模增长，Table 8）。deepen 异步 Agent RL（staleness 形式定义、丢组三条件、补位粒度、可观测指标）、Agentic 模型的后训练、Multi-Teacher OPD（Miles 的框架侧 OPD）、LLM RL policy optimization 对比（TIS / clip-or-pop），并在 OPD 对比页新增一行；同步 `wiki/index.md` 的来源与概念入口。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-11] ingest | GKD：On-Policy Distillation of Language Models
+
+新增 `raw/2306.13649v3.pdf`（arXiv:2306.13649v3，ICLR 2024，Google DeepMind，18 页）、来源页 `wiki/sources/generalized-knowledge-distillation.md`，并用 PyMuPDF 300 DPI 抽取 Figure 1（三任务主结果）、Figure 4（发散度—质量/多样性权衡）、Figure A.16（mode-seeking vs mode-covering）到 `wiki/assets/generalized-knowledge-distillation/`。未建模型页：论文不发布模型实体，student / teacher 均为公开 T5v1.1 与 FLAN-T5。
+
+定位是 OPD 的算法源头：把自回归 LM 蒸馏重写成 imitation learning，目标是「student 数据比例 λ × 发散度 D」两个旋钮，supervised KD（λ=0）、on-policy KD（λ=1）、ImitKD、f-distill 都是该框架的实例。记录两处关键原始口径——GKD 的 on-policy 标准实例用 teacher-first 方向（论文称 forward KL），reverse KL 只是可选支，与 2026 各家 OPD 的 student-first reverse KL 不是同一默认；且论文自陈最优发散度是 task-dependent。另记录 `§Related Work` 对 concurrent work MiniLLM 的定位，以及 `§A.1` 自蒸馏反超 teacher 的实验；`§4.4` student 规模与 Figure 10 caption 的口径冲突待澄清。
+
+deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第一层补 λ 轴与「reverse-KL + 纯 on-policy 只是收敛配方」；第二层补该行为对照表的一手出处（GKD `Figure A.16`，连续单峰高斯拟合双峰 P 的容量失配设置）与适用边界（AKL 外部反证：该刻画在离散 LLM KD 下不成立），并标注 GKD 实测排序 task-dependent；第三层补 IL 归约的一手出处与前置条件（student 须已能生成合格序列）。把两处裸链接的 Agarwal 引用改为相对链接（概念页、nrehiew 页），`wiki/comparisons/on-policy-distillation.md` 相关页面补反链，同步 `wiki/index.md`。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-11] ingest | MiniLLM：On-Policy Distillation of Large Language Models
+
+新增 `raw/2306.08543v6.pdf`（arXiv:2306.08543v6，ICLR 2024，清华 CoAI + MSR，23 页）、来源页 `wiki/sources/minillm.md` 与模型页 `wiki/models/minillm.md`——论文把训练出的 student 统一命名为 MiniLLM 并公开 checkpoint，故按「发布明确新模型实体」建模型页（GPT-2 120M/340M/760M、OPT 1.3B/2.7B/6.7B、LLaMA 7B）。用 PyMuPDF 300 DPI 抽取 Figure 1（三种 teacher 下的 scaling）、Figure 3（SeqKD 与 MiniLLM 的流程对照）、Figure 6（ExAccErr 随生成长度）到 `wiki/assets/minillm/`，Table 1 全表改排为 Markdown。
+
+定位：把标准 KD 的 forward KLD 换成 reverse KLD（理由：生成任务输出空间的 mode 数远超 student 容量），用 Policy Gradient Theorem 求该目标的梯度（$R_t$ 累积 log-ratio 当 reward），并配 single-step decomposition / teacher-mixed sampling（α=0.2）/ length normalization 三个技巧；`§A.1` 另给最大熵 IRL 与 reverse KLD 近似等价的推导。记录 student 多处 R-L 反超 teacher（作者归因于 exposure bias，无直接消融）、ECE 更接近 teacher、长回答子集优势更大、distinct 4-gram 与 LM loss 持平。
+
+deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 MiniLLM 使用同一类连续 toy 的事实（其 `Figure 2`，即该表两篇源头都未在离散词表场景验证过该刻画）、第三层补 ExAccErr 量化证据、并把「OPD 的 entropy collapse 比 RL 更剧烈」的 Gu et al. 归属降级（MiniLLM 原文无该对照）；两处裸链接（概念页、nrehiew 页）改为相对链接，GKD 来源页的「MiniLLM（待收录）」改为相对链接，OPD 对比页相关页面补反链，同步 `wiki/index.md` 的来源与模型入口。`raw/` 除新增原文 PDF 外未改。

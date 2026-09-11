@@ -58,9 +58,11 @@ $$\mathcal{L}_{OPD}(\theta) \;=\; \sum_{i=1}^N w_i \cdot D_{KL}\!\big(\pi_\theta
 
 代价是要在每个位置 materialize teacher 完整 logits，工程难度大；但**优化目标和 MiMo / GLM-5 严格一致**。
 
+**但「reverse-KL + 纯 on-policy 数据」只是这一层收敛出的配方，不是它的全部维度。** 这类目标的原始形式来自 [GKD](../sources/generalized-knowledge-distillation.md) `§3.1`，它把目标拆成两个独立旋钮：**student 自生成数据的比例 $\lambda \in [0,1]$** 与**发散度 $D$**（含 forward / reverse KL 与在两者间插值的 JSD(β) 谱系），并有 $\mathcal{L}_{\text{GKD}} = (1-\lambda)\mathbb{E}_{(X,Y)}[D] + \lambda\mathbb{E}_{x\sim X, y\sim p_S}[D]$。supervised KD 是 λ=0、on-policy KD 是 λ=1，ImitKD 与 f-distill 也都是该框架的实例（详见来源页）。已收录的各家报告事实上都取 λ=1 + student-first reverse KL，但 GKD 原文的 on-policy 标准实例用的是 **teacher-first 方向**（论文称 forward KL），且论文实测的最优发散度是 **task-dependent**。λ 这一维在现有报告里没有任何对应消融。
+
 ### 第二层：为什么 reverse-KL，不是 forward-KL
 
-OPD 全家都选 reverse-KL `D_{KL}(\pi_\theta \,\|\, \pi_T)`，不是 forward-KL `D_{KL}(\pi_T \,\|\, \pi_\theta)`。这两个方向**不对称**，且对蒸馏行为影响巨大：
+OPD 全家都选 reverse-KL `D_{KL}(\pi_\theta \,\|\, \pi_T)`，不是 forward-KL `D_{KL}(\pi_T \,\|\, \pi_\theta)`。这两个方向**不对称**，且对蒸馏行为影响巨大（注意这是 2025–2026 各家报告的**经验选择**：原始框架 [GKD](../sources/generalized-knowledge-distillation.md) 的 on-policy 标准实例用的正是 teacher-first 方向，reverse KL 只是它对比过的选项之一）：
 
 | | forward-KL `D(π_T ∥ π_θ)` | reverse-KL `D(π_θ ∥ π_T)` |
 | --- | --- | --- |
@@ -69,6 +71,8 @@ OPD 全家都选 reverse-KL `D_{KL}(\pi_\theta \,\|\, \pi_T)`，不是 forward-K
 | 多 teacher 场景 | student 被迫做加权平均，容量不够时两头不讨好 | student 在 prompt 路由下贴向**对应**teacher 的 mode，不被迫加权 |
 
 > Bishop *PRML* §10.1.2 用高斯混合等高线图给了直观证明；Minka 2005 *Divergence Measures and Message Passing* TR（MSR-TR-2005-173）把 forward/reverse KL 列在 α-divergence 谱系的两端。
+
+**这张表的一手出处与本表的适用边界。** 在本 wiki 实际引用的文献里，上述行为对照的直接出处是 [GKD](../sources/generalized-knowledge-distillation.md) 的 `Figure A.16`（`§A.7`）：论文原话是「容量失配下用 $Q_\theta$ 近似 $P$，最小化 reverse 与 forward KL 分别导致 mean-seeking 与 mode-seeking」，作图设置为**连续、单峰高斯 Q 拟合双峰 P**。把它外推到词表级离散蒸馏是推论而非该图结论——[AKL（Wu et al., arXiv:2404.02657）](https://arxiv.org/abs/2404.02657)（外部佐证，本 wiki 未收原文）证明这两条刻画在 LLM KD 下并不成立，forward / reverse KL 收敛到同一目标，实际差异落在早期 epoch 分别侧重 teacher 分布的 head 与 tail。因此本表应读作「容量失配 + 连续分布」下的直觉，以及各家**为何在工程上这么选**的动机，而不是「离散 LLM 蒸馏下 reverse KL 必然 mode-seeking」的定理；GKD 自己实测的发散度排序是 task-dependent（XSum 温度采样下 reverse KL / JSD(0.9) 最好，GSM8K 上 forward KL 并不差，指令微调上 reverse KL 大幅领先）。同期另一支源头 [MiniLLM](../sources/minillm.md) 用的也是同一个连续 toy 设置（单峰高斯拟合高斯混合，其 `Figure 2`）——也就是说这张表的两篇源头论文，都没有在离散词表场景下验证过该刻画。
 
 对 GLM-5 这种「召回早期能力」的用法特别关键：reverse-KL 的 mode-seeking 性质让 student 能**强力把分布拉回**到 Reasoning_RL teacher 的某个 mode，而不是被强迫"同时覆盖 SFT + Reasoning_RL + General_RL 所有 mode 的并集"——后者在 student 容量受限时不可行。
 
@@ -82,6 +86,8 @@ OPD 的 KL 期望是对 **student 自己**的分布取的：`E_{y ∼ π_θ}[...
 - **on-policy**：监督直接打在 student 部署时**真实会经过**的状态分布上，没有 distribution shift。
 
 > 数学根据：Ross et al. 2011 *DAgger*（AISTATS）证明 imitation learning 里 on-policy 数据让 cumulative regret 是 O(T)（线性），off-policy 是 O(T²)（平方）。OPD 沿用同一个论证。这也是 Qwen3 Table 21 里 on-policy distill **pass@64 涨**（93.3 vs 起点 90.0）、而 RL pass@64 不动（90.0）的解释——on-policy distill 在 student 自己的轨迹空间上拓宽了概率质量分布；RL 只 sharpen 已有 mode。
+
+把 DAgger 的论证搬到自回归语言模型上、并把蒸馏明确写成「带交互式 expert 的 imitation learning」的是 [GKD](../sources/generalized-knowledge-distillation.md) `§3.1`（论文同时给出该框架的前置条件：student 必须已经能生成质量尚可的序列，实验里一律从 SFT 后的 student 起步——这解释了为什么现在的 OPD 都接在 SFT / 分域 RL 之后，而不是从 base 直接起）。这一层的**量化证据**来自 [MiniLLM](../sources/minillm.md) `Figure 6`：它用 ExAccErr（Arora et al. 2022 口径，把累积 regret 拆成 oracle 上下文误差与自生成前缀误差）度量纯 exposure bias 部分，三条监督式基线随生成长度持续累积、MiniLLM 在 >150 token 后趋平。
 
 ### 第四层：teacher 固定 → 良定义的收敛目标
 
@@ -192,12 +198,12 @@ OPSD 更接近 RLHF 而非 RLVR：teacher 信号不完全相关于 task importan
 
 ### Student 为什么能超越 Teacher
 
-[Agarwal et al. 2023](https://arxiv.org/pdf/2306.13649) 已在 GSM8K 上报告此现象。nrehiew 给出两个假设：
+[GKD（Agarwal et al., ICLR 2024）](../sources/generalized-knowledge-distillation.md) 已在 GSM8K 上报告此现象（来源页 `§A.1` 的自蒸馏实验：FLAN T5-Large teacher 20.5%，自蒸馏后 student 反超 teacher）。nrehiew 给出两个假设：
 
 1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议，而非 teacher 生成的轨迹。student 的错误不一定是 teacher 的错误--off-policy 蒸馏可能在 student 很少访问的分布区域给监督。
 2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
 
-熵行为差异：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 预期行为，[Gu et al., 2023](https://arxiv.org/abs/2306.08543)），reward 上升更突然。这部分是推测性的。
+熵行为差异：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 的预期行为），reward 上升更突然。这部分是推测性的——**原始归属需要降级**：这条此前挂在 [Gu et al., 2023](https://arxiv.org/abs/2306.08543) 名下，但 [MiniLLM](../sources/minillm.md) 原文并未做 OPD vs RL 的熵曲线对照，它做的是 mode-seeking 论证与多样性持平检验（`Table 3`），见该来源页待追问。
 
 ## 报告中的结果
 

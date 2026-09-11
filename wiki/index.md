@@ -93,6 +93,8 @@
 - [Hierarchy-of-Groups Policy Optimization（HGPO）](sources/hierarchy-of-groups-policy-optimization.md) - NTU + 东南大学的 ICLR 2026 论文：指出 finite-memory step-wise RL 中同 state step 也可能历史不一致；用历史层次 group + 深度权重 advantage，在不新增 rollout 下交换 bias / variance。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
 - [Miles v0.1](sources/miles-v0-1.md) - RadixArk 的生产级后训练系统报告（建立在 `slime` 上、rollout 侧绑定 SGLang）：把吞吐（affinity 路由 + fully async 调度 + staleness 丢组）与保真（TITO session server、R3、低精度契约、TIS/clip-or-pop、true-on-policy alignment）拆成两条工程轴，另含三种权重同步传输、LoRA RL / OPD / diffusion 复用同一组组件，案例是 GLM-5.2 744B 在 64 张 GB300 上的 fully async agentic RL（中位 step 263 s）。
+- [GKD：On-Policy Distillation of Language Models](sources/generalized-knowledge-distillation.md) - Google DeepMind 的 ICLR 2024 源头论文：把自回归 LM 蒸馏重写成 imitation learning，给出「student 数据比例 λ × 发散度 D」两个旋钮的统一目标（supervised / on-policy KD、ImitKD、f-distill 都是实例）。校准两处口径——on-policy 标准实例用 teacher-first 方向、最优发散度 task-dependent；并提供 wiki 现有 forward/reverse KL 行为对照表的一手出处（Figure A.16）与适用边界。
+- [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
 
 ## 模型
 
@@ -144,6 +146,7 @@
 - [DeepMMSearch-R1](models/deepmmsearch-r1.md) - Apple 的多模态 web search 模型，基于 Qwen2.5-VL-7B-Instruct，SFT+GRPO 训练做多轮文本搜索与裁剪图像搜索，6 benchmark 平均 57.13。
 - [Laguna](models/laguna.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程，3:1 SWA/GA + softplus 门控 + WSD + AutoMixer + CISPO RL，XS.2 Apache 2.0 开源，纯文本。
 - [WeMM-Embedding](models/wemm-embedding.md) - 腾讯微信视觉的通用多模态 embedding 家族（2B/4B/9B），基于 Qwen3.5，文本/图像/视频/视觉文档/交错输入，不支持音频，已部署微信推荐与搜索。
+- [MiniLLM](models/minillm.md) - 清华 CoAI + MSR 在 ICLR 2024 发布的学生模型族（GPT-2 120M/340M/760M、OPT 1.3B/2.7B/6.7B、LLaMA 7B），由 reverse-KLD on-policy 蒸馏训得，teacher 分别为 GPT-2-1.5B / OPT-13B / LLaMA-13B，纯文本输入输出；不是自研架构基座，而是方法路线的对照检查点。
 
 ## 概念
 

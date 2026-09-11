@@ -145,3 +145,5 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)：GLM-5 在 cross-stage distillation 之前的 RL 阶段。
 - [MiMo-V2-Flash 技术报告](../sources/mimo-v2-flash.md) / [DeepSeek-V4 技术报告](../sources/deepseek-v4.md) / [Qwen3 技术报告](../sources/qwen3.md) / [Qwen3-VL 技术报告](../sources/qwen3-vl.md) / [GLM-5 技术报告](../sources/glm-5.md)：源页。
 - [Miles v0.1](../sources/miles-v0-1.md)：唯一把 OPD 做成框架侧接口的来源（advantage 折入而非 loss 加权、served / in-process teacher 两种部署、top-K 变体只在 served teacher 下可用），并提供唯一一条「蒸馏只缩长度、不涨分」的公开结论。
+- [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
+- [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
