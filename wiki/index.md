@@ -7,6 +7,7 @@
 ## 来源
 
 - [YOCO：You Only Cache Once](sources/yoco.md) - Microsoft Research + 清华的 decoder-decoder 架构：前半生成全局 KV、后半共享读取，精确 prefill early exit；V4.1 CED 明确引用的前作，含 1M 单针与 128K 多针的证据边界。
+- [YOIO：You Only Index Once](sources/yoio.md) - YOCO 同团队：把共享从全局 KV 扩展到 routing index，单次 token-level top-k 服务全部 cross-decoder；128K 上相对 Transformer decode 7.6×、端到端 17.1×，质量只评到 32K。
 - [DeepSeek-V4.1-Flash 技术报告](sources/deepseek-v41-flash.md) - 原生图文 MoE：CED 减 prefill、CSA2 跨层共享 + FP4 将全局 KV 压到 890 bytes/token，近似 SWA replay 降持久缓存；196B Engram 与 40+ teacher 最终 OPD。
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。
 - [Macaron-V1 技术报告](sources/macaron-v1.md) - Mind Lab 的开放 agent-model 家族，以 frozen base + Mixture-of-LoRA、HCP 版本化 harness 和 MindForge RSI 为核心；当前未证明跨代持续学习增益。
@@ -100,6 +101,7 @@
 ## 模型
 
 - [YOCO-3B / YOCO-3B-1M](models/yoco.md) - 26 层 dense 研究模型，gated-retention self-decoder 与共享 KV cross-decoder 各半；1.6T 预训练后扩至 1M，纯文本。
+- [YOCO-CLSA 4B](models/yoco-clsa.md) - YOIO 的 4B 研究模型：16 层 SWA self-decoder + 16 层共享 KV/index 的 CLSA cross-decoder，$k=2048$，纯文本。
 - [DeepSeek-V4.1-Flash](models/deepseek-v41-flash.md) - 552B backbone + 196B Engram，prefill/decode 激活 8B/16B，1M 上下文，图像+文本输入、文本输出。
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
 - [Macaron-V1](models/macaron-v1.md) - Mind Lab 的 agent-model 家族：Venti 用 GLM-5.2 base、Tall 用 Qwen3.6-35B-A3B base，均以四个按 turn 路由的 LoRA specialist 和 HCP harness 组成。
@@ -179,7 +181,7 @@
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
 - [Agent Swarm](concepts/agent-swarm.md) - Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。
 - [多模态 Agentic 训练](concepts/multimodal-agentic-training.md) - Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。
-- [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、Kascade、HySparse 等如何让多数层共用 anchor 层选好的 top-k 索引。
+- [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、YOIO/CLSA、Kascade、HySparse 等如何让多数层共用一次 top-k；YOIO 把路由绑到 YOCO 的共享 KV 上，只算一次。
 - [零样本 RoPE 上下文扩展](concepts/zero-shot-rope-context-extension.md) - 不微调、只改位置映射让 RoPE 模型用过训练窗：YaRN / Self-Extend / DCA / Jet-Long 动态分组，以及 Kimi 系 NoPE 旁路。
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
@@ -196,6 +198,6 @@
 ## 比较
 
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
-- [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
+- [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。

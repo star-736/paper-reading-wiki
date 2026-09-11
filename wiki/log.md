@@ -1310,3 +1310,11 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 新增原文 `raw/2405.05254v2.pdf`（20 页）、YOCO 来源页、YOCO-3B / YOCO-3B-1M 模型页及 Figure 2/3/9 三张图；沉淀全局 KV 共享、gated retention、精确 prefill early exit 与训练/评测口径。
 
 重读 V4.1 §2.2，补上 CED 明确引用 YOCO 的关系，区分精确提前退出和逐层 SWA 的近似重放；回链高效长上下文注意力、百万 token 服务并同步索引。记录 1M 单针 / 128K 多针、prefill / 端到端吞吐差异及 v2 引言的 early-exit 笔误。`raw/` 除新增该 PDF 外未改。
+
+## [2026-09-12] ingest | YOIO：You Only Index Once
+
+新增原文 `raw/2606.06467v1.pdf`（15 页，arXiv:2606.06467v1）、来源页 `wiki/sources/yoio.md`、模型页 `wiki/models/yoco-clsa.md`，以及 Figure 1/3/5/6 四张图到 `wiki/assets/yoio/`。方法名是 CLSA：在 YOCO 共享 KV 上用单头 indexer 做一次 token-level top-k，16 层 cross-decoder 共用；4B 对照含 Transformer / YOCO (Dense) / YOCO (CLSA)。
+
+记录与 IndexCache 的差别——后者在逐层 DSA KV 上做 1/4 retention，CLSA 把 routing 绑到已共享的记忆上，结构上只有一个 indexer。128K B200 + vLLM 相对同配置 Transformer：decode 7.6×、端到端 17.1×；质量只评到 32K RULER。self-decoder 是 SWA 512 而非 YOCO-3B 的 gated retention。
+
+更新跨层索引复用（三种 oracle）、稀疏注意力对比、DSA / 高效长上下文 / 百万 token 服务，以及 YOCO 来源页与 IndexCache 回链。`raw/` 除新增该 PDF 外未改。

@@ -102,6 +102,8 @@ DSA 的 lightning indexer 虽然每层比主注意力便宜一个数量级,但�
 
 [IndexCache](../sources/indexcache.md) 发现相邻层 indexer 的 top-k 重合率高达 70-100%,因此可以让多数层跳过 indexer 直接复用前一个 Full 层的索引,并通过贪心搜索或多层蒸馏决定哪些层保留 indexer。在 GLM-5 上 1/4 retention 仍能接近原始长上下文表现,端到端 1.3× 起步。这条线的上下文见 [跨层索引复用](cross-layer-index-reuse.md)。
 
+[YOIO / CLSA](../sources/yoio.md) 引用 IndexCache，但前提换成 YOCO 的一份全局 KV：结构上只留一个单头 indexer，16 层 cross-decoder 共用一次 token-level top-k。它证明的是「记忆已经共享时路由也应共享」，不是把 DSA 的 retention 从 1/4 再往下压。YOIO Figure 5 在 4B 栈上把 DSA 的未摊销 top-k 画得比 Transformer 还慢，与本页「indexer 自身 O(NL²)」一致；那张图不是 GLM-5 的端到端数字。
+
 [QSA](../sources/qwen3.8-next.md) 不走跨层共享：indexer 先把 key AvgPool 成 $r=4$ micro-block，复杂度 $O(n^2/r)$，再展开成 token mask。训练配方与 DSA 同构（只训 indexer 的 dense distillation → 联合 sparse CPT），但放在 3:1 GDN hybrid 的全局层上。Qwen 的对照是 training-aware IndexShare：hybrid 里被 GDN 隔开的全局层共享 index，在相对延迟 0.5 仍低于 dense，而 QSA 在 0.25 追平（Fig. 5a）。这是「层内压缩 vs 跨层复用」在 hybrid 栈上的直接分叉，不是 DSA 的替代实现。
 
 ## 复现风险

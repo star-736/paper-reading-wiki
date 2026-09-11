@@ -157,7 +157,11 @@ YOCO 在 4 针占优，8 针低于 LWM、与 MiniCPM 相同，不能写成全面
 - 实际服务中的 KV 精度、batch、并行度与 prefix 命中率改变后，还能保留多少端到端收益？本报告不提供现代 agent 工作负载的完整成本对照。
 - v2 引言 p.2 将 early exit 写成进入 self-decoder 之前，与 §2.3 和 Figure 3 不符；本页采用后两处一致的“跳过 cross-decoder”。复杂 chunkwise 公式不作为直接实现规范，复现需对照递归形式及官方代码。
 
+## 后续：YOIO
+
+同团队后续把「只缓存一次」扩成「只索引一次」：[YOIO / CLSA](yoio.md) 在 4B SWA-YOCO 上用单次 token-level top-k 服务全部 cross-decoder，用来补 decode；self-decoder 从本报告的 gated retention 换成了窗口 512 的 SWA，不能当成 3B 检查点的继续训练。
+
 ## 相关页面
 
-- [YOCO 模型](../models/yoco.md)、[DeepSeek-V4.1-Flash 技术报告](deepseek-v41-flash.md)。
-- [高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)。
+- [YOCO 模型](../models/yoco.md)、[YOCO-CLSA 4B](../models/yoco-clsa.md)、[YOIO](yoio.md)、[DeepSeek-V4.1-Flash 技术报告](deepseek-v41-flash.md)。
+- [高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[跨层索引复用](../concepts/cross-layer-index-reuse.md)。

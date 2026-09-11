@@ -49,9 +49,11 @@ DeepSeek-V4 的 CSA/HCA 更激进。CSA 每 `m` 个 token 压缩成一个 KV ent
 
 decoder 首个 Full 索引器还按块最大分数选最多 16,384 个候选位置，后续 Reindex 各自从中选 top-512；候选限制在后训练引入。首个索引器仍扫描全部历史，因此全模型 decode 并非严格常数复杂度。配合 FP4，报告全局 KV 为 890 bytes/token，约 V4-Flash 的 1/4；CED 减少 prefill 和 SWA 近似重放降低持久缓存则是另外两个维度，见[百万 token 上下文服务](million-token-context-serving.md)。
 
+[YOIO / CLSA](../sources/yoio.md) 是 YOCO 同团队把「只缓存一次」扩到「只索引一次」的 4B 研究模型：self-decoder 用 SWA 写一份全局 KV，单头 indexer 做一次 token-level top-k，16 层 cross-decoder 共用。它补的是 YOCO 仍稠密的 decode 路径，不是 V4.1 那种 Full / Reindex / Reuse 多层模式。质量只评到 32K；128K 的 7.6× decode / 17.1× 端到端是相对同配置 Transformer 的 B200 吞吐。
+
 ## 一个常被忽略的瓶颈：indexer 自身
 
-DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(L·k)，但 indexer 自身仍然是 O(L²) per layer，N 层叠加是 O(NL²)。在 30B-A3B DSA 模型上，长上下文 prefill 阶段 indexer 能占到总延迟的 50–81%。把这一项进一步降下来有两条路。一条是[跨层索引复用](cross-layer-index-reuse.md)：让多数层跳过 indexer，直接继承前一个 anchor 层选好的 top-k。[IndexCache](../sources/indexcache.md) 是这条思路在 DSA 上的首个系统化实现，30B 模型可去掉 75% indexer 计算，GLM-5 上能拿到 ≥1.3× 端到端加速。另一条是 **层内压缩**：[QSA](../sources/qwen3.8-next.md) 不共享跨层 index，而是把 key 压成 micro-block 再打分；Qwen 给出的理由是 3:1 GDN hybrid 里全局层被 GDN 隔开，跨层相似度不够支撑 IndexShare（Fig. 5a 上 QSA@0.25 追平 dense，IndexShare@0.5 仍低）。两条路正交，目前没有「QSA + IndexCache」的叠加实验。
+DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(L·k)，但 indexer 自身仍然是 O(L²) per layer，N 层叠加是 O(NL²)。在 30B-A3B DSA 模型上，长上下文 prefill 阶段 indexer 能占到总延迟的 50–81%。把这一项进一步降下来现在有三条路。一条是[跨层索引复用](cross-layer-index-reuse.md)：让多数层跳过 indexer，直接继承前一个 anchor 层选好的 top-k。[IndexCache](../sources/indexcache.md) 是这条思路在逐层 DSA KV 上的首个系统化实现，30B 模型可去掉 75% indexer 计算，GLM-5 上能拿到 ≥1.3× 端到端加速。第二条是 **层内压缩**：[QSA](../sources/qwen3.8-next.md) 不共享跨层 index，而是把 key 压成 micro-block 再打分；Qwen 给出的理由是 3:1 GDN hybrid 里全局层被 GDN 隔开，跨层相似度不够支撑 IndexShare（Fig. 5a 上 QSA@0.25 追平 dense，IndexShare@0.5 仍低）。第三条是 **把 routing 绑到已共享的记忆上**：[YOIO](../sources/yoio.md) 在 YOCO 上只保留一个 indexer，decode 的路由项从 DSA 的 $\eta LN$ 变成 $\eta N$。前两条可叠在逐层 KV 栈上；第三条要求先有 KV 共享。目前没有「QSA + IndexCache」或「DSA + YOCO + CLSA」的叠加实验。
 
 ## 对比判断
 

@@ -49,6 +49,8 @@ DeepSeek-V4 使用 on-disk KV cache 处理 shared-prefix requests，减少重复
 
 V4.1 §2.2 明确受 YOCO 启发，但在 decoder 保留逐层局部 SWA，使纯粹提前退出不再足以准备所有状态。**本页综合**：YOCO 的精确优化来自取消该依赖，V4.1 的有界重放则在保留该依赖的架构上接受近似，二者不能混称“无损重放”。
 
+同团队的 [YOIO / CLSA](../sources/yoio.md) 仍用这份共享全局 KV，只是后半改为 $k=2048$ 的稀疏读取；KV 存储仍随长度线性增长，128K 加速是 decode 吞吐而不是把持久缓存压成常数。
+
 ### V4.1 的存储与恢复策略
 
 原文确证（[DeepSeek-V4.1-Flash 报告](../sources/deepseek-v41-flash.md) §3.2.1–3.2.2）：V4 生产部署把全局 KV 与 prompt/output 末端 SWA checkpoint 分别持久化，SWA 约占持久缓存一半；精确 Zero SWA recovery 所需的 $L\times W$ token 重算过贵。V4.1 只重放末尾 $W=128$ tokens，并截断段前 SWA 依赖，接受近似状态。
@@ -89,5 +91,5 @@ GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregatio
 
 ## 相关页面
 
-- 来源：[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)、[LMCache 技术报告](../sources/lmcache.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[FreeToken](../sources/freetoken.md)、[DSpark 技术报告](../sources/dspark.md)
+- 来源：[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)、[YOCO](../sources/yoco.md)、[YOIO](../sources/yoio.md)、[LMCache 技术报告](../sources/lmcache.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[FreeToken](../sources/freetoken.md)、[DSpark 技术报告](../sources/dspark.md)
 - 相邻概念：[KV cache 层](kv-cache-layer.md)、[Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)

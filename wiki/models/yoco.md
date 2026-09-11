@@ -39,5 +39,6 @@ timestamp: 2026-09-12
 ## 相关页面
 
 - [YOCO 来源页](../sources/yoco.md)
+- [YOCO-CLSA 4B](yoco-clsa.md)：同团队后续 4B 研究模型，self-decoder 改为 SWA，后半用 CLSA 共享 routing index；不是本 3B 的继续训练。
 - [DeepSeek-V4.1-Flash](deepseek-v41-flash.md)：其 CED 明确引用 YOCO，但新增逐层 SWA 与近似重放。
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)
