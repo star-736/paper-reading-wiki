@@ -41,6 +41,12 @@ MiMo-V2-Flash 的 hybrid SWA/GA 更像工程上保守的折中。SWA 限制局�
 
 DeepSeek-V4 的 CSA/HCA 更激进。CSA 每 `m` 个 token 压缩成一个 KV entry，然后再做 DSA 式 top-k selection；HCA 用更大的 `m'` 做重压缩，并在压缩状态上做 attention。它还额外保留 sliding-window branch，弥补压缩块内部局部细节不足。
 
+### DeepSeek-V4.1：跨层 KV 共享与重选分离
+
+原文确证（[DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §2.2–2.3、§4.2.1）：CSA2 用 Full / Reindex / Reuse 静态层模式分别控制新建全局 KV、重新选 top-k 和复用 top-k；所有层仍计算自己的 main Q 和 SWA KV。encoder 以压缩率 2 建三份全局缓存，decoder 以压缩率 1 共享由 encoder 末端投影的缓存。main KV + indexer K 的共享降低存储，索引复用降低计算；不能把两项收益混称为 IndexCache 式索引复用。
+
+decoder 首个 Full 索引器还按块最大分数选最多 16,384 个候选位置，后续 Reindex 各自从中选 top-512；候选限制在后训练引入。首个索引器仍扫描全部历史，因此全模型 decode 并非严格常数复杂度。配合 FP4，报告全局 KV 为 890 bytes/token，约 V4-Flash 的 1/4；CED 减少 prefill 和 SWA 近似重放降低持久缓存则是另外两个维度，见[百万 token 上下文服务](million-token-context-serving.md)。
+
 ## 一个常被忽略的瓶颈：indexer 自身
 
 DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(L·k)，但 indexer 自身仍然是 O(L²) per layer，N 层叠加是 O(NL²)。在 30B-A3B DSA 模型上，长上下文 prefill 阶段 indexer 能占到总延迟的 50–81%。把这一项进一步降下来有两条路。一条是[跨层索引复用](cross-layer-index-reuse.md)：让多数层跳过 indexer，直接继承前一个 anchor 层选好的 top-k。[IndexCache](../sources/indexcache.md) 是这条思路在 DSA 上的首个系统化实现，30B 模型可去掉 75% indexer 计算，GLM-5 上能拿到 ≥1.3× 端到端加速。另一条是 **层内压缩**：[QSA](../sources/qwen3.8-next.md) 不共享跨层 index，而是把 key 压成 micro-block 再打分；Qwen 给出的理由是 3:1 GDN hybrid 里全局层被 GDN 隔开，跨层相似度不够支撑 IndexShare（Fig. 5a 上 QSA@0.25 追平 dense，IndexShare@0.5 仍低）。两条路正交，目前没有「QSA + IndexCache」的叠加实验。
@@ -68,4 +74,3 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 - [百万 token 上下文服务](million-token-context-serving.md)
 - [条件记忆](conditional-memory.md)（不改注意力核，卸掉局部 $N$-gram）
 - [2026 开放模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
-

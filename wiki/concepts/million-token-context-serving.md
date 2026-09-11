@@ -41,6 +41,20 @@ DeepSeek-V4 使用 on-disk KV cache 处理 shared-prefix requests，减少重复
 - Periodic checkpointing：每隔 `p` tokens 存一次最近窗口，在存储和重算之间折中。
 - Zero SWA caching：不存 SWA，只依赖 compressed KV 重算最近窗口，存储省但计算多。
 
+## DeepSeek-V4.1：用有界近似重放替代长期 SWA 存储
+
+原文确证（[DeepSeek-V4.1-Flash 报告](../sources/deepseek-v41-flash.md) §3.2.1–3.2.2）：V4 生产部署把全局 KV 与 prompt/output 末端 SWA checkpoint 分别持久化，SWA 约占持久缓存一半；精确 Zero SWA recovery 所需的 $L\times W$ token 重算过贵。V4.1 只重放末尾 $W=128$ tokens，并截断段前 SWA 依赖，接受近似状态。
+
+| 状态 | 存放与恢复 |
+| --- | --- |
+| 全局 KV | 长期缓存至少 72 小时，CSA2 + FP4 缩到约 V4-Flash 的 1/4 |
+| Encoder SWA KV | 每机 10% host DRAM 组成短期池，TTL 数分钟；缺失时重放 prefix 末尾 128 tokens，复用且不覆盖既有全局 KV |
+| Decoder SWA KV | 不做 prefix caching；每次 prefill 将 prompt 末尾 128 tokens 的 encoder 输出跑过 decoder，为当前 decode 准备局部状态 |
+
+作者报相同工作负载下持久缓存约为 V4-Flash 的 1/8，来自全局缓存约 1/4 与移除长期 SWA 存储两项叠加。运行时全局 KV 的 890 bytes/token 不包括全部 SWA 与其他显存。重放**不与完整前向等价**，命中位置还会影响新 suffix 的状态；§6 将恢复边界与极端长上下文列为未充分刻画的风险。
+
+**本页综合**：缓存寿命应跟复用时间尺度匹配；短期会话状态与长期 prefix 采用不同策略。这里以近似计算换存储，不能泛化为任意模型可无损删除 SWA cache。
+
 ## 与 GLM-5 的关系
 
 GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregation 也服务于长上下文 agent 推理。DP-aware routing 让同一 rollout 固定到同一 DP rank，避免多轮工具调用时重复 prefill；PD disaggregation 把 prefill 和 decode 分开，避免长前缀 prefill 干扰正在 decode 的 rollout。
@@ -69,4 +83,3 @@ GLM-5 没有主打百万 token，但它的 DP-aware routing 与 PD disaggregatio
 
 - 来源：[DeepSeek-V4 技术报告](../sources/deepseek-v4.md)、[LMCache 技术报告](../sources/lmcache.md)、[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[FreeToken](../sources/freetoken.md)、[DSpark 技术报告](../sources/dspark.md)
 - 相邻概念：[KV cache 层](kv-cache-layer.md)、[Any-to-any 多模态 serving](any-to-any-multimodal-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)
-

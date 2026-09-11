@@ -48,6 +48,10 @@ timestamp: 2026-08-29
 
 [百万 token 上下文服务](million-token-context-serving.md) 里，V4 的 CSA / HCA 压缩块、SWA 窗口、indexer KV 和未压缩 tail 不能套「一种 PagedAttention」。on-disk cache 给了 Full SWA / periodic checkpoint / Zero SWA 三种策略。LMCache 不解决这些 **类型** 怎么对齐 kernel；它解决的是任意 paged 布局一旦要离开 GPU，I/O 粒度不能跟着 16-token page 走。两者叠：压缩减小体积，chunked 层决定体积能不能按时回来。
 
+### DeepSeek-V4.1：按复用寿命区分全局 KV 与局部状态
+
+原文确证（[V4.1 报告](../sources/deepseek-v41-flash.md) §3.2）：全局 KV 长期保留至少 72 小时，encoder SWA 转入分钟级短期内存池；缺失时仅重放最近 128 tokens，decoder SWA 则每次 prefill 重建。CSA2 + FP4 使全局 KV 约为 V4-Flash 的 1/4，移除长期 SWA 存储后相同工作负载持久缓存约为 1/8。这里恢复的是近似状态，不是原 KV 的逐位还原；策略细节与边界见[百万 token 上下文服务](million-token-context-serving.md)。
+
 ### vLLM-Omni：把「PD 的 KV transfer」泛化成任意中间态
 
 [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) 的 unified connector 受 vLLM PD KV transfer 启发，但 payload 是 Thinker hidden、Talker codec、音视频 tensor。LMCache 是同一直觉在纯 KV 上的生产实现（vLLM production stack / Dynamo / llm-d / AIBrix / KServe 采用）；Omni 把接口从 KV 扩到 stage edge。读论文时先问：这条边传的是 K/V，还是别的激活。

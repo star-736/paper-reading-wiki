@@ -6,6 +6,7 @@
 
 ## 来源
 
+- [DeepSeek-V4.1-Flash 技术报告](sources/deepseek-v41-flash.md) - 原生图文 MoE：CED 减 prefill、CSA2 跨层共享 + FP4 将全局 KV 压到 890 bytes/token，近似 SWA replay 降持久缓存；196B Engram 与 40+ teacher 最终 OPD。
 - [GLM-5 技术报告](sources/glm-5.md) - GLM-5 的 arXiv 技术报告，重点是 agentic engineering、DSA 和异步 RL。
 - [Macaron-V1 技术报告](sources/macaron-v1.md) - Mind Lab 的开放 agent-model 家族，以 frozen base + Mixture-of-LoRA、HCP 版本化 harness 和 MindForge RSI 为核心；当前未证明跨代持续学习增益。
 - [Intern-S2-Mobius 技术报告](sources/intern-s2-mobius.md) - 上海 AI Lab 的架构报告：用全局共享 FFN Memory 将知识存储与 Self-Attn Reasoner 解耦；7B 配对预训练报 1.6× 数据效率，35B 转换路线报更短 CoT / 更快端到端推理，但机制与公平基线仍待核。
@@ -94,6 +95,7 @@
 
 ## 模型
 
+- [DeepSeek-V4.1-Flash](models/deepseek-v41-flash.md) - 552B backbone + 196B Engram，prefill/decode 激活 8B/16B，1M 上下文，图像+文本输入、文本输出。
 - [GLM-5](models/glm-5.md) - 744B 总参数 / 40B 激活参数的 MoE 模型，定位在 agentic、reasoning、coding 能力。
 - [Macaron-V1](models/macaron-v1.md) - Mind Lab 的 agent-model 家族：Venti 用 GLM-5.2 base、Tall 用 Qwen3.6-35B-A3B base，均以四个按 turn 路由的 LoRA specialist 和 HCP harness 组成。
 - [Intern-S2-Mobius](models/intern-s2-mobius.md) - 上海 AI Lab 的 35B 级纯文本架构转换模型：全局共享 FFN knowledge Memory + 多层 Self-Attn Reasoner，主张以 latent iteration 压缩外显 CoT。
@@ -147,7 +149,7 @@
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
 - [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。
 - [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；与 VLA 改权重、软件 agent 的终端 skill 文件对照。
-- [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA 和 HCA 的对比；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
+- [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA/HCA 与 V4.1 CSA2 跨层 KV/索引共享；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
 - [MoE 前沿模型扩展](concepts/moe-frontier-model-scaling.md) - 多篇报告中的总参数、激活参数和系统成本对比。
@@ -166,7 +168,7 @@
 - [Hierarchy-of-Groups Policy Optimization](concepts/hierarchy-of-groups-policy-optimization.md) - HGPO 如何把同 state 的 step group 再按共同历史拆成嵌套层次，并用深度加权 advantage 控制 prompt-context bias / 小组方差。
 - [Single-Rollout Asynchronous Optimization](concepts/single-rollout-asynchronous-optimization.md) - SAO 如何用单条 rollout 替代组采样，并用 DIS mask 与加速 critic 稳定异步 agentic RL。
 - [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。
-- [百万 token 上下文服务](concepts/million-token-context-serving.md) - DeepSeek-V4 的异构 KV-cache、on-disk cache 和 shared-prefix reuse；engine 侧 I/O 见 KV cache 层。
+- [百万 token 上下文服务](concepts/million-token-context-serving.md) - V4 异构 KV 与 prefix reuse，V4.1 将长期全局缓存和短期 SWA 分开，用近似有界重放降低持久存储；engine 侧 I/O 见 KV cache 层。
 - [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、UniClawBench 等 benchmark 的作用和可比性风险；含 UniClawBench 的 capability-driven / 三角色闭环差异化定位。
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
 - [Agent Swarm](concepts/agent-swarm.md) - Kimi K2.5 的 PARL 并行 agent 编排，以及 context sharding 解释。
@@ -181,11 +183,11 @@
 - [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Prime Agent 的表达性 RLM 膜、Macaron HCP、UniClawBench 的 framework>model 与多 harness 训练同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
-- [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的第二条稀疏轴：用 $O(1)$ 查找取静态局部模式，而不是用深度重建；DeepSeek Engram 与 Qwen3.8-Next 主机 n-gram 是两个实例，iso-param 该不该从 expert 重分配仍有分歧。
+- [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的静态模式查找：Engram 方法、V4.1 的 196B 生产集成与 Qwen3.8-Next 主机 n-gram；iso-param 是否从 expert 重分配仍有分歧。
 
 ## 比较
 
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
-- [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - MiMo MOPD / DeepSeek-V4 OPD / Qwen3 Strong-to-Weak / Qwen3-VL Strong-to-Weak / GLM-5 cross-stage 的"目的 / KL 形式 / pipeline 位置"三轴对比，附 Qwen3-8B Table 21 OPD vs RL 对照。
+- [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照，以及 Iterative RPO（TRL `rpo_alpha`）。

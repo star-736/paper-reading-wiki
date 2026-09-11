@@ -1274,3 +1274,9 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 新增 `raw/2602.22817v1.pdf`（arXiv:2602.22817v1，ICLR 2026，22 页）、来源页 `wiki/sources/hierarchy-of-groups-policy-optimization.md`、概念页 `wiki/concepts/hierarchy-of-groups-policy-optimization.md`，并以 PyMuPDF 300 DPI 抽取 Figure 3 到 `wiki/assets/hierarchy-of-groups-policy-optimization/`。
 
 核心：HGPO 在同 state step group 内继续按最近 $0\ldots K$ 段历史建嵌套组，聚合各层 relative advantage，以固定深度权重交换 context bias 与小组方差；不增加 rollout、critic 或额外模型。主证据为 Qwen2.5-1.5B/7B 在 ALFWorld / WebShop，7B 少数单项不高于 GiGPO。回链 GiGPO、agentic 后训练和 LLM RL 对比；不建模型页，因为论文不发布独立模型。`raw/` 除新增原文 PDF 外未改。
+
+## [2026-09-10] ingest | DeepSeek-V4.1-Flash 技术报告
+
+新增来源页与模型页，嵌入 Figure 3/4/5/9，沉淀 CED、CSA2、FP4、SWA Bounded Replay、原生多模态、196B Engram 和 40+ teacher 最终 OPD。更新长上下文注意力、百万 token 服务、KV cache 层、条件记忆、多 token 预测和 OPD 比较，并同步索引。
+
+区分全局 KV 与持久缓存口径、近似重放与精确恢复，记录 Figure 9 与正文单调性主张的冲突，以及 harness / 多 agent 子集与采样限制。`raw/` 未改。

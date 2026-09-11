@@ -52,6 +52,10 @@ DeepSeek 系列在 V3 / V3.2 / V4 的报告原文里一直停留在 MTP-1（sing
 
 这把 MTP 在 DeepSeek 系里的角色推到下一阶段：从"训练目标 + 静态 draft" 进入"训练目标 + dynamic-block draft + per-request scheduling"，draft model 不再是固定深度的并行预测头，而是 parallel backbone + 轻量 sequential head + 校准过的 confidence head 三件套。
 
+## DeepSeek-V4.1 的变化：预训练不再联合 MTP
+
+原文确证（[DeepSeek-V4.1-Flash 报告](../sources/deepseek-v41-flash.md) §2.1、§2.4.3）：backbone 预训练省略 MTP；完成后冻结 backbone，单独训练 DSpark（3 Transformer blocks、SWA 128、一次并行计算 5 个 draft 位置，再用 Markov head 建模依赖）。后训练中 DSpark 跟随策略更新，但其 loss 不反传到 backbone；同时加速 serving、RL 与 OPD rollout。这里已从“V4 生产端替换 MTP-1”推进到“backbone 预训练直接不带 MTP”，不能继续把训练辅助目标与推理 drafter 视为同一组件。
+
 ## Gemma 4 的经验
 
 Gemma 4 的 MTP drafter 设计与 GLM-5 / MiMo 的关键差异在于 **cross-attention 复用主模型 KV**：drafter 不复制或重新计算主模型的 context representation，而是通过 4 层小 Transformer 的 cross-attention 直接访问主模型已计算的 KV cache。这消除了 MTP prefill 阶段（传统 MTP 需要先对 prompt 做一次 prefill 才能开始 draft），并支持任意 draft 长度。E2B/E4B 的 top-k on token clusters 优化解决了 262k 大词表下最终投影的瓶颈——把 d×262k 降到 d×4k 而不损失 acceptance rate，这对共享 Gemini tokenizer 的大词表模型尤其重要。

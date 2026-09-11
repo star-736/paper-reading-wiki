@@ -25,7 +25,7 @@ timestamp: 2026-09-05
 
 ## 跨报告信号
 
-当前 wiki 里有两个可核实例，外加一条相邻但不同的拆分。
+当前 wiki 收录 Engram 方法、其在 DeepSeek-V4.1 的生产集成，以及 Qwen3.8-Next 的平行实例，外加一条相邻但不同的拆分。
 
 ### Engram（DeepSeek，方法论文）
 
@@ -50,6 +50,12 @@ timestamp: 2026-09-05
 
 Qwen 来源页未引用 Engram（本页检索 `wiki/sources/qwen3.8-next.md` 无此名）；时间线上 Engram v1 在 2026-01、Qwen3.8-Next 在 2026-08。把两者写成「Qwen 实现了 Engram」是推断，只宜当平行实例。
 
+### DeepSeek-V4.1-Flash：196B Engram 的生产集成
+
+原文确证（[DeepSeek-V4.1-Flash 报告](../sources/deepseek-v41-flash.md) §2.4.2、§2.5、§3.1.3）：552B backbone 外另加 196B Engram，均分两模块，置于零索引层 1 和 14；每模块用 2/3/4-gram、每阶 8 hash heads。保留 tokenizer compression、context-aware gating 和多分支融合，但因推理复杂度省略短卷积；embedding 表用 momentum + Sinkhorn balancing 更新。
+
+推理时可确定性地从主机 RDMA 预取，第一模块预取与首个 Transformer block 重叠；RL rollout 则将表留在 GPU，以降低 host 内存碎片造成的失败。生产集成已被明确确认，但报告没有隔离 Engram 的增益，不能把整模型 agent 进步归因于查表，也不能直接复用方法论文的 100B offload 吞吐结果。
+
 ### 不是 Mobius 的 FFN Memory
 
 [Intern-S2-Mobius](../sources/intern-s2-mobius.md) 把各层 FFN 横拼成全局共享 knowledge-vector Memory，Reasoner 反复读。那是 **把计算模块改成全层可寻址的参数库**，不是 $O(1)$ hash 表，也不能确定性预取。和 [Attention Residuals](attention-residuals.md) 一样，Mobius 动的是深度方向的信息接口；条件记忆动的是「静态模式还要不要用深度去算」。
@@ -64,7 +70,7 @@ Qwen 来源页未引用 Engram（本页检索 `wiki/sources/qwen3.8-next.md` 无
 ## 待追问
 
 - **重分配 vs 外加表**：同一 iso-param 问题，Engram 与 Qwen Table 8 结论相反。需要在同一 backbone、同一模块件上复现，才能判断是 Engram 的 tokenizer compression / 门控 / 双层插入把 U 形托起来，还是评测噪声。
-- **生产 DeepSeek 模型有没有 Engram。** 本 wiki 的 [V4](../sources/deepseek-v4.md) 报告未写 hashed $N$-gram；Engram-27B 只是研究配置。
+- **生产集成的独立收益有多大。** [V4.1](../sources/deepseek-v41-flash.md) 已确认 196B Engram，但尚需固定 backbone / 数据 / 后训练的增量消融。
 - **RL / tool 交错下预取还成不成。** index 依赖完整 input ID；生成中途插入工具观察后，后续 $N$-gram 的预取窗口如何切，两边报告都没测。
 - **事实知识是否真的「存在表里」。** Figure 6 的 post-hoc 消融有 train–test mismatch；没有定位到具体槽→具体事实的编辑实验（对比 ROME/MEMIT 那条 FFN 知识文献）。
 

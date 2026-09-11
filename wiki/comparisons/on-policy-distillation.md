@@ -39,6 +39,12 @@ timestamp: 2026-06-23
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
+## DeepSeek-V4.1：40+ 异构 teacher 与异步最终 OPD
+
+原文确证（[DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §5.1、§5.2.4）：沿用 SFT→RL→OPD，最终阶段在全领域数据上做 full-vocabulary OPD，使用**超过 40 个 teacher**；teacher 可来自不同训练阶段，也可与 student 架构不同。异步执行中允许调整数据混合、每数据集并发和 active teachers，并处理不同配置样本同时在途的过渡。
+
+作者明确不主张新的后训练算法，将主要进展归于任务、环境及数据规模与质量；没有给 40+ teacher 数量消融或完整 OPD 前后表。**本页综合**：这仍是多专家融合，但“横向领域专家”与“纵向阶段快照”的边界不再互斥，系统须同时支持两种来源，不能仅按 teacher 数量判断能力召回或融合。
+
 ## 三轴对比
 
 ### 轴一：OPD 是干什么用的
@@ -106,7 +112,7 @@ MiMo MOPD 的 Table 7（[Multi-Teacher On-Policy Distillation](../concepts/multi
 
 DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed RL 的整体替代品，没有"先做 mixed RL，再做 OPD"这条对照路径），但报告把 V4-Pro-Base 定为"DeepSeek 系列最强 foundation model"--OPD 的有效性是通过端到端 benchmark 而非消融来论证的。
 
-[Keye-VL-2.0](../sources/keye-vl-2.md) 同样没有给 MOPD 前后消融表，但其 13-teacher 配置是已收录报告中 teacher 数最多的（MiMo 未明确数量，V4 ">10"，KAT 5 个）。Keye-VL-2.0 独有的 top-k overlap estimator 与 KAT-Coder-V2.5 的 drift-aware truncation 解决的是同一类问题--teacher 在 student off-policy 分布外给出不可靠监督--但路径不同：Keye-VL-2.0 在 token 级别过滤（只保留双方高概率的 overlap），KAT-V2.5 在 token 权重级别控制（低兼容性截断）。
+[Keye-VL-2.0](../sources/keye-vl-2.md) 同样没有给 MOPD 前后消融表，其配置为 13 个 teacher；新增的 [DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §5.2.4 已明确超过 40 个，因此不再称 Keye 的数量最多。Keye-VL-2.0 的 top-k overlap estimator 与 KAT-Coder-V2.5 的 drift-aware truncation 解决的是同一类问题--teacher 在 student 分布外给出不可靠监督--但路径不同：Keye-VL-2.0 在 token 级别过滤（只保留双方高概率的 overlap），KAT-V2.5 在 token 权重级别控制（低兼容性截断）。
 
 ### domain reward 噪声决定 teacher 类型
 
