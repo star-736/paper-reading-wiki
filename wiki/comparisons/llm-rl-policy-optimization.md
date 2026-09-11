@@ -20,7 +20,8 @@ VAPO、DAPO、GSPO、SAPO、ARPO 都在名字上是 policy optimization，但它
 - GiGPO 改的是 **advantage 的构造单元**，在已有轨迹组上用重复环境状态做 step-level 对照，不追加 rollout；
 - HGPO 改的是 **step-group 的条件变量**，把同 state 对照再按共同历史拆成层次组，用 bias–variance 权重聚合，不追加 rollout；
 - SAO 改的是 **异步下的采样单元**：放弃组采样，单条轨迹立即更新，并用 DIS mask + critic 换回 baseline；
-- MGPO 改的是 **prompt-level 的梯度权重**，用最大熵权重降权全对/全错 prompt，聚焦能力边界 prompt。
+- MGPO 改的是 **prompt-level 的梯度权重**，用最大熵权重降权全对/全错 prompt，聚焦能力边界 prompt；
+- TIS / clip-or-pop 改的是 **mismatch token 的处理方式**：同一个 ratio 区间，是压低权重（阻尼）还是整段移除（丢弃）。
 
 如果把它们都简写成「比 GRPO 更好」，检索时会混掉层级。本页按抽象层级拆开。
 
@@ -119,6 +120,17 @@ KPop 和前述方法在又一条轴上。它不改 token-level ratio（DAPO/GSPO
 
 详见 [Ling-2.6 技术报告](../sources/ling-2.6.md) § 3.2.3。
 
+### TIS / clip-or-pop：不争 ratio 单元也不争 mask 依据，而争「阻尼还是丢弃」
+
+[Miles v0.1](../sources/miles-v0-1.md) §3.4 提供的前缀修正与 KPop / IcePop 同层——都作用在 importance ratio 上、都不改 loss 的 ratio 单元。它把这一层做成与 advantage estimator **并列的可替换组件**，并给出两种形状：
+
+- **TIS**（truncated importance sampling）把 $r=\exp(\log\pi_{\text{train}}-\log\pi_{\text{rollout}})$ 夹到配置区间后用作该 token policy-gradient loss 的 per-token 权重，默认区间 $[0,2]$。区间只作用在上尾，因为 ratio 不会低于 0。极端 token 被**阻尼**而不是丢弃。
+- **clip-or-pop** 把区间外的 token 权重置零（等价于 loss mask），区间内原样通过。极端 token 被**丢弃**而不是阻尼。
+
+两者的分工值得和上面的 KPop / IcePop 对照：IcePop 与 KPop 争的是「哪些 token 参与」，Miles 争的是「参与的方式」——同一个区间，是压低权重还是整段移除。三种修正都上报同类指标（Miles 报夹前 ratio、被裁比例、$|r-1|$ 的平均绝对偏差），因此可以在同一张曲线图上比较。
+
+Miles 的 §9 案例给了这一层在真实配置下的量级：BF16 训练 + FP8 服务、GLM-5.2 744B、100 step 上 train–inference 分歧均值 0.0369，由 TIS 在更新里吸收。**本页综合**：这说明在 MoE + 低精度服务的生产配置里，「结构性成因去掉之后仍有可测残差」是常态而非异常，所以第四层修正不是可选装饰。
+
 ### CISPO：不争 ratio 单元也不争采样，而争 clipping 的形状与方向
 
 CISPO（源自 [MiniMax-M1](../sources/minimax-m2-series.md)）和前述方法在又一条轴上。它不改 token-level ratio 的优化单元（DAPO/GSPO/SAPO 的轴），不改 rollout 采样结构（ARPO），不改 prompt 权重（MGPO），也不改 mismatch mask（KPop），而是改 **importance-ratio clipping 的形状与方向**——用 asymmetric $(c_{low},c_{high})=(1,4)$，有效 clip $[0,5]$，且只在重 off-policy token 上 engage。
@@ -171,5 +183,6 @@ CISPO 的 asymmetric 设计隐含一个判断：agentic RL 里 token 偏 off-pol
 ## 相关页面
 
 - 来源：[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop / IcePop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
+- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
+- 系统侧来源：[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

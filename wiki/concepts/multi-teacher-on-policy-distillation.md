@@ -260,6 +260,17 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)。
 
+## Miles 的框架侧 OPD：把信号折进 advantage
+
+[Miles v0.1](../sources/miles-v0-1.md) §5.2 的 OPD 与上面各家不同——它的差异不在算法而在**框架接口**，因此也回答了本页「待追问」里几个训练系统层面的问题：
+
+- **信号进 advantage，不进 loss**。算法形式仍是一样本 reverse KL（本页「第一层」的同一代换），但 Miles 在 advantage estimator 算完之后，从每个 token 的 advantage 里减去按系数缩放的 divergence 估计，然后 policy-gradient 更新照旧。两者都是固定输入（rollout 时记录，或由单独的 teacher pass 产生），所以惩罚表现为 dense per-token reward 而不是额外 loss 项。后果是它与 GRPO / GSPO / PPO / REINFORCE++ **可任意组合**，而不是替换其中某一个；任务 reward 可保留也可设 0 只做蒸馏。GLM-5 的「advantage = teacher gap」是同一思路，Miles 把它做成不绑定具体 estimator 的接口。
+- **teacher 部署方式被显式拆开**。**served teacher**：外部 SGLang 服务器在 rollout 期间给每条完成的轨迹打分，log-prob 随轨迹进 trainer；teacher 可以与 student 架构不同、也可以大到装不下，但**必须共享 student 的 tokenizer**（打分在 student 的 token IDs 上做）。**in-process teacher**：Megatron 在 student 旁边加载第二个同架构模型，训练 step 里做一次专门前向。可以注册多个 served teacher 按 prompt metadata 的 tag 路由。top-K 变体（student 的 top-K 或双方 top-K 交集）**只在 served teacher 下可用**——这与本页「数学上没闭合的地方」把 teacher 路由和采样比例外包给数据 curation 的判断一致。
+- **它给了本页唯一一条「蒸馏只缩长度、不涨分」的公开结论**。文档中的 Qwen3.5-35B-A3B 运行：teacher 是同一模型加五步可验证 reward 的 RL，student 从 base 起，任务 reward 设为 0，reverse-KL 惩罚提供全部训练信号。五步内 held-out DAPO prompt 上的 response 长度从 14,070 降到 6,132 token（−56%），accuracy 从 84.0% 到 85.2%——作者自己指出 1.2 个点落在该评测约 1.6 点的标准误内，因此支持得住的结论是「长度大降、精度无可信变化」，而不是 benchmark 提升。这是已收录报告里少见的反例：OPD 不必然换来能力增益，缩长度本身可以是全部收益。
+- **不建模型实体、不给多 teacher 数量**：Miles 是训练系统，它的 OPD 覆盖的是「怎么把任意 teacher 接进任意 RL 循环」，teacher 数量与领域划分仍属于各家模型报告（MiMo / V4 / GLM-5 / KAT / Keye-VL / Mach-Mind / K3）。它与 [Mach-Mind-4-Flash](../sources/mach-mind-4-flash.md) 的统一 RL/OPD loss 是最近的邻居——两者都把 OPD 塞进 RL 框架而非当成后续阶段，但 Mach-Mind 是**加权 loss**（`L = α·L_OPD + β·L_RL`），Miles 是**advantage 修正**，后者不需要改 loss 形式因而能与更多 estimator 组合。
+
+详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md) 与 [Miles v0.1](../sources/miles-v0-1.md)。
+
 ## 待追问
 
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？

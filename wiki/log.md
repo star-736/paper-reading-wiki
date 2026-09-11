@@ -1280,3 +1280,11 @@ Headline：125B/6B + 51B 主机 n-gram；14 项 base 对 397B/17B 8 胜 6 负，
 新增来源页与模型页，嵌入 Figure 3/4/5/9，沉淀 CED、CSA2、FP4、SWA Bounded Replay、原生多模态、196B Engram 和 40+ teacher 最终 OPD。更新长上下文注意力、百万 token 服务、KV cache 层、条件记忆、多 token 预测和 OPD 比较，并同步索引。
 
 区分全局 KV 与持久缓存口径、近似重放与精确恢复，记录 Figure 9 与正文单调性主张的冲突，以及 harness / 多 agent 子集与采样限制。`raw/` 未改。
+
+## [2026-09-11] ingest | Miles v0.1：生产级后训练系统
+
+新增 `raw/2609.08368v1.pdf`（arXiv:2609.08368v1，RadixArk，34 页）、来源页 `wiki/sources/miles-v0-1.md`；用 PyMuPDF 300 DPI 抽取 Figure 1（RL 循环）、Figure 3（TITO session server）、Figure 4（OPD）、Figure 5（GLM-5.2 参考运行三项指标）到 `wiki/assets/miles-v0-1/`。未建模型页：训练系统报告，不发布模型实体；案例研究对象是 GLM-5.2 744B-A40B。
+
+定位是「吞吐 / 保真」两条工程轴：affinity 路由与 fully async 调度解决长尾，TITO session server、R3、低精度契约、TIS/clip-or-pop、true-on-policy alignment 解决采样与训练的概率一致性。另含三种权重同步传输（broadcast / P2P / disk-delta）与 LoRA RL、OPD、SFT、diffusion 复用同一组组件。
+
+新建概念页 `wiki/concepts/train-rollout-consistency.md`（五层手段与成本阶梯，含 GLM-5.3 的 $10^{-7}$ 与 Miles 的 KL 0.0369 口径待澄清）与 `wiki/concepts/rl-weight-synchronization.md`（P2P 收益随 fleet 宽度而非模型规模增长，Table 8）。deepen 异步 Agent RL（staleness 形式定义、丢组三条件、补位粒度、可观测指标）、Agentic 模型的后训练、Multi-Teacher OPD（Miles 的框架侧 OPD）、LLM RL policy optimization 对比（TIS / clip-or-pop），并在 OPD 对比页新增一行；同步 `wiki/index.md` 的来源与概念入口。`raw/` 除新增原文 PDF 外未改。

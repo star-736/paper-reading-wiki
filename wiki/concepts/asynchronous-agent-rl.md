@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "异步 Agent RL"
-description: "GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent；SAO 把 DIS 做成单 rollout 算法。"
+description: "GLM-5 如何用异步 rollout、TITO 和 token-level clipping 训练 agent；SAO 把 DIS 做成单 rollout 算法；Miles 把缺的 staleness 定义、丢组条件与可观测指标补成一套可测系统。"
 tags: ["concept", "asynchronous-agent-rl"]
 timestamp: 2026-06-06
 ---
@@ -87,9 +87,22 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 
 **与三家的定位**：Laguna 不做 partial rollout（K3/ Ring-2.6）也不做轨迹数量阈值的异步解耦（GLM-5），而是靠「trainer↔inference 高带宽直连 + 每 2 step 同步 + 配比自然消 staleness」把在线 RL 跑到吞吐可行。它的独有价值在 chat-template 对齐断言——这是已收录报告里最严格的「RL 训练格式 = 部署格式」工程保证。
 
+## 跨报告信号：Miles 把异步调度写成一套可测的系统
+
+上面各家报告里的异步 RL 都是模型报告的一个小节；[Miles v0.1](../sources/miles-v0-1.md)（RadixArk，建立在 `slime` 之上）把它写成一份独立的系统报告，补上了此前只有抽象名字的机制细节：
+
+- **staleness 有形式定义**：当前 trainer 权重版本 − 该 group 内**任何一个 turn** 用过的最老权重版本，刻意保守，绝不把 group 当成比它最老的 token 更新。GLM-5 报告里抽象的「stale sample dropping」在这里被写成可执行的三条件检查——生成放弃（到达时查）、用户 filter 拒绝（到达时查，且总是丢弃，因为组内奖励全同没有 advantage）、权重太旧（**取出时**才查，因为 group 会在 buffer 里继续变旧）。
+- **补位粒度是一个显式选择**：group granularity 等整组结束才补位（一条慢轨迹占住整组配额），sample granularity（fully-async 默认）每条轨迹一完成就释放自己的位置。后者是把「长尾只浪费一个 slot 而不是一整组 slot」显式设计进去。
+- **异步必须配可观测性**：与同步「训练时引擎闲着、评测近乎免费」相反，异步下评测会挤占生成，所以 Miles 给三种评测模式（共享引擎 / 专用 fleet / 外部 backend），并把 `queue_size`、`avg/max_staleness`、`buffer_avg/max_staleness`、`aborted_groups_filtered`、`stale_groups_filtered` 每 step 上报。作者给的读法很实用：queue_size 钉在 0 = rollout 跟不上，钉在容量上限 = trainer 是瓶颈。
+- **异步的前提被写死**：fully-async 要求 trainer 与 rollout 用分离的 GPU 池，共卡时 Miles 直接拒绝启动——它把「异步需要独立的生成与训练资源」从经验判断变成硬性前置条件，而不是留给用户自行承担后果。
+- **保真度被拆成独立一章**：TITO 的 session server（Linear / Branching 两种扩展规则、可配置的重放比较 matcher）、R3 专家路由重放、低精度契约、TIS / clip-or-pop、true-on-policy alignment 是同一根轴上的五层手段，见 [训练—rollout 一致性](train-rollout-consistency.md)；权重如何回到引擎见 [RL 权重同步与部署拓扑](rl-weight-synchronization.md)。
+
+它还给了已收录报告里少见的**单次运行诚实标注**：GLM-5.2 744B 的 64 × GB300 参考运行报中位 step 263 s、prefix-cache 命中率 96%、train–inference KL 均值 0.0369、raw reward 9 步移动平均 0.438 → 0.556，但作者明确把 reward 上升写成「观察而非测得的改进」，因为单次运行、单一任务分布分不清它与 run-to-run 波动。
+
 ## 相关页面
 
 - 算法：[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
-- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)
+- 系统层：[训练—rollout 一致性](train-rollout-consistency.md)、[RL 权重同步与部署拓扑](rl-weight-synchronization.md)
+- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[Miles v0.1](../sources/miles-v0-1.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)

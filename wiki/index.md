@@ -92,6 +92,7 @@
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
 - [Hierarchy-of-Groups Policy Optimization（HGPO）](sources/hierarchy-of-groups-policy-optimization.md) - NTU + 东南大学的 ICLR 2026 论文：指出 finite-memory step-wise RL 中同 state step 也可能历史不一致；用历史层次 group + 深度权重 advantage，在不新增 rollout 下交换 bias / variance。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
+- [Miles v0.1](sources/miles-v0-1.md) - RadixArk 的生产级后训练系统报告（建立在 `slime` 上、rollout 侧绑定 SGLang）：把吞吐（affinity 路由 + fully async 调度 + staleness 丢组）与保真（TITO session server、R3、低精度契约、TIS/clip-or-pop、true-on-policy alignment）拆成两条工程轴，另含三种权重同步传输、LoRA RL / OPD / diffusion 复用同一组组件，案例是 GLM-5.2 744B 在 64 张 GB300 上的 fully async agentic RL（中位 step 263 s）。
 
 ## 模型
 
@@ -184,10 +185,12 @@
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
 - [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的静态模式查找：Engram 方法、V4.1 的 196B 生产集成与 Qwen3.8-Next 主机 n-gram；iso-param 是否从 expert 重分配仍有分歧。
+- [训练—rollout 一致性](concepts/train-rollout-consistency.md) - 采样路径与训练路径为什么会对同一条轨迹给出不同概率（tokenization / MoE 路由 / 精度 / 异步 off-policy / 缺 $\pi_{\theta_{\text{old}}}$），以及 TITO、R3、量化契约、ratio 修正、bit-exact 对齐五层手段各自的成本与证据边界。
+- [RL 权重同步与部署拓扑](concepts/rl-weight-synchronization.md) - 更新后的权重如何回到 rollout engine：NCCL broadcast / P2P RDMA / disk-delta 三条传输的适用条件，P2P「收益随 fleet 宽度而非模型规模增长」的实测规律，以及 pause 成本与 staleness 治理的耦合。
 
 ## 比较
 
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
-- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照，以及 Iterative RPO（TRL `rpo_alpha`）。
+- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。

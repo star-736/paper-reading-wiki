@@ -10,9 +10,9 @@ timestamp: 2026-06-23
 
 ## 为什么开这一页
 
-「在线策略蒸馏 / On-Policy Distillation（OPD）」在 2025–2026 的开源技术报告里高频出现，但**同一个名字下封装的是三种相当不同的训练设计**——目的、teacher 数量、KL 形式、在流水线中的位置都不一样。这一页把已收录报告里用了 OPD 的 6 家并排比对一遍，作为 [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 概念页之上的跨家综合视角。
+「在线策略蒸馏 / On-Policy Distillation（OPD）」在 2025–2026 的开源技术报告里高频出现，但**同一个名字下封装的是相当不同的训练设计**——目的、teacher 数量、KL 形式、在流水线中的位置都不一样。这一页把已收录报告里用了 OPD 的各族并排比对一遍（含把 OPD 做成框架侧接口、本身不发布模型的 [Miles](../sources/miles-v0-1.md)），作为 [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 概念页之上的跨家综合视角。
 
-**核心共识**（这 6 家都同意的事，也就是 OPD 之所以叫 OPD）：student 从**自己当前策略**采样轨迹，再用 teacher 在这些**student 轨迹**上的输出分布做监督--以此对齐部署分布、避开离线蒸馏的 exposure bias。off-policy 蒸馏（student 学 teacher 生成的静态数据）是它的对照组。
+**核心共识**（用了 OPD 的各家都同意的事，也就是 OPD 之所以叫 OPD）：student 从**自己当前策略**采样轨迹，再用 teacher 在这些**student 轨迹**上的输出分布做监督--以此对齐部署分布、避开离线蒸馏的 exposure bias。off-policy 蒸馏（student 学 teacher 生成的静态数据）是它的对照组。
 
 [DPO](../sources/dpo.md) 也常被说成「不用 RL」，但不是 OPD：它优化的是离线偏好对上的 Bradley-Terry 分类损失，训练时不从当前策略采样。OPD 的对照是 SFT（off-policy + dense）和 RL（on-policy + sparse），不是 DPO。
 
@@ -36,6 +36,7 @@ timestamp: 2026-06-23
 | **[Keye-VL-2.0](../models/keye-vl-2.md)** | 多专家**融合**（Cross-Modal MOPD，多模态场景首次大规模应用） | **13 个** RL-trained domain teacher（safety / 纯文本数学 / 指令跟随 / code / 视觉 STEM / OCR / grounding / counting / video / tool use 等），每 sample 按 modality+task 路由 | token-level reverse KL + **top-k overlap estimator**（只在 teacher/student 都高概率的 token 上算 advantage）+ **SPRR** re-tokenization + token-category-aware scaling + localized repetition penalty | SFT -> General RL -> Specialized RL -> Video RL -> Agentic RL -> Cross-Modal MOPD（最后阶段） |
 | **[Mach-Mind-4-Flash](../sources/mach-mind-4-flash.md)** | 多专家**融合**（MOPD 是 specialization-then-integration 的 integration 阶段） | **>10** 个 specialist（三轨：Reasoning RL / General RL / Agent RL 各出多个专家），每 sample 按 `teacher_route` 路由 | token-level reverse KL + **k1 estimator** + **PPO clipped surrogate**（修正异步 off-policy drift）+ **统一 RL/OPD loss**（`L = α·L_OPD + β·L_RL`，唯一把两者混进单一 loss 的实现） | SFT -> 三轨并行 RL -> MOPD -> HMPO（token 效率，最后阶段） |
 | **[Kimi K3](../sources/kimi-k3.md)** | 多专家**融合**（MOPD 把 9 个 RL 专家融合成单一 student） | **9 个**（3 域 × 3 reasoning effort 矩阵：general tasks / general agents / coding agents × {low, high, max}），给定 domain+effort 路由到对应 teacher | per-token OPD reward `clip(sg(log π_T/π_θ), -R_max, R_max)`（R_max clip 极端 advantage）；试过 top-k distillation 但无收敛/性能优势 | SFT → 9-专家 RL → MOPD（最后阶段）；QAT 贯穿 SFT+RL |
+| **[Miles](../sources/miles-v0-1.md)**（训练系统，非模型） | 把 OPD 接进**任意** RL 循环（框架侧接口） | **不限数量**：served teacher（外部 SGLang 服务在 rollout 期间打分；可与 student 架构不同或大到装不下，但须共享 student 的 tokenizer）或 in-process teacher（同架构，Megatron 在 student 旁加载第二份）；多个 served teacher 按 prompt metadata 的 tag 路由 | token-level 单样本 reverse KL，**折进 advantage 而非 loss**（两个 log-prob 都是固定输入，惩罚表现为 dense per-token reward）；top-K 变体只在 served teacher 下可用 | 与 RL **同阶段可组合**——不改 loss 形式，因此能与 GRPO / GSPO / PPO / REINFORCE++ 任意叠加；文档实验在 Qwen3.5-35B-A3B 上设任务 reward = 0、teacher 只加五步可验证 reward 的 RL |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
@@ -92,6 +93,10 @@ Qwen3 / Qwen3-VL 的 logit-level KL 介于两者之间：**单 teacher + 单 stu
 
 **GLM-5 cross-stage distillation = RL 流水线的最终阶段，目的是召回而非合并**。前面是 SFT → Reasoning RL → Agentic RL → General RL，最后用 on-policy distillation 把上游**各阶段** checkpoint（多 teacher）的能力按 prompt 归属路由召回。一个工程后果：因为 advantage 直接来自 teacher gap 而非 group 内对比，**GRPO group size 可降到 1**（§3.5 原文），单 prompt 不再需要多 rollout，吞吐翻倍——这是把 OPD 套进 RL 框架后才出现的便利。
 
+**Miles = 不与 RL 阶段并列，而是与 RL 循环并行**。[Miles v0.1](../sources/miles-v0-1.md) §5.2 把 OPD 做成框架侧接口：divergence 估计折进 advantage 而不是新增 loss 项，因此 OPD 与 GRPO / GSPO / PPO / REINFORCE++ 可任意组合，任务 reward 保留或置零都行。这与 GLM-5 的「advantage = teacher gap」是同一代换，区别在于 Miles 把它抽象成不绑定具体 estimator 的组件。它与 [Mach-Mind-4-Flash](../sources/mach-mind-4-flash.md) 的统一 RL/OPD loss 构成一对最近的邻居：Mach-Mind 改 **loss 形式**（加权和，三个模式切换），Miles 改 **advantage**（loss 不动），后者因此能与更多 estimator 组合。teacher 部署也被显式拆成 served（外部 SGLang 服务，可与 student 架构不同、但须共享 tokenizer）与 in-process（同架构、Megatron 加载第二份）两种——这实际上把「teacher 是不是必须与 student 同构」这个此前各家默认一致的问题变成了一个配置项。
+
+值得单独记的是它给出的**反向证据**：文档中的 Qwen3.5-35B-A3B 运行把任务 reward 设为 0、只靠 teacher 的 reverse-KL 信号训练，五步内 held-out DAPO prompt 上的 response 长度从 14,070 降到 6,132 token（−56%），accuracy 84.0% → 85.2%——1.2 个点落在该评测约 1.6 点的标准误内。作者因此把结论限定为「长度大降、精度无可信变化」。这是本页收录的 OPD 里唯一一条「蒸馏不换来能力增益」的公开结论，也是判断 OPD 收益时最该先排除的对照情形：缩长度本身可能就是全部收益。
+
 ## 关键数据：on-policy distill vs RL（Qwen3-8B）
 
 Qwen3 报告 Table 21（page 21，原文 § The Effectiveness and Efficiency of On-Policy Distillation）给出干净对比。两条路线**同一起点**（off-policy distilled 8B checkpoint，只用 math + code query）：
@@ -139,3 +144,4 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [DPO](../sources/dpo.md)：同样绕开 PPO 回路，但是离线偏好分类，不是 on-policy reverse-KL。
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md)：GLM-5 在 cross-stage distillation 之前的 RL 阶段。
 - [MiMo-V2-Flash 技术报告](../sources/mimo-v2-flash.md) / [DeepSeek-V4 技术报告](../sources/deepseek-v4.md) / [Qwen3 技术报告](../sources/qwen3.md) / [Qwen3-VL 技术报告](../sources/qwen3-vl.md) / [GLM-5 技术报告](../sources/glm-5.md)：源页。
+- [Miles v0.1](../sources/miles-v0-1.md)：唯一把 OPD 做成框架侧接口的来源（advantage 折入而非 loss 加权、served / in-process teacher 两种部署、top-K 变体只在 served teacher 下可用），并提供唯一一条「蒸馏只缩长度、不涨分」的公开结论。
