@@ -77,3 +77,4 @@ Ouro-2.6B 在完整 NESTful 上的 SFT Win Rate 为 0.371，较其 base 的 0.19
 - [Agentic engineering](../concepts/agentic-engineering.md) — 组合式工具工作流的系统层能力
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) — BFCL / NESTful 的能力拆分与可比性变量
 - [LoopCoder-v2](loopcoder-v2.md) — 同一 latency-scaling 大类下的 PLT coding 证据
+- [Looped World Models](looped-world-models.md) — 循环对象换成环境隐状态；自适应退出在 world model 里仍缺实测分布

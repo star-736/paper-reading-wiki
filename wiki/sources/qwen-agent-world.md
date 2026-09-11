@@ -277,5 +277,6 @@ Terminal 100 RL 步内从 32.8 升到 47.0（+14.2）；三个 held-out 文本�
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) - LWM warm-up 作为 agent 基座训练范式
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - AgentWorldBench 的 reference-grounded judging 方法论
 - [Agent-World](agent-world.md) - code-driven 环境合成路线（互补对照）
+- [Looped World Models](looped-world-models.md) - 另一条 world-model 线：Dreamer 式 latent dynamics + looped Transformer，公开评测是 ScienceWorld / AlfWorld 五步文本 next-state，不是 AgentWorldBench
 - [Group Sequence Policy Optimization](group-sequence-policy-optimization.md) - GSPO 作 RL 算法
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - GSPO 在 LWM RL 中的落地

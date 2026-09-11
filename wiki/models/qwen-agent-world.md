@@ -44,4 +44,5 @@ Qwen-AgentWorld 的核心定位是 **native world model**——从 CPT 阶段就
 - 同基座、不同任务：[WeMM-Embedding](wemm-embedding.md)（Qwen3.5 2B/4B/9B 做通用多模态 embedding）
 - RL 算法：[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)（GSPO）
 - 互补对照：[Agent-World](../sources/agent-world.md)（code-driven 环境合成路线）
+- 不同族对照：[LoopWM](loopwm.md)（looped latent dynamics，不是 native LWM）
 - 概念：[Agentic Engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

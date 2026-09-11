@@ -51,4 +51,5 @@ LoopCoder-v2 是北航 + IQuest Research + Langboat 联合发布的 7B 参数 PL
 
 - [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) — 完整机制分析、训练配置和评测结果
 - [Looped Transformers 概念页](../concepts/looped-transformers.md) — PLT 在 looped Transformer 谱系中的定位
+- [LoopWM](loopwm.md) — 循环深度的 world-model 实例，顺序 recurrence 而非 PLT
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) — SWE-bench Verified / Terminal-Bench 数据点

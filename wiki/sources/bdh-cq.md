@@ -83,3 +83,4 @@ HIGH / MEDIUM / LOW effort 的 pass@2 分别为 29.5% / 27% / 21%，相对 HIGH 
 
 - [BDH-CQ](../models/bdh-cq.md) — 150M ARC 推理系统的模型事实与披露边界
 - [Looped Transformers](../concepts/looped-transformers.md) — 与 recurrent latent computation 的相邻谱系，以及不应与 PLT 混同的边界
+- [Looped World Models](looped-world-models.md) — 另一条 latent iteration：循环对象是环境隐状态，不是 ARC workspace

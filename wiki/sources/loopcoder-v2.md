@@ -156,5 +156,6 @@ R=2 的 7B 模型在 SWE-bench Verified 上达到 64.4%，超过 Kimi-Dev-72B（
 
 - [LoopCoder-v2 模型页](../models/loopcoder-v2.md)
 - [Looped Transformers 概念页](../concepts/looped-transformers.md)
+- [Looped World Models](looped-world-models.md) — 同一循环家族接到 world-model 隐状态，无 PLT、无匹配非循环基线
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) — LoopCoder-v2 的 SWE-bench Verified / Terminal-Bench 数据点
 - [多 token 预测](../concepts/multi-token-prediction.md) — MTP 与 latent loop recurrence 作为 test-time compute 两条路径的关系

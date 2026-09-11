@@ -1318,3 +1318,11 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 记录与 IndexCache 的差别——后者在逐层 DSA KV 上做 1/4 retention，CLSA 把 routing 绑到已共享的记忆上，结构上只有一个 indexer。128K B200 + vLLM 相对同配置 Transformer：decode 7.6×、端到端 17.1×；质量只评到 32K RULER。self-decoder 是 SWA 512 而非 YOCO-3B 的 gated retention。
 
 更新跨层索引复用（三种 oracle）、稀疏注意力对比、DSA / 高效长上下文 / 百万 token 服务，以及 YOCO 来源页与 IndexCache 回链。`raw/` 除新增该 PDF 外未改。
+
+## [2026-09-12] ingest | Looped World Models
+
+新增 `raw/2606.18208v1.pdf`（arXiv:2606.18208v1，FaceMind Research Asia，34 页）、来源页 `wiki/sources/looped-world-models.md`、模型页 `wiki/models/loopwm.md`，以及 Figure 1/2/3 到 `wiki/assets/looped-world-models/`。
+
+定位：把顺序 looped Transformer 接到 Dreamer 式 latent world model（Prelude–Recurrent–Coda + Parcae 谱约束线性保留 + 延迟解码）。公开表是 ScienceWorld / AlfWorld 五步文本 next-state，对照 Claude / Gemini / Qwen API，不是 RSSM。ScienceWorld EM 68.4 vs Claude 47.2；AlfWorld EM 低于 Claude。摘要 100× 是 1B vs 闭源模型的参数比；§3.4 FLOPs 是 100 层思想实验。记录 Figure 2 caption Qwen3.7-max 与图轴 Qwen3.6-max 冲突，以及弹幕图与主实验脱节。
+
+更新 Looped Transformers（跨报告信号 + 循环对象换成环境隐状态 + 饱和待追问），并回链 Qwen-AgentWorld / LoopCoder-v2 / looped-tool-calling / BDH-CQ。`raw/` 除新增该 PDF 外未改。
