@@ -3,7 +3,7 @@ type: Model
 title: "π0.5"
 description: "Physical Intelligence 的开世界 VLA：π0 的 PaliGemma + flow action expert，加上异构 co-training 与统一 subtask 头，在未见过的家里做长周期家务。"
 tags: ["model", "vla", "robotics", "pi0.5"]
-timestamp: 2026-09-05
+timestamp: 2026-09-12
 ---
 
 # π0.5
@@ -36,7 +36,7 @@ timestamp: 2026-09-05
 3. **97.6% 预训练不是目标平台家务**（§I）。作者用消融说明：跨本体（ME/CE）撑 mock 家务；web 数据撑 OOD 物体和高层；只堆移动操作小时数不够。
 4. **评测协议是新房子**，不是 π0 那种预训练见过的叠衣服/收拾桌子。因此 π0.5 vs π0 的 Figure 12 是「同一机器人数据、π0.5 多了 HL/WD 与离散预训练」的家务泛化，不是 OpenVLA Bridge 协议。
 
-**不要误读的边界**：模态没有音频。InternVLA-A1.5 表里的 π0.5 分数是那边的试管/化学任务重测，不是本模型论文的家庭进度条。EmbodiedSkills 等后续工作若写「用 π0.5 当低层」，指的是这一代 flow expert + subtask，不是 OpenVLA 的 256-bin。
+**不要误读的边界**：模态没有音频。InternVLA-A1.5 表里的 π0.5 分数是那边的试管/化学任务重测，不是本模型论文的家庭进度条。[EmbodiedSkills](../sources/embodied-skills.md) 用 OpenPI/π0.5 当低层，指的是这一代 flow expert + subtask，不是 OpenVLA 的 256-bin；它在 RoboTwin 2.0 上是 **每任务一份 specialist**，86.20% 不是本页家庭家务协议，也不是一份 generalist。
 
 ## 相关页面
 
@@ -45,3 +45,4 @@ timestamp: 2026-09-05
 - 离散 token 基线：[OpenVLA](openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 真机对照：[InternVLA-A1.5](internvla-a1.5.md)
+- 把它当低层执行器的 AgentLoop：[EmbodiedSkills](../sources/embodied-skills.md)

@@ -114,3 +114,4 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 - 离散 token 基线：[OpenVLA](openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 把它当真机/仿真对照的后续模型：[InternVLA-A1.5](internvla-a1.5.md) · [模型](../models/internvla-a1.5.md)
+- 把它当低层执行器的框架：[EmbodiedSkills](embodied-skills.md)（OpenPI/π0.5；RoboTwin 是每任务 specialist，不是本页家庭协议）

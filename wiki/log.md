@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-09-12] ingest | EmbodiedSkills
+
+浙大等的 VLA 上层框架（arXiv:2609.01281v1）。新增 `raw/2609.01281v1.pdf`、来源页 `sources/embodied-skills.md`，提取 Figure 1–4。不建模型页：产出是 executable-skill 接口和 AgentLoop，低层是任务特化 OpenPI/π0.5，高层是未给尺寸的 Qwen3-VL。Headline 86.20% / 97.40% 记为低层执行成绩；AgentLoop 证据落在消融（去验证 −38.0 pp、去 subtask −51.8 pp）。更新 VLA、具身 skill 自进化、Agent harness，以及 ASPIRE / π0.5 / Qwen3-VL / InternVLA-A1.5 反链。
+
 ## [2026-09-05] ingest | MMSearch-R1 技术报告
 
 ByteDance + NTU 的首个端到端 RL 多模态搜索框架（arXiv:2506.20670）。创建来源页 `sources/mmsearch-r1.md`、模型页 `models/mmsearch-r1.md`，提取 5 张核心图表，更新"Agentic 模型的后训练"概念页（新增 MMSearch-R1 条目 + 将 DeepMMSearch-R1 的 MMSearch-R1 引用从裸 URL 改为 wiki 链接），同步更新 DeepMMSearch-R1 来源页的相关页面链接。

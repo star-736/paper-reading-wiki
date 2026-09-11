@@ -52,6 +52,7 @@
 - [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
 - [π0.5](sources/pi0.5.md) - π0 的开世界后作（CoRL 2025）：异构 co-training（多机器人 + web/语义 + subtask）+ 统一高低层，在未见过的家里做长周期家务。
 - [ASPIRE](sources/aspire.md) - NVIDIA GEAR 的 code-as-policy 具身 skill 自进化：执行引擎 + 技能库 + 进化搜索；不是 VLA 动作头，冻结 Claude Opus 4.6 写/改程序。
+- [EmbodiedSkills](sources/embodied-skills.md) - 浙大等的 VLA 上层 AgentLoop：技能决策是 execution proposal，runtime 先验后验；低层任务特化 π0.5 报 RoboTwin 2.0 86.20% / LIBERO 97.40%，环本身的证据是消融 −38.0 / −51.8 pp。
 - [HunyuanOCR-1.5 技术报告](sources/hunyuan-ocr-1.5.md) - 腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，DFlash block-diffusion 推测解码（Transformers 6.37× / vLLM 2.14×）+ Agentic Data Flow 数据构造 + 三组件 reward RL。
 - [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
 - [KAT-Coder-V2 技术报告](sources/kat-coder-v2.md) - 快手 KwaiKAT 的 agentic coding 模型，Specialize-then-Unify 五域分治 + KwaiEnv 模块化沙箱 + MCLA 稳定 MoE RL + Tree Training 6.2× 加速 + OPD 专家融合。
@@ -157,8 +158,8 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
-- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。
-- [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；与 VLA 改权重、软件 agent 的终端 skill 文件对照。
+- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。三条动作头：OpenVLA 离散 256-bin token；π0 连续 flow + action expert（2026 论文默认低层）；π0.5 开世界 co-training + 统一 subtask。EmbodiedSkills 是叠在 π0.5 上的 AgentLoop，不是第四种动作头。
+- [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；EmbodiedSkills 是另一条路：固定 typed 合同 + AgentLoop，不扩张程序库。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA/HCA 与 V4.1 CSA2 跨层 KV/索引共享；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。
@@ -190,7 +191,7 @@
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
 - [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
-- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Prime Agent 的表达性 RLM 膜、Macaron HCP、UniClawBench 的 framework>model 与多 harness 训练同属这一层。
+- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Prime Agent 的表达性 RLM 膜、Macaron HCP、UniClawBench 的 framework>model、EmbodiedSkills 的 VLA guarded runtime 同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
 - [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的静态模式查找：Engram 方法、V4.1 的 196B 生产集成与 Qwen3.8-Next 主机 n-gram；iso-param 是否从 expert 重分配仍有分歧。

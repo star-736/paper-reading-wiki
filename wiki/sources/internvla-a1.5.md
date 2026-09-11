@@ -140,6 +140,7 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（通用 VLA 定义；本页是 2026 的 MoT + flow-matching 实例，不是入门定义）
 - 开源离散动作 token 基线：[OpenVLA](../models/openvla.md) · [来源](openvla.md)（7 维 × 256-bin 自回归；与本页 Stage 2 连续动作不是同一套）
 - 真机/LIBERO-Plus 对照的开世界 VLA：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)（PaliGemma + flow expert + 异构 co-training；本页数字是重测）
+- 另一套 RoboTwin 2.0 数字，协议不同勿横比：[EmbodiedSkills](embodied-skills.md)（50 个任务特化 π0.5，macro 86.20；本页是 93.2 vs LingBot-VA 92.2）
 - 连续 flow 前作：[π0](pi0.md)
 - 架构基座：[Qwen3.5](../models/qwen3.5.md)（VLM backbone = Qwen-3.5 2B，3:1 GDN:full attention 混合）
 - [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（GDN 在 VLA 领域的采用证据）
