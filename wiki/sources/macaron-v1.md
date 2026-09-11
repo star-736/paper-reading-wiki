@@ -95,5 +95,7 @@ LoRA RL 的 policy 写为 $\pi_\phi(a_t \mid o_{\leq t}; \theta, c)$，其中 sp
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - [2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
+- [Pi coding agent 设计博客](pi-coding-agent.md) - 同样冻结 L0、改 harness；Pi 把能力赶到 extension，HCP 搜索的是配置契约
+- [SoL-Pi 官方博客](sol-pi.md) - 同样做 harness 侧 RSI，搜的是 token 效率机制而不是 HCP 配置
 - [Prime Agent 技术报告](prime-agent.md) - 同样冻结 L0、改 harness；Prime Agent 是轨迹内 Continual Harness，不是失败集上的 HCP 搜索
 - [Agent harness](../concepts/agent-harness.md)

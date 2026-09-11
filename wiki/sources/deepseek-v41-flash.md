@@ -201,3 +201,4 @@ Table 4 控制同一 checkpoint、任务与解码配置，只替换 harness：Li
 - 架构与系统：[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[百万 token 上下文服务](../concepts/million-token-context-serving.md)、[KV cache 层](../concepts/kv-cache-layer.md)。
 - 扩展组件：[条件记忆](../concepts/conditional-memory.md)、[Engram](engram.md)、[多 token 预测](../concepts/multi-token-prediction.md)、[DSpark](dspark.md)。
 - 训练比较：[OPD 跨报告对比](../comparisons/on-policy-distillation.md)。
+- Harness：[DeepSeek Harness 官方文档](deepseek-harness.md)（Table 4 的 Minimal/Standard/PTC 产品膜）、[Pi coding agent 设计博客](pi-coding-agent.md)、[Agent harness](../concepts/agent-harness.md)

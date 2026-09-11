@@ -20,8 +20,10 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | SWE-bench Pro | 更偏行业级、长周期 repository repair | MiniMax-M2、Kimi K2.5 用来衡量复杂工程修复能力。 |
 | SWE-bench Multilingual | 多语言软件工程问题修复 | 用于测试模型跨语言代码维护能力。 |
 | Multi-SWE-bench | 多 repo / 多语言 issue resolving | MiniMax-M2 用来测试跨仓库迁移和更宽软件工程覆盖。 |
-| Terminal-Bench 2.0 | 终端环境中的任务执行 | 测试 shell、文件、环境和多步操作能力。 |
+| Terminal-Bench 2.0 | 终端环境中的任务执行 | 测试 shell、文件、环境和多步操作能力。[Pi](../sources/pi-coding-agent.md) + Claude Opus 4.5 自报约 49.8% ± 2.4（2025-12-02 榜截图第 7），但是 mixed-model 榜，不是同模型换膜。 |
 | Terminal-Bench 3.0 | 终端环境中的更长周期任务执行 | GLM-5.3 报告 28.3；其披露为 Claude Code 2.1.207、400K context、128K max output、avg@3，单 rollout 最多 600 turns / 10 小时。 |
+| Terminal-Bench 4 | 终端任务的更新切分 | [SoL-Pi](../sources/sol-pi.md) 只跑 63 个 CPU-only 任务：Codex 18 / Pi 18 / SoL-Pi 15；GPU 任务因基础设施排除。 |
+| EdgeBench | 数小时级长周期可执行 agent 工作，51 任务 | SoL-Pi 的 held-out 主台；作者称当时公开基准里几乎只有它稳定支持约 2–12 小时连续推理和工具使用。一手报告见 [EdgeBench](../sources/edgebench.md)：134 题（公开 51）、每题 ≥12h、work/judge 双容器、平均曲线 log-sigmoid \(R^2\ge 0.997\)。官方榜混用 Codex/Claude Code，不能和 SoL-Pi 数字横比。 |
 | BrowseComp | 高难度网页搜索与多跳信息综合 | 测试 search agent 和 context management。 |
 | WideSearch | 广域、多源信息搜索 | Kimi K2.5 和 MiniMax-M2 用来测试并行搜索、覆盖率和综合能力。 |
 | MCP-Atlas | 使用 MCP servers 的多步工具工作流 | 测试真实工具协议下的 tool-use 能力。 |

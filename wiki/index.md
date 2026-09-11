@@ -92,6 +92,11 @@
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。
+- [Pi coding agent 设计博客](sources/pi-coding-agent.md) - Mario Zechner 2025-11-30：极小核心、四工具、系统提示+工具定义 <1000 token；刻意不做 MCP / sub-agent / plan mode。Terminal-Bench 2.0 自报 Pi + Opus 4.5 约 50%，mixed-model 榜。不是 π0。
+- [SoL-Pi 官方博客](sources/sol-pi.md) - NVLabs 在 Pi 0.84.2 上用 auto-research 留下四个效率机制；相对 Pi token 少 45–49%、平均分保留约 94%。不是 Pi 官方发行版。
+- [EdgeBench 技术报告](sources/edgebench.md) - ByteDance Seed 超长程环境学习基准：134 题（公开 51）、每题 ≥12h；平均曲线 log-sigmoid \(R^2\ge 0.997\)。SoL-Pi 的 held-out 主台。
+- [Databricks coding agent 内部评测博客](sources/databricks-coding-agents.md) - 同模型换膜：Pi 相对 Claude Code / Codex 任务成本可低 2× 以上、每轮约少送 3× context；内部不可复现。
+- [DeepSeek Harness 官方文档](sources/deepseek-harness.md) - `dsh`：Everything is a Plugin，loop/session/sandbox 都是插件；developer preview。V4.1-Flash headline 用 Minimal 两工具模式。Cordis 论文只作内核外链。
 - [MMSearch-R1 技术报告](sources/mmsearch-r1.md) - ByteDance + NTU 的首个端到端 RL 多模态搜索框架：GRPO 教 LMM 按需发起图像搜索与文本搜索，search penalty 抑制过度搜索，FVQA 数据集，5 benchmark 平均 54.6% 超同尺寸 RAG。
 - [DeepMMSearch-R1 技术报告](sources/deepmmsearch-r1.md) - Apple + Johns Hopkins 的多模态 web search 训练方法：SFT + GRPO 两阶段教 MLLM 做多轮文本搜索与裁剪图像搜索，DeepMMSearchVQA 数据集，6 benchmark 平均 57.13 超 RAG workflow +21pp。
 - [Qwen3.8-Next 架构报告](sources/qwen3.8-next.md) - Qwen3.8-Flash-Next：125B/6B + 51B 主机 n-gram，3:1 GDN + QSA、Gated Residual、Muon；14 项 base 8 胜 6 负追平 397B-A17B，约 1/9 训练 FLOPs。
@@ -195,7 +200,7 @@
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
 - [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
-- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Prime Agent 的表达性 RLM 膜、Macaron HCP、UniClawBench 的 framework>model、EmbodiedSkills 的 VLA guarded runtime 同属这一层。
+- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Pi 极小核心、DeepSeek Harness 插件核、SoL-Pi 效率层、Prime Agent 表达性膜、Macaron HCP 同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
 - [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的静态模式查找：Engram 方法、V4.1 的 196B 生产集成与 Qwen3.8-Next 主机 n-gram；iso-param 是否从 expert 重分配仍有分歧。

@@ -1,5 +1,29 @@
 # 日志
 
+## [2026-09-12] ingest | DeepSeek Harness 官方文档
+
+新增 `raw/deepseek-harness-readme.md`、落地页与架构文档快照、来源页 `sources/deepseek-harness.md`，嵌入插件列表与 Trajectory 图。论题：Everything is a Plugin，含 agent loop；四种 mode 里 Minimal 才是 V4.1-Flash Terminal-Bench headline。Cordis（arXiv:2608.25512）只作内核外链，不单独立户。回链 V4.1-Flash Table 4、Pi、Agent harness。developer preview，会破兼容。
+
+## [2026-09-12] deepen | SoL-Pi 四个机制的 Pi 挂点
+
+重读 NVlabs/SoL-Pi `docs/compatibility.md` 与 README。在 `sources/sol-pi.md` 补 Action Fusion / ObservationPack / Reducer / Compact 如何挂上 Pi 0.84.2 公开 ExtensionAPI：per-file 队列与 hash 跳过、只改 context 投影、失败则原样返回、Compact 依赖 `compact()` abort + `agent_settled` + 无 promise 的 `sendMessage`。保守配置只开 Fusion+Pack。回链 EdgeBench 与 Databricks。
+
+## [2026-09-12] ingest | Databricks coding agent 内部评测博客
+
+新增 `raw/databricks-benchmarking-coding-agents-2026-07-08.md`、来源页 `sources/databricks-coding-agents.md`，嵌入 Pareto 与同模型 dumbbell。内部 PR 基准、不用 LLM judge、运行期切断 git history。Headline：同模型同 thinking 下 Pi 任务成本可低 2× 以上，每轮约少送 3× context；Opus xhigh +2 分，Opus max −7 分。更新 Agent harness、Pi 待追问与评测体系。
+
+## [2026-09-12] ingest | EdgeBench 技术报告
+
+新增 `raw/2607.05155v1.pdf`、来源页 `sources/edgebench.md`，提取 Figure 1–3。ByteDance Seed：134 题（公开 51）、每题 ≥12h、work/judge 双环；平均 best-so-far 拟合 log-sigmoid \(R^2\ge 0.997\)。官方评测混用 Codex 256k 与 Claude Code 200k/1M。SoL-Pi 用 51 公开题作 held-out，不能和官方模型榜横比。更新评测体系与 Agent harness。
+
+## [2026-09-12] ingest | SoL-Pi 官方博客
+
+NVLabs 项目页。新增 `raw/nvlabs-sol-pi-blog.md`、来源页 `sources/sol-pi.md`，嵌入 teaser 头图。不建模型页：Pi 的 opt-in 扩展。四个机制（Action Fusion / Online Context Compact / ObservationPack / Evidence-Preserving Reducer）；相对 Pi token 少 45–49%、成本约低 1/3、平均分保留约 94%。钉死 Pi 0.84.2 公开 ExtensionAPI，不用 durable `AgentHarness`。回链 Pi 来源页，更新 Agent harness 与 agentic engineering。
+
+## [2026-09-12] ingest | Pi coding agent 设计博客
+
+Mario Zechner 2025-11-30 一手长文。新增 `raw/mario-zechner-pi-coding-agent-2025-11-30.md`、来源页 `sources/pi-coding-agent.md`，嵌入 Terminal-Bench runner 表与 2025-12-02 榜截图。不建模型页。Headline：四工具 + <1000 token；Pi + Claude Opus 4.5 自报约 49.8% ± 2.4，mixed-model 榜。Compaction、Earendil 收购、0.84.0 `AgentHarness` v2/v4 lane session 记为活规范，不回写成博客结论。更新 Agent harness、agentic engineering、评测体系与 2026 比较页。
+
 ## [2026-09-12] ingest | SayCan
 
 Robotics at Google + Everyday Robots（arXiv:2204.01691v2）。新增 `raw/2204.01691v2.pdf`、来源页 `sources/saycan.md`，提取 Figure 1/2/3/5/6。不建模型页：产出是 LLM × affordance 规划环，低层是 BC-Z / MT-Opt。Headline：101 条厨房指令上 PaLM-SayCan 规划 84% / 执行 74%；No VF 规划 67%，BC NL 执行 0%。钉死不是 VLA。更新 VLA、RT-2、具身 skill 自进化，以及 π0 / ASPIRE / EmbodiedSkills 反链。

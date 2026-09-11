@@ -76,7 +76,7 @@ GLM-5 最明确地提出 agentic engineering。MiMo-V2-Flash 最强调紧凑规�
 
 这意味着后续比较不应只看 SWE-bench 或 HLE 分数，而要比较“模型 + agent harness + context strategy + serving system”的整体能力。
 
-[Prime Agent](../sources/prime-agent.md) 不是模型报告，但把最后这一句做成了可检查的评测膜：固定 Opus 5，官方 ARC harness 30.2% vs Prime Agent 95.5% RHAE。作者同时写明 native-harness 复跑低于官方分，所以这是 situating 而不是已隔离因果。它与 Macaron 的 HCP 搜索一起说明：2026 的 agent 分数里，harness 已经不能再当脚注。细讲见 [Agent harness](../concepts/agent-harness.md)。
+[Prime Agent](../sources/prime-agent.md) 不是模型报告，但把最后这一句做成了可检查的评测膜：固定 Opus 5，官方 ARC harness 30.2% vs Prime Agent 95.5% RHAE。作者同时写明 native-harness 复跑低于官方分，所以这是 situating 而不是已隔离因果。它与 Macaron 的 HCP 搜索、[Pi](../sources/pi-coding-agent.md) 的极小核心产品膜一起说明：2026 的 agent 分数里，harness 已经不能再当脚注。Pi 的 Terminal-Bench 2.0 约 50% 是 mixed-model 自报，不能读成同模型换膜。细讲见 [Agent harness](../concepts/agent-harness.md)。
 
 ## 后续问题
 

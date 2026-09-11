@@ -159,6 +159,6 @@ PMPP-Hard 是固定墙钟预算下的 GPU kernel 循环。组内排序会反转�
 ## 相关页面
 
 - 概念：[Agent harness](../concepts/agent-harness.md)、[Agentic engineering](../concepts/agentic-engineering.md)、[Agent Swarm](../concepts/agent-swarm.md)、[Agent 记忆生命周期](../concepts/agent-memory-lifecycle.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
-- 相邻来源：[Macaron-V1 技术报告](macaron-v1.md)（HCP 版本化 harness + 冻结模型搜索）、[UniClawBench](uniclawbench.md)（framework > model）
+- 相邻来源：[Pi coding agent 设计博客](pi-coding-agent.md)（极小核心产品膜；OpenClaw 底盘）、[SoL-Pi 官方博客](sol-pi.md)（同一张 Pi 膜上的 token 效率 RSI）、[Macaron-V1 技术报告](macaron-v1.md)（HCP 版本化 harness + 冻结模型搜索）、[UniClawBench](uniclawbench.md)（framework > model）
 - 评测中出现的模型页：[GLM-5](../models/glm-5.md)、[GLM-5.3](../models/glm-5-3.md)、[Kimi K3](../models/kimi-k3.md)、[DeepSeek-V4](../models/deepseek-v4.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

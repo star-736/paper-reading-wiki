@@ -38,6 +38,8 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - Macaron-V1 把瓶颈进一步落在**model–harness 的共同版本化**：MoL 让 Chat / Agent / Coding / GenUI specialist 在 frozen base 上按 turn 路由，而 HCP 将 router、工具、skills、prompts、memory 与 workspace 变成可审计 runtime contract。其 122/122 TerminalBench base-failure task 覆盖实验只改变 HCP/skill/hook、base 全程冻结；它支持「很多失败是未被正确 elicitation 的能力」这一工程判断，却不等价于 adapter 训练、跨代持续学习或 collective intelligence 已被实证。详见 [Macaron-V1 技术报告](../sources/macaron-v1.md)。
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) 把瓶颈落到**每个 action token 生成前的内部计算预算**：在静态 tool-call benchmark 上，额外 recurrent depth 对多调用的函数选择、顺序与 output-to-input binding 更有帮助，而单 API grounding 增益较弱；论文的定性例子展示了前述错误的逐步修正。Ouro 的 adaptive exit 说明同一工作流中可按 token 难度分配 latent compute。这与 planner / retrieval / harness 是互补层：前者改变模型生成 action graph 前的表征精炼，后者改变模型能看见、执行和验证什么。边界是尚未覆盖 live、多轮、失败恢复的真实 episode。
 - [Prime Agent](../sources/prime-agent.md) 把瓶颈定位在 **harness 作为评测膜**：不把一种工作流写死，而是用持久 IPython REPL、异步 `rlm()` 递归 subagent 和 Continual Harness，让冻结模型把 test-time compute 变成程序、子 session 和可修订技能。ARC-AGI-3 上 Prime Agent + Opus 5 报 95.5% RHAE，对照官方 ARC harness 30.2%，但作者承认 native 复跑低于官方分，因此这是 situating 而非已隔离因果。与 Macaron 的 HCP 搜索同属「冻结 L0、改 runtime」；细讲见 [Agent harness](agent-harness.md)。
+- [Pi](../sources/pi-coding-agent.md) 把同一层瓶颈定位在**上下文可见性**而不是 expressivity：四工具 + <1000 token 提示，MCP / plan / todo / background bash / dedicated sub-agent 不进核心。它是产品膜而不是评测膜；OpenClaw 以它为底盘。Terminal-Bench 2.0 自报 Pi + Claude Opus 4.5 约 50%，但是 mixed-model 榜。与 Prime Agent 互补：一边把原语做进核心，一边把原语赶到 extension。
+- [SoL-Pi](../sources/sol-pi.md) 把瓶颈再往下推一层：同一张 Pi 膜上，长轨迹的重复开销（额外模型轮、上下文重放、过大 observation、整本读 log）能不能在能力地板内被 auto-research 削掉。四个幸存机制都是交互环浪费，不是题面特化规则。这和 Macaron MindForge 的 RSI 同族，搜的对象不同。
 
 - [DeepMMSearch-R1](../sources/deepmmsearch-r1.md)（Apple + JHU，2025-10）把 agentic engineering 的瓶颈定位在**多模态搜索的工具使用精度**而非模型规模。核心论点是：现有 search-equipped MLLM 只支持单次调用和整图搜索，在真实知识密集 VQA 中效率低。DeepMMSearch-R1 用 Grounding DINO 做裁剪图像搜索（消除背景噪声）+ 多轮文本搜索（self-reflection / self-correction），SFT + GRPO 两阶段训练使工具调用更精准（裁剪搜索 -37%，多轮文本搜索 +2.6%）。6 benchmark 平均 57.13 超 RAG workflow +21pp。与 [GLM-5V-Turbo](../sources/glm-5v-turbo.md)（多模态 GUI agent）互补：GLM-5V-Turbo 解决 GUI 截图交互，DeepMMSearch-R1 解决 web 知识检索。
 
@@ -75,4 +77,9 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md) - 组合式 function calling 的 latent recurrence 证据
 - [GLM-5.3](../models/glm-5-3.md) - 可验证环境合成与 verifier 审计闭环
 - [Prime Agent 技术报告](../sources/prime-agent.md) - 表达性 RLM harness 与冻结权重的 Continual Harness
+- [Pi coding agent 设计博客](../sources/pi-coding-agent.md) - 极小核心产品膜；OpenClaw 底盘
+- [SoL-Pi 官方博客](../sources/sol-pi.md) - 在 Pi 上做 token 效率 RSI
+- [EdgeBench 技术报告](../sources/edgebench.md) - 12h 真实环境学习基准；SoL-Pi held-out
+- [Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md) - 同模型换膜的成本/质量成对数字
+- [DeepSeek Harness 官方文档](../sources/deepseek-harness.md) - 插件核产品膜；Minimal vs Standard 的分数差在 V4.1-Flash Table 4
 - [Agent harness](agent-harness.md) - 执行膜作为与模型同量级的性能变量
