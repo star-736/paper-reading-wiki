@@ -8,7 +8,7 @@ timestamp: 2026-06-06
 
 # Multi-Teacher On-Policy Distillation
 
-> 想看 5 家技术报告里 OPD 的目的 / KL 形式 / pipeline 位置怎么分叉，请直接看 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)。本页以 MiMo MOPD 为骨架讲机制细节，但「数学依据」一节适用于所有走 on-policy distillation 路线的家族（MiMo / DeepSeek-V4 / Qwen3 / Qwen3-VL / GLM-5）。
+> 想看各家技术报告里 OPD 的目的 / KL 形式 / pipeline 位置怎么分叉，请直接看 [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)。本页以 MiMo MOPD 为骨架讲机制细节，但「数学依据」一节适用于所有走 on-policy distillation 路线的家族（MiMo / DeepSeek-V4 / Qwen3 / Qwen3-VL / GLM-5 / Nemotron 3 Ultra）。
 
 ## 一句话定义
 
@@ -72,7 +72,7 @@ OPD 全家都选 reverse-KL `D_{KL}(\pi_\theta \,\|\, \pi_T)`，不是 forward-K
 
 > Bishop *PRML* §10.1.2 用高斯混合等高线图给了直观证明；Minka 2005 *Divergence Measures and Message Passing* TR（MSR-TR-2005-173）把 forward/reverse KL 列在 α-divergence 谱系的两端。
 
-**这张表的一手出处与本表的适用边界。** 在本 wiki 实际引用的文献里，上述行为对照的直接出处是 [GKD](../sources/generalized-knowledge-distillation.md) 的 `Figure A.16`（`§A.7`）：论文原话是「容量失配下用 $Q_\theta$ 近似 $P$，最小化 reverse 与 forward KL 分别导致 mean-seeking 与 mode-seeking」，作图设置为**连续、单峰高斯 Q 拟合双峰 P**。把它外推到词表级离散蒸馏是推论而非该图结论——[AKL（Wu et al., arXiv:2404.02657）](https://arxiv.org/abs/2404.02657)（外部佐证，本 wiki 未收原文）证明这两条刻画在 LLM KD 下并不成立，forward / reverse KL 收敛到同一目标，实际差异落在早期 epoch 分别侧重 teacher 分布的 head 与 tail。因此本表应读作「容量失配 + 连续分布」下的直觉，以及各家**为何在工程上这么选**的动机，而不是「离散 LLM 蒸馏下 reverse KL 必然 mode-seeking」的定理；GKD 自己实测的发散度排序是 task-dependent（XSum 温度采样下 reverse KL / JSD(0.9) 最好，GSM8K 上 forward KL 并不差，指令微调上 reverse KL 大幅领先）。同期另一支源头 [MiniLLM](../sources/minillm.md) 用的也是同一个连续 toy 设置（单峰高斯拟合高斯混合，其 `Figure 2`）——也就是说这张表的两篇源头论文，都没有在离散词表场景下验证过该刻画。
+**这张表的一手出处与本表的适用边界。** 在本 wiki 实际引用的文献里，上述行为对照的直接出处是 [GKD](../sources/generalized-knowledge-distillation.md) 的 `Figure A.16`（`§A.7`）：论文原话是「容量失配下用 $Q_\theta$ 近似 $P$，最小化 reverse 与 forward KL 分别导致 mean-seeking 与 mode-seeking」，作图设置为**连续、单峰高斯 Q 拟合双峰 P**。把它外推到词表级离散蒸馏是推论而非该图结论。[AKL](../sources/akl.md)（Wu et al.，COLING 2025）已收原文：逐步 softmax 上 FKL 与 RKL 的驻点都是 \(q=p\)（公式 5–8），有限 epoch 里 FKL 先拟合 head、RKL 先拟合 tail。因此本表应读作「容量失配 + 连续分布」下的直觉，以及各家**为何在工程上这么选**的动机，而不是「离散 LLM 蒸馏下 reverse KL 必然 mode-seeking」的定理。**不要**把 AKL 的同驻点论证直接套到 2026 生产 OPD 的 sampled-token reverse-KL advantage——那是另一条估计器，AKL 没做。GKD 自己实测的发散度排序是 task-dependent（XSum 温度采样下 reverse KL / JSD(0.9) 最好，GSM8K 上 forward KL 并不差，指令微调上 reverse KL 大幅领先）；按 AKL 应读成没训到收敛时的路径差。同期另一支源头 [MiniLLM](../sources/minillm.md) 用的也是同一个连续 toy 设置（单峰高斯拟合高斯混合，其 `Figure 2`）。
 
 对 GLM-5 这种「召回早期能力」的用法特别关键：reverse-KL 的 mode-seeking 性质让 student 能**强力把分布拉回**到 Reasoning_RL teacher 的某个 mode，而不是被强迫"同时覆盖 SFT + Reasoning_RL + General_RL 所有 mode 的并集"——后者在 student 容量受限时不可行。
 
@@ -190,11 +190,11 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 ### OPSD：On-Policy Self Distillation
 
-[OPSD](https://arxiv.org/abs/2601.18734) 是 OPD 变体：teacher 和 student 是**同一模型**，但 teacher 计算 log probability 时被提供 reference solution 作为 prefix（privileged information）。问题在于同一模型做 teacher/student 时大多数 token 输出几乎相同，per-token KL 分析发现 **style / pivot token**（"wait"、"alright"）的 KL 远高于 **math token**（"power"、"exponent"）。在不重要的高 KL token 上更新太猛会导致 collapse，解法是 per-token clipping。
+一手出处：[OPSD](../sources/opsd.md)（Zhao et al.，arXiv:2601.18734v3）。同一套 LLM 权重拆成两种条件分布：student 只看题目，teacher 看题目 + 参考解答 \(y^\star\)；student 采样自己的轨迹，teacher 在同一前缀上给 dense 监督，**不生成 token**。训练时 teacher **冻结为初始策略**（再叠加 LoRA），所以不是「当前自己蒸当前自己」。
 
-OPSD 更接近 RLHF 而非 RLVR：teacher 信号不完全相关于 task importance（高 KL token 可能只是 style），需要类似 RLHF 的 clipping 防过度优化；RLVR 的 reward 偏差低，更敢去掉 KL penalty 或放松 trust-region（GRPO 替代 PPO）。
+需要按原文校准的口径：主实验是 **full-vocab、teacher-first forward KL**（GKD 的 on-policy 标准实例），不是 2026 生产 OPD 的 reverse KL。Table 3 上 reverse KL 在 AIME25 从 36.7 走到 35.0。style token（`wait` / `alright`）的位置级 KL 仍比 math token 高一个数量级（Table 5，1.7B 上 0.85 vs 0.14），对策是对词表项 f-divergence 做 \(\min(\ell_{n,v},\tau)\)；无 clipping 会在 100 step 内把 AIME24 拉崩（Figure 4）。
 
-这与已收录报告中的 token 级控制机制呼应：[KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) 的 drift-aware truncation（长上下文 drift 控制权重）、[Keye-VL-2.0](../sources/keye-vl-2.md) 的 top-k overlap estimator（双方低概率 token 过滤）、token-category-aware scaling（format token 降权）--三者与 OPSD 的 per-token clipping 都在 token 级别控制 OPD 更新质量，但切入点不同。
+[nrehiew](../sources/nrehiew-sft-rl-opd.md) 把 OPSD 读成「更接近 RLHF 而非 RLVR」——这是博客评价，不是论文结论。token 级质量控制仍和 [KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) drift-aware truncation、[Keye-VL-2.0](../sources/keye-vl-2.md) top-k overlap 同层，但剪的对象不同：OPSD 剪 full-vocab 里的高贡献 style 词，不是长轨迹 drift。
 
 ### Student 为什么能超越 Teacher
 
@@ -277,13 +277,25 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 详见 [OPD 跨报告对比](../comparisons/on-policy-distillation.md) 与 [Miles v0.1](../sources/miles-v0-1.md)。
 
+## Nemotron 3 Ultra：两轮 co-evolution 与按域恢复率
+
+[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（NVIDIA，arXiv:2606.15007）是目前唯一把 MiMo 口头提过的 **teacher–student 多轮循环**真正跑完两轮、并给出按域恢复率的生产报告。算法仍是 sampled-token reverse KL 当 advantage（公式 1–2），异步把 behavior policy 与 proximal policy 拆开，token mask 用 IcePop。
+
+增量不在公式，在三件实证：
+
+1. **两轮 co-evolution**（Figure 10）。SFT → 统一 RLVR → warmup 轻 SFT → MOPD1；从 MOPD1 新训一批 teacher、复用第一轮一部分，再 MOPD2。RLVR student 兼 self-teacher。**RL 保留，MOPD 做融合**——对照 [DeepSeek-V4](../models/deepseek-v4.md) 用 OPD 替换 mixed RL。
+2. **按域恢复率**（Table 5，\((\mathrm{MOPD2}-\mathrm{RLVR})/(\mathrm{Teacher}-\mathrm{RLVR})\)）。Terminal Bench 2.0 **172.7%**（student 超过 teacher）、SWE-Bench Verified 88.1%、BrowseComp 67.0%；HLE no tools **16.9%**、LiveCodeBench v6 32.0%。作者原文把鸿沟写成 on-policy 的适用边界：STEM teacher 的优势来自额外大规模 SFT+RL（DeepSeek-V4-Pro 生成的推理混合），student 没见过这些路径，rollout 对 teacher 是 OOD，token-level 监督变差。Agentic 优势能写成 student **已经能采样到的**轨迹上的 token 偏好时，恢复才高。
+3. **Warmup 几乎是 agentic 的前置条件**（Table 4）。teacher 与 student 若走不同 SFT，student 轨迹对 teacher 不可靠。轻 SFT 对齐后 GDPVal 28.9→46.7（无 warmup 只有 35.3），HLE 几乎不动。这与 [KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) 的 off-policy cold start 同属「先把 student 拉进 teacher 支撑集」，但 Ultra 用短 SFT 而不是 truncation。
+
+作者还报告：full-vocab / top-k logit matching 在 Terminal Bench 上**不如 sampled-token**（`§3.3.5`）。这与 V4「full-vocab 更稳」直接对照，两边都没有交叉复现。多数 agentic 任务实际用 PivotRL 式单轮 rollout，不是端到端多轮。
+
 ## 待追问
 
 - MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
 - Teacher 数量增加时，student 容量是否足够保留所有能力？
-- MOPD 与异步 agent RL 能否形成“先 RL 出 teacher，再 MOPD 融合，再继续 RL”的循环？
+- **MOPD 与异步 agent RL 的循环**：[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 已跑两轮。还没回答的是哪些域需要第二轮（GDPVal 在 MOPD2 持平）、以及统一 SFT 能否救回 HLE 那类「teacher 靠 off-policy 新数据」的缺口。
 - KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
 - **on-policy 数据 > teacher 的结论是否只在 niche task 上成立**？nrehiew 的实验用 minimal editing（适合测遗忘/泛化），在更 broad 的能力域上 teacher 质量是否会重新主导？
-- **OPSD 的 per-token clipping 与 KAT-V2.5 drift-aware truncation / Keye-VL-2.0 top-k overlap 是否在解同一个问题**？三者切入点不同（style token 降权 vs 长上下文 drift vs 双方低概率 token 过滤），有没有统一框架？
+- **OPSD 的 pointwise clipping 与 KAT-V2.5 drift-aware truncation / Keye-VL-2.0 top-k overlap 是否在解同一个问题**？OPSD 原文剪的是 full-vocab 里高贡献的 style 词表项，KAT 剪长轨迹 drift，Keye 过滤双方低概率 token。统一框架仍没有。
 - **OPD 比 RL 更剧烈的 entropy collapse 是否意味着多样性损失更严重**？这与 Qwen3 Table 21 里 OPD pass@64 也涨是否矛盾？
 

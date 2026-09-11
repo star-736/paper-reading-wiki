@@ -31,6 +31,7 @@ Multi-token prediction（MTP）让模型训练或配备用于预测多个未来 
 | [Ling-2.6](../models/ling-2.6.md) | 继续训练 MTP + 参数共享 | post-training 阶段引入两个额外 MTP 层继续训练。MTP-3-share（参数共享 + 仅第一层梯度回传 base model）accept length 从 MTP-1 的 2.71 提升到 3.31。发现仅第一层 MTP 预测所有后续 token 也有改善，说明新引入的 MTP 层训练不足，参数共享 + 梯度隔离是有效的补偿。配合 linghe fused-kernel，FP8 BS=1 下 MTP+linghe 比 baseline +119%。 |
 | [Kimi K3](../models/kimi-k3.md) | 预训练 MTP 层 → EAGLE-3 draft | 预训练 MTP 层（结构镜像一个 backbone block）被 fine-tune 成 EAGLE-3 风格 draft model（target 冻结，只训 draft 层 + feature-fusion 投影）。draft 输入融合 target model 低/中/高层特征（取自第 1、4、最后一个 AttnRes block 输出），`W_E3` 初始化为 `[0 0 I]`（初始等价高层特征，逐渐学入低/中频）。**直接优化 LK loss**（acceptance rate 负对数 `L_LK = -log Σ_x min(p(x), q(x))`），而非传统 KL surrogate——理由是 capacity-limited draft 上最小化 KL 不保证最大化 acceptance rate。训练时按 EAGLE-3 test protocol unroll 7 步。QAT 配置（MXFP4 权重 + MXFP8 激活）。 |
 | [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | backbone 与 MTP 全局层都换成 QSA；draft **复用 top-k 指数** | 显式跟随 GLM-5 的跨步 index reuse。四步 speculative 上 mean accepted length 4.06 → 4.07（Table 4），作者写成「无显著变化」。这是稀疏注意力叠 MTP 时「mask 算一次、draft 几步共用」的又一个生产点，不是新的 MTP 训练目标。 |
+| [Nemotron 3 Ultra](../models/nemotron-3-ultra.md) | 预训练共享权重 2-head MTP + 后训练 **MTP Boosting** | 两个 MTP head 共享参数（一层 Attention + 一层 MoE）。Boosting 冻结 backbone，只训 head：第 \(k\) 步输入从先前各步隐状态采样，以对齐推理时「草稿隐状态混入 backbone 状态」的噪声；损失是对 backbone logits 的 temperature-scaled forward KL（\(T=2\)，带 \(T^2\)），关掉 gold-token CE。SPEED-Bench 平均 acceptance length 4.387→4.584（draft 7）。RLVR 里 \(k=5\) 把 rollout 生成做快 1.46×，收益在长尾。 |
 
 ## MiMo 的经验
 

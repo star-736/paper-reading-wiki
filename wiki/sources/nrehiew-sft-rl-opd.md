@@ -85,13 +85,11 @@ resource: "../../raw/nrehiew-sft-rl-opd.md"
 
 ### 4. OPSD：On-Policy Self Distillation
 
-[OPSD](https://arxiv.org/abs/2601.18734) 是 OPD 的新变体：teacher 和 student 是**同一模型**，但 teacher 计算 log probability 时被提供 reference solution 作为 prefix（privileged information）。
+一手出处现已收录：[OPSD](opsd.md)（Zhao et al.，arXiv:2601.18734v3）。teacher 和 student 来自同一套初始权重，但 teacher 计算分布时被提供 reference solution 作为 prefix（privileged information），且 **teacher 冻结在初始策略**。
 
-问题：同一模型做 teacher/student 时，大多数 token 输出几乎相同。per-token KL 分析发现 **style / pivot token**（"wait"、"alright"）的 KL 远高于 **math token**（"power"、"exponent"、"logarithm"）。如果在这些不重要的高 KL token 上更新太猛，模型可能 collapse。
+style / math 的 KL 失衡（`wait` / `alright` 远高于 `exponent`）是原文 Table 5 的观察，pointwise clipping 防 collapse 是原文 Figure 4。**需要降级的转述**：本博客把 OPSD 放进 reverse-KL 叙事；原文主实验是 **forward KL + full-vocab**，reverse KL 在 Table 3 上几乎无效。
 
-解法：引入 per-token clipping 防止过度更新。
-
-作者评价：OPSD 更接近 RLHF 而非 RLVR。RLHF 的 reward model 有偏，需要 KL penalty + trust-region clipping 防止过度优化错误目标；OPSD 的 teacher 信号也不完全相关于 task importance（高 KL token 可能只是 style）。RLVR 的 reward function 偏差低，所以更敢去掉 KL penalty 或放松 trust-region（用 GRPO 替代 PPO）。
+本博客的评价——OPSD 更接近 RLHF 而非 RLVR，因为 teacher 信号不完全相关于 task importance——仍是博客综合，不是论文结论。RLVR 的 reward 偏差低、更敢去掉 KL penalty，这条对照可以保留为博客观点。
 
 ### 5. Student 为什么能超越 Teacher
 
@@ -125,14 +123,16 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 ## 待追问
 
 - **on-policy 数据 > teacher 的结论是否只在 minimal editing 这种 niche task 上成立**？作者自己说该 task 适合测遗忘和泛化，但在更 broad 的能力域上，teacher 质量是否会重新主导？
-- **OPSD 的 per-token clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？三者都在 token 级别控制 OPD 的更新质量，但切入点不同（style token 降权 vs 长上下文 drift vs 双方低概率 token 过滤）。
+- **OPSD 的 pointwise clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？原文剪的是 full-vocab 高贡献 style 词表项，不是 sampled-token reverse KL 上的 clip。
 - **entropy collapse 的剧烈程度是否可调**？OPD 比 RL 更剧烈的熵坍缩是 reverse KL mode-seeking 的预期，但是否意味着 OPD student 的多样性损失比 RL 更严重？这与 Qwen3 Table 21 里 OPD pass@64 也涨（不只是 pass@1）的现象是否矛盾？
-- **「暴力 SFT 过训练 expert → OPD 蒸馏」是否已在产业报告中出现**？作者提出这是 hopeful result，但 MiMo/V4 的 teacher 都是 RL 训出来的，有没有 SFT teacher + OPD 的实例？
+- **「暴力 SFT 过训练 expert → OPD 蒸馏」是否已在产业报告中出现**？作者提出这是 hopeful result，但 MiMo/V4 的 teacher 都是 RL 训出来的。[Nemotron 3 Ultra](nemotron-3-ultra.md) 的 STEM teacher 在 student 之上又做了大规模 SFT+RL（DeepSeek-V4-Pro 生成的推理混合），再 OPD 回去，HLE 恢复率只有 16.9%——作者归因于 student 采样不到 teacher 新学的推理路径。这是「额外 SFT teacher → OPD」的生产反例，限定在自包含推理，不否定 agentic 域的高恢复率。
 
 ## 相关页面
 
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)：OPD 算法源头，本博客的互补前作。
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 机制 + 跨家共用 OPD 数学依据（七层论证）。
-- [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：5 家 OPD 用法分歧（目的 / KL 形式 / pipeline 位置）。
+- [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：各家 OPD 用法分歧（目的 / KL 形式 / pipeline 位置）。
+- [OPSD](opsd.md)：本博客 OPSD 转述的一手出处；主实验是 forward KL + full-vocab，不是 reverse KL。
+- [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：两轮 MOPD；HLE 16.9% 恢复率是「额外 SFT teacher → OPD」的生产反例。
 - [DPO](dpo.md)：离线偏好闭式解，不在本博客的 SFT / RL / OPD 三轴里（off-policy 成对比较，不是 teacher 分布蒸馏）。
-- [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Qwen3 技术报告](qwen3.md)：本博客引用的 pipeline 趋势来源。
+- [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Qwen3 技术报告](qwen3.md) / [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：本博客引用的 pipeline 趋势来源；Ultra 是后续生产对照。

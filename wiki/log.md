@@ -1,5 +1,17 @@
 # 日志
 
+## [2026-09-12] ingest | AKL：Rethinking KL Divergence in LLM KD
+
+Wu et al.（HKU + 清华 + 腾讯，arXiv:2404.02657v4，COLING 2025）。新增 `raw/2404.02657v4.pdf`、来源页 `sources/akl.md`，提取 Figure 1–4。不建模型页。Headline：逐步 softmax 上 FKL/RKL 同驻点 \(q=p\)；连续高斯 toy 的 mode-seeking 不适用于离散词表；有限 epoch 里 FKL 先 head、RKL 先 tail。AKL 按 head/tail 缺口加权。校准 GKD/MiniLLM/MOPD 第二层，并限定理论覆盖不到 sampled-token PG。
+
+## [2026-09-12] ingest | OPSD：On-Policy Self-Distillation
+
+Zhao et al.（UCLA + HKU + Meta，arXiv:2601.18734v3）。新增 `raw/2601.18734v3.pdf`、来源页 `sources/opsd.md`，提取 Figure 1/2/3/4。不建模型页：Qwen3-Instruct LoRA。Headline：同一初始权重、teacher 看 \(y^\star\)、student 只看 \(x\)；默认 full-vocab forward KL，reverse KL 在 AIME25 无效；style token KL 高一个数量级，pointwise clipping 防崩。校准 nrehiew / MOPD 概念页此前的 reverse-KL 转述。更新 OPD 对比、GKD、Thinking Machines、MiniLLM。
+
+## [2026-09-12] ingest | Nemotron 3 Ultra 技术报告
+
+NVIDIA 的 550B/55B hybrid Mamba-Attention MoE（arXiv:2606.15007v1）。新增 `raw/2606.15007v1.pdf`、来源页 `sources/nemotron-3-ultra.md`、模型页 `models/nemotron-3-ultra.md`，提取 Figure 1/2/9/10。Headline：NVFP4 预训练 20T、1M 上下文；后训练保留统一 RLVR，再两轮 MOPD 融合 >10 个域教师。Table 5 恢复率 Terminal Bench 2.0 172.7%、HLE 16.9%；warmup 对 agentic 几乎必需；sampled-token 优于 logit matching。更新 MOPD 概念页、OPD 对比页、后训练、MoE 规模、MTP、长上下文注意力、Stable LatentMoE 与 2026 比较页。
+
 ## [2026-09-12] ingest | DeepSeek Harness 官方文档
 
 新增 `raw/deepseek-harness-readme.md`、落地页与架构文档快照、来源页 `sources/deepseek-harness.md`，嵌入插件列表与 Trajectory 图。论题：Everything is a Plugin，含 agent loop；四种 mode 里 Minimal 才是 V4.1-Flash Terminal-Bench headline。Cordis（arXiv:2608.25512）只作内核外链，不单独立户。回链 V4.1-Flash Table 4、Pi、Agent harness。developer preview，会破兼容。

@@ -116,7 +116,7 @@ resource: "../../raw/2306.08543v6.pdf"
 ## 与 GKD、近代 OPD 的关系
 
 - **两篇是 concurrent work，且互相点名**：MiniLLM 的 `§4` 把 GKD 列为 concurrent（`[AVS+23]`，即 arXiv:2306.13649）；[GKD](generalized-knowledge-distillation.md) 的 `§Related Work` 也把 MiniLLM 列为 concurrent work，并主张自己更简单稳定（不对采样过程反传）、更通用（发散度可换）。分工可以这样记：**GKD 把「on-policy 数据比例」和「发散度」都做成超参、优化方式接近监督学习；MiniLLM 直接选定 reverse KLD 作为目标，因此必须自己解决 PG 的高方差、reward hacking 与长度偏置。**
-- **两篇的 mode-seeking 论据落在同一个连续 toy 上**：MiniLLM `Figure 2`（`§2.1`）用单个高斯拟合高斯混合分布来展示 forward KLD 与 reverse KLD 的差别；[GKD](generalized-knowledge-distillation.md) `Figure A.16`（`§A.7`）是同类设置。也就是说，wiki 第二层那张行为对照表的两篇源头论文，都没在离散词表场景下验证过这个刻画（见概念页该节的适用边界段）。
+- **两篇的 mode-seeking 论据落在同一个连续 toy 上**：MiniLLM `Figure 2`（`§2.1`）用单个高斯拟合高斯混合分布来展示 forward KLD 与 reverse KLD 的差别；[GKD](generalized-knowledge-distillation.md) `Figure A.16`（`§A.7`）是同类设置。[AKL](akl.md) 已收原文，把这条刻画降级到连续单峰 \(q\)；离散 softmax 上两边同驻点。AKL 实验刻意不和本篇比数字（本篇用了额外预训练语料）。
 - **与现代 token-level OPD 的形式关系**：MiniLLM 的 advantage 是**累积到序列尾**的 $R_t - 1$；[MiMo MOPD](../models/mimo-v2-flash.md) / [GLM-5](../models/glm-5.md) 与现代 token-level OPD 用的是**单 token** 的 $\mathrm{sg}[\log \pi_T - \log \pi_\theta]$。两者同族但并非同一估计器，本页不做等价换算（见待追问）。
 - **训练栈差异**：MiniLLM 保留了预训练语言建模损失 $\mathcal{L}_{PT}$ 以保住 canonical 任务能力（`Table 7`），并沿用 PPO clipping；近代 OPD 走 GRPO/PPO 的 advantage 折入路线，不再单独保留 $\mathcal{L}_{PT}$。
 
@@ -137,3 +137,5 @@ resource: "../../raw/2306.08543v6.pdf"
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：承载跨家共用的 OPD 数学依据，本页为其第二、三、四层提供一手出处。
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md) / [nrehiew 博客](nrehiew-sft-rl-opd.md)：把 MiniLLM 的 mode-seeking 论断接到 2025–2026 后训练叙事的两页。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：各技术报告里的 OPD 用法对比。
+- [OPSD](opsd.md)：自蒸馏；主实验选了本页相反的 forward KL，reverse KL 在其 AIME25 消融上无效。
+- [AKL](akl.md)：把本页 Figure 2 的连续 toy 降级；离散词表上 FKL/RKL 同驻点。AKL 实验沿用 Dolly 设定但不比本篇数字。

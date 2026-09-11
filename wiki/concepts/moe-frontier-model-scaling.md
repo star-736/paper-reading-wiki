@@ -32,10 +32,13 @@ timestamp: 2026-06-06
 | [Laguna M.1](../models/laguna.md) | 225.8B | 23.4B | 256 routed + 1 shared（token-choice，routed ×2.5 系数）；3 底部 dense 层；每层 global attention；Muon + cosine。 |
 | [Laguna XS.2](../models/laguna.md) | 33.4B | 3B | 8 of 256 routed + 1 shared；1 底部 dense 层；**3:1 SWA/GA + softplus per-head gating**；WSD + AutoMixer 数据混合；Apache 2.0 开源。 |
 | [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | 125B（+51B 主机 n-gram） | 6B | expert 数未披露；3:1 GDN/QSA + Gated Residual；n-gram 表不进加速器常驻。相对 397B/17B 前作约 1/3 激活、1/9 训练 FLOPs。 |
+| [Nemotron 3 Ultra](../models/nemotron-3-ultra.md) | 550B | 55B | Hybrid Mamba-2 + GQA；LatentMoE 512 expert / top-22，latent 2048，shared intermediate 10240；NVFP4 预训练 20T。激活高于 GLM-5 的 40B、低于 Kimi K3 的 104B。 |
 
 ## 解释
 
-这些报告的激活参数大致落在 9.8B 到 49B。设计前沿不再只是“模型更大”，而是如何组合稀疏激活、长上下文注意力、后训练、agent scaffold 和 serving 基础设施。
+这些报告的激活参数大致落在 9.8B 到 104B。设计前沿不再只是“模型更大”，而是如何组合稀疏激活、长上下文注意力、后训练、agent scaffold 和 serving 基础设施。
+
+[Nemotron 3 Ultra](../models/nemotron-3-ultra.md) 把 55B 激活放在 hybrid Mamba-2 + LatentMoE 上，headline 是吞吐而不是最大 MoE：8K/64K 相对 GLM-5.1 报 5.9×。它和 K3 都用 LatentMoE，但 Ultra 是 512/22、latent 2048，没有公开 Quantile Balancing / SiTU-GLU；预训练后期第一层 MaxVio 升到约 12，第二次 loss 发散后把 20T 当权宜上限。
 
 [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) 把比较从「总参 / 激活」扩到第三个数：51B n-gram 表放在主机上，几乎不加每 token FLOPs。125B/6B 的激活低于 MiniMax-M2 的 9.8B，但 embedding 参数不算进加速器常驻；和 FreeToken 讨论的 expert 池 offload 是另一类「不在 GPU 上的参数」。
 

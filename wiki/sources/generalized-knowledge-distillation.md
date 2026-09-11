@@ -77,7 +77,7 @@ $$\mathcal{L}_{\text{GKD}}(\theta) := (1-\lambda)\,\mathbb{E}_{(x,y)\sim(X,Y)}\!
 
 > Figure A.16: Mode-seeking vs Model-covering KL with capacity mismatch. ... See Le (2017) to replicate this plot.（`§A.7`）
 
-这张图是 wiki 现有的 forward / reverse KL 行为对照表的**一手出处**，但它成立的前提要照抄：论文的表述是「在容量失配下用 $Q_\theta$ 近似 $P$，最小化 reverse 与 forward KL 分别导致 mean-seeking 与 mode-seeking」，作图设置是**连续、单峰高斯 Q 拟合双峰 P**（`Figure A.16` caption）。把它推广到离散、词表级的 LLM 蒸馏是推论，不是本篇的结论——[AKL（arXiv:2404.02657）](https://arxiv.org/abs/2404.02657) 恰恰证明这两条刻画在 LLM KD 下不成立（外部佐证，本 wiki 未收录其原文，详见待追问）。
+这张图是 wiki 现有的 forward / reverse KL 行为对照表的**一手出处**，但它成立的前提要照抄：论文的表述是「在容量失配下用 $Q_\theta$ 近似 $P$，最小化 reverse 与 forward KL 分别导致 mean-seeking 与 mode-seeking」，作图设置是**连续、单峰高斯 Q 拟合双峰 P**（`Figure A.16` caption）。把它推广到离散、词表级的 LLM 蒸馏是推论，不是本篇的结论——[AKL](akl.md) 证明这两条刻画在逐步 softmax 的 LLM KD 下不成立：FKL 与 RKL 共享驻点 \(q=p\)，有限 epoch 里差在 head vs tail。
 
 ### 发散度的实测排序
 
@@ -124,13 +124,14 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 - **[nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](nrehiew-sft-rl-opd.md)**：该页「Student 为什么能超越 Teacher」引的 Agarwal et al. 现象，一手出处即本页 `§A.1` 的自蒸馏实验。
 - **[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)**：比较页的轴二（KL 形式的工程权衡）目前只覆盖 token-level vs full-vocab 这一维；本页提供的是它的上游菜单——发散度方向与 β 谱系。
 - **[MiniLLM](minillm.md)**（同期另一支源头）：本篇 `§Related Work` 给了对 concurrent work MiniLLM 的定位——MiniLLM 同样把蒸馏当 RL，在序列级优化 reverse KL 并用 policy gradient；论文主张 GKD 更简单稳定（不对采样过程反传），并指出 MiniLLM 依赖一系列针对高方差、reward hacking、生成长度偏置的稳定化技巧。MiniLLM 侧的对称表述在其 `§4`（把 GKD 列为 concurrent work）。这是两篇源头论文之间唯一的原文级对照。
+- **[AKL](akl.md)**：把本页 Figure A.16 的连续 toy 刻画降级到「容量失配 + 连续单峰 \(q\)」；离散词表逐步 softmax 上 FKL/RKL 同驻点 \(q=p\)。
 
 ## 待追问
 
 - **`§4.4` 的 student 规模与 Figure 10 caption 口径不一致**：正文写「把我们蒸馏后的 FLAN T5-**Base** student 在两个 held-out 套件上评测」，而 Figure 10 的三张子图标题是 `FLAN T5-XL → Base`，caption 里的 student 数字（MMLU 35.6% / BBH 31.25%）却标为 T5-**large**。两处不可换算、不可相减，需回原文或原作者代码确认后才能引用具体分数。
 - **「+2% / +1%」的对比基线未指名**：`§1` 只写「held-out BBH 与 MMLU 上的绝对准确率提升」，没有说明是相对 supervised KD、ImitKD 还是原始 student，引用时应保留这一不确定性。
 - **λ 轴在 2026 的 OPD 实现里没有等价物**：GKD 明确说 GSM8K 上 on-policy 数据低于 25% 时增益不稳定（`Figure 8`），而 MiMo / GLM-5 / V4 的 token-level OPD 事实上都取 λ=1，且都没有做混合比例的消融。是这一维在大模型场景下不再重要，还是被工程默认值掩盖了？
-- **forward KL 的 mode-covering 刻画能推多远**：本篇 Figure A.16 是连续单峰高斯拟合双峰 P 的容量失配图，[AKL](https://arxiv.org/abs/2404.02657)（外部佐证，未收原文）证明该刻画在离散 LLM KD 下不成立、forward / reverse KL 收敛到同一目标，差异只在早期 epoch 分别侧重 head 与 tail。GKD 的实测排序（比如指令微调上 reverse KL 大幅胜出）与「两者收敛到同一目标」如何共存？
+- **forward KL 的 mode-covering 刻画能推多远**：[AKL](akl.md) 已收原文。连续 toy（本篇 Figure A.16）上的 mean/mode-seeking 在逐步 softmax 下不成立；驻点相同，有限 epoch 差在 head vs tail。本篇指令微调上 reverse KL 大胜，应读成没训到收敛时的路径差。AKL 的理论覆盖不到 sampled-token reverse-KL PG，和 2026 生产 OPD 的估计器仍有一层缝。
 - **论文没有 teacher 数 > 1 的实验**：GKD 的 λ 混合是「固定数据集 vs student 自生成」，不含多 teacher 路由；它在多大程度上是 [MOPD](../concepts/multi-teacher-on-policy-distillation.md) 的前身，属于本页综合而非原文结论。
 - **`§1`「7000× smaller」的口径**：540B / 77M ≈ 7000，指向 T5-small；论文未在正文点明是哪个 student，需谨慎引用。
 
@@ -140,4 +141,6 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)：2025-10 把 OPD 推成后训练主流叙事的一手博客。
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](nrehiew-sft-rl-opd.md)：分布视角下 SFT / RL / OPD 的三轴对照。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：MiMo / V4 / Qwen3 / Qwen3-VL / GLM-5 等报告里 OPD 的用法对比。
+- [OPSD](opsd.md)：把本页 λ=1 + forward KL 的 on-policy 实例接到「同一模型、teacher 看 \(y^\star\)」；主实验确认这条支路在竞赛数学上优于 reverse KL。
+- [AKL](akl.md)：把本页 Figure A.16 的连续 toy 降级；离散词表逐步 softmax 上 FKL/RKL 同驻点。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：OPD 在整条后训练流水线里的位置。

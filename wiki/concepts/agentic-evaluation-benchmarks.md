@@ -52,7 +52,7 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 || UniClawBench | proactive agent 真实世界任务，capability-driven（5 维能力），三角色闭环评测 | 首个按能力分解而非场景分类的 proactive agent benchmark；400 双语任务，live web + Docker，跨模型 × 跨框架实验揭示 framework > model。 |
 | KAT Code Bench | 快手内部 repository-level SWE 评测，12 语言，pin base commit + runtime + verification | KAT-Coder-V2.5 新建，覆盖 defect fix / feature completion / interface compatibility / cross-module edit / regression repair，压制不可复现环境/flaky test/verifier 耦合等噪声源。 |
 | KAT Claw Bench | 快手内部业务导向 tool-use 评测，7 大类（个人办公 / 内容创作 / 软件开发 / 数据分析 / 信息检索 / 自动监控 / 投资分析） | KAT-Coder-V2.5 新建，覆盖短视频/直播/电商/广告/职场自动化场景，补现有 Claw benchmark 在任务粒度过细、场景覆盖不足、偏离业务上下文上的短板。 |
-| PinchBench | OpenClaw 框架下的 agentic tool-use benchmark | KAT-Coder-V2/V2.5、GLM-5、MiniMax M2.7 等用来测真实 agent 任务执行效率。 |
+| PinchBench | OpenClaw 框架下的 agentic tool-use benchmark | KAT-Coder-V2/V2.5、GLM-5、MiniMax M2.7、[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 等用来测真实 agent 任务。Ultra 把它和 ProfBench 当成 **held-out generalization gate**：不进训练监控和选 checkpoint，只评最终模型一次（`§3.7.2`）。 |
 | Claw-Eval | autonomous agent 评测 | KAT-Coder-V2 用来测 OpenClaw 框架下的 pass@3 和 average score。 |
 | NL2Repo-Bench | 从自然语言规范端到端构建完整软件仓库，测试长周期 repository 构建、跨文件一致性和依赖管理 | Seed2.0 Model Card 新建，归入 Vibe Coding 评测维度。Seed2.0 Pro 仅 27.9，落后 GPT-5.2（49.3）和 Claude-Opus-4.5（43.2），被报告列为优先改进方向。 |
 | ImageMining | 视觉中心深度搜索，要求多步工具调用主动挖掘视觉输入（局部裁剪放大再搜索） | GLM-5V-Turbo 自建，217 测试用例 / 7 领域 / 5 类推理，核心约束 \"Visual Jump\" 强制中间推理涉及视觉转换。GLM-5V-Turbo 30.7 vs Kimi K2.5 24.4。 |

@@ -60,6 +60,14 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 **1M Agentic RL 基础设施**是 K3 后训练的工程重心：partial rollout（λ 比例完成即暂停）+ AgentENV microVM 沙箱（51M+ sandbox，incremental checkpointing 49ms/133ms，pause/resume/fork/snapshot）+ External KV cache pool（write-back，KDA states 与 MLA KV 同步 offload/prefetch）+ rollout auto-throttling。详见 [异步 Agent RL](asynchronous-agent-rl.md)。
 
+## Nemotron 3 Ultra：统一 RLVR + 两轮 MOPD
+
+[Nemotron 3 Ultra](../models/nemotron-3-ultra.md) 的后训练相对 Nemotron 3 Super 做了结构性改写：不再只靠连续 RL 阶段，而是 **SFT → 统一 RLVR → MOPD warmup → 两轮 MOPD → MTP Boosting**。
+
+统一 RLVR 一次覆盖 terminal、办公、SWE、search、工具、math/code/STEM、safety、chat、IF、长上下文等环境，用多样 harness 防过拟合。MOPD 叠在 RL **之后**做融合，不替换 RL——对照 [DeepSeek-V4](../models/deepseek-v4.md) 用 OPD 换掉 mixed RL。超过 10 个域教师并行训练；第二轮从 MOPD1 student 再分支出新教师。这是目前唯一公开跑完 teacher–student co-evolution 两轮、并按域给出恢复率的报告（Terminal Bench 172.7% / HLE 16.9%）。机制细节见 [MOPD](multi-teacher-on-policy-distillation.md) 与 [来源页](../sources/nemotron-3-ultra.md)。
+
+配套还有 medium-effort 推理档位（AA Index V4 上约 2.5× 少 token、准确率大约掉 7%）和 MTP Boosting（冻结 backbone、只训 draft head 以对齐推理时的隐状态噪声）。RL 基础设施侧，MTP \(k=5\) 把 rollout 生成做快 1.46×，收益集中在长尾慢轨迹。
+
 ## Laguna：Model Factory + 三阶段 + CISPO + 合成代码环境
 
 [Laguna](../models/laguna.md)（Poolside，2026-05）的后训练是三阶段 mid-train→SFT→agentic RL，recipe 在 M.1/XS.2 间一致。三处值得沉淀：

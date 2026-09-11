@@ -85,6 +85,7 @@
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体（其 reverse-KL 转述已由 [OPSD 原文](sources/opsd.md) 校准）、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
 - [Kimi K3 技术报告](sources/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.8T/104B 激活），KDA scaled sigmoid + Attention Residuals + Stable LatentMoE + 原生视觉 + 1M 上下文，2.5× scaling efficiency，9-专家 RL + MOPD + AgentENV microVM 沙箱。
+- [Nemotron 3 Ultra 技术报告](sources/nemotron-3-ultra.md) - NVIDIA 的 550B/55B hybrid Mamba-Attention MoE：NVFP4 预训练 20T、1M 上下文、统一 RLVR + 两轮 MOPD co-evolution；按域恢复率 Terminal Bench 172.7% / HLE 16.9%。
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
@@ -107,6 +108,7 @@
 - [GKD：On-Policy Distillation of Language Models](sources/generalized-knowledge-distillation.md) - Google DeepMind 的 ICLR 2024 源头论文：把自回归 LM 蒸馏重写成 imitation learning，给出「student 数据比例 λ × 发散度 D」两个旋钮的统一目标（supervised / on-policy KD、ImitKD、f-distill 都是实例）。校准两处口径——on-policy 标准实例用 teacher-first 方向、最优发散度 task-dependent；并提供 wiki 现有 forward/reverse KL 行为对照表的一手出处（Figure A.16）与适用边界。
 - [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
 - [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping，不是生产 OPD 的 reverse KL。Qwen3-1.7B/4B/8B LoRA，相对 GRPO 更省 token。
+- [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型
 
@@ -158,6 +160,7 @@
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
 - [Mach-Mind-4-Flash](models/mach-mind-4-flash.md) - 理想汽车 35B / 3B 激活的 agentic MoE 模型，基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练 + 统一 RL/OPD loss + MOPD 融合 + HMPO token 效率，纯文本。
 - [Kimi K3](models/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.78T/104B 激活），Hybrid KDA-MLA（3:1）+ Attention Residuals + Stable LatentMoE（896 routed/16 active）+ MoonViT-V2 原生视觉 + 1M 上下文，多模态（文本+图像+视频）。
+- [Nemotron 3 Ultra](models/nemotron-3-ultra.md) - NVIDIA 的 550B / 55B 激活 hybrid Mamba-2 + GQA MoE，NVFP4 预训练 20T、1M 上下文，后训练是统一 RLVR + 两轮 MOPD，纯文本。
 - [MMSearch-R1](models/mmsearch-r1.md) - ByteDance + NTU 的 7B 按需多模态搜索模型，基于 Qwen2.5-VL-7B-Instruct + GRPO RL，支持图像搜索和文本搜索，5 benchmark 平均 54.6%，搜索率 67.1%。
 - [DeepMMSearch-R1](models/deepmmsearch-r1.md) - Apple 的多模态 web search 模型，基于 Qwen2.5-VL-7B-Instruct，SFT+GRPO 训练做多轮文本搜索与裁剪图像搜索，6 benchmark 平均 57.13。
 - [Laguna](models/laguna.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程，3:1 SWA/GA + softplus 门控 + WSD + AutoMixer + CISPO RL，XS.2 Apache 2.0 开源，纯文本。
@@ -187,7 +190,7 @@
 - [Group-in-Group Policy Optimization](concepts/group-in-group-policy-optimization.md) - GiGPO 如何在已有 GRPO 轨迹组上用重复环境状态构造 step-level 对照组，不追加 rollout。
 - [Hierarchy-of-Groups Policy Optimization](concepts/hierarchy-of-groups-policy-optimization.md) - HGPO 如何把同 state 的 step group 再按共同历史拆成嵌套层次，并用深度加权 advantage 控制 prompt-context bias / 小组方差。
 - [Single-Rollout Asynchronous Optimization](concepts/single-rollout-asynchronous-optimization.md) - SAO 如何用单条 rollout 替代组采样，并用 DIS mask 与加速 critic 稳定异步 agentic RL。
-- [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)（reverse-KL mode-seeking+unhackable / on-policy 消除 exposure bias / teacher 固定的良定义优化 / O(1)-vs-O(N) bits/episode / RL 子网络脆弱性 / phase-alternating + 多 teacher 混采的边界）。
+- [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)；[Nemotron 3 Ultra](sources/nemotron-3-ultra.md) 补上两轮 co-evolution 与按域恢复率（Terminal Bench 172.7% / HLE 16.9%）。
 - [百万 token 上下文服务](concepts/million-token-context-serving.md) - V4 异构 KV 与 prefix reuse，V4.1 将长期全局缓存和短期 SWA 分开，用近似有界重放降低持久存储；engine 侧 I/O 见 KV cache 层。
 - [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、UniClawBench 等 benchmark 的作用和可比性风险；含 UniClawBench 的 capability-driven / 三角色闭环差异化定位。
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
