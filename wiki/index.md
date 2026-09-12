@@ -64,8 +64,9 @@
 - [RT-2](sources/rt-2.md) - Google DeepMind 的 VLA 定义文（CoRL 2023）：动作写成 text token，PaLI-X / PaLM-E 与互联网 VQA co-fine-tune；未见平均 62% vs RT-1 32%。不是 OpenVLA 对照的 RT-2-X。
 - [OpenVLA](sources/openvla.md) - 开源 7B VLA（CoRL 2024）：Prismatic-7B 把 7 维动作写成 256-bin token，Open X-Embodiment 约 970k 真实轨迹全量 fine-tune；29 任务上以 7B 超过 RT-2-X 55B。
 - [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
+- [FAST](sources/fast.md) - Physical Intelligence 的动作分词器（arXiv:2501.09747v1）：DCT + 量化 + BPE 压缩 1 秒动作 chunk；不是新 VLA 基座。相对 OpenVLA 式逐步 256-bin 改的是分词层；FAST+ 是 1M 真实轨迹上的 universal tokenizer。接到 π0 骨干上匹配 diffusion VLA、训练最多 5× 更快（本页数字）。
 - [π0.5](sources/pi0.5.md) - π0 的开世界后作（CoRL 2025）：异构 co-training（多机器人 + web/语义 + subtask）+ 统一高低层，在未见过的家里做长周期家务。
-- [π0.7](sources/pi0.7.md) - Physical Intelligence 的可steer VLA（arXiv:2604.15483v2）：Gemma 3 4B + MEM + 860M flow expert，约 5B。不再是 PaliGemma + FAST→flow 两阶段。
+- [π0.7](sources/pi0.7.md) - Physical Intelligence 的可steer VLA（arXiv:2604.15483v2）：Gemma 3 4B + MEM + 860M flow expert，约 5B。不再是 PaliGemma + [FAST](sources/fast.md)→flow 两阶段。
 - [ASPIRE](sources/aspire.md) - NVIDIA GEAR 的 code-as-policy 具身 skill 自进化：执行引擎 + 技能库 + 进化搜索；不是 VLA 动作头，冻结 Claude Opus 4.6 写/改程序。
 - [EmbodiedSkills](sources/embodied-skills.md) - 浙大等的 VLA 上层 AgentLoop：技能决策是 execution proposal，runtime 先验后验；低层任务特化 π0.5 报 RoboTwin 2.0 86.20% / LIBERO 97.40%，环本身的证据是消融 −38.0 / −51.8 pp。
 - [EmbodiSkill](sources/embodiskill.md) - 清华 AIR + MSR 等的 training-free 具身 skill 自进化：skill-aware reflection 区分技能缺陷与执行偏差，冻结 LLM 只改技能正文；ALFWorld 上冻结 Qwen3.5-27B 达 93.28%。不是 EmbodiedSkills，也不是 ASPIRE 的程序库。
@@ -199,7 +200,7 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
-- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。SayCan / Inner Monologue 是分层 LLM planner（不是 VLA；后者只加语言反馈闭环）；RT-2 造词并封闭落地离散 token + 网页 co-fine-tune；OpenVLA 开源 256-bin；π0 连续 flow + action expert；π0.5 开世界 co-training + 统一 subtask；π0.7 仍是 flow，但换成 Gemma 3 + MEM + 860M expert，不再是 PaliGemma + FAST→flow。AtomicVLA 是 SG-MoE 技能路由，低层仍是 π0 连续专家，不是第四种动作头。EmbodiedSkills / EmbodiSkill 也不是动作头。
+- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。SayCan / Inner Monologue 是分层 LLM planner（不是 VLA；后者只加语言反馈闭环）；RT-2 造词并封闭落地离散 token + 网页 co-fine-tune；OpenVLA 开源 256-bin；[FAST](sources/fast.md) 是离散动作的压缩分词，不是第四种动作头；π0 连续 flow + action expert；π0.5 开世界 co-training + 统一 subtask；π0.7 仍是 flow，但换成 Gemma 3 + MEM + 860M expert，不再是 PaliGemma + [FAST](sources/fast.md)→flow。AtomicVLA 是 SG-MoE 技能路由，低层仍是 π0 连续专家，不是第四种动作头。EmbodiedSkills / EmbodiSkill 也不是动作头。
 - [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 三条路：ASPIRE 写/改程序并扩张库；EmbodiSkill 冻结 LLM、skill-aware reflection 只改技能正文；EmbodiedSkills 固定 typed 合同 + AgentLoop，库不扩张。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA/HCA 与 V4.1 CSA2 跨层 KV/索引共享；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。

@@ -40,7 +40,7 @@ InternVLA-A1.5 是一个统一 VLA（Vision-Language-Action）模型，把视觉
 
 两个核心组件：
 
-- **预训练 VLM backbone**（Qwen-3.5 2B）：采用 Qwen3.5 的 hybrid attention（3 层 Gated DeltaNet + 1 层 full attention 交替），初始化自预训练权重。每个 timestep 接收多视角图像 $o_t$、语言指令 $l$ 和机器人本体感知状态 $q_t$，编码为视觉和文本 token。VLM 可输出 VQA 答案、subtask 描述、以及 FAST tokenizer 编码的离散动作 token。
+- **预训练 VLM backbone**（Qwen-3.5 2B）：采用 Qwen3.5 的 hybrid attention（3 层 Gated DeltaNet + 1 层 full attention 交替），初始化自预训练权重。每个 timestep 接收多视角图像 $o_t$、语言指令 $l$ 和机器人本体感知状态 $q_t$，编码为视觉和文本 token。VLM 可输出 VQA 答案、subtask 描述、以及 [FAST](fast.md) tokenizer 编码的离散动作 token。这是 Stage 1 的用法，不是 OpenVLA 的逐步 256-bin，也不是推理仍吐 FAST 的 π0-FAST。
 - **Unified Expert**（460M）：与 VLM backbone 相同的 hybrid 架构但 hidden dimension 缩小，仅通过共享 full attention 层与 VLM 交互，维护独立的 GDN 层做模态特定处理。输入为 learnable foresight tokens 和 action query tokens。
 
 **关键设计**：VLM 和 unified expert 只在 full attention 层共享信息，GDN 线性注意力层各自独立。这使得语义处理（VLM）和动作/前瞻处理（expert）在大部分层里互不干扰，只在全局 full attention 层汇总。
@@ -63,7 +63,7 @@ InternVLA-A1.5 是一个统一 VLA（Vision-Language-Action）模型，把视觉
 
 ### 动作预测
 
-Stage 2 用 flow-matching 做连续动作预测（替代 Stage 1 的离散 FAST token）。对 ground-truth 连续动作 chunk $a_{t:t+H}$，采样高斯噪声 $\epsilon$ 和 interpolation timestep $\tau \sim \text{Beta}(1.5, 1.0)$，构造插值 $a^\tau = (1-\tau)\epsilon + \tau a$，目标速度为 $a - \epsilon$（公式 5-6）。推理时从高斯噪声出发用 Euler 积分求解（公式 7）。
+Stage 2 用 flow-matching 做连续动作预测（替代 Stage 1 的离散 [FAST](fast.md) token）。对 ground-truth 连续动作 chunk $a_{t:t+H}$，采样高斯噪声 $\epsilon$ 和 interpolation timestep $\tau \sim \text{Beta}(1.5, 1.0)$，构造插值 $a^\tau = (1-\tau)\epsilon + \tau a$，目标速度为 $a - \epsilon$（公式 5-6）。推理时从高斯噪声出发用 Euler 积分求解（公式 7）。与 [π0.5](pi0.5.md) 同属「先离散后连续」，但本页 Stage 1 之后接 unified expert + foresight，不是 π0.5 的 300M expert。
 
 ### 训练配方
 
@@ -79,13 +79,13 @@ Stage 2 用 flow-matching 做连续动作预测（替代 Stage 1 的离散 FAST 
 | Action chunk | 50 | 50 | 50 |
 | 精度 | bfloat16 | bfloat16 | bfloat16 |
 
-- **Stage 1（VLM Transferring）**：VLM backbone 在 VQA + 机器人数据上联合训练，统一 tokenized 格式，单一 next-token cross-entropy loss 监督 subtask 描述 + FAST 动作 token。动作 token 加到 VLM 词表、共享 embedding 表和输出投影。分解 $\pi_\theta(a_{t:t+H}, \hat l | o_t, l) = \pi_\theta(a_{t:t+H}|o_t, \hat l)\pi_\theta(\hat l|o_t, l)$（公式 1-2）。
+- **Stage 1（VLM Transferring）**：VLM backbone 在 VQA + 机器人数据上联合训练，统一 tokenized 格式，单一 next-token cross-entropy loss 监督 subtask 描述 + [FAST](fast.md) 动作 token。动作 token 加到 VLM 词表、共享 embedding 表和输出投影。分解 $\pi_\theta(a_{t:t+H}, \hat l | o_t, l) = \pi_\theta(a_{t:t+H}|o_t, \hat l)\pi_\theta(\hat l|o_t, l)$（公式 1-2）。action chunk 50 与 [FAST](fast.md) 的 1 秒 chunk 同量级，但本页没有写控制频率，也没有对照表说明用的是数据集特化 FAST 还是发布的 FAST+ 权重。
 - **Stage 2（Foresight and Action Generation）**：引入 unified expert + foresight reasoning。总 loss $= \mathcal{L}_{\text{stage1}} + \alpha\mathcal{L}_{\text{video}} + \beta\mathcal{L}_{\text{action}}$，$\alpha=1, \beta=10$（公式 8）。
 - **Post-training**：同 Stage 2 配方，视频生成分支可选保留以在下游演示上微调 foresight tokens。
 
 ### Attention masking
 
-VLM token（image / instruction / state / subtask）走标准 Qwen3.5 causal attention。Unified expert 的 foresight tokens 和 noisy action embeddings 作为独立 token group，跨 group causal（foresight 注意 VLM 上下文，action 注意 VLM + foresight），group 内 bidirectional（支持 flow-matching 非自回归并行去噪）。训练时 unified expert 被 mask 掉对 FAST token 的注意力，防信息泄漏和梯度干扰。
+VLM token（image / instruction / state / subtask）走标准 Qwen3.5 causal attention。Unified expert 的 foresight tokens 和 noisy action embeddings 作为独立 token group，跨 group causal（foresight 注意 VLM 上下文，action 注意 VLM + foresight），group 内 bidirectional（支持 flow-matching 非自回归并行去噪）。训练时 unified expert 被 mask 掉对 [FAST](fast.md) token 的注意力，防信息泄漏和梯度干扰。
 
 ### 数据配方
 
@@ -133,13 +133,15 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 - Foresight tokens 数量 $M=50$ 的选择依据未给消融；是否存在质量/成本的 sweet spot。
 - WAN2.2-5B 的预训练覆盖 embodied 场景的程度如何（论文 limitation 承认 priors 受限于视频模型预训练覆盖面）。
 - Stage 1 到 Stage 2 过渡时 VLM 是否继续训练（论文说 Stage 2 保留 $\mathcal{L}_{\text{stage1}}$，但没明确 VLM 权重是否更新）。
+- Stage 1 的 [FAST](fast.md) 是数据集特化 BPE 还是发布的 FAST+ 权重，原文只给了名字；与 [π0.5](pi0.5.md) 预训练、[π0.7](pi0.7.md) KI 是否同一词表，三篇都没有对照表。
 
 ## 相关页面
 
 - 模型：[InternVLA-A1.5](../models/internvla-a1.5.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（通用 VLA 定义；本页是 2026 的 MoT + flow-matching 实例，不是入门定义）
 - VLA 定义出处：[RT-2](rt-2.md) · [模型](../models/rt-2.md)
-- 开源离散动作 token 基线：[OpenVLA](../models/openvla.md) · [来源](openvla.md)（7 维 × 256-bin 自回归；与本页 Stage 2 连续动作不是同一套）
+- 开源离散动作 token 基线：[OpenVLA](../models/openvla.md) · [来源](openvla.md)（7 维 × 256-bin 自回归；与本页 Stage 1 的 [FAST](fast.md)、Stage 2 连续动作都不是同一套）
+- Stage 1 用的压缩分词，不是本页动作头：[FAST](fast.md)（1 秒 chunk 上 DCT+BPE；本页未声明是否 FAST+ 权重）
 - 真机/LIBERO-Plus 对照的开世界 VLA：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)（PaliGemma + flow expert + 异构 co-training；本页数字是重测）
 - 另一套 RoboTwin 2.0 数字，协议不同勿横比：[EmbodiedSkills](embodied-skills.md)（50 个任务特化 π0.5，macro 86.20；本页是 93.2 vs LingBot-VA 92.2）
 - 在 π0 / π0.5 上做技能专家路由，不是本页 MoT：[AtomicVLA](atomicvla.md)

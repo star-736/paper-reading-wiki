@@ -88,7 +88,8 @@ RTX 4090、3 相机：图像编码 14 ms + 观察前向 32 ms + 10 步 flow 27 m
 
 - 预训练混合物该怎么配、跨任务/跨本体正迁移有多大，原文 §VII 自己列为未解。
 - 高层 VLM 在 π0 里是外挂；[π0.5](pi0.5.md) 改成同一模型先预测 semantic subtask。这条统一是否必须，π0 原文没有消融。
-- [π0.7](pi0.7.md) 已 ingest：**不再是**同一套 PaliGemma + 300M flow expert。骨干换成 Gemma 3 4B + MEM，expert 860M；FAST 只作 VLM 的 Knowledge Insulation 训练信号，不是两阶段配方。不要用本页约 10,000 小时去填那边。本库不建 π0.6 页。
+- [π0.7](pi0.7.md) 已 ingest：**不再是**同一套 PaliGemma + 300M flow expert。骨干换成 Gemma 3 4B + MEM，expert 860M；[FAST](fast.md) 只作 VLM 的 Knowledge Insulation 训练信号，不是两阶段配方。不要用本页约 10,000 小时去填那边。本库不建 π0.6 页。
+- [FAST](fast.md) 已 ingest：分词器论文，不是本页的新动作头。它把 FAST 接到本页 PaliGemma 骨干上训 π0-FAST，报匹配 diffusion、训练最多 5× 更快——**那是 FAST 论文的数字，不是本 PDF**。本页对照仍是把 OpenVLA 重训到 π 混合物（§VI-A、Figure 7）。
 - [AtomicVLA](atomicvla.md) 已 ingest：在本页连续专家上加 SG-MoE，不是第四种动作头。它的 LIBERO / CALVIN 数字是那边的协议，不要回填本页。
 - 与 OpenVLA 的对照是「把 OpenVLA 重训到 π 混合物」，不是 OpenVLA 论文自己的 Bridge/Google robot 协议，不能直接和 [OpenVLA](openvla.md) Table 4/6 横比。
 
@@ -97,6 +98,7 @@ RTX 4090、3 相机：图像编码 14 ms + 观察前向 32 ms + 10 步 flow 27 m
 - 模型：[π0](../models/pi0.md)
 - 开世界后作：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)
 - 下一代，不再是 PaliGemma：[π0.7](pi0.7.md) · [模型](../models/pi0.7.md)
+- 离散动作的压缩分词，接到本页骨干上的 π0-FAST 实验在那边：[FAST](fast.md)
 - 离散动作 token 基线：[OpenVLA](openvla.md) · [模型](../models/openvla.md)
 - VLA 定义、封闭离散 token：[RT-2](rt-2.md) · [模型](../models/rt-2.md)
 - 高层 VLM 外挂所类比的分层 planner：[SayCan](saycan.md)

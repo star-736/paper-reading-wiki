@@ -17,7 +17,7 @@ resource: "raw/2604.15483v2.pdf"
 - **项目页**：[pi.website/pi07](https://pi.website/pi07)（外部；视频不能升级为原文确证）
 - **模型页**：[π0.7](../models/pi0.7.md)
 - **体量**：25 页（含附录），22 图。
-- **定位**：π 系列下一代 **VLA**，与 [π0](pi0.md) / [π0.5](pi0.5.md) 并列。骨干换成 **Gemma 3 4B + MEM**，动作专家放大到 **860M flow matching**。**不再是 PaliGemma + FAST→flow 两阶段。**
+- **定位**：π 系列下一代 **VLA**，与 [π0](pi0.md) / [π0.5](pi0.5.md) 并列。骨干换成 **Gemma 3 4B + MEM**，动作专家放大到 **860M flow matching**。**不再是 PaliGemma + [FAST](fast.md)→flow 两阶段。**
 - **已闭合：不建 π0.6 页。** 原文把 π0.6 / π0.6-MEM / π\*0.6 写成前作与对照（§II、§IV、§IX-A）。那些 PDF 不在 `raw/`，只作外链；不能用本页柱图反推它们的技术报告。
 
 ## 核心结论
@@ -30,7 +30,7 @@ resource: "raw/2604.15483v2.pdf"
 - 历史：**MEM-style** 视频历史编码器（时序+空间压缩，任意历史帧数吐固定 token）
 - 动作专家：**860M** flow matching（π0 是约 300M）
 - 总参约 **5B**
-- 训练时 VLM 仍用 **FAST token** 做离散交叉熵，但走 Knowledge Insulation：动作专家看 VLM 激活，梯度不回灌 VLM（§III）。这不是 π0.5 那种「先 FAST 预训练再拉长 expert」的两阶段配方。
+- 训练时 VLM 仍用 **[FAST](fast.md) token** 做离散交叉熵，但走 Knowledge Insulation：动作专家看 VLM 激活，梯度不回灌 VLM（§III）。这不是 π0.5 那种「先 FAST 预训练再拉长 expert」的两阶段配方，也不是 FAST 论文里推理仍吐 FAST token 的 π0-FAST。
 
 不要把 BAGEL 14B 世界模型写成 π0.7 本体：它只生成 subgoal 图（§V-B、附录 C）。
 
@@ -48,13 +48,13 @@ resource: "raw/2604.15483v2.pdf"
 
 | | [π0](pi0.md) | [π0.5](pi0.5.md) | **π0.7** |
 | --- | --- | --- | --- |
-| VLM | PaliGemma ~3B | 仍是 PaliGemma + FAST 预训练再拉长 expert | **Gemma 3 4B** |
+| VLM | PaliGemma ~3B | 仍是 PaliGemma + [FAST](fast.md) 预训练再拉长 expert | **Gemma 3 4B** |
 | 记忆 | 基本不看长历史 | 无 MEM | **MEM 历史视觉** + 本体线性投影（不再像 π0.6 把 \(q_t\) 写成离散文本） |
 | 动作专家 | ~300M flow | 同一套 flow | **860M flow**，50 token chunk，adaptive RMSNorm 注入时间 |
 | 上下文 | 短任务文本 | 短文本 + 自己预测 subtask | 任务 + subtask + **subgoal 图** + **metadata** + 控制模式 |
-| FAST | 无 | 预训练阶段的离散动作 | **只作 VLM 训练信号**（KI），推理不吐 FAST |
+| [FAST](fast.md) | 无 | 预训练阶段的离散动作 | **只作 VLM 训练信号**（KI），推理不吐 FAST |
 
-§IV 原话：相对 π0.5 / π0.6，主要改动是 MEM 历史编码器和把视觉 subgoal 放进上下文。不要把「仍出现 FAST」读回成两阶段配方。
+§IV 原话：相对 π0.5 / π0.6，主要改动是 MEM 历史编码器和把视觉 subgoal 放进上下文。不要把「仍出现 [FAST](fast.md)」读回成两阶段配方。KI 用法：FAST 只提供 VLM 的离散 CE，动作仍由 860M flow expert 出。
 
 ### 可 steer 的上下文（§V）
 
@@ -104,7 +104,7 @@ resource: "raw/2604.15483v2.pdf"
 ## 待追问
 
 - Gemma 3 的视觉塔到底算「Gemma3 自带 400M」还是 Figure 2 的 SigLIP 400M 初始化？原文两处并列，没有权重卡。
-- FAST 在 KI 里具体词表、chunk 长度、与 π0.5 预训练 FAST 是否同一分词器，§III 只给了引用 [104]。
+- [FAST](fast.md) 在 KI 里具体词表、chunk 长度、与 π0.5 预训练 FAST 是否同一份 BPE 权重，§III 只给了引用 [104]。FAST 原文把方法钉成 1 秒 chunk 上 DCT+BPE，并区分数据集特化 FAST 与发布的 FAST+；本页没有对照表。三种用法不要互填：π0.5 是 FAST→flow 两阶段，InternVLA Stage 1 是离散预训练，本页是 KI-only。
 - 总训练步数、混合物比例、自有数据小时数，正文没有表。
 - **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页；架构以那些原文为准，不能用本页柱状图反推。
 - 世界模型 14B 与 5B VLA 的系统账（延迟、失败时是否回退）只有附录 D 的 1.25 s / 异步，没有失败率。
@@ -114,6 +114,7 @@ resource: "raw/2604.15483v2.pdf"
 
 - 模型：[π0.7](../models/pi0.7.md)
 - 前作：[π0](pi0.md) · [π0.5](pi0.5.md)
+- KI 训练信号的分词器，不是本页动作头：[FAST](fast.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 同系列连续专家上的技能路由，不是本页：[AtomicVLA](atomicvla.md)
-- 离散 token 基线：[OpenVLA](openvla.md) · [RT-2](rt-2.md)
+- 离散 token 基线，逐步 256-bin ≠ FAST：[OpenVLA](openvla.md) · [RT-2](rt-2.md)

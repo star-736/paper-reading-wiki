@@ -57,7 +57,7 @@ OpenVLA 的 VLM 不是凭空搭的，而是 fine-tune 已有的 Prismatic-7B（�
 - 训练目标是标准 next-token 交叉熵，**只在动作 token 上计 loss**，不计输入图像/指令 token。
 - 推理：模型吐出动作 token → Action De-Tokenizer 反量化成连续控制，闭环执行（Figure 2、§3.5）。
 
-这是后续 flow-matching / 扩散动作头论文要对照的**开源离散动作 token 基线**。OpenVLA 原文没有比较那些连续动作配方；差异见 [待追问](#待追问)。
+这是后续 flow-matching / 扩散动作头论文要对照的**开源离散动作 token 基线**。它是逐步、逐维 256-bin，**不是** [FAST](fast.md) 那种 1 秒 chunk 上 DCT+BPE。OpenVLA 原文没有比较那些连续动作配方，也没有 FAST；差异见 [待追问](#待追问)。
 
 ### 数据：Open X-Embodiment 约 970k
 
@@ -142,7 +142,7 @@ LIBERO 是附录 E 的**目标套件监督微调**（不是 zero-shot），每�
 
 ## 待追问
 
-- 离散 256-bin 自回归动作头，相对后续 flow-matching 连续动作到底损失了多少精度与高频控制能力？OpenVLA 原文没有这场比较。[π0](pi0.md) §VI-A 把 OpenVLA 重训到 π 混合物，归因于「不支持 action chunking / 高频」——那是 π 协议，不是本页 Bridge/Google robot 表。
+- 离散 256-bin 自回归动作头，相对后续 flow-matching 连续动作到底损失了多少精度与高频控制能力？OpenVLA 原文没有这场比较。[π0](pi0.md) §VI-A 把 OpenVLA 重训到 π 混合物，归因于「不支持 action chunking / 高频」——那是 π 协议，不是本页 Bridge/Google robot 表。[FAST](fast.md) 把本页的逐步 256-bin 写成 naive tokenization，并在叠 T 恤上给 OpenVLA 骨干换 FAST+ 才能训起来——那是 FAST 协议，不要回填 Table 4/6。256-bin ≠ FAST。
 - §6 自己问的 action chunking：加上之后能否补齐相对 Diffusion Policy 的灵巧度，而不放弃语言接地优势？
 - RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。原版 [RT-2](rt-2.md) Table 6 已显示同 backbone 上 co-fine-tune > 只 fine-tune。**找论文可解**：RT-2-X 在 Open X-Embodiment（Padalkar et al., [arXiv:2310.08864](https://arxiv.org/abs/2310.08864)），本库尚未单独 ingest。
 - 单臂 7D 末端 + 单第三人称图这条数据约束，后续 skill / 双臂 / 长周期组合论文要改哪一层（观察、动作空间，还是只改后训练）？
@@ -153,5 +153,6 @@ LIBERO 是附录 E 的**目标套件监督微调**（不是 zero-shot），每�
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - VLA 定义、封闭离散 token 前作：[RT-2](rt-2.md) · [模型](../models/rt-2.md)（本页对照的是后续 RT-2-X，不是原版厨房 RT-2）
 - 连续 flow + action expert：[π0](pi0.md) / [模型](../models/pi0.md)（原文 §VI-A 在 π 混合物上对照过本模型）
+- 压缩分词，不是本页 256-bin：[FAST](fast.md)
 - 开世界 co-training：[π0.5](pi0.5.md)
 - 本库后续 VLA 实例（MoT + 连续动作，不是 256-bin）：[InternVLA-A1.5 技术报告](internvla-a1.5.md) / [InternVLA-A1.5](../models/internvla-a1.5.md)

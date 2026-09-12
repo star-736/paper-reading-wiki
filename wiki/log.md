@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-09-13] ingest | FAST
+
+Pertsch / Stachowicz 等（arXiv:2501.09747v1）。新增 `raw/2501.09747v1.pdf`、`sources/fast.md`，提取 Figure 2/4/6/11。不建模型页。Headline：DCT+量化+BPE 压 1 秒动作 chunk；相对 OpenVLA 式逐步 256-bin 改的是分词层，不是第四种动作头。FAST+ 是 1M 轨迹上的 universal tokenizer。接到 π0 骨干匹配 diffusion、训练最多 5× 更快（本页数字）。回写 VLA 概念页与 π0 / π0.5 / π0.7 / InternVLA-A1.5 / OpenVLA。`raw/` 新增该 PDF。
+
 ## [2026-09-13] ingest | DeltaNet
 
 Yang / Wang 等（arXiv:2406.06484v6，NeurIPS 2024）。新增 `raw/2406.06484v6.pdf`、`sources/delta-net.md`，提取 Figure 1/2/4。不建模型页。Headline：Schlag 的 delta 更新 + WY Householder chunkwise 并行；1.3B/100B Wiki ppl 16.87、零样本 51.6，超过 Mamba/GLA；缺 $\alpha_t$，召回受 128× 状态限制。回写线性注意力概念页与 GDN / GLA / Kimi Linear。`raw/` 新增该 PDF。

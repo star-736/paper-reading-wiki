@@ -29,7 +29,7 @@ resource: "raw/2504.16054v1.pdf"
 
 ## 架构与训练
 
-### 两阶段：离散 FAST 预训练 → flow expert 后训练
+### 两阶段：离散 [FAST](fast.md) 预训练 → flow expert 后训练
 
 ![π0.5 Figure 3：左栏预训练，VLM（SigLIP 400M + Gemma 2.6B）对 language subtasks、FAST 离散动作、caption、bounding box 做 next-token；右栏后训练与推理，同一 VLA 先根据「clean the bedroom」预测 subtask「pick up the pillow」，再由 300M action expert 从噪声积出连续动作。](../assets/pi0.5/fig3-model-overview.png)
 
@@ -40,14 +40,14 @@ resource: "raw/2504.16054v1.pdf"
 | 项 | π0 | π0.5 |
 | --- | --- | --- |
 | 骨干 | PaliGemma + 300M action expert | **同一套**（Appendix A-E：VLM width=2048 / depth=18；expert width=1024，300M） |
-| 预训练动作 | 一开始就 flow matching | **先 FAST 离散 token** 280k 步（\(\alpha=0\)），可当标准 VLM 训 |
+| 预训练动作 | 一开始就 flow matching | **先 [FAST](fast.md) 离散 token** 280k 步（\(\alpha=0\)），可当标准 VLM 训 |
 | 后训练动作 | 任务数据上继续 flow | 随机初始化 action expert，flow + 文本 CE 联合，\(\alpha=10\)，再 80k 步 |
 | 高层 | 外挂另一个 VLM | **同一模型** \(\pi_\theta(\hat\ell \mid o_t,\ell)\) 再 \(\pi_\theta(a_{t:t+H} \mid o_t,\hat\ell)\) |
 | 本体状态 | 线性投影进 expert | **离散化成文本 token** 喂 VLM |
 | 时间步 \(\tau\) | 与噪声动作 concat 进 MLP | 单独 MLP + **adaptive RMSNorm** 注入 expert 每层 |
 | 数据 | 机器人动作（+ OXE 等） | 再加 HL / WD / VI；预训练 CE 含 OXE，是 π0 数据的扩展 |
 
-分布写成 \(\pi_\theta(a_{t:t+H},\hat\ell \mid o_t,\ell)=\pi_\theta(a_{t:t+H}\mid o_t,\hat\ell)\,\pi_\theta(\hat\ell\mid o_t,\ell)\)，底层动作**不直接**依赖总任务 \(\ell\)，只依赖预测出的 subtask \(\hat\ell\)（§IV-A）。注意力上，图像/prompt/连续动作块内双向；FAST token 对前缀自回归；action expert **不看** FAST token，以免两种动作表示互漏；信息只从 VLM 流向 expert（Figure 18）。
+分布写成 \(\pi_\theta(a_{t:t+H},\hat\ell \mid o_t,\ell)=\pi_\theta(a_{t:t+H}\mid o_t,\hat\ell)\,\pi_\theta(\hat\ell\mid o_t,\ell)\)，底层动作**不直接**依赖总任务 \(\ell\)，只依赖预测出的 subtask \(\hat\ell\)（§IV-A）。注意力上，图像/prompt/连续动作块内双向；[FAST](fast.md) token 对前缀自回归；action expert **不看** FAST token，以免两种动作表示互漏；信息只从 VLM 流向 expert（Figure 18）。这是 **FAST→flow 两阶段**：预训练把 VLA 当普通 VLM 训，推理走 flow expert。不是 [FAST](fast.md) 论文里推理仍吐 FAST token 的 π0-FAST。
 
 Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “horizon of 50, i.e. \(H=49\)”），推理 10 步去噪，\(\tau\) 仍用强调低时间步的 Beta（\(s=0.999\)）。
 
@@ -65,7 +65,7 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 预训练 280k 步之后的第二阶段（§IV-D）：
 
 - 目的：专精家庭移动操作，并**加上** flow matching action expert（后训练开始时 expert 随机初始化）。
-- 损失：文本 CE（含 FAST 动作 token，保住语言）+ \(\alpha=10\) 的 flow MSE，共 80k 步。
+- 损失：文本 CE（含 [FAST](fast.md) 动作 token，保住语言）+ \(\alpha=10\) 的 flow MSE，共 80k 步。
 - 动作数据：MM + ME，滤成功、长度低于阈值的 episode；保留 WD 和对应的 HL；**去掉实验室 CE**。
 - 新增 **VI**（verbal instruction）：专家用户用语言「遥操作」已会底层技能的机器人，逐步给出该做的 subtask，当作高层示范。
 
@@ -95,7 +95,7 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 
 > Figure 12（原文截图，§V-D）："Comparing π0.5 with other models. Our full model significantly outperforms both π0 and π0-FAST+Flow in the mock home test environments."
 
-对照公平点：同一套跨本体机器人数据、可比步数。差在 (1) π0.5 额外用 HL 与 WD；(2) π0.5 预训练走离散 token、只在后训练加 flow expert，π0 从头就用 expert。π0-FAST+Flow 用了混合训练但仍只有动作数据，不能做高层推理。π0 加训到 300k 仍落后，作者引用 FAST 论文称离散 token 预训练比纯 diffusion 更省算力。
+对照公平点：同一套跨本体机器人数据、可比步数。差在 (1) π0.5 额外用 HL 与 WD；(2) π0.5 预训练走离散 token、只在后训练加 flow expert，π0 从头就用 expert。π0-FAST+Flow 用了混合训练但仍只有动作数据，不能做高层推理。π0 加训到 300k 仍落后，作者引用 [FAST](fast.md) 称离散 token 预训练比纯 diffusion 更省算力——那是 FAST 论文里 π0-FAST vs diffusion π0 的 5× GPU hour，不要填进本页家庭进度条。
 
 高层消融（Figure 13）：不要高层（no HL）在装抽屉/洗碗上掉得最狠；web 数据对抽屉这类要认杂物的任务重要；GPT-4 当高层不如 in-domain 的 π0.5；人类 oracle 高层给上界。洗衣篮对高层选择不那么敏感。
 
@@ -105,15 +105,17 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 - Figure 3 / 附录对 Gemma 写成 2B 或 2.6B，与 π0 正文「PaliGemma 3B」并列时，视觉塔是否算进「3B」需以权重卡核实。
 - VI 数据规模、HL 标注质量、100 个家庭如何抽样，都没有表。
 - [InternVLA-A1.5](internvla-a1.5.md) 真机表里的 π0.5 数字是 A1.5 论文的重测，不是本页 Figure 7 的家庭家务，不能直接当同一协议。
-- [π0.7](pi0.7.md) 已 ingest：**不再是** PaliGemma + FAST→flow 两阶段。同系列连续专家，但骨干是 Gemma 3 + MEM，expert 860M，上下文加 metadata / subgoal。不要用本页家庭进度条去填那边的柱图。本库不建 π0.6 页。
+- [π0.7](pi0.7.md) 已 ingest：**不再是** PaliGemma + [FAST](fast.md)→flow 两阶段。同系列连续专家，但骨干是 Gemma 3 + MEM，expert 860M，上下文加 metadata / subgoal。不要用本页家庭进度条去填那边的柱图。本库不建 π0.6 页。
+- 本页 FAST 是预训练阶段的离散动作表示，chunk \(H=50\) 在 50 Hz 上与 [FAST](fast.md) 的 1 秒设计一致；原文只写 “FAST action tokenizer [64]”，**没有对照表说明用的是数据集特化 FAST 还是发布的 FAST+ 权重**。与 OpenVLA 逐步 256-bin 不是同一种 token。
 - [AtomicVLA](atomicvla.md) 的 AtomicVLA* 建在本页基座上做 SG-MoE，不是第四种动作头；它的 LIBERO 行里 π0.5 数字接近 OpenPI 官方表，不要和 [EmbodiedSkills](embodied-skills.md) 的 97.40 互相当复现。
 
 ## 相关页面
 
 - 模型：[π0.5](../models/pi0.5.md)
 - 前作：[π0](pi0.md) · [模型](../models/pi0.md)
-- 下一代，不再是 PaliGemma + FAST→flow：[π0.7](pi0.7.md) · [模型](../models/pi0.7.md)
-- 离散 token 基线：[OpenVLA](openvla.md)
+- 下一代，不再是 PaliGemma + [FAST](fast.md)→flow：[π0.7](pi0.7.md) · [模型](../models/pi0.7.md)
+- 预训练用的压缩分词，不是本页动作头：[FAST](fast.md)
+- 离散 token 基线，逐步 256-bin ≠ FAST：[OpenVLA](openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 把它当真机/仿真对照的后续模型：[InternVLA-A1.5](internvla-a1.5.md) · [模型](../models/internvla-a1.5.md)
 - 把它当低层执行器的框架：[EmbodiedSkills](embodied-skills.md)（OpenPI/π0.5；RoboTwin 是每任务 specialist，不是本页家庭协议）
