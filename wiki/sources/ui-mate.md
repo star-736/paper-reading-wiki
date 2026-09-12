@@ -19,7 +19,7 @@ resource: "arXiv:2608.15930v1"
 - **项目页**：[ui-mate.github.io](https://ui-mate.github.io/)（含 macOS Apple Silicon 应用说明）
 - **模型页**：[UI-Mate](../models/ui-mate.md)
 
-未把 Qwen3.6 写成独立模型页：27B 基座在本 wiki 中尚无一手来源；9B 基座是 [Qwen3.5](../models/qwen3.5.md) 家族的 dense 变体。
+**已闭合：不臆造 Qwen3.6 独立架构页。** 27B 基座在本 wiki 中无一手来源；9B 基座是 [Qwen3.5](../models/qwen3.5.md) 家族的 dense 变体。找不到一篇「Qwen3.6 技术报告」也不能从本报告升级 hybrid/dense 细节。
 
 ## 核心结论
 
@@ -87,7 +87,7 @@ RL 用 GRPO 做组内相对优势，全组同结局的任务丢弃。GUI 特有�
 - **可选 PCM**：teacher 从成功轨迹抽里程碑，给失败轨迹标 progress / causal error / recovery / redundancy，把同一 `Ri` 重分配到关键步。作者报告 PCM 与自适应课程主要加快收敛（可比最终分用不到一半 update），不稳定抬最终成功率（原文确证，§7.4.2）。
 - **Token-level 归一化**：失败 turn 的 thinking 更长，同一优势会被更多 token 重复。
 
-异步更新：不截断轨迹，组内共享同一任务配置和策略快照。train–rollout mismatch 用 IcePop（拒异常 token 比）+ SeqClip（整段几何平均比）过滤，再叠加 PPO clip。自适应课程把 rollout 预算分给弱应用域，只重分配固定 RL 语料，不改任务构造（原文确证，§4.3.3–4.3.4）。
+异步更新：不截断轨迹，组内共享同一任务配置和策略快照。train–rollout mismatch 用 [IcePop](ring-1t.md)（拒异常 token 比；一手出处 Ring-1T）+ SeqClip（整段几何平均比）过滤，再叠加 PPO clip。自适应课程把 rollout 预算分给弱应用域，只重分配固定 RL 语料，不改任务构造（原文确证，§4.3.3–4.3.4）。
 
 训练发现（原文确证，§7.4.2）：
 
@@ -147,7 +147,7 @@ OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：�
 ## 待追问
 
 - 项目页提供 macOS 应用，但报告未给出 Hugging Face 权重、许可证和 9B/27B 的视觉编码器是否改过 Qwen 基座。
-- wiki 目前没有独立的 Qwen3.6 模型页；27B 的 hybrid/dense 细节不能从本报告升级为已核实架构。
+- **找论文也答不了 / 已闭合**：不建独立 Qwen3.6 模型页。27B 的 hybrid/dense 细节不能从本报告升级为已核实架构；本库也不臆造 Qwen3.6 技术报告。
 - 45-task variant-demo 只有 10 题试点：把示范段复制到目标实体数后净正向，但作者认为不够稳，未进主表（§10）。
 - OSWorld-Subset 按「本模型失败」筛选，self-demo 又来自更强 agent，不能外推到任意任务或真人示范。
 - Historical reasoning 与 RL 探索的冲突只有定性熵塌缩描述，没有给出可复现的熵曲线或替代算法。
@@ -161,4 +161,4 @@ OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：�
 - 基座：[Qwen3.5](../models/qwen3.5.md)（9B）
 - 概念：[Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)、[Agent harness](../concepts/agent-harness.md)
 - 异步 / 组相对 RL：[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)
-- IcePop 前作对照：[Ling and Ring 2.6 技术报告](ling-2.6.md)
+- IcePop 一手出处：[Ring-1T](ring-1t.md)；KPop 后作：[Ling and Ring 2.6 技术报告](ling-2.6.md)

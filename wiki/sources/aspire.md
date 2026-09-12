@@ -19,7 +19,7 @@ resource: "raw/2607.00272v1.pdf"
 - **项目页**：[research.nvidia.com/labs/gear/aspire](https://research.nvidia.com/labs/gear/aspire/)（外部佐证；不能升级为原文确证）
 - **代码**：[github.com/NVlabs/ASPIRE](https://github.com/NVlabs/ASPIRE)（外部）
 - **定位**：这是 **code-as-policy 的具身 skill 自进化系统**，不是一组要发布的神经网络权重，也**不是**第四种 VLA 动作头。评测表里的 [OpenVLA](openvla.md) / [π0](pi0.md) / [π0.5](pi0.5.md) 是对照，不是前作。本库不建模型页：系统产出是 skill library。
-- **不要混名**：EmbodiSkill（清华 AIR + MSR，arXiv:2605.10332）尚未 ingest。[EmbodiedSkills](embodied-skills.md) 已 ingest，是 VLA 上层 AgentLoop + 任务特化 π0.5，不是本页的程序库。
+- **不要混名**：三条路不要写成一篇。[EmbodiSkill](embodiskill.md) 已 ingest：training-free，冻结 LLM 用 skill-aware reflection **改技能正文**，执行偏差只进附录，不是本页的可执行程序库。[EmbodiedSkills](embodied-skills.md) 已 ingest：VLA 上层 AgentLoop + 任务特化 π0.5，typed 合同固定、库不扩张。slug 差一个字母：`embodiskill` ≠ `embodied-skills`。数字不许互填。
 
 仿真与真机用的 coder 都是冻结的前沿 LLM，本库没有对应模型页：
 
@@ -170,13 +170,13 @@ BEHAVIOR-1K（Table 4，25 held-out seed；Aspire 在 seed 26–35 攒库，评�
 - 表达力被预定义 API 卡住。新 sensing / 控制原语要人扩；作者把「agent 如何安全提出并纳入新原语」留给未来（§5）。
 - 真机还不是终身学习者：成功检测、安全复位、安全监控、标定维护都未闭环（§5）。Table 1 只有三条技能、一种 YAM 双臂。
 - nut_assembly 9%、部分 Spatial/Goal 任务进化搜索后仍接近 0（Table 7–8）。接触装配和语言改目标的哪些失败模式进不了当前技能表示？
-- 近邻不要混名：EmbodiSkill（arXiv:2605.10332，training-free reflection）和 AtomicVLA（VLA + atomic skill-MoE）尚未 ingest。[EmbodiedSkills](embodied-skills.md) 已 ingest：技能是固定 typed 合同，低层是任务特化 π0.5，不写程序、不扩张 skill library。
+- 近邻不要混名：[EmbodiSkill](embodiskill.md) 改自然语言技能正文，没有 per-primitive 痕迹，也没有进化搜索程序；ALFWorld 93.28% 不能填本页 LIBERO-Pro。[EmbodiedSkills](embodied-skills.md) 技能是固定 typed 合同，低层是任务特化 π0.5，不写程序、不扩张 skill library。[AtomicVLA](atomicvla.md) 已 ingest：技能是 SG-MoE 专家路由，低层仍是 π0 连续专家，不是本页程序库。
 - 调试环的 LLM 调用与 simulator/robot rollout 成本没有主表；§5 只定性说 compute-intensive。
 
 ## 相关页面
 
 - 概念：[具身 skill 自进化](../concepts/embodied-skill-self-evolution.md) · [Vision-Language-Action](../concepts/vision-language-action.md) · [Agent harness](../concepts/agent-harness.md) · [Agent 记忆生命周期](../concepts/agent-memory-lifecycle.md)
-- 对照、不是程序库：[EmbodiedSkills](embodied-skills.md)
+- 另两条路，不是程序库：[EmbodiSkill](embodiskill.md) · [EmbodiedSkills](embodied-skills.md)
 - 固定技能表 + value function，库不扩张：[SayCan](saycan.md)
 - 评测表里的 VLA 对照（不是前作）：[OpenVLA](openvla.md) · [π0](pi0.md) · [π0.5](pi0.5.md)
 - 软件侧「冻结权重、改可复用程序」：[Prime Agent](prime-agent.md) · [Macaron-V1](macaron-v1.md)

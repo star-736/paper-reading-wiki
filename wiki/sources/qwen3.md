@@ -35,7 +35,7 @@ MoE 部分相对 Qwen2.5-MoE 的改动：
 
 - **去掉 shared expert**（Qwen2.5-MoE 有，Qwen3 取消）。
 - **fine-grained expert segmentation**（沿用 Dai et al., 2024 / DeepSeek-MoE）。
-- **global-batch load balancing loss**（Qiu et al., 2025）替换 micro-batch 平衡，鼓励专家专业化。（注意这是 **aux-loss 路线**，与 DeepSeek 系的 auxiliary-loss-free bias 路线对照——谱系见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。）
+- **global-batch load balancing loss**（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail: On Implementing Load Balancing Loss…*）替换 micro-batch 平衡，鼓励专家专业化。（注意这是 **aux-loss 路线**，与 DeepSeek 系的 auxiliary-loss-free bias 路线对照——谱系见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。）
 - 128 总专家 / 8 激活。
 
 Tokenizer：Qwen 自家 BBPE，词表 151,669。
@@ -61,7 +61,7 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 - **S1 General Stage**：>30T tokens，seq_len 4096，通识语言/世界知识。
 - **S2 Reasoning Stage**：~5T 高质量 tokens，seq_len 4096，提高 STEM / 代码 / 推理 / 合成数据占比，**LR decay 加速**。
-- **S3 Long Context Stage**：数百 B tokens，seq_len **4096 → 32768**。长上下文语料 75% 落在 16k–32k、25% 落在 4k–16k。RoPE 基频 **10,000 → 1,000,000**（ABF 技术，Xiong et al., 2023）；推理时再叠 **YARN + Dual Chunk Attention (DCA)**，把有效序列长度再放大 4×（即 128K）。这套 32K 训练窗 + YaRN factor=4 的推理路径，后来被 [Jet-Long](jet-long.md) 当作零样本基线：在 Qwen3-1.7B/4B/8B-Base 上 RULER 全面落后动态分组，1.7B 上 YaRN 甚至低于不扩展的 Base。4B/8B 模型卡上的 128K 来自这套推理扩展，不是 S3 再训到 128K。谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
+- **S3 Long Context Stage**：数百 B tokens，seq_len **4096 → 32768**。长上下文语料 75% 落在 16k–32k、25% 落在 4k–16k。RoPE 基频 **10,000 → 1,000,000**（ABF，Xiong et al., 2023）。[YaRN](yarn.md) 原文把 Code Llama 式「把 base 调到 1M」明确写成 **NTK-aware** interpolation，并称其作者叫它 adjusted base frequency（§3.1 脚注）；这和 Definition 2 的 YaRN（按维切分频率 + attention temperature）不是同一旋钮。推理时再叠 **YaRN + Dual Chunk Attention (DCA)**，把有效序列再放大 4×（即 128K）。本报告未写 $\alpha$ / $\beta$ / $t$，也未写是固定 $s$ 还是 Dynamic Scaling。这套 32K 训练窗 + YaRN factor=4 的推理路径，后来被 [Jet-Long](jet-long.md) 当作零样本基线：在 Qwen3-1.7B/4B/8B-Base 上 RULER 全面落后动态分组，1.7B 上 YaRN 甚至低于不扩展的 Base。4B/8B 模型卡上的 128K 来自这套推理扩展，不是 S3 再训到 128K。谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
 
 数据扩张技巧：
 
@@ -154,7 +154,7 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 ## 待追问
 
 - **QK-Norm 具体加在哪**（softmax 之前对 Q 和 K 各做 RMSNorm？head-wise 还是整张矩阵？）——报告只引用 Dehghani et al., 2023，未给实现细节。
-- **Global-batch load balancing loss 公式**：Qiu et al., 2025 是同期 Qwen 团队论文，本报告未自带推导，若要复用需回那篇核。
+- **Global-batch load balancing loss 公式**：[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）是同期 Qwen 团队论文，本报告未自带推导，若要复用需回那篇核。
 - **Thinking Budget 截断指令为何由系统插入而非显式训练**——论文称是 "emerges naturally"，但模型靠什么信号识别 "</think>\n\n" 后切换到 response？是 chat template + non-thinking 训练数据里的空 think 块带的隐式 grammar，还是另有机制？正文未展开。
 - **从 Qwen3 到 Qwen3-Next 的架构换代动机**：本报告全 GQA 标准栈，Qwen3-Next 引入 3:1 GDN+gated-attention 是另一篇博客的事。两条路线为何能并存（Qwen3.5 走 hybrid、Qwen3-VL 走标准 GQA Qwen3 backbone），待[Qwen3-VL 来源页](qwen3-vl.md) / Qwen3-Next 博客横向对比。
 
@@ -163,6 +163,6 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 - 模型：[Qwen3](../models/qwen3.md)
 - 同家族后续：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Qwen3.5](../models/qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)（官方 YaRN+DCA 4× 与 Jet-Long 对照）
-- 零样本长上下文替代：[Jet-Long](jet-long.md)
+- 零样本长上下文：[YaRN](yarn.md)（推理 YaRN 的一手定义；S3 的 ABF 按该文是 NTK-aware）、[Jet-Long](jet-long.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)（用 Qwen3-8B/14B 做 deep search RL backbone，但不是 Qwen3 官方报告的一部分）
 - 后续 RL optimizer：[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)（Qwen 团队 2025-07/12 方法论文，声称用于 latest Qwen3 / Qwen3-VL 训练；不是本报告正文的 Stage 2 GRPO 事实）

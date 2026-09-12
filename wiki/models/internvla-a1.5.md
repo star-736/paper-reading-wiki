@@ -49,6 +49,7 @@ InternVLA-A1.5 的核心创新不在单一组件，而在**组合方式**：
 - 开源离散动作 token 基线：[OpenVLA](openvla.md)（Llama-2-7B + 256-bin；本页是 MoT + flow-matching，不是它的换皮）
 - 真机对照：[π0.5](pi0.5.md)（开世界 co-training；本报告表内分数是重测）
 - 连续 flow 前作：[π0](pi0.md)
+- Physical Intelligence 下一代，不是本页对照：[π0.7](pi0.7.md)
 - 架构基座：[Qwen3.5](../models/qwen3.5.md)（VLM backbone = Qwen-3.5 2B）
 - 同基座、不同任务：[WeMM-Embedding](wemm-embedding.md)（Qwen3.5 2B/4B/9B 做通用多模态 embedding）
 - [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（GDN 在 VLA 领域的采用证据）

@@ -105,13 +105,16 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 - Figure 3 / 附录对 Gemma 写成 2B 或 2.6B，与 π0 正文「PaliGemma 3B」并列时，视觉塔是否算进「3B」需以权重卡核实。
 - VI 数据规模、HL 标注质量、100 个家庭如何抽样，都没有表。
 - [InternVLA-A1.5](internvla-a1.5.md) 真机表里的 π0.5 数字是 A1.5 论文的重测，不是本页 Figure 7 的家庭家务，不能直接当同一协议。
-- 后续 π0.7 是否还用 PaliGemma + FAST→flow 两阶段，本库未 ingest。
+- [π0.7](pi0.7.md) 已 ingest：**不再是** PaliGemma + FAST→flow 两阶段。同系列连续专家，但骨干是 Gemma 3 + MEM，expert 860M，上下文加 metadata / subgoal。不要用本页家庭进度条去填那边的柱图。本库不建 π0.6 页。
+- [AtomicVLA](atomicvla.md) 的 AtomicVLA* 建在本页基座上做 SG-MoE，不是第四种动作头；它的 LIBERO 行里 π0.5 数字接近 OpenPI 官方表，不要和 [EmbodiedSkills](embodied-skills.md) 的 97.40 互相当复现。
 
 ## 相关页面
 
 - 模型：[π0.5](../models/pi0.5.md)
 - 前作：[π0](pi0.md) · [模型](../models/pi0.md)
+- 下一代，不再是 PaliGemma + FAST→flow：[π0.7](pi0.7.md) · [模型](../models/pi0.7.md)
 - 离散 token 基线：[OpenVLA](openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 把它当真机/仿真对照的后续模型：[InternVLA-A1.5](internvla-a1.5.md) · [模型](../models/internvla-a1.5.md)
 - 把它当低层执行器的框架：[EmbodiedSkills](embodied-skills.md)（OpenPI/π0.5；RoboTwin 是每任务 specialist，不是本页家庭协议）
+- 在本页基座上做技能专家路由：[AtomicVLA](atomicvla.md) · [模型](../models/atomicvla.md)

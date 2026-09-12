@@ -10,7 +10,7 @@ timestamp: 2026-09-12
 
 ## 身份
 
-π0.5（读作 “pi oh five”）是 Physical Intelligence 在 [π0](pi0.md) 上的开世界泛化模型。骨干仍是 PaliGemma + 300M flow matching **action expert**；增量是 **heterogeneous co-training**（多机器人、web 语义、subtask 文本、口头逐步指令）和 **同一模型**先预测 semantic subtask、再出底层动作。它是 2025–2026 具身论文里常被当低层执行器/对照的那一代；[InternVLA-A1.5](internvla-a1.5.md) 的真机表和 LIBERO-Plus 都拿它比。[OpenVLA](openvla.md) 仍是更早的离散 token 基线，不是这一代。
+π0.5（读作 “pi oh five”）是 Physical Intelligence 在 [π0](pi0.md) 上的开世界泛化模型。骨干仍是 PaliGemma + 300M flow matching **action expert**；增量是 **heterogeneous co-training**（多机器人、web 语义、subtask 文本、口头逐步指令）和 **同一模型**先预测 semantic subtask、再出底层动作。它是 2025–2026 具身论文里常被当低层执行器/对照的那一代；[InternVLA-A1.5](internvla-a1.5.md) 的真机表和 LIBERO-Plus 都拿它比。[π0.7](pi0.7.md) 已 ingest：**不再是**本页的 PaliGemma + FAST→flow 两阶段。[OpenVLA](openvla.md) 仍是更早的离散 token 基线，不是这一代。
 
 ## 关键事实
 
@@ -42,7 +42,9 @@ timestamp: 2026-09-12
 
 - 来源：[π0.5 论文](../sources/pi0.5.md)
 - 前作：[π0](pi0.md)
+- 下一代，不再是 PaliGemma + FAST→flow：[π0.7](pi0.7.md)
 - 离散 token 基线：[OpenVLA](openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 真机对照：[InternVLA-A1.5](internvla-a1.5.md)
 - 把它当低层执行器的 AgentLoop：[EmbodiedSkills](../sources/embodied-skills.md)
+- 在本页基座上做技能专家路由：[AtomicVLA](atomicvla.md)

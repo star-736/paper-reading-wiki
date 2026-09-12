@@ -39,7 +39,7 @@ Laguna 是一个**纯文本、coding-focused** 的 MoE agentic 模型族，定�
 
 3. **数据轴**：长 horizon（30T tokens）下从「精度优先」转「召回优先 + 排序」——高召回 web 管线（Propella 多维标注 + composite score 排序，恢复 34% 被误杀高质量文档）、合成数据（Hive 框架，~13% 混合）、**AutoMixer** 自动混合优化（~60 个 0.5B proxy + Dirichlet 扰动 + per-capability 回归器 + KL 正则，是 [数据混合优化](../concepts/data-mixture-optimization.md) 谱系的产业落地变体）。
 
-4. **后训练轴**：三阶段 mid-train→SFT→agentic RL。RL 用 **CISPO**（[14]=[MiniMax-M1](../sources/minimax-m2-series.md)）asymmetric clip (1,4) + length-weighted LOO advantage，ablate vs GRPO/GSPO 选定。合成代码环境（git commit → 双端正确性检查的可验证任务）同时喂 SFT 与 RL。IF judge + multi-harness 训练（OpenHands/OpenCode2/Mini-SWE-Agent）保泛化。
+4. **后训练轴**：三阶段 mid-train→SFT→agentic RL。RL 用 **CISPO**（[14]=[MiniMax-M1](../sources/minimax-m1.md)；MiniMax-M2 系列不是 CISPO 源头；asymmetric clip $(1,4)$ 是 Laguna 采用超参）+ length-weighted LOO advantage，ablate vs GRPO/GSPO 选定。合成代码环境（git commit → 双端正确性检查的可验证任务）同时喂 SFT 与 RL。IF judge + multi-harness 训练（OpenHands/OpenCode2/Mini-SWE-Agent）保泛化。
 
 ## 同族 / 同重量级定位
 

@@ -39,6 +39,8 @@ MiMo-V2-Flash 共有 48 层，其中 39 层 SWA、9 层 GA。每个 MoE 层有 2
 
 MOPD 的目标是缓解能力之间的 "see-saw" 问题：一个能力提升时，另一个能力不应显著退化。报告把它作为融合 reasoning、coding、writing、long-context 和 tool-use 能力的统一框架。
 
+RL / MOPD 基建用 SGLang + Megatron。§4.6.1 采用 [R3](r3.md)（Ma et al., 2025）：训练重放 rollout 时的 routed experts，作者写 overhead 可忽略。多轮 agent 用 **request-level** prefix cache 同时存 KV 与 routed experts，不用 radix 跨请求共享，以免采样时专家集合被别的请求污染。这是本库 MiMo 来源页此前没写的稳定性件。
+
 ## 评测要点
 
 报告给出的后训练结果包括 SWE-bench Verified 73.4、SWE-bench Multilingual 71.7、BrowseComp 45.4、带 context management 的 BrowseComp 58.3，以及 tau2-Bench 中 Telecom 95.3、Retail 79.5、Airline 66.0。
@@ -49,4 +51,11 @@ MOPD 的目标是缓解能力之间的 "see-saw" 问题：一个能力提升时�
 
 - 混合 SWA/GA 设计简单高效，但在更强对抗性的长上下文推理中是否稳定？
 - MOPD 的收益高度依赖 teacher 质量和任务覆盖；后续应与 GLM-5 的 cross-stage distillation 对照。
+
+## 相关页面
+
+- [R3：Rollout Routing Replay](r3.md) — §4.6.1 采用的 MoE 路由对齐
+- [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
+- [训练—rollout 一致性](../concepts/train-rollout-consistency.md)
+- 模型：[MiMo-V2-Flash](../models/mimo-v2-flash.md)
 

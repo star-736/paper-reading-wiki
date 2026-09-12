@@ -74,7 +74,7 @@ MoE 模型 RL 训练不稳定的已知原因是 rollout/training 阶段的 polic
 
 MoE 的随机性（stochastic expert routing / capacity dropping / 数值方差）使估计的 policy log-prob 带噪 `log π(a) = log π*(a) + ε`，进而 importance weight `w(a) = exp(log π_rollout(a) - log π_train(a))` 方差过大。
 
-**MCLA（Monte-Carlo Log-probability Averaging）**：训练时对每条轨迹做 K=8 次 forward prefill，取 log-prob 平均，显著降低估计方差。配合 IcePop（裁剪 train-inference 偏差过大的 token，对齐 rollout/train 的 routing 决策），两者互补--MCLA 降方差，IcePop 减分布不一致。
+**MCLA（Monte-Carlo Log-probability Averaging）**：训练时对每条轨迹做 K=8 次 forward prefill，取 log-prob 平均，显著降低估计方差。配合 [IcePop](ring-1t.md)（裁剪 train-inference 概率偏差过大的 token；一手出处 Ring-1T），两者互补--MCLA 降方差，IcePop 减分布不一致。路由重放是 [R3](r3.md)，不要和 IcePop 混。
 
 ### Turn-level Policy Optimization
 
@@ -142,3 +142,5 @@ KRL（Kwai RL）围绕两个核心创新：(1) Tree Training 消除 group sampli
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- [Ring-1T](ring-1t.md) - IcePop 一手出处
+- [R3：Rollout Routing Replay](r3.md) - MoE 路由重放；不要和 IcePop 或 GSPO 的 Recompute Routing Replay 混

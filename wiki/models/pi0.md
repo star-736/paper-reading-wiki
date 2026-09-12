@@ -10,7 +10,7 @@ timestamp: 2026-09-05
 
 ## 身份
 
-π0（读作 “pi zero”）是 Physical Intelligence 的通用机器人 VLA：在 [PaliGemma](https://arxiv.org/abs/2407.07726) 预训练 VLM 上加一个约 300M 的 **action expert**，用 **flow matching** 输出连续动作块。它是本库里「连续 flow + 动作专家」这条线的源头；后来的 [π0.5](pi0.5.md) 沿用同一套专家，改的是异构 co-training 和统一的 semantic subtask。[OpenVLA](openvla.md) 是对照的开源离散 token 基线，不是近亲换皮。
+π0（读作 “pi zero”）是 Physical Intelligence 的通用机器人 VLA：在 [PaliGemma](https://arxiv.org/abs/2407.07726) 预训练 VLM 上加一个约 300M 的 **action expert**，用 **flow matching** 输出连续动作块。它是本库里「连续 flow + 动作专家」这条线的源头；后来的 [π0.5](pi0.5.md) 沿用同一套专家，改的是异构 co-training 和统一的 semantic subtask。[π0.7](pi0.7.md) 仍停在这条 flow 上，但骨干换成 Gemma 3 + MEM，expert 放到 860M，**不再是 PaliGemma + FAST→flow**。[OpenVLA](openvla.md) 是对照的开源离散 token 基线，不是近亲换皮。
 
 ## 关键事实
 
@@ -41,8 +41,10 @@ timestamp: 2026-09-05
 
 - 来源：[π0 论文](../sources/pi0.md)
 - 开世界后作：[π0.5](pi0.5.md)
+- 下一代，不再是 PaliGemma：[π0.7](pi0.7.md)
 - 离散 token 基线：[OpenVLA](openvla.md)
 - 封闭离散 token 前作：[RT-2](rt-2.md)
 - 高层 VLM 外挂所类比：[SayCan](../sources/saycan.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
 - 真机表里对照 π0.5 的后续模型：[InternVLA-A1.5](internvla-a1.5.md)
+- 在本页连续专家上加 SG-MoE：[AtomicVLA](atomicvla.md)

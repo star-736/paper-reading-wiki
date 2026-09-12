@@ -16,7 +16,7 @@ resource: "../../raw/2609.01281v1.pdf"
 - **团队**：浙江大学（通讯 Wenqiao Zhang）+ 南京航空航天大学 + Cornell + Universal Ubiquitous AI + NUS + 杭州云深处科技
 - **体量**：20 页，4 图，5 表
 - **定位**：**框架论文，不是新权重。** 高层 agent 组件基于 [Qwen3-VL](../models/qwen3-vl.md)，低层执行器是 OpenPI / [π0.5](../models/pi0.5.md)。本库不建模型页：系统产出是共享 executable-skill 接口和 AgentLoop，不是一组要发布的神经网络。
-- **不要混名**：[ASPIRE](aspire.md) 写/改 code-as-policy 程序并写入 skill library；EmbodiSkill（清华 AIR + MSR，arXiv:2605.10332）是 training-free reflection，尚未 ingest。本页是 VLA 上层的 guarded runtime。
+- **不要混名**：三条路不要写成一篇。[ASPIRE](aspire.md) 写/改 code-as-policy 程序并写入会扩张的 skill library。[EmbodiSkill](embodiskill.md) 已 ingest：training-free，冻结 LLM 改**技能正文**，执行偏差只进附录；slug 是 `embodiskill`，不是本页的 `embodied-skills`。本页是 VLA 上层的 guarded runtime，合同固定、库不扩张。数字不许互填。
 
 ## 核心结论
 
@@ -167,7 +167,7 @@ Stack Blocks Three 是极端例子：Full 92，w/o Verify / w/o Subtask / 1 chun
 - 合同只能挡住 schema 非法，挡不住「语义上像样但物理上错」的 grounding / subgoal；遮挡和视觉歧义时验证同样失效（§6）。校准缺口有多大，没有定量。
 - 50 个 specialist 的训练 / 存储 / 部署成本相对 generalist 的账，原文只定性写进 Limitations，没有表。
 - 没有真机实验。延迟来自额外 VLM 调用和动作后重观察（§6），也没有 latency 表。
-- 与 [ASPIRE](aspire.md) 的程序库、AtomicVLA 的 atomic skill-MoE 能否叠在同一 runtime？本页只把低层 VLA 换成可替换后端，没有程序技能或 skill-MoE。
+- 与 [ASPIRE](aspire.md) 的程序库、[EmbodiSkill](embodiskill.md) 的技能正文、[AtomicVLA](atomicvla.md) 的 SG-MoE 能否叠在同一 runtime？本页只把低层 VLA 换成可替换后端，没有程序技能、不改技能正文、也没有 skill-MoE。AtomicVLA 的 LIBERO 97.8 与本页 97.40 协议不同，不要互填。
 
 ## 相关页面
 
@@ -175,5 +175,6 @@ Stack Blocks Three 是极端例子：Full 92，w/o Verify / w/o Subtask / 1 chun
 - 高层 VLM：[Qwen3-VL](qwen3-vl.md) · [模型](../models/qwen3-vl.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md) · [Agent harness](../concepts/agent-harness.md) · [具身 skill 自进化](../concepts/embodied-skill-self-evolution.md)
 - 另一套「提案 × 可行性」因式，低层不是 VLA：[SayCan](saycan.md)
-- 不要混名的程序库路线：[ASPIRE](aspire.md)
+- 另两条路，不要混名：[ASPIRE](aspire.md)（程序库）· [EmbodiSkill](embodiskill.md)（技能正文，slug 不是本页）
+- VLA 上的技能专家路由，不是本页合同：[AtomicVLA](atomicvla.md)
 - 另一套 RoboTwin 2.0 数字（协议不同，勿横比）：[InternVLA-A1.5](internvla-a1.5.md)

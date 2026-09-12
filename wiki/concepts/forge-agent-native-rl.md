@@ -30,7 +30,7 @@ Forge 被拆成三层：
 
 ## 奖励与优化
 
-MiniMax 使用 CISPO 做 policy optimization，并用不对称 token-level importance clipping 控制更新幅度。长轨迹的 advantage 通过 reward-to-go 和 trajectory-level baseline 估计。
+MiniMax 使用 CISPO 做 policy optimization（定义见 [MiniMax-M1](../sources/minimax-m1.md)；MiniMax-M2 系列不是 CISPO 源头）：原文夹的是 IS 权重（stop-grad），不是 PPO 式 token 更新，并保证所有 token 进梯度。M2 / Forge 侧的 advantage 另用 reward-to-go 与 trajectory-level baseline，不要回写成 M1 配方。
 
 奖励是组合式的：
 

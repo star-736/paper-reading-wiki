@@ -37,7 +37,7 @@ Poolside 用一套内部称为 **Model Factory** 的工业化流程，在 M.1 �
 | expert 调制 | 无 | routed expert × 2.5 系数 + shared（类 DeepSeek-V3 / Nemotron 3） |
 | 底部 dense 层 | 3 | 1 |
 
-**XS.2 注意力细节**（这是和现有 wiki 多个概念页的交叉点）：GQA 8 KV heads、head dim 128、**softplus-based per-head gating** [67]（[67] 即 [Gated Attention 报告](gated-attention.md)，Qwen 团队 NeurIPS 2025 Best Paper）；RoPE。全局层（GA）48 Q-heads、θ=500,000、partial RoPE 仅作用前 50% head dim；SWA 层窗口 512、64 Q-heads、θ=10,000。第一层 dense 保稳定。路由用 linear+sigmoid，top-k 后做 score normalization；负载均衡用 [Qiu et al. 2025](https://arxiv.org/abs/2502.10325) 的 aux loss（只在非 padding token 上算）。
+**XS.2 注意力细节**（这是和现有 wiki 多个概念页的交叉点）：GQA 8 KV heads、head dim 128、**softplus-based per-head gating** [67]（[67] 即 [Gated Attention 报告](gated-attention.md)，Qwen 团队 NeurIPS 2025 Best Paper）；RoPE。全局层（GA）48 Q-heads、θ=500,000、partial RoPE 仅作用前 50% head dim；SWA 层窗口 512、64 Q-heads、θ=10,000。第一层 dense 保稳定。路由用 linear+sigmoid，top-k 后做 score normalization；负载均衡用 [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail: On Implementing Load Balancing Loss…*）的 global-batch aux loss（只在非 padding token 上算）。
 
 M.1 → XS.2 的四项改动都经 16B MoE proxy 消融选出（见附录 A.2 / Table 9）：(1) 3:1 SWA/GA 替换 M.1 的逐层 global attention；(2) WSD 替换 cosine；(3) 加 routed expert modulation；(4) 底部 dense 层 3→1。其中 SWA 消融链 Table 9 显示：dense GA + full RoPE + full gating 为基线（4K Avg 0.5389），逐步加 SWA-1024（3:1）、per-head gating + θ_swa=1e4、GA partial RoPE(50%)、SWA-512、48 GA/64 SWA Q-heads + k_dense=1，最终架构 4K Avg 0.5455、32K Avg 0.305、128K Avg 0.296。
 
@@ -131,9 +131,9 @@ mid-training → SFT → agentic RL。M.1 与 XS.2 recipe 相同，仅超参/小
 
 ### Agentic RL
 
-策略 = token-level REINFORCE surrogate + **CISPO** clipping [14] + **length-weighted leave-one-out** group-relative advantage。Moonlight scaling 在 M.1 RL 关闭、XS.2 RL 开启。选这个 recipe 是因消融 vs [GRPO](agentic-reinforced-policy-optimization.md) / [GSPO](group-sequence-policy-optimization.md) 后它在最终评测质量 + 训练稳定性组合最好。
+策略 = token-level REINFORCE surrogate + **CISPO** clipping [14] + **length-weighted leave-one-out** group-relative advantage。Moonlight scaling 在 M.1 RL 关闭、XS.2 RL 开启。选这个 recipe 是因消融 vs [GRPO](deepseekmath.md) / [GSPO](group-sequence-policy-optimization.md) 后它在最终评测质量 + 训练稳定性组合最好。
 
-[14] = **MiniMax-M1** 论文——CISPO 源头。每 prompt 采 $G$ 条轨迹 $\{\tau_i\}$，$r_i$ 终端 reward、$w_i$ 被 reward 的 assistant token 数，length-weighted LOO baseline 与 advantage：
+[14] = **MiniMax-M1** 论文——CISPO 源头（来源：[MiniMax-M1](minimax-m1.md)；MiniMax-M2 系列不是 CISPO 源头）。M1 原文夹 IS 权重、不下下界；下面的 $(1,4)$ 与 length-weighted LOO 是 **Laguna 采用配方**。每 prompt 采 $G$ 条轨迹 $\{\tau_i\}$，$r_i$ 终端 reward、$w_i$ 被 reward 的 assistant token 数，length-weighted LOO baseline 与 advantage：
 
 $$b_i=\frac{\sum_{j\ne i} w_j r_j}{\sum_{j\ne i} w_j},\quad A_i = r_i - b_i$$
 
@@ -186,7 +186,7 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - WSD 缩放律式 (1) 在 LAuna 自己的 4 尺寸拟合外，外部交叉验证只有 Kimi K2 一个点且偏差 ~1.75×——是否能在更多外部 MoE 上验证？$N$ 用激活参数而非总参是否对低激活 MoE（如 MiniMax-M2 9.8B 激活）合理？
 - softplus-based per-head gating [67] 与 [Gated Attention 报告](gated-attention.md) 的 head-specific sigmoid 门——报告写「softplus」而非「sigmoid」，是同一机制的不同激活选择，还是变体？需核对 [67] 原文是否同时给 softplus 选项。
 - AutoMixer 的 ~60 个 0.5B proxy 训 ~60B tokens 的总成本未披露；KL 正则 $\lambda$ 的取值与 sensitivity 未给。
-- CISPO 在 Laguna 的 asymmetric (1,4) clip 与 MiniMax-M1 原文的 clip 设置是否一致？Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
+- CISPO：Laguna 的 $(1,4)$ **不是** [MiniMax-M1](minimax-m1.md) 原文数字——M1 只写 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调上界，没有给具体 $\varepsilon_{\mathrm{high}}$。两边没有对照表。Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
 - 合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2505.04034) 等的规模可比性未对照。
 - Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？
 - 256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。这条末端零样本缩放与 [Jet-Long](jet-long.md) 的动态分组是同一轴上的不同旋钮，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)；Laguna 没有同协议对照。
@@ -200,7 +200,7 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md) — M.1 225.8B/23.4B、XS.2 33.4B/3B
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) — 三阶段 + CISPO + 合成代码环境 + IF judge + multi-harness
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md) — TITO + trainer↔inference 权重同步 + FP8 KV cache rollout
-- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) — CISPO（from MiniMax-M1）的又一生产采用
+- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) — CISPO（from [MiniMax-M1](minimax-m1.md)；MiniMax-M2 系列不是源头）的又一生产采用
 - [Agentic Engineering](../concepts/agentic-engineering.md) — Model Factory 工业化流程
 - [Agent harness](../concepts/agent-harness.md) — multi-harness 训练（OpenHands / OpenCode2 / Mini-SWE-Agent）防 scaffold 过拟合
 - 模型：[Laguna](../models/laguna.md)

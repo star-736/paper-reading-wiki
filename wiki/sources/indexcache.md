@@ -73,12 +73,12 @@ $$L^\text{multi}_I = \sum_t \frac{1}{m+1}\sum_{j=0}^m D_\text{KL}(p_t^{(\ell+j)}
 
 - 贪心找出的"关键层"在不同 DSA 模型间是否稳定？论文说同一模型下与 calibration 数据无关，但跨模型迁移性还没有数据。
 - 1/8 retention 时即便用搜索 pattern，Long Avg 也从 50.2 掉到 46.1。压缩极限在哪里、是否能用更激进的 training-aware 进一步推进？
-- IndexCache 的核心依赖"indexer 输出跨层稳定"。如果将来稀疏注意力换成 MSA 这类 group-shared block-level 选择，跨层稳定性的形式和量级是否相同？论文 §5.2 提到 MoBA 和 NSA 也可能受益但未实验。[Qwen3.8-Next](qwen3.8-next.md) 后来在 3:1 GDN hybrid 上测了 training-aware IndexShare：被 GDN 隔开的全局层共享 index，相对延迟 0.5 仍低于 dense，而层内压缩的 QSA 在 0.25 追平。这支持「跨层稳定」在 hybrid 栈上会变弱，但实验不是 IndexCache 原论文的 greedy/F-S pattern。
+- IndexCache 的核心依赖"indexer 输出跨层稳定"。如果将来稀疏注意力换成 MSA 这类 group-shared block-level 选择，跨层稳定性的形式和量级是否相同？论文 §5.2 提到 MoBA 和 [NSA](nsa.md) 也可能受益但未实验。[NSA](nsa.md) 的选择分数来自压缩注意力，没有 lightning indexer 张量；若复用，复用的是选中块下标，不能把 DSA 的 `T_cache` 原样搬过去。[Qwen3.8-Next](qwen3.8-next.md) 后来在 3:1 GDN hybrid 上测了 training-aware IndexShare：被 GDN 隔开的全局层共享 index，相对延迟 0.5 仍低于 dense，而层内压缩的 QSA 在 0.25 追平。这支持「跨层稳定」在 hybrid 栈上会变弱，但实验不是 IndexCache 原论文的 greedy/F-S pattern。
 - F 层之外的 S 层在 training-aware 下"主动适应"了继承的索引——这种适应是否会让 KV cache cross-layer sharing（如 HySparse、MiniCache）变得更难，因为 S 层对 KV 的依赖结构变了。[YOIO](yoio.md) 从相反方向出发（先共享 KV 再绑 index），没有回答在逐层 DSA KV 上把 retention 压过 1/4 会怎样。
 
 ## 与已有沉淀的关系
 
-- 直接扩展 [DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)：把 DSA indexer 自身的 O(NL²) 成本砍掉。
+- 直接扩展 [DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)：把 DSA indexer 自身的 O(NL²) 成本砍掉。DSA 前作 [NSA](nsa.md) 没有独立 indexer，§5.2 的「NSA 也可能受益」仍未做实验。
 - 与 [百万 token 上下文服务](../concepts/million-token-context-serving.md) 互补：DeepSeek-V4 用压缩注意力 + 异构 KV-cache 降访存，IndexCache 降 indexer 计算，两条路可叠加。
 - 与 Kascade、TidalDecode、HySparse 等"anchor 层做 full attention、其他层复用 top-k"的工作思想一致，但前者们都需要 full attention 作 oracle；IndexCache 第一次把跨层索引复用范式迁移到"oracle 也只是稀疏 indexer"的设定。详见 [跨层索引复用](../concepts/cross-layer-index-reuse.md)。
 - [YOIO / CLSA](yoio.md) 引用了本工作，但走的是另一条绑定：YOCO 已经只有一份全局 KV，于是 indexer 在结构上只保留一个，而不是在逐层 DSA KV 上做 1/4 retention。YOIO Figure 5 把 IndexCache 画成「四层复用一次」的 4B 延迟对照，不是本报告 30B / GLM-5 的质量或端到端数字。

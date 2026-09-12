@@ -75,7 +75,7 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 - **尾请求处理**：GLM-5 丢弃 stale sample；Ring-2.6 的 ARouter 把尾请求 **offload 到专用推理组**（spillover-based training-inference overlap），主推理组释放计算开始训练侧梯度累积，端到端性能提升 >80%。
 - **版本偏移控制**：GLM-5 用 stale sample dropping；Ring-2.6 用 staleness manager（max_staleness × consumer_batch_size 约束），超限 segment 退役。
 - **训练-推理精度对齐**：GLM-5 用 TITO 避免 text 重新分词；Ring-2.6 用 module-aware FP8 quantization（LM Head 走 FP32 ~2 点 reward 改善；Attention/Shared Experts 保持 BF16，Routed Experts 用 Blockwise FP8），控制 log-probability drift。
-- **KPop vs IcePop**：Ring-2.6 的 KPop 用 binary KL divergence 替代前代 IcePop 的 uniform fixed-ratio constraint，解决 MoE RL 中训练-推理 mismatch 的异质性问题——低概率 token 的 ratio noise 更大，固定比率会过度 mask 它们。这与 GLM-5 的 double-sided importance sampling 是同一层问题的不同解法。
+- **KPop vs IcePop**：Ring-2.6 的 KPop 用 binary KL 替代前代 [IcePop](../sources/ring-1t.md)（Ring-1T 一手出处：$k=\pi_{\mathrm{train}}/\pi_{\mathrm{infer}}$ 落在 $[\alpha,\beta]$ 内校准、越界丢弃）。KPop 的批评是固定比率过度 mask 低概率 token。这与 GLM-5 的 DIS 是同一层问题的不同边界。C3PO++（Ring-1T §2.3.3）已经用 token budget $\Phi$ + cross-version buffer 切长 rollout，是本段 $\Phi$ 约束的前作。
 
 ## 跨报告信号：Laguna 的在线 agentic RL 基础设施
 
@@ -103,6 +103,6 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 
 - 算法：[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - 系统层：[训练—rollout 一致性](train-rollout-consistency.md)、[RL 权重同步与部署拓扑](rl-weight-synchronization.md)
-- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[Miles v0.1](../sources/miles-v0-1.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)
+- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[Miles v0.1](../sources/miles-v0-1.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)、[Ring-1T](../sources/ring-1t.md)（C3PO++ / IcePop）、[Ling-2.6](../sources/ling-2.6.md)
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)

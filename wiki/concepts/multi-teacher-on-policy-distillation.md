@@ -32,6 +32,8 @@ MOPD 的目标是让 student 同时学习多个 teacher 的专门能力，并尽
 
 报告中的 surrogate loss 可以理解为：如果某个 token 在 domain teacher 下概率更高，而在 student 下概率较低，这个 token 对 student 形成正向 advantage；反之则形成惩罚。MOPD 还可以与 ORM/GRPO 的 advantage 混合。
 
+MiMo 的 RL / MOPD 基建还用 [R3](../sources/r3.md) 对齐 rollout 与训练的专家选择（§4.6.1）。这是 MoE 上 token-level KL 能算稳的前提之一：teacher / student 前向如果走到不同专家，监督信号就不在同一条子网络上。R3 不改 OPD 公式。
+
 ## 数学依据：OPD 为什么 work
 
 > 这一节的论证对所有 on-policy distillation 都成立——MiMo MOPD、DeepSeek-V4 OPD、Qwen3 Strong-to-Weak、GLM-5 cross-stage 的 loss 形式都落在同一个数学框架下，只是 KL 估计方式和 teacher 来源不同。
@@ -279,7 +281,7 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 ## Nemotron 3 Ultra：两轮 co-evolution 与按域恢复率
 
-[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（NVIDIA，arXiv:2606.15007）是目前唯一把 MiMo 口头提过的 **teacher–student 多轮循环**真正跑完两轮、并给出按域恢复率的生产报告。算法仍是 sampled-token reverse KL 当 advantage（公式 1–2），异步把 behavior policy 与 proximal policy 拆开，token mask 用 IcePop。
+[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（NVIDIA，arXiv:2606.15007）是目前唯一把 MiMo 口头提过的 **teacher–student 多轮循环**真正跑完两轮、并给出按域恢复率的生产报告。算法仍是 sampled-token reverse KL 当 advantage（公式 1–2），异步把 behavior policy 与 proximal policy 拆开，token mask 用 [IcePop](../sources/ring-1t.md)。
 
 增量不在公式，在三件实证：
 

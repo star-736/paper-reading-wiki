@@ -75,7 +75,7 @@ resource: "../../raw/2609.08368v1.pdf"
 
 ### R3：重放专家路由（§2.5）
 
-- MoE 里 rollout 与 training 可能把同一个 token 送给不同专家（两边 kernel 与精度不同，router 的极小数值差就能翻转每层每 token 的 top-k）。R3 把每个 token 的专家分配**当作 rollout 数据的一部分**，训练时重放而不是重算：`--use-rollout-routing-replay` 让 SGLang 随 token 返回 routed experts。因为 session server 已经记录了 routed experts，重放覆盖整个多轮 episode 而非单次 completion。原文引 Ma et al. 说明这类错配会剧烈破坏 MoE RL 稳定性、甚至导致训练崩塌。
+- MoE 里 rollout 与 training 可能把同一个 token 送给不同专家（两边 kernel 与精度不同，router 的极小数值差就能翻转每层每 token 的 top-k）。R3 把每个 token 的专家分配**当作 rollout 数据的一部分**，训练时重放而不是重算：`--use-rollout-routing-replay` 让 SGLang 随 token 返回 routed experts。因为 session server 已经记录了 routed experts，重放覆盖整个多轮 episode 而非单次 completion。算法定义见 [R3](r3.md)（Ma et al.）：重放的是推理 mask，softmax 仍走训练 logits；错配会让 MoE RL 崩。
 - 成本：每个 routing tensor 是 (tokens − 1) × layers × k 个 32 位整数；32K token、60 层、k = 8 时约 **60 MB / 轨迹**，且必须常驻内存并随轨迹移动。
 - **不是全局开启**：dense 模型没有专家可重放；异步 RL 下其它 mismatch 因素已经很多，作者判断 R3 的效果可能有限。若干已发布的 MoE recipe 开了 R3，而 **§9 的 GLM-5.2 参考运行没开**。
 
@@ -222,14 +222,14 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 - [训练—rollout 一致性](../concepts/train-rollout-consistency.md) 是本报告 §2.4 / §2.5 / §3.1 / §3.4 / §5.3 的提炼：TITO、R3、低精度契约、TIS / clip-or-pop 与 true-on-policy alignment 是同一根轴上的五层手段。注意 [GLM-5.3 官方发布博客](glm-5-3-blog.md) 声称 `slime` 把「平均 log-prob 差异」控制到 $10^{-7}$ 量级，而 Miles（建立在 slime 上）在 §9 报的是 train–inference KL 均值 0.0369——**两者口径不同**（一个是绝对 log-prob 差、一个是 per-token divergence 的均值，且 Miles 那条跑的是 BF16 训练 + FP8 服务），不能直接比较或相减，见该页待追问。
 - [RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md) 是 §4 的提炼：三种传输、P2P 的「宽度而非规模」收益规律、disk-delta 的 XOR / Overwrite 取舍与「只有一步暂停生成」的设计。
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 与 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)：Miles 的 OPD 差异是**框架侧**而非模型侧——它不改算法形式（仍是一样本 reverse KL，仍引 Thinking Machines Lab 博客），而是把信号折进 advantage 从而与任意 advantage estimator 组合，并给出 top-K 变体与 served / in-process 两种 teacher 部署。它的 Qwen3.5-35B-A3B 实验是已收录报告里少见的「蒸馏只缩长度、不涨分」的诚实结论。
-- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：Miles 不提出新算法，但它把 mismatch 修正做成一层可替换组件（TIS 的阻尼 vs clip-or-pop 的丢弃），坐标与 IcePop / KPop 的 mask 形状同轴。
+- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：Miles 不提出新算法，但它把 mismatch 修正做成一层可替换组件（TIS 的阻尼 vs clip-or-pop 的丢弃），坐标与 [IcePop](ring-1t.md) / KPop 的 mask 形状同轴。IcePop 原文已站在丢弃一侧反对 TIS。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本报告把后训练的**系统**当成一等对象——同一套 rollout + trainer + 权重路径同时服务 RL / LoRA RL / OPD / SFT / diffusion，且把每条路径的证据等级显式标出。
 - [多 token 预测](../concepts/multi-token-prediction.md)：§9 里 MTP 以「每个引擎挂一个小 draft model，一次前向提多个 token」的常规形态出现，用于 FP8 服务侧的推理加速。
 
 ## 待追问
 
 - GLM-5.3 博客说的「$10^{-7}$ 量级 log-prob 差异」与 Miles §9 的 train–inference KL 均值 0.0369 是不是同一个量？口径（绝对差 vs KL 均值）与精度配置（全对齐 vs BF16 训练 + FP8 服务）都可能不同，仓库里没有能对齐两者的第三方来源。
-- R3 在异步 RL 下「效果可能有限」是作者的定性判断，没有开 / 关 R3 的异步对照表；60 MB/轨迹的 routing tensor 在更长上下文下的成本曲线也没有给。
+- R3 在异步 RL 下「效果可能有限」是作者的定性判断，没有开 / 关 R3 的异步对照表；60 MB/轨迹是本报告的估算，[R3 原文](r3.md)只报 <3% rollout 延迟，两边都没有 1M 上下文成本曲线。
 - §9 是单次 100 step、单一任务分布，reward 曲线上升与「系统能不能稳定训下去」是两件事；Miles 自己也没把 0.438 → 0.556 读成能力提升。
 - true-on-policy alignment 只在 dense Qwen3 0.6B/4B 上有 profile，MoE、长上下文、异步场景下「恰好为 0」是否成立未知；报告也没说这套确定性 kernel 相对默认 kernel 慢多少。
 - 低精度契约的验证是比较两边的 log-prob；没有给出「量化后相对 BF16 基线的 reward 曲线差多少」的量化数字，也没有 NVFP4 / MXFP8 的加速倍数。
@@ -241,5 +241,5 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 
 - 概念：[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)、[多 token 预测](../concepts/multi-token-prediction.md)
 - 比较：[OPD 跨报告对比](../comparisons/on-policy-distillation.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻来源：[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）
+- 相邻来源：[R3](r3.md)（`--use-rollout-routing-replay` 的算法定义）、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）
 - 模型：[GLM-5](../models/glm-5.md)（案例研究对象）、[Kimi K2.5](../models/kimi-k2.5.md) 与 [Qwen3.5](../models/qwen3.5.md)（LoRA recipe 覆盖）

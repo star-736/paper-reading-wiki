@@ -29,11 +29,11 @@ Ling-2.6 和 Ring-2.6 是 Inclusion AI 在万亿参数规模上的 agentic intel
 
 三条设计轴线：
 
-1. **高效长上下文**：把 Ling-2.0 的 GQA 架构 retrofit 成 **7:1 Lightning Attention + MLA** 混合线性注意力（每 8 层中 7 层线性、1 层 MLA），线性注意力把 per-token 成本从 $O(n^2)$ 降到 $O(n)$，MLA 压缩 KV cache。迁移通过四阶段 smooth pipeline（Lightning Attention 转换 -> Linear Warmup -> MLA 转换 -> MLA Warmup）在 ~400B tokens 内完成，性能无损。继续预训练 ~9.6T tokens。
+1. **高效长上下文**：把 Ling-2.0 的 GQA 架构 retrofit 成 **7:1 [Lightning Attention](lightning-attention-2.md) + MLA** 混合线性注意力（每 8 层中 7 层线性、1 层 MLA），线性注意力把 per-token 成本从 $O(n^2)$ 降到 $O(n)$，MLA 压缩 KV cache。迁移通过四阶段 smooth pipeline（Lightning Attention 转换 -> Linear Warmup -> MLA 转换 -> MLA Warmup）在 ~400B tokens 内完成，性能无损。继续预训练 ~9.6T tokens。机制定义见 [Lightning Attention-2](lightning-attention-2.md)；本报告只写 following Ring-flash-linear-2.0，未展开内部算子。
 
 2. **高 token 效率**：Ling-2.6 不把短回复当风格偏好，而是优化 **capability per output token**。后训练用 Evo-CoT（去冗余推理步骤）、LPO（语言单元级策略优化）、双向偏好对齐和 shortest-correct-response distillation，在 reasoning workload 上约 4× token 效率提升。Ling-2.6-1T 在 Artificial Analysis Intelligence Index 上以 ~16M output tokens 达到 34 分，可比 GPT-5.4 non-reasoning。
 
-3. **原生 agentic 优化**：Ring-2.6 提出 **KPop** RL 算法，用 binary KL divergence 替代 IcePop 的 uniform fixed-ratio constraint，更好捕获不同概率 token 的异质 mismatch，稳定万亿参数 agentic RL。配合异步 RL（partial-rollout pipeline + staleness manager），使长尾环境交互轨迹在万亿规模可训练。Ring-2.6-1T 在 PinchBench 87.60、SWE-bench Verified 76.28%。
+3. **原生 agentic 优化**：Ring-2.6 提出 **KPop** RL 算法，用 binary KL divergence 替代前代 [IcePop](ring-1t.md) 的 uniform fixed-ratio constraint，更好捕获不同概率 token 的异质 mismatch，稳定万亿参数 agentic RL。配合异步 RL（partial-rollout pipeline + staleness manager），使长尾环境交互轨迹在万亿规模可训练。Ring-2.6-1T 在 PinchBench 87.60、SWE-bench Verified 76.28%。
 
 ## 架构与训练
 
@@ -128,7 +128,7 @@ Ring-2.6 在 Ling-2.6 后训练基础上增强 reasoning 和 long-horizon agenti
 
 ### KPop：Binary KL 替代固定比率约束
 
-Ring-2.6 的核心 RL 算法创新。前代 IcePop 用 uniform constant-ratio constraint（固定 $[\alpha, \beta]$ 范围 + double-sided masking），隐含假设所有 token 的 mismatch 相同。但实际 ratio divergence 依赖 token probability——IcePop 倾向于过度 mask 低概率 token。
+Ring-2.6 的核心 RL 算法创新。前代 [IcePop](ring-1t.md)（Ring-1T，arXiv:2510.18855）是 GRPO 变体：用 $k=\pi_{\mathrm{train}}(\theta_{\mathrm{old}})/\pi_{\mathrm{infer}}$ 做双侧校准，$M(k)=k$ 当 $k\in[\alpha,\beta]$ 否则 $0$，默认 $[0.5,5]$，越界 token 整段丢弃。本报告把它转述成 uniform constant-ratio constraint，并主张它隐含「所有 token 的 mismatch 相同」——这是 **Ring-2.6 对前作的批评**，不是 IcePop 原文自己的定位。Ring-2.6 认为实际 ratio divergence 依赖 token probability，IcePop 倾向于过度 mask 低概率 token。
 
 KPop 用 symmetric binary KL divergence 替代固定比率：把全词表看成「当前 token vs 其余」二事件划分，计算 $\pi_{train}(y_t)$ 与 $\pi_{infer}(y_t)$ 之间的 binary KL，两个方向都要求小于阈值 $\phi$。整个机制只由单一超参 $\phi$ 控制。
 
@@ -193,7 +193,7 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 
 ## 待追问
 
-- Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：Lightning Attention 基于 Qin et al. 2024（FlashLinearAttention），具体是哪条线性注意力变体？是否也用 delta rule？报告仅说"following Ring-flash-linear-2.0"，未展开 Lightning Attention 内部机制——与 Kimi Linear 的 KDA 是同族还是不同路线？
+- Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：机制页见 [Lightning Attention-2](lightning-attention-2.md)（标量衰减外积累加，不是 delta rule）。本报告仅说"following Ring-flash-linear-2.0"，未核对本族生产算子是否逐行等同 Lightning-2。
 - 7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。
 - KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
 - 异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？
@@ -205,4 +205,4 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（Lightning Attention 的同族/对照路线）、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[多 Token 预测](../concepts/multi-token-prediction.md)、[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（Ling-2.6 的 aux-loss-free bias 配置 γ=0.001→0.0001）、[Loss-Free Balancing](loss-free-balancing.md)（该方法一手出处）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻算法：[DPO](dpo.md)（Bidirectional Preference Alignment 用显式 RM，不是 DPO）
-- 来源：[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照）
+- 来源：[Lightning Attention-2](lightning-attention-2.md)（7:1 混合栈里线性层的 tiling/kernel 定义文）、[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照，不是本页 Lightning 机制）、[Ring-1T](ring-1t.md)（IcePop 一手出处；C3PO++ 是本报告 token budget $\Phi$ 的前作）

@@ -87,6 +87,12 @@ DSA 由 [DeepSeek-V3.2](../sources/deepseek-v32.md) 首次引入并命名，其�
 
 DeepSeek-V3.2 的 post-training 阶段**继续使用 sparse attention**（配置与 sparse continued pretraining 相同），即 indexer 在 RL 阶段保持更新。这与 GLM-5 的策略形成对比——GLM-5 在 RL 阶段**冻结 indexer 参数**并强制使用 deterministic `torch.topk` 来保证训练-推理一致性。两种路线反映了不同的工程取舍：V3.2 选择让 indexer 继续适应 RL 分布，代价是训练复杂度更高；GLM-5 选择冻结 indexer 以消除非确定性风险，代价是推理时的 indexer quality 固定。
 
+## 前作：NSA 的三分支
+
+[NSA](../sources/nsa.md)（DeepSeek-AI，2025-02）是 DSA 之前同一团队线上的 natively trainable 稀疏注意力。它不是「轻量 indexer + 一路 core」，而是 **compressed / selected block / sliding window 三支并行，门控相加**；选块重要性直接从压缩注意力 softmax 来，没有独立 Lightning Indexer。底座是 GQA，训练是从头稀疏 + LM loss。
+
+相对 NSA，DSA 收成一路、换成 token 级 top-k、加上独立 indexer，并用 dense warmup + KL 对齐 full attention。这是对照两篇已读原文的综合，不是 V3.2 自己写的演进表。细表见 [NSA 来源页](../sources/nsa.md#dsa-相对-nsa-改了什么)。
+
 ## 与 MSA 的对比
 
 [MSA](../sources/msa.md) 是同代另一种 natively trained 稀疏注意力。两者关键区别:
@@ -112,4 +118,11 @@ DSA 的 lightning indexer 虽然每层比主注意力便宜一个数量级,但�
 - top-k selection 的确定性是 RL 复现的关键细节。
 - 只看检索 benchmark 不够,还要看 noisy long-context reasoning 和 agentic rollout。
 - 部署时 indexer 自身的 O(NL2) 不可忽略;要把"主注意力变稀疏"和"indexer 跨层复用"看成两件互补、必须一起算账的事情。
+
+## 相关页面
+
+- 前作：[NSA](../sources/nsa.md)
+- 来源：[DeepSeek-V3.2](../sources/deepseek-v32.md)、[GLM-5](../sources/glm-5.md)、[IndexCache](../sources/indexcache.md)、[MSA](../sources/msa.md)
+- 对比：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
+- 概念：[高效长上下文注意力](efficient-long-context-attention.md)、[跨层索引复用](cross-layer-index-reuse.md)、[Multi-Head Latent Attention](multi-head-latent-attention.md)
 

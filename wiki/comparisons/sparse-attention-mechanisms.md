@@ -33,7 +33,7 @@ timestamp: 2026-09-12
 
 > Figure 1（原文截图，§ Overview）：MSA 的两路结构——Index Branch（轻量选择）和 Main Branch（完整注意力）。block-level 选择（B=128）让 IO 规整、KV-outer kernel 拿满 tensor core。
 
-| NSA（DeepSeek 早期） | MQA / MHA | 三分支：compressed / selected block / sliding window | 共享 | 每层独立 | 端到端 with LM loss | 用三个并行分支同时覆盖粗、细、局部 |
+| [NSA](../sources/nsa.md)（DeepSeek 2025-02） | GQA（实验 64 head / 4 group） | 三分支并行：compressed token（$l=32,d=16$）/ selected block（$l'=64,n=16$）/ sliding window（$w=512$）；**选择分数来自压缩注意力，不是独立 indexer** | 组内共享（GQA group 加总块分） | 每层独立 | 端到端 LM loss，无 KL；从头稀疏预训练 | 门控聚合三路；独立 K/V 防局部捷径 |
 | MoBA | GQA | 极大 KV block，块均值 key 打分 | 共享 | 每层独立 | 仅 LM loss，无显式 indexer 蒸馏 | 训练简单，indexer 直接靠主任务梯度学 |
 | InfLLM-V2 | — | 块级，无参数选择 + sliding window | 共享 | 每层独立 | 无（参数自由） | 零样本 dense→sparse 切换 |
 | CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
@@ -96,7 +96,11 @@ timestamp: 2026-09-12
 - [跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
-- 来源：[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
+- 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
+
+## 待追问
+
+- 本页 InfLLM-V2 一行写成「块级、无参数选择 + sliding window / 零样本 dense→sparse」。[NSA](../sources/nsa.md) related work 只讨论 **InfLLM**（Xiao et al., 2024a，training-free context memory），没有 InfLLM-V2。在读到 InfLLM-V2 原文之前，不要把「零样本无参」升级成已核实。
 
 ## eviction vs. sparse retrieval
 

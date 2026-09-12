@@ -19,7 +19,7 @@ resource: "../../raw/2607.07740v2.pdf"
 
 ## 核心结论
 
-1. **零样本扩展是开源权重的主部署路径**。长文档 QA、仓库级代码、RAG 和 agentic 轨迹经常把输入推到预训练窗的一个数量级之外；直接训长上下文既贵又容易伤短窗表现。主流零样本方法（YaRN / Self-Extend / DCA）**预先固定一个缩放因子**：激进则伤短窗，保守则长窗崩。长度自适应变体（AdaGroPE / LaMPE / SELF）用拟合或距离相关日程，需要 per-model 调参（§1、§2.2）。
+1. **零样本扩展是开源权重的主部署路径**。长文档 QA、仓库级代码、RAG 和 agentic 轨迹经常把输入推到预训练窗的一个数量级之外；直接训长上下文既贵又容易伤短窗表现。主流零样本方法（YaRN / Self-Extend / DCA）**预先固定一个缩放因子**：激进则伤短窗，保守则长窗崩。长度自适应变体（AdaGroPE / LaMPE / SELF）用拟合或距离相关日程，需要 per-model 调参（§1、§2.2）。这里当基线的 YaRN 是 HuggingFace `rope_type=yarn` 的固定 factor，对应 [YaRN 原文](yarn.md) Definition 2（NTK-by-parts 频率切分 + attention temperature），不是 NTK-aware / ABF，也不是原文的 Dynamic-YaRN。
 2. **Jet-Long：双焦点 + 解析式动态 G**。局部窗 $w_0$ 保留原版 RoPE（预训练行为原样）；远程窗把位置别名到训练网格，$G=\max(1,\lceil L/w_{\text{pretrained}}\rceil)$，$f(x)=\lfloor x/G\rfloor$。$L\le w_{\text{pretrained}}$ 时 $G=1$、$f$ 是恒等，**数学上退回基座**（§3.1、Eq. 2–3）。
 3. **推理几乎免费**。KV cache 只存未压缩的基座位置；远程视图用 RoPE 可加性 $R_a R_b=R_{a+b}$ 在寄存器里做 correction rotation，**G 中途变了也不重写 cache**。Prefill 用 inclusion–exclusion 三次 FlashAttention 合并，融进单一 CuTe kernel 后，Qwen3-8B 在 H100 上 64K–128K prefill 达 FA2 的 1.28–1.39×（逼近 Hopper-only FA4 的 1.53×），decode 各长度 ≥0.96× FA2（§3.2–3.3、§4.6、Table 7）。
 4. **Qwen3 三尺寸上领先最强零样本基线**。RULER 13 任务 × 7 长度平均：相对最强基线 +4.79 / +2.18 / +2.03 pp（1.7B/4B/8B）。HELMET-RAG 在 4B/8B 最优，1.7B 落后 Self-Extend 0.73 pp。PG-19 三尺寸都最低。官方 Qwen3 推理配方（YaRN factor=4，32K→128K）在这篇的对照里是最弱的一组之一，1.7B 上甚至低于不扩展的 Base（RULER 52.99 vs 60.93）（Table 1、Appendix C）。
@@ -48,13 +48,13 @@ $$
 
 ### 动态 G：最小整数压缩
 
-连续型缩放（DNTK、dynamic-YaRN）调 RoPE base $\beta$；分组方法用整数 $G$。Jet-Long 选离散分组，理由是预训练只见过**有限离散相对角**，别名到那张网格能让每个远程角都落在「模型真的训过的整数相对位置」上（§3.1）。$G$ 取能把压缩后序列塞进 $w_{\text{pretrained}}$ 的最小整数：
+连续型缩放（DNTK、dynamic-YaRN）调 RoPE base $\beta$；分组方法用整数 $G$。Jet-Long 选离散分组，理由是预训练只见过**有限离散相对角**，别名到那张网格能让每个远程角都落在「模型真的训过的整数相对位置」上（§3.1）。[YaRN](yarn.md) 原文的 Dynamic Scaling 也随当前长度改 $s$，但改的是频率表：$s$ 一变，每个 token 的旋转都变，cache 必须停在施加 RoPE **之前**（YaRN §3.4）。Jet-Long 走另一条：cache 存基座位置上的已旋转 KV，靠 $R_a R_b=R_{a+b}$ 做 correction rotation。$G$ 取能把压缩后序列塞进 $w_{\text{pretrained}}$ 的最小整数：
 
 $$G=\max\bigl(1,\lceil L/w_{\text{pretrained}}\rceil\bigr),\qquad f(x)=\lfloor x/G\rfloor$$
 
 32K 窗下：$L\le 32\text{K}$ 时 $G=1$；$L=64\text{K}$ 时 $G=2$；$L=128\text{K}$ 时 $G=4$。LaMPE 中段也用 floor 重映射，但压缩比来自 Llama2/Llama3 上拟合的 sigmoid；这里 $G$ 只由 $L$ 和 $w_{\text{pretrained}}$ 解析决定，无拟合参数。
 
-Table 6 在 Qwen3-1.7B 上消融「位置别名 vs YaRN 式频率插值」：别名在 64K 平均 +6.99 pp、128K +4.30 pp。差距在极端长度缩小（FWE 从 +20.3 收到 +2.5 pp），128K 上频率插值在 MK-NIAH-2 和 QA-2 反超——作者把别名定为 ≤128K 的默认，更长上下文的 hybrid 映射列为后续。
+Table 6 在 Qwen3-1.7B 上消融「位置别名 vs YaRN 式频率插值」：别名在 64K 平均 +6.99 pp、128K +4.30 pp。差距在极端长度缩小（FWE 从 +20.3 收到 +2.5 pp），128K 上频率插值在 MK-NIAH-2 和 QA-2 反超——作者把别名定为 ≤128K 的默认，更长上下文的 hybrid 映射列为后续。这里的「YaRN 式频率插值」对应原文的 NTK-by-parts 半边；YaRN 的 attention temperature 是另一条打 softmax 扩散的旋钮，Jet-Long 明确不处理第二条失败模式（§2.1、§5）。
 
 ### Cache 不变量与 correction rotation
 
@@ -90,7 +90,7 @@ $$O_{\text{final}}=\frac{W_A O_A+W_B O_B-W_C O_C}{W_A+W_B-W_C}$$
 
 ## 评测要点
 
-设置（§4.1、Appendix C）：Qwen3-1.7B/4B/8B-**Base**，原生训练窗 32,768，RoPE $\theta=10^6$，无微调扩到 131,072。主结果 $w_0=2048$。RULER / HELMET-RAG 贪心解码；PG-19 是 100 本书、stride 1024 的 teacher-forced ppl。对照超参跨尺寸、跨长度固定：DNTK `rope_type=dynamic, factor=4.0`；YaRN `rope_type=yarn, factor=4.0, max_position_embeddings=131072`（即 32K×4=128K，与 [Qwen3 报告](qwen3.md) 的官方推理配方同结构）；DCA `chunk_size=20480, local_window=4096`；Self-Extend `group_size=8, window_size=1024`。
+设置（§4.1、Appendix C）：Qwen3-1.7B/4B/8B-**Base**，原生训练窗 32,768，RoPE $\theta=10^6$，无微调扩到 131,072。主结果 $w_0=2048$。RULER / HELMET-RAG 贪心解码；PG-19 是 100 本书、stride 1024 的 teacher-forced ppl。对照超参跨尺寸、跨长度固定：DNTK `rope_type=dynamic, factor=4.0`；YaRN `rope_type=yarn, factor=4.0, max_position_embeddings=131072`（即 32K×4=128K，与 [Qwen3 报告](qwen3.md) 的官方推理配方同结构；按 [YaRN 原文](yarn.md) 这是固定 $s$ 的 Definition 2，不是 Dynamic-YaRN，也不是训练期 ABF）；DCA `chunk_size=20480, local_window=4096`；Self-Extend `group_size=8, window_size=1024`。
 
 读数时要分清两件事：**Qwen3-4B/8B 模型卡上的 128K 已经是 YaRN+DCA 推理扩展**；本页 Table 1 的 Base 列是**不套任何扩展、32K 训练窗原样外推**，128K 上会崩。YaRN 列才接近官方开源推理路径。
 
@@ -142,5 +142,6 @@ $w_0$ 消融（Table 5，Qwen3-4B/8B，64K/96K/128K）：$w_0=0$ 把局部窗缩
 ## 相关页面
 
 - 概念：[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
+- 频率缩放前作：[YaRN](yarn.md)（NTK-by-parts + attention temperature 的一手定义；本页 HF `rope_type=yarn` 基线对应 Definition 2）
 - 评测底座：[Qwen3 技术报告](qwen3.md)、[Qwen3](../models/qwen3.md)
 - 生产中的 YaRN / NoPE：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Laguna M.1/XS.2 技术报告](laguna-m1-xs2.md)、[Kimi Linear 技术报告](kimi-linear.md)、[Kimi K3 技术报告](kimi-k3.md)
