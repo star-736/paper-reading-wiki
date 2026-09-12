@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-09-13] deepen | MiniMax-M1 7:1 与 InfLLM-V2 未核
+
+重读 `raw/2506.13585v1.pdf` §1：M1 是每 7 个 Lightning transnormer 接 1 个 softmax，不是 MLA。写入线性注意力概念页与长上下文路线表；Lightning-2 / M1 / Ling-2.6 互链，避免把 7:1 写成 Ling 独有。重读 `raw/2502.11089v2.pdf` related work：NSA 只讨论 InfLLM（Xiao 2024a）。稀疏对比表 InfLLM-V2 行标未核，并从「选哪个」和 MSA 关系段拿掉对等推荐。`raw/` 未改。
+
 ## [2026-09-12] ingest | MoBA
 
 Moonshot AI（arXiv:2502.13189v1）。新增 `raw/2502.13189v1.pdf`、`sources/moba.md`，提取 Figure 1/2。不建模型页。Headline：块均值 gating、每 head 独立 top-k，不是共享 indexer；与 full 同参数可切换；1M prefill 6.5×，decode 评测切回 full。校正比较表「共享」二手行。回写稀疏对比、高效长上下文、MLA、MSA。

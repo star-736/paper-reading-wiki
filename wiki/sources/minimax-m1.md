@@ -143,4 +143,4 @@ Table 2 摘录（MiniMax-M1-80k）：
 - 采用方：[Laguna M.1/XS.2](laguna-m1-xs2.md)
 - GRPO 定义：[DeepSeekMath](deepseekmath.md)
 - 后作模型报告：[MiniMax-M2 Series](minimax-m2-series.md)（不是 CISPO 源头）
-- Lightning Attention 机制（B 路）：[Lightning Attention-2](lightning-attention-2.md)
+- Lightning Attention 机制：[Lightning Attention-2](lightning-attention-2.md)（tiling/kernel 定义）、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（M1 站 Lightning 族 7:1，全局层是 softmax 不是 MLA）

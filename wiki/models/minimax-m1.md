@@ -47,5 +47,5 @@ M1 在 2025 年的位置是：
 - 来源：[MiniMax-M1](../sources/minimax-m1.md)
 - 后作：[MiniMax-M2 Series](minimax-m2-series.md)
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)
+- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（7:1 Lightning : softmax，不是 KDA/GDN）、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)
 - 采用方：[Laguna](laguna.md)

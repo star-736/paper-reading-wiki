@@ -219,7 +219,7 @@
 - [多模态 Agentic 训练](concepts/multimodal-agentic-training.md) - Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。
 - [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、YOIO/CLSA、Kascade、HySparse 等如何让多数层共用一次 top-k；YOIO 把路由绑到 YOCO 的共享 KV 上，只算一次。
 - [零样本 RoPE 上下文扩展](concepts/zero-shot-rope-context-extension.md) - 不微调、只改位置映射让 RoPE 模型用过训练窗：YaRN / Self-Extend / DCA / Jet-Long 动态分组，以及 Kimi 系 NoPE 旁路。
-- [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。
+- [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA；生产上 3:1 是 GDN/KDA 族，7:1 是 Lightning 族（M1 接 softmax、Ling-2.6 接 MLA），Mamba-2 是 SSD 不是 delta rule。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
 - [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。

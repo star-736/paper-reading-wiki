@@ -194,7 +194,7 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 ## 待追问
 
 - Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：机制页见 [Lightning Attention-2](lightning-attention-2.md)（标量衰减外积累加，不是 delta rule）。本报告仅说"following Ring-flash-linear-2.0"，未核对本族生产算子是否逐行等同 Lightning-2。
-- 7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。
+- 7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。[MiniMax-M1](minimax-m1.md) 更早用过 7 Lightning : 1 softmax，不要把 7:1 写成 Ling-2.6 独有，也不要把 M1 的全局 softmax 写成 MLA。
 - KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
 - 异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？
 - MLA 转换中的 QK Norm absorption 公式基于 RMSNorm 性质——这是否意味着 Ling-2.0 原本的 QK Norm 是 RMSNorm 类型？与 Qwen3 的 QK-Norm（LayerNorm 类型）有何差异？
@@ -205,4 +205,4 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（Lightning Attention 的同族/对照路线）、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[多 Token 预测](../concepts/multi-token-prediction.md)、[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（Ling-2.6 的 aux-loss-free bias 配置 γ=0.001→0.0001）、[Loss-Free Balancing](loss-free-balancing.md)（该方法一手出处）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻算法：[DPO](dpo.md)（Bidirectional Preference Alignment 用显式 RM，不是 DPO）
-- 来源：[Lightning Attention-2](lightning-attention-2.md)（7:1 混合栈里线性层的 tiling/kernel 定义文）、[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照，不是本页 Lightning 机制）、[Ring-1T](ring-1t.md)（IcePop 一手出处；C3PO++ 是本报告 token budget $\Phi$ 的前作）
+- 来源：[Lightning Attention-2](lightning-attention-2.md)（7:1 混合栈里线性层的 tiling/kernel 定义文）、[MiniMax-M1](minimax-m1.md)（更早的 7 Lightning : 1 softmax，全局层不是 MLA）、[GSPO](../sources/group-sequence-policy-optimization.md)（Ling-2.6 agentic specialist 使用）、[Gated DeltaNet](../sources/gated-delta-net.md)（线性注意力演进链对照，不是本页 Lightning 机制）、[Ring-1T](ring-1t.md)（IcePop 一手出处；C3PO++ 是本报告 token budget $\Phi$ 的前作）
