@@ -48,6 +48,7 @@ GLM-OCR 的核心定位是**生产系统导向的轻量 OCR VLM**，四个技术
 
 - [GLM-OCR 技术报告](../sources/glm-ocr.md)
 - [MinerU2.5-Pro](../sources/mineru-2-5-pro.md) - 头号竞争者，精度 vs 效率路线对照
+- [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) - 同代 ~1B 端到端前作
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量 OCR VLM，DFlash vs MTP 加速路线对照
 - [多 Token 预测](../concepts/multi-token-prediction.md) - MTP 在 OCR 域的应用
 - [GLM-5V-Turbo](../sources/glm-5v-turbo.md) - 同用 CogViT 视觉编码器

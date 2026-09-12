@@ -97,7 +97,7 @@ OmniDocBench v1.6（对比当前端到端 SOTA）：
 
 | 模型 | 参数量 | Overall ↑ | Text Edit ↓ | Formula CDM ↑ | Table TEDS ↑ | Table TEDS-S ↑ | Read-order Edit ↓ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| HunyuanOCR | 1B | 89.95 | 0.088 | 87.68 | 91.01 | 92.23 | 0.171 |
+| HunyuanOCR（1.0） | 1B | 89.95 | 0.088 | 87.68 | 91.01 | 92.23 | 0.171 |
 | DeepSeek-OCR 2 | 3B-A0.5B | 90.25 | 0.050 | 91.84 | 83.89 | 87.75 | 0.144 |
 | dots.ocr | 3B | 90.77 | 0.048 | 89.95 | 87.18 | 90.58 | 0.138 |
 | FireRed-OCR | 2B | 93.26 | 0.037 | 95.44 | 88.04 | 91.06 | 0.131 |
@@ -140,5 +140,6 @@ TPS（tokens/s，512 并发，"Base" DeepEncoder 模式）随输出长度的变�
 ## 相关页面
 
 - [Unlimited OCR](../models/unlimited-ocr.md) - 模型身份页
+- [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) - 上表 89.95 是 1.0 的 v1.6 口径，接近 MinerU 统一重测 89.87，不是 1.0 原文的 v1.5 94.10
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属 OCR VLM 家族，走推测解码加速而非恒定 cache 路线
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md) - R-SWA 在长上下文注意力路线谱系中的定位（模式稀疏 / reference-based SWA）

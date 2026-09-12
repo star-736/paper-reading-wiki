@@ -266,7 +266,7 @@ Terminal 100 RL 步内从 32.8 升到 47.0（+14.2）；三个 held-out 文本�
 - **Factuality 维度持续最低**。Appendix B 显示 Factuality 相对提升最大（11.3%）但全程仍是最低分维度——factual world knowledge 是环境模拟最难的部分。这是否是 LLM world model 的根本瓶颈（vs 程序化环境合成的确定性）？更大 CPT 语料能否突破？
 - **10M+ trajectories 的构成拆解**。Abstract 称用 10M+ 环境交互轨迹，但 Table 2 的 SFT/RL pool 仅 ~7K/~92K。10M+ 应是 CPT 数据（含 dedicated infra + open traces + world knowledge 语料），但三源各自占比与域分布未给出。
 - **Fictional-world 四策略的独立贡献**。time-shifted / granular long-tail / private simulation / realistic grounded 四种合成策略未做消融，哪种对 sim-to-real 迁移贡献最大？
-- **LWM warm-up 与 auxiliary world-modeling loss 的组合**。论文提到 Shrivastava et al. (2026) 的 ECHO 在 agent RL 中加 auxiliary environment-prediction loss 使 Terminal-Bench 2.0 翻倍，并说 future work 可探索 LWM warm-up + auxiliary objective 的 compounding benefit。这是否暗示 LWM warm-up 与 in-training world modeling 是互补的两条路？
+- **LWM warm-up 与 auxiliary world-modeling loss 能否相加**。[ECHO](echo.md) 已 ingest：同一策略、GRPO+环境 token CE，TerminalBench-2.0 上 8B/14B 相对匹配 GRPO 近乎翻倍；它不是独立模拟器。本报告把两条路写成 future work 的 compounding，ECHO 也没做 LWM warm-up。机制不同已闭合，相加与否仍开放。
 - **与 Agent-World（人大+ByteDance）的互补边界**。论文 Related Work 明确把 [Agent-World](agent-world.md)（Dong et al., 2026）归为 "Synthetic Environment Generation"（code-driven），自定位为 "learned neural simulator"。两者在 Sim RL 上各有优势：Agent-World 的 code-based 合成保证确定性执行与可验证 reward，Qwen-AgentWorld 的 LWM 覆盖 code 难以指定的域（搜索引擎、真实 MCP servers）。但两者是否可组合——例如用 Agent-World 的环境合成造 seed、用 Qwen-AgentWorld 扩展到不可程序化域？
 - **State is the bottleneck 的定量证据**。§6.1 Takeaways 称 Sim RL 有效性依赖给 world model 足够详细的 initial state，但正文未给对应的消融数据（不同 initial state 详细度下的 Sim RL 增益曲线）。
 
@@ -278,5 +278,6 @@ Terminal 100 RL 步内从 32.8 升到 47.0（+14.2）；三个 held-out 文本�
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - AgentWorldBench 的 reference-grounded judging 方法论
 - [Agent-World](agent-world.md) - code-driven 环境合成路线（互补对照）
 - [Looped World Models](looped-world-models.md) - 另一条 world-model 线：Dreamer 式 latent dynamics + looped Transformer，公开评测是 ScienceWorld / AlfWorld 五步文本 next-state，不是 AgentWorldBench
+- [ECHO](echo.md) - 同一策略上的环境 token 辅助 CE，不是独立 LWM；本报告 Related Work 的 simulator 列举过宽
 - [Group Sequence Policy Optimization](group-sequence-policy-optimization.md) - GSPO 作 RL 算法
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - GSPO 在 LWM RL 中的落地

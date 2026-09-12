@@ -44,6 +44,7 @@ MinerU2.5-Pro 的核心定位是**数据中心文档解析的方法论示范**�
 ## 相关页面
 
 - [MinerU2.5-Pro 技术报告](../sources/mineru-2-5-pro.md)
+- [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) - Table 2 统一重测对象（v1.6 Full 89.87）
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM，路线正交（推测解码 + agentic 数据 vs 数据中心方法论 + 评测修正）
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - Stage 3 GRPO + DAPO recipe 的非 agentic 应用
 - [数据混合优化](../concepts/data-mixture-optimization.md) - Data Engine 作为 data-centric AI 的难度感知采样 + 标注精修分支

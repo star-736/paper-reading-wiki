@@ -39,5 +39,6 @@ Unlimited OCR 不是通用 VLM，而是面向长文档解析的 OCR-specialized 
 ## 相关页面
 
 - [Unlimited OCR Works 技术报告](../sources/unlimited-ocr.md)
+- [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) - 来源页 v1.6 表里的 HunyuanOCR 1B
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属 OCR VLM 家族，不同技术路线
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md) - R-SWA 在注意力路线谱系中的定位

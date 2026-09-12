@@ -152,7 +152,7 @@ Table 2（OmniDocBench v1.6 Full，统一环境重测所有模型）：
 | Qwen3-VL-235B | 通用 VLM | 235B | 89.78 | 0.063 | 92.53 | 83.07 | 86.75 | 0.166 |
 | GPT-5.2 | 通用 VLM | – | 86.52 | 0.114 | 88.00 | 82.95 | 87.93 | 0.193 |
 
-> 注：MinerU2.5-Pro 引用 [32] = HunyuanOCR **1.0**（arXiv:2511.19575），不是 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md)（arXiv:2607.04884，2026-07）。本表 89.87 是 HunyuanOCR 1.0 在统一环境下的重测分。
+> 注：MinerU2.5-Pro 引用 [32] = [HunyuanOCR 1.0](hunyuan-ocr-1.0.md)（arXiv:2511.19575），不是 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md)（arXiv:2607.04884，2026-07）。本表 89.87 是 1.0 在统一环境下的 v1.6 重测分；1.0 原文 Table 4 的 94.10 是 v1.5 协议。
 
 MinerU2.5-Pro Full 95.69 居首，比同架构 baseline（92.98）+2.71，确认增益全来自数据。Base 子集前三（GLM-OCR 96.19、MinerU2.5-Pro 96.12、PaddleOCR-VL-1.5 95.72）在 0.5 分内，标准场景近饱和。**Hard 子集 MinerU2.5-Pro 94.08 领先 GLM-OCR 和 PaddleOCR-VL-1.5（均 92.01）+2.07**，证明 Data Engine 在 hard 场景鲁棒性上的优势，也验证 Hard 子集的区分力。子指标上 MinerU2.5-Pro 在公式（CDM 97.29）、表格（TEDS 93.42 / TEDS-S 95.92）、阅读顺序（0.120）均最优。
 
@@ -177,16 +177,17 @@ Stage 1（大规模 SFT）单阶段贡献最大（+1.31），说明 Data Engine 
 
 ## 跨源评测分歧
 
-**同一模型（HunyuanOCR 1.0）在两个来源的 OmniDocBench v1.6 分数不一致**：
+**同一模型（HunyuanOCR 1.0）有三套 OmniDocBench 分数，不可混用**：
 
-- [HunyuanOCR-1.5 报告](hunyuan-ocr-1.5.md)自报表中：HunyuanOCR-1.0 = 92.03（OmniDocBench v1.6）。
-- 本报告 Table 2 统一环境重测：HunyuanOCR [32，即 1.0] = 89.87（Full）。
+- [HunyuanOCR 1.0 原文](hunyuan-ocr-1.0.md) Table 4：Overall **94.10**，跟 Ouyang et al. (2024) 官方协议；附录 D 把同一套基准写成 OmniDocBench **1.5**。
+- [HunyuanOCR-1.5 报告](hunyuan-ocr-1.5.md)自报表：HunyuanOCR-1.0 的 v1.6 = **92.03**。
+- 本报告 Table 2 统一环境重测：HunyuanOCR [32，即 1.0] v1.6 Full = **89.87**。
 
-差约 2.16 分。本报告明确「所有竞争模型在统一环境用相同评测代码重测」，并指出 v1.5 存在匹配偏差、v1.6 用 MGAM 修正。分歧根因未在两篇报告中直接说明（可能与匹配逻辑、评测代码、test 子集版本有关），此处仅记录事实，不归因。这恰好是 MinerU2.5-Pro 论证「评测匹配偏差使跨系统比较不可靠」的活案例——**读 OmniDocBench v1.6 分数时，须区分自报分与统一重测分**。
+v1.5→v1.6 自报掉 2.07，已对上版本。同属 v1.6 的 92.03 vs 89.87 再差 2.16，两篇报告都没归因（可能是评测代码或 test 子集）。MGAM 通常提分，这里统一重测更低，不像单纯粒度修正。这仍是「评测匹配偏差使跨系统比较不可靠」的活案例——**读 OmniDocBench 须同时钉版本和是否统一重测**。
 
 ## 待追问
 
-- **HunyuanOCR 1.0 的 92.03 vs 89.87 分歧根因**：是 MGAM 修正、统一评测代码、还是 test 子集差异导致？需要用同一份 HunyuanOCR 1.0 checkpoint 在两套评测流程下复现。注意 MGAM 一般会提分（消除粒度惩罚），而此处统一重测反而更低，暗示差异主要来自评测环境而非单纯 MGAM。
+- **HunyuanOCR 1.0 的 92.03 vs 89.87 仍未归因**：[1.0 原文](hunyuan-ocr-1.0.md) 的 94.10 已核对为 v1.5 协议，与 92.03 的版本差已闭合。剩下的同属 v1.6 的 2.16 分需要同一 checkpoint 在两套评测流程下复现。MGAM 一般会提分，统一重测反而更低，不像单纯粒度修正。
 - **CMCV 三模型池的选择偏差**：MinerU2.5、PaddleOCR-VL、Qwen3-VL-30B 三者能力接近时，Medium（外部一致、MinerU 不同）的判定是否稳定？若换外部模型池，Easy/Medium/Hard 划分会否显著变？
 - **Judge-and-Refine 的 Qwen3-VL-235B 与 CMCV 池中 Qwen3-VL-30B 同源**：虽论文称 235B「独立于 CMCV 模型池」，但同族模型可能有共享盲点，render-then-verify 是否对同族盲点有效？
 - **192K 专家标注 Hard 样本的子任务分布**：Table 1 给 Stage 2 总 3.9M（含 192K 人工），但 192K 在 layout/text/formula/table/image 间如何分配未明确，Hard:Replay 混比差异（文字 1:50 vs 布局 6:1）暗示分布极不均。
@@ -198,7 +199,8 @@ Stage 1（大规模 SFT）单阶段贡献最大（+1.31），说明 Data Engine 
 - [MinerU2.5-Pro](../models/mineru-2-5-pro.md) - 模型身份页
 - [MinerU2.5](mineru-2-5.md) - 基座模型，本报告完全继承其架构不变；本报告 CMCV 改进其 IMIC（单模型内省 → 多模型交叉验证），Data Engine 三组件协同改进其独立三阶段
 - [GLM-OCR](glm-ocr.md) - 头号竞争者，v1.6 上 95.15 < MinerU2.5-Pro 95.69；MTP 加速路线 vs 数据中心方法论路线对照（GLM-OCR 自报 v1.5 = 94.62，本报告 v1.6 统一重测 = 95.15，符合 MGAM 提分预期）
-- [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM，自报 HunyuanOCR-1.0 分数与本报告统一重测分存在分歧（见「跨源评测分歧」）
+- [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) - 本报告 Table 2 [32] 的统一重测对象；v1.5 自报 94.10 vs 本页 v1.6 89.87
+- [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM，自报 1.0 的 v1.6 = 92.03（见「跨源评测分歧」）
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - OmniDocBench v1.6 的 MGAM 修正 + Hard 子集是「评测方法论」跨域信号
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - Stage 3 GRPO + DAPO recipe 的非 agentic（文档解析格式对齐）应用
 - [DAPO](dapo.md) - Stage 3 沿用 clip-higher + dynamic sampling

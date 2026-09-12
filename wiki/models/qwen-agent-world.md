@@ -32,8 +32,9 @@ Qwen-AgentWorld 是 Qwen Team（Alibaba）提出的 **native language world mode
 
 Qwen-AgentWorld 的核心定位是 **native world model**——从 CPT 阶段就以环境建模为训练目标，而非事后 fine-tune 通用 LLM。这与论文 Related Work 中区分的两类工作形成对照：
 
-- **Learned neural simulator**（如 RLVR-World、WebWorld、SWE-World、SSRL、ZeroSearch、ECHO）：用 RL/SFT 训练 LLM 作环境模拟器，但多为单域或事后 fine-tune。Qwen-AgentWorld 是首个 7 域统一、三阶段 native 训练的 LWM。
+- **Learned neural simulator**（如 RLVR-World、WebWorld、SWE-World、SSRL、ZeroSearch）：用 RL/SFT 训练 LLM 作**独立**环境模拟器，但多为单域或事后 fine-tune。Qwen-AgentWorld 是首个 7 域统一、三阶段 native 训练的 LWM。
 - **Code-driven synthetic environment**（如 [Agent-World](../sources/agent-world.md)、AWM、ScaleEnv、AutoForge）：程序化生成环境，保证确定性执行与可验证 reward，但限于可程序化指定的域。Qwen-AgentWorld 的 LWM 模拟是互补的——以确定性换通用性，覆盖 code 难以指定的域（搜索引擎、真实 MCP servers）。
+- **同一策略上的辅助观测预测**：[ECHO](../sources/echo.md)（Shrivastava et al., 2026）不是独立模拟器。它在 GRPO 的同一前向上给终端观测 token 加交叉熵，不另训 world model、不额外 rollout。AgentWorld 原文 Related Work 把它和单域 simulator 并列过宽；ECHO 自己写成 auxiliary-prediction。与 Unify（LWM warm-up）是否 compounding，两边都没做。
 
 论文论证 world modeling 增强 agent 的两条路径：(1) **Decouple**——LWM 作独立模拟器，靠可控模拟（注入扰动 / 构造虚构世界）做 Sim RL，甚至超过真实环境训练（WideSearch Sim RL 50.3% vs Real RL 45.6%）；(2) **Unify**——LWM RL warm-up（单轮、无工具调用）把 next-state prediction 内化为 meta-reasoning 模式，跨 7 个 agentic benchmark（含 3 个完全 OOD 域）一致提升。后者的机制证据是 prediction-driven action refinement：RL 后模型在执行前系统性地心智模拟环境响应（mailman case study 中正确预测 Postfix 处理流程），预测准确率 69.9%→78.3%。
 
@@ -44,5 +45,6 @@ Qwen-AgentWorld 的核心定位是 **native world model**——从 CPT 阶段就
 - 同基座、不同任务：[WeMM-Embedding](wemm-embedding.md)（Qwen3.5 2B/4B/9B 做通用多模态 embedding）
 - RL 算法：[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)（GSPO）
 - 互补对照：[Agent-World](../sources/agent-world.md)（code-driven 环境合成路线）
+- 同策略辅助 CE，不是独立 LWM：[ECHO](../sources/echo.md)
 - 不同族对照：[LoopWM](loopwm.md)（looped latent dynamics，不是 native LWM）
 - 概念：[Agentic Engineering](../concepts/agentic-engineering.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

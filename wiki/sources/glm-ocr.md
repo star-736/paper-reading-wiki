@@ -144,7 +144,7 @@ OmniDocBench v1.5 细分（Table 4，Overall 94.62）：表格识别绝对最佳
 - 本报告自报 OmniDocBench **v1.5** = 94.62（Table 4）
 - [MinerU2.5-Pro](mineru-2-5-pro.md) Table 2 统一重测 GLM-OCR 在 **v1.6** = 95.15（Full）
 
-v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)（Multi-Granularity Adaptive Matching）修正 v1.5 的粒度匹配偏差，一般会提分（消除粒度惩罚）。此处 v1.6 > v1.5 符合预期。**读 GLM-OCR 分数时须区分 v1.5 自报分与 v1.6 统一重测分**——这与 [HunyuanOCR 1.0 的 92.03 vs 89.87 分歧](hunyuan-ocr-1.5.md)方向相反（HunyuanOCR 统一重测反而降，根因未明；GLM-OCR 统一重测升，符合 MGAM 提分预期）。
+v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)（Multi-Granularity Adaptive Matching）修正 v1.5 的粒度匹配偏差，一般会提分（消除粒度惩罚）。此处 v1.6 > v1.5 符合预期。**读 GLM-OCR 分数时须区分 v1.5 自报分与 v1.6 统一重测分**——这与 [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) 方向相反：1.0 的 v1.5 自报 94.10、v1.6 自报 92.03、MinerU 统一重测 89.87（统一重测降，不像 MGAM）；GLM-OCR 统一重测升，符合 MGAM 提分预期。
 
 ## 待追问
 
@@ -159,6 +159,7 @@ v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)�
 
 - [GLM-OCR](../models/glm-ocr.md) - 模型身份页
 - [MinerU2.5-Pro](mineru-2-5-pro.md) - 头号竞争者，v1.6 上 95.69 > GLM-OCR 95.15；数据中心方法论 vs MTP 加速路线对照
+- [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) - 同代 ~1B 端到端；v1.5 自报 94.10 vs 本页 94.62
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量 OCR VLM，DFlash 推测解码 vs MTP 共享参数多头
 - [多 Token 预测](../concepts/multi-token-prediction.md) - MTP 在 OCR 域的应用（训练+推理共用共享参数多头）
 - [GLM-5V-Turbo](glm-5v-turbo.md) - 同用 CogViT 视觉编码器

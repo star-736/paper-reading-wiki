@@ -115,5 +115,6 @@ OmniDocBench（1,355 页，平均 >1100 token/页）上 SOTA，超通用和专�
 - [MinerU2.5](../models/mineru-2-5.md) - 模型身份页
 - [MinerU2.5-Pro](mineru-2-5-pro.md) - 直接继承本架构不变，Data Engine 三组件协同改进本报告独立三阶段，CMCV 改进 IMIC
 - [GLM-OCR](glm-ocr.md) - 同属轻量文档解析 VLM，GLM-OCR v1.5 上 94.6 vs MinerU2.5 90.7；OTSL vs MTP 路线对照
+- [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) - 同代 ~1B 端到端；本页 MinerU2.5 在 1.0 Table 4 记为 90.67（v1.5 协议）
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM
 - [数据混合优化](../concepts/data-mixture-optimization.md) - IMIC（单模型内省）vs CMCV（多模型交叉验证）对照

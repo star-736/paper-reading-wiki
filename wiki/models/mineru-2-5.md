@@ -60,5 +60,6 @@ MinerU2.5 的核心定位是**高效高分辨率文档解析的解耦 VLM**，�
 - [MinerU2.5 技术报告](../sources/mineru-2-5.md)
 - [MinerU2.5-Pro](../sources/mineru-2-5-pro.md) - 直接继承本架构，Data Engine 协同改进 + CMCV 改进 IMIC
 - [GLM-OCR](../sources/glm-ocr.md) - 同属轻量解耦文档解析 VLM，OTSL + MTP vs OTSL + IMIC 路线对照
+- [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) - 同代 ~1B 端到端
 - [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) - 同属轻量文档解析 VLM
 - [数据混合优化](../concepts/data-mixture-optimization.md) - IMIC vs CMCV 对照
