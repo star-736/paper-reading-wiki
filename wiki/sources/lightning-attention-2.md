@@ -17,7 +17,7 @@ resource: "../../raw/2401.04658v2.pdf"
 - 代码：[OpenNLPLab/lightning-attention](https://github.com/OpenNLPLab/lightning-attention)（摘要超链）
 - 定位：**因果线性注意力的 tiling / IO-aware kernel**，不是新的状态更新规则，更不是 GDN/KDA 的 delta rule。实验载体是 TransNormerLLM 的 NormAttention，不发布新基座。机制归属 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md) 演进表的「朴素 / 标量衰减」一档。
 
-**FlashLinearAttention 是代码库。** 本页不把它写成第三种注意力。原文只给上面的 GitHub；后来社区用 FLA 收 Lightning、GLA、RetNet、GDN 等算子，那是实现层的伞名。
+**FlashLinearAttention 先是 [GLA](gated-linear-attention.md) 的算法名**（I/O-aware chunkwise），后来 `flash-linear-attention` 仓库才收 Lightning / GLA / RetNet / GDN。本页不把它写成第三种注意力。原文代码在上面的 OpenNLPLab 仓库。
 
 ## 核心结论
 
@@ -53,7 +53,7 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 
 > Figure 2（原文截图，§3.2）："Structural framework of Lightning Attention-2 ... tiling blocks of matrices Qi, Ki, Vi are transferred from High Bandwidth Memory (HBM) to Static Random-Access Memory (SRAM). Within the SRAM, the outputs Ointra and Ointer are computed independently, followed by an update to the KV matrix."
 
-和同代工作的边界（§3.2.2 Discussion）：GLA（Yang et al., 2023）是**数据相关衰减**的线性注意力，也做 chunk tiling，但按块并行、显存更高；RetNet 的 chunk-wise retention 接近本页前向，但不谈 IO-aware，也没有后向。作者致谢 Songlin Yang。这些都仍在「线性递推 + 分块」里，不是 delta rule。
+和同代工作的边界（§3.2.2 Discussion）：GLA（Yang et al., 2023；[来源页](gated-linear-attention.md) 已入库）是**数据相关衰减**的线性注意力，也做 chunk tiling，但按块并行、显存更高；RetNet 的 chunk-wise retention 接近本页前向，但不谈 IO-aware，也没有后向。作者致谢 Songlin Yang。这些都仍在「线性递推 + 分块」里，不是 delta rule。
 
 ## 评测要点
 
@@ -85,6 +85,6 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 ## 相关页面
 
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)
-- 同属「固定状态、非 delta rule」：[Mamba-2](mamba-2.md)（标量恒等选择性 SSM / SSD，不是线性注意力 tiling）
+- 同属「固定状态、非 delta rule」：[Mamba-2](mamba-2.md)（标量恒等选择性 SSM / SSD，不是线性注意力 tiling）、[Gated Linear Attention](gated-linear-attention.md)（channel-wise 门 + FlashLinearAttention 算法名）、[RWKV](rwkv.md)（channel-wise 1D WKV）
 - 后作对照（delta-rule 族，不是本页机制）：[Gated DeltaNet](gated-delta-net.md)、[Kimi Linear](kimi-linear.md)
 - 生产采用属本族：[MiniMax-M1](minimax-m1.md)（7 Lightning : 1 softmax；CISPO 不在本页写）、[Ling-2.6](ling-2.6.md)（7 Lightning : 1 MLA；IcePop 回链不在本路写）。同比例、全局层不同，不要把 M1 写成 MLA hybrid

@@ -84,7 +84,7 @@ Table 1（预训练通用榜，NSA avg **0.456** vs Full **0.443**；9 项里 7 
 
 LongBench（Table 2）：各推理期稀疏基线把每 query 激活 token 对齐到 2560（含前 128 + 局部 512，按 StreamLLM 口径），对应 NSA 处理 32K 时的平均激活数。NSA 平均 **0.469**，Full 0.437，Exact-Top 0.423，Quest 0.392，InfLLM 0.383，H2O 0.303。64K NIAH 全位置正确（Figure 5）。
 
-推理期对照里的 InfLLM 是 Xiao et al., 2024a（*training-free* context memory），**不是**比较页上的 InfLLM-V2。
+推理期对照里的 InfLLM 是 Xiao et al., 2024a（*training-free* context memory），**不是** [InfLLM-V2](infllm-v2.md)。
 
 CoT：从 DeepSeek-R1 蒸馏，10B token、32K 数学轨迹 SFT。AIME 24，温度 0.7、top-p 0.95、16 次平均（Table 3）：
 
@@ -118,7 +118,7 @@ CoT：从 DeepSeek-R1 蒸馏，10B token、32K 数学轨迹 SFT。AIME 24，温�
 - 摘要 260B vs §4.1 270B。
 - 三支独立 K/V 的参数量和 decode 访存增量没有单独拆开；Table 4 的 5632 是上界合计。
 - 门 $g_t^c$ 学到了什么（是否常把质量压在选块支上）没有消融。
-- 比较页上的 InfLLM-V2「零样本无参」**不能**用本页核实。本页 related work 和基线只写 InfLLM（Xiao et al., 2024a，training-free）。
+- [InfLLM-V2](infllm-v2.md) 已入库：可训练块稀疏、5B 短→长，不是本页 related work 的 InfLLM（Xiao 2024a）。它在同一 8B dense 检查点上复现 NSA 适应，loss 先炸；那是 short-to-long 协议，不能用来否定本页 27B 从头稀疏。
 - 没有 RL 稳定性数字。AIME 是 R1 蒸馏 SFT。后续 DSA 在 GLM-5 RL 上踩的 top-k 非确定性，本页尚未遇到。
 - 没有 128K / 1M 质量；64K kernel 数字是 Triton vs Triton FA2，不是生产 kernel。
 
@@ -128,4 +128,5 @@ CoT：从 DeepSeek-R1 蒸馏，10B token、32K 数学轨迹 SFT。AIME 24，温�
 - 对比：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
 - 后作与叠加：[DeepSeek-V3.2](deepseek-v32.md)、[IndexCache](indexcache.md)、[MSA](msa.md)
 - 同时期块稀疏、门是块均值不是压缩注意力：[MoBA](moba.md)
+- 短→长、共享 KV、压缩只打分：[InfLLM-V2](infllm-v2.md)（不要和本页从头稀疏横比）
 - 32K 续训用的位置扩展：[YaRN](yarn.md)

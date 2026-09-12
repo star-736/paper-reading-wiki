@@ -112,6 +112,6 @@ Proposition 7.2：Mamba 的 S6 就是 $P=1$ 的 multi-value attention——$B,C$
 ## 相关页面
 
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)
-- 同属「固定状态、非 delta rule」：[Lightning Attention-2](lightning-attention-2.md)（标量衰减线性注意力 tiling）
+- 同属「固定状态、非 delta rule」：[Lightning Attention-2](lightning-attention-2.md)（标量衰减线性注意力 tiling）、[Gated Linear Attention](gated-linear-attention.md)（channel-wise 门，无 delta）、[RWKV](rwkv.md)（channel-wise 1D WKV）
 - 后作（在本页的门上加 delta rule）：[Gated DeltaNet](gated-delta-net.md)
 - 生产 hybrid 采用：[Nemotron 3 Ultra](nemotron-3-ultra.md)（Mamba-2 + GQA + LatentMoE）；[Qwen3-Next 官方博客](qwen3-next-blog.md)（选 GDN 而非 Mamba-2）

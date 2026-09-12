@@ -39,6 +39,7 @@ MiniCPM-o 4.5 的核心创新不在单一模态能力，而在**交互范式**�
 ## 相关页面
 
 - 来源：[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)
+- 同厂、不要混淆：[MiniCPM4.1](minicpm-4.1.md)（InfLLM-V2 长上下文稀疏，纯文本）
 - [Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md) - 端到端架构 + llama.cpp-omni 是 any-to-any serving 的端侧实例
 - [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md) - 渐进式多模态融合策略
 - [MOSS-VL](moss-vl.md) - 视觉实时交互的另一条路线：以独立 gated cross-attention KV 通道让新帧可在文本生成期间追加；MOSS 的 L5 量化 benchmark 仍缺失

@@ -35,7 +35,7 @@ timestamp: 2026-09-13
 
 | [NSA](../sources/nsa.md)（DeepSeek 2025-02） | GQA（实验 64 head / 4 group） | 三分支并行：compressed token（$l=32,d=16$）/ selected block（$l'=64,n=16$）/ sliding window（$w=512$）；**选择分数来自压缩注意力，不是独立 indexer** | 组内共享（GQA group 加总块分） | 每层独立 | 端到端 LM loss，无 KL；从头稀疏预训练 | 门控聚合三路；独立 K/V 防局部捷径 |
 | [MoBA](../sources/moba.md)（Moonshot 2025-02） | 标准 softmax（缩放实验 MHA；1M 续训从 Llama 3.1 8B / GQA 出发） | **block**（块均值 $K$ 打分；1M 时 $B=4096$, $k=12$） | **每 head 独立**（$S\in\mathbb{R}^{N\times h\times n}$） | 每层独立；层混合时最后几层保持 full | 仅 LM loss；gate 是 $q$ 与块均值的点积，无额外 indexer 参数、无 KL | 与 full 同参数、可切换；当前块强制选中；评测 decode 切回 full；1M prefill 相对 FA 报 6.5× |
-| InfLLM-V2（**未核**） | — | 二手转述：块级、无参选择 + sliding window | 共享（未核） | 每层独立 | 无（参数自由，未核） | 零样本 dense→sparse（未核）。[NSA](../sources/nsa.md) related work 只讨论 InfLLM（Xiao et al., 2024a） |
+| [InfLLM-V2](../sources/infllm-v2.md)（清华 + OpenBMB，2025-09） | GQA | **block**（$B=64$，$|I|=96$ 含 init/top-k/local；可见 6k token） | 组内共享（GQA group 对压缩分求和） | 每层独立 | 无新投影；mean/max-pool 出块分，无 KL；短 dense 预训练 + 5B 长微调 | 复用 dense KV；压缩支路只打分；短序列切回 dense。**不是** 2024 InfLLM，也不是零样本 |
 | CSA / HCA（[DeepSeek-V4](../models/deepseek-v4.md)） | MLA query + **Shared-KV MQA** core | 先 KV 压缩成块，再 token-level top-k（CSA）或对压缩态做密集（HCA）+ 滑窗补齐 | 共享（MQA：所有 query head 共用一份 K=V 压缩 entry） | 每层独立 | KL 蒸馏 + 异构 KV-cache 系统 | 同时压 attention FLOPs 和 KV-cache（1M context 下 2% KV） |
 | [IndexCache](../sources/indexcache.md)（叠加在 DSA 上） | MLA + DSA | token（继承 DSA） | 共享（继承 DSA） | **F 层算、S 层复用 anchor top-k**（1/4 retention 起步） | 无新训练（training-free 贪心搜索）/ 多层 KL 蒸馏（training-aware） | 干掉 indexer 自己的 O(NL²) 项 |
 | [YOIO / CLSA](../sources/yoio.md) | YOCO 共享 KV + GQA | token，$k=2048$ | 单头 indexer，主注意力 GQA | **全部 cross-decoder 共用一次 top-k** | 冻 backbone 的全栈+全头均值 KL warmup → 联合 sparse（$\lambda=0.1$） | 把 routing 绑到已共享的记忆上；128K 相对 Transformer decode 7.6× / 端到端 17.1× |
@@ -88,7 +88,8 @@ timestamp: 2026-09-13
 - 已经有 MLA + DSA 的 production stack，想再榨一档延迟：叠 IndexCache，1/4 retention 是公开数据下的甜点。
 - 已经是 YOCO / CED 这类 KV-sharing 架构，瓶颈在 decode 而不是 prefill：CLSA 把 token-level routing 绑到共享 KV 上；不要把它当成 IndexCache 在逐层 DSA 上的 1/16 retention。
 - 目标是百万 token + 共享前缀复用：CSA/HCA + 异构 KV-cache（DeepSeek-V4 路线）系统更完整，但实现复杂度也最高。
-- 训练预算紧张，希望最小新增结构：[MoBA](../sources/moba.md) 与 full 同参数、可从 dense 切过去；代价是 gating 用块均值、decode 原文切回 full。跨头是每 head 独立 top-k，不要写成 DSA 式共享。InfLLM-V2 主表已标未核，在读到原文之前不要把它当对等候选。
+- 训练预算紧张，希望最小新增结构：[MoBA](../sources/moba.md) 与 full 同参数、可从 dense 切过去；代价是 gating 用块均值、decode 原文切回 full。跨头是每 head 独立 top-k，不要写成 DSA 式共享。
+- 已有 GQA dense 短检查点、只想花约 5B token 做短→长：[InfLLM-V2](../sources/infllm-v2.md) 复用 $W_K,W_V$，压缩只打分，短序列可切回 dense。不要写成零样本，也不要用它的 NSA 适应数字去否定 NSA 原文的从头稀疏。
 
 ## 相关页面
 
@@ -96,11 +97,12 @@ timestamp: 2026-09-13
 - [跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
-- 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[MoBA](../sources/moba.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
+- 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[MoBA](../sources/moba.md)、[InfLLM-V2](../sources/infllm-v2.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
 
 ## 待追问
 
-- 主表 InfLLM-V2 行已标 **未核**。[NSA](../sources/nsa.md) related work 与 LongBench 基线只讨论 **InfLLM**（Xiao et al., 2024a，training-free context memory），没有 InfLLM-V2。在读到 InfLLM-V2 原文之前，不要把「零样本无参」升级成已核实，也不要在「选哪个」里当对等方案。
+- InfLLM-V2 已据 [原文](../sources/infllm-v2.md) 核实：可训练、5B 长微调、无新 KV 投影，不是零样本。2024 InfLLM（Xiao et al.）仍是 training-free 基线，不要两名混用。
+- InfLLM-V2 的 NSA 对照是同一 8B 短检查点 + 开源 Triton；NSA 原文 27B 从头稀疏的数字不能和这张表横比。
 
 ## eviction vs. sparse retrieval
 

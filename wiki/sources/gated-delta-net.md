@@ -47,11 +47,12 @@ GDN 把两者合成 **gated delta rule**，一个规则同时拥有「快速清�
 
 - **GDN → KDA 这条线是本 wiki 线性注意力页的主轴**。[Kimi Linear](kimi-linear.md) 的 KDA 明确是「extends Gated DeltaNet with a finer-grained gating mechanism」——把 GDN 的 **head-wise 标量门** $\alpha_t$ 升级成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$。本报告把那条演进链的中间一环从二手转述升级为 tier-1 原文确证，详见 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)。
 - **GDN 是 Qwen3-Next 系列线性层的底座**。[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3.8-Flash-Next](qwen3.8-next.md) 的 hybrid 栈里那一支「线性层」就是 GDN 模块。3.8 把输出门改成 sigmoid，并给出 25B-A3B 上 GDN hybrid vs SWA hybrid vs full attention 的表。
-- **Mamba-2 是门的一手出处，不是 delta 的。** [Mamba-2](mamba-2.md) 把选择性 SSM 收成标量恒等 $A$，对偶于 1-semiseparable SMA；本报告是在那条门上再加 delta rule。不要把 SSD 层写成 gated delta rule。
+- **Mamba-2 是标量门的一手出处，不是 delta 的。** [Mamba-2](mamba-2.md) 把选择性 SSM 收成标量恒等 $A$，对偶于 1-semiseparable SMA；本报告是在那条门上再加 delta rule。不要把 SSD 层写成 gated delta rule。
+- **channel-wise 门的一手是 [GLA](gated-linear-attention.md)，不是本页。** GLA 有 $\mathrm{Diag}(\alpha_t)$、没有 delta。KDA 才把 GLA 的细门接到本页的 gated delta 上。
 - **混合思路同源**：GDN 论文自己就提出「GDN 层 + 滑窗注意力 / Mamba2 层」的混合架构；Kimi Linear（GDN-style 线性 + MLA）、Qwen3-Next（GDN + gated attention）都是这一思路在生产模型上的放大。
 
 ## 待追问
 
-- GDN 的标量门是 head-wise；KDA 改成 channel-wise。报告里 GDN 自己有没有讨论过 channel-wise 门、为何最终选标量？需读 § 方法与消融。
+- GDN 的标量门是 head-wise；KDA 改成 channel-wise，细门原文是 [GLA](gated-linear-attention.md)。本报告有没有讨论过为何不直接用 GLA 的对角门、仍选标量？需读 § 方法与消融。
 - 论文做的混合是 GDN + SWA / Mamba2；与后来 Kimi Linear 选 GDN-style + MLA、Qwen3-Next 选 GDN + gated full attention 相比，混合「另一支」用什么差异有多大？
 - GDN 的具体实验规模（参数量、训练 token）与 Kimi Linear/Qwen3-Next 生产尺度差距，决定了「小尺度结论能否外推」，需补主表数字。

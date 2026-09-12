@@ -1,5 +1,17 @@
 # 日志
 
+## [2026-09-13] ingest | InfLLM-V2
+
+清华 + OpenBMB（arXiv:2509.24663v1）。新增 `raw/2509.24663v1.pdf`、`sources/infllm-v2.md`、`models/minicpm-4.1.md`，提取 Figure 1/2/5。Headline：复用 dense KV、压缩只打分、短序列切回 dense；5B 短→长，RULER-32k 稀疏 82.62 vs Full 84.26。校正比较页「零样本无参」旧行。NSA 对照是同一 8B 适应，不是 NSA 原文从头稀疏。`raw/` 新增该 PDF。
+
+## [2026-09-13] ingest | RWKV
+
+Peng 等（arXiv:2305.13048v2，EMNLP 2023 Findings）。新增 `raw/2305.13048v2.pdf`、`sources/rwkv.md`、`models/rwkv.md`，提取 Figure 2。Headline：AFT 收成 RNN；WKV 是 channel-wise 衰减加权，状态 $O(d)$，不是矩阵 $S$、不是 delta rule。169M–14B、Pile 330B。RWKV-5/6/7 不在本 PDF。`raw/` 新增该 PDF。
+
+## [2026-09-13] ingest | Gated Linear Attention
+
+Yang / Wang 等（arXiv:2312.06635v6，ICML 2024）。新增 `raw/2312.06635v6.pdf`、`sources/gated-linear-attention.md`，提取 Figure 1/3。不建模型页。Headline：$S_t=\mathrm{Diag}(\alpha_t)S_{t-1}+k^\top v$，无 delta；FlashLinearAttention 算法名出在本篇。KDA 细门承自此，GDN 仍是标量门+delta。回写线性注意力概念页与 Lightning-2 / GDN / Kimi Linear。`raw/` 新增该 PDF。
+
 ## [2026-09-13] deepen | MiniMax-M1 7:1 与 InfLLM-V2 未核
 
 重读 `raw/2506.13585v1.pdf` §1：M1 是每 7 个 Lightning transnormer 接 1 个 softmax，不是 MLA。写入线性注意力概念页与长上下文路线表；Lightning-2 / M1 / Ling-2.6 互链，避免把 7:1 写成 Ling 独有。重读 `raw/2502.11089v2.pdf` related work：NSA 只讨论 InfLLM（Xiao 2024a）。稀疏对比表 InfLLM-V2 行标未核，并从「选哪个」和 MSA 关系段拿掉对等推荐。`raw/` 未改。

@@ -32,7 +32,7 @@ Kimi Linear 是一个**混合线性注意力**架构：用大多数层跑线性�
 
 ## 架构与训练
 
-**KDA（核心创新）**：在 [Gated DeltaNet（GDN）](../concepts/linear-attention-and-delta-rule.md) 的基础上，把 GDN 那个 head-wise 标量遗忘门 $\alpha_t$ 换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维度有独立的遗忘速率（思路来自 GLA），从而更精细地调度有限的 RNN 状态记忆。状态更新：
+**KDA（核心创新）**：在 [Gated DeltaNet（GDN）](../concepts/linear-attention-and-delta-rule.md) 的基础上，把 GDN 那个 head-wise 标量遗忘门 $\alpha_t$ 换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维度有独立的遗忘速率（思路来自 [GLA](gated-linear-attention.md)），从而更精细地调度有限的 RNN 状态记忆。状态更新：
 
 $$S_t = \left(I - \beta_t k_t k_t^\top\right)\mathrm{Diag}(\alpha_t)\,S_{t-1} + \beta_t k_t v_t^\top,\qquad o_t = S_t q_t$$
 

@@ -23,6 +23,7 @@
 - [Kimi K2.5 技术报告](sources/kimi-k2.5.md) - Kimi K2.5 的 arXiv 技术报告，重点是视觉 agentic intelligence、zero-vision SFT 和 Agent Swarm。
 - [MSA 技术报告](sources/msa.md) - MiniMax Sparse Attention 的 arXiv 报告，GQA-block 级稀疏 + 每个 group 独立 top-k，1M context 下 14× prefill / 7× decode。
 - [NSA](sources/nsa.md) - DeepSeek-AI + 北大的 Native Sparse Attention：压缩 token / 选块 / 滑窗三分支门控，选择分数来自压缩注意力；27B GQA+MoE 预训练不低于 Full Attention，64K decode/forward/backward 报 11.6×/9.0×/6.0×。DSA 的直接前作。
+- [InfLLM-V2](sources/infllm-v2.md) - 清华 + OpenBMB 的 dense–sparse 可切换块稀疏：复用 dense KV、压缩支路只打分；5B token 短→长，不是 2024 InfLLM，也不是零样本。开源 MiniCPM4.1。
 - [MoBA](sources/moba.md) - Moonshot AI 的 Mixture of Block Attention：query 对 KV 块均值打分、每 head 独立 top-k，当前块强制选中；与 full attention 同参数可切换。1M prefill 相对 FlashAttention 报 6.5×；评测 decode 切回 full。不是独立 indexer。
 - [IndexCache 技术报告](sources/indexcache.md) - 清华 + Z.ai 在 DSA 上做跨层索引复用，1/4 retention 即可在 30B 和 GLM-5 上保留质量并拿到端到端加速。
 - [Kimi Linear 技术报告](sources/kimi-linear.md) - Moonshot AI 的混合线性注意力，KDA（细粒度门 delta rule）3:1 配 Full MLA，首次在公平对比下全面追平 full attention，1M context KV 降 75%、decode 6.3×。
@@ -30,7 +31,9 @@
 - [Gated Attention 技术报告](sources/gated-attention.md) - Qwen 团队系统消融 30 个门控变体，SDPA 输出 head-specific sigmoid 门最优（注入非线性 + 消除 attention sink），NeurIPS 2025 Best Paper，已用于 Qwen3-Next 系与 Trinity Large。
 - [Gated DeltaNet 技术报告](sources/gated-delta-net.md) - NVIDIA + MIT 的 ICLR 2025 论文，提出 gated delta rule（门控快速清空 + delta 定向更新互补），KDA 与 Qwen3-Next 系线性层的直接前身。
 - [Mamba-2](sources/mamba-2.md) - Dao + Gu 的 SSD：标量恒等选择性 SSM，对偶于 1-semiseparable SMA，不是 delta rule。SSD kernel 相对 Mamba scan 2–8×；GDN 的门与 Nemotron 3 Ultra SSM 层的前作。
-- [Lightning Attention-2](sources/lightning-attention-2.md) - OpenNLPLab 的因果线性注意力 tiling/kernel：块内 $(QK^\top\odot M)V$、块间 $Q(KV)$ 右乘；标量衰减，不是 delta rule。TNL-LA2 0.4B 的 TGS 从 1K 到 92K 几乎走平。FlashLinearAttention 是后来的实现库。
+- [Lightning Attention-2](sources/lightning-attention-2.md) - OpenNLPLab 的因果线性注意力 tiling/kernel：块内 $(QK^\top\odot M)V$、块间 $Q(KV)$ 右乘；标量衰减，不是 delta rule。TNL-LA2 0.4B 的 TGS 从 1K 到 92K 几乎走平。FlashLinearAttention 算法名出在 GLA，后来才成仓库伞名。
+- [Gated Linear Attention](sources/gated-linear-attention.md) - Yang 等 ICML 2024：数据相关 channel-wise 门 $\mathrm{Diag}(\alpha_t)$，写入仍是外积，没有 delta。KDA 细门的前身。FlashLinearAttention 算法名出在本篇。
+- [RWKV](sources/rwkv.md) - Peng 等 EMNLP 2023：AFT 收成 RNN。WKV 是 channel-wise 指数衰减加权，推理 $O(d)$，不是矩阵 $S$、不是 delta rule。发布 169M–14B、Pile 330B。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。
 - [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
@@ -165,6 +168,8 @@
 - [LoopWM](models/loopwm.md) - FaceMind 约 1B 的 looped latent world model；公开实验是 ScienceWorld / AlfWorld 文本观测，层宽与训练配方未披露。
 - [BDH-CQ](models/bdh-cq.md) - Pathway 的 150M ARC 网格推理系统：示例递归写入 memory、查询以连续 latent workspace 迭代求解；关键模型实现未公开。
 - [MiniCPM-o 4.5](models/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Qwen3-8B backbone + Whisper + speech decoder 端到端可微，Omni-Flow + TAIL，多模态（文本+图像+视频+音频输入；文本+音频输出），端侧 INT4 < 12GB。
+- [MiniCPM4.1](models/minicpm-4.1.md) - OpenBMB 基于 InfLLM-V2 的 8B hybrid reasoning；短序列可切 dense、长序列块稀疏。纯文本。不要和 MiniCPM-o 4.5 混。
+- [RWKV](models/rwkv.md) - Peng 等 169M–14B dense RNN 族（后称 RWKV-4），Pile 330B；WKV 是 channel-wise 衰减，不是矩阵线性注意力。纯文本。
 - [Keye-VL-2.0](models/keye-vl-2.md) - 快手开源 30B-A3B 多模态 MoE 模型，GQA+DSA 256K 长视频理解 + Cross-Modal MOPD（13 teacher），多模态（文本+图像+视频），基于 Qwen3-30B-A3B-Thinking-2507。
 - [JoyAI-VL-Interaction](models/joyai-vl-interaction.md) - JD.com 8B 视觉驱动交互模型，Qwen3-8B + Qwen3-VL ViT + AdaCodec，每秒自主决定说话/静默/委托，多模态（文本+图像+视频），完整可部署系统。
 - [MOSS-VL](models/moss-vl.md) - OpenMOSS 11.3B 实时视觉语言模型，Qwen3-8B + Qwen3-VL 视觉编码器，gated cross-attention 让视觉 KV 独立于解码序列，多模态（文本+图像+视频）。
@@ -219,7 +224,7 @@
 - [多模态 Agentic 训练](concepts/multimodal-agentic-training.md) - Kimi K2.5 的 early vision fusion、MoonViT-3D、zero-vision SFT 和 joint multimodal RL。
 - [跨层索引复用](concepts/cross-layer-index-reuse.md) - IndexCache、YOIO/CLSA、Kascade、HySparse 等如何让多数层共用一次 top-k；YOIO 把路由绑到 YOCO 的共享 KV 上，只算一次。
 - [零样本 RoPE 上下文扩展](concepts/zero-shot-rope-context-extension.md) - 不微调、只改位置映射让 RoPE 模型用过训练窗：YaRN / Self-Extend / DCA / Jet-Long 动态分组，以及 Kimi 系 NoPE 旁路。
-- [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → DeltaNet → GDN → KDA；生产上 3:1 是 GDN/KDA 族，7:1 是 Lightning 族（M1 接 softmax、Ling-2.6 接 MLA），Mamba-2 是 SSD 不是 delta rule。
+- [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → GLA（细门无 delta）→ DeltaNet → GDN → KDA；Lightning 是标量衰减 tiling，Mamba-2 是 SSD，RWKV-4 是 1D WKV。生产 3:1 走 GDN/KDA，7:1 走 Lightning。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
 - [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
