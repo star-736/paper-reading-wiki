@@ -19,13 +19,17 @@
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。
 - [DeepSeek-V4 技术报告](sources/deepseek-v4.md) - DeepSeek-V4 的 Hugging Face 官方 PDF，重点是百万 token 上下文效率。
 - [MiniMax-M2 Series 技术报告](sources/minimax-m2-series.md) - MiniMax-M2/M2.7 的 arXiv 技术报告，重点是低激活 MoE、Forge RL 和 self-evolution。
+- [MiniMax-M1](sources/minimax-m1.md) - MiniMax 的 456B / 45.9B hybrid-attention reasoning 报告，CISPO 一手出处：夹 IS 权重而非 token 更新；原生 1M 上下文，AIME 2024 86.0、SWE-bench Verified 56.0。M2 系列不是 CISPO 源头。
 - [Kimi K2.5 技术报告](sources/kimi-k2.5.md) - Kimi K2.5 的 arXiv 技术报告，重点是视觉 agentic intelligence、zero-vision SFT 和 Agent Swarm。
 - [MSA 技术报告](sources/msa.md) - MiniMax Sparse Attention 的 arXiv 报告，GQA-block 级稀疏 + 每个 group 独立 top-k，1M context 下 14× prefill / 7× decode。
+- [NSA](sources/nsa.md) - DeepSeek-AI + 北大的 Native Sparse Attention：压缩 token / 选块 / 滑窗三分支门控，选择分数来自压缩注意力；27B GQA+MoE 预训练不低于 Full Attention，64K decode/forward/backward 报 11.6×/9.0×/6.0×。DSA 的直接前作。
 - [IndexCache 技术报告](sources/indexcache.md) - 清华 + Z.ai 在 DSA 上做跨层索引复用，1/4 retention 即可在 30B 和 GLM-5 上保留质量并拿到端到端加速。
 - [Kimi Linear 技术报告](sources/kimi-linear.md) - Moonshot AI 的混合线性注意力，KDA（细粒度门 delta rule）3:1 配 Full MLA，首次在公平对比下全面追平 full attention，1M context KV 降 75%、decode 6.3×。
 - [Linear Attention Architectures 技术报告](sources/linear-attention-architectures.md) - ETH Zurich 的机制比较研究：统一 DeltaNet/GDN/KDA/GDN-2 递归记忆表述，CLVR 将内部 write value 路由到共享 residual stream；增益方向一致但仍属 single-run 初步证据。
 - [Gated Attention 技术报告](sources/gated-attention.md) - Qwen 团队系统消融 30 个门控变体，SDPA 输出 head-specific sigmoid 门最优（注入非线性 + 消除 attention sink），NeurIPS 2025 Best Paper，已用于 Qwen3-Next 系与 Trinity Large。
 - [Gated DeltaNet 技术报告](sources/gated-delta-net.md) - NVIDIA + MIT 的 ICLR 2025 论文，提出 gated delta rule（门控快速清空 + delta 定向更新互补），KDA 与 Qwen3-Next 系线性层的直接前身。
+- [Mamba-2](sources/mamba-2.md) - Dao + Gu 的 SSD：标量恒等选择性 SSM，对偶于 1-semiseparable SMA，不是 delta rule。SSD kernel 相对 Mamba scan 2–8×；GDN 的门与 Nemotron 3 Ultra SSM 层的前作。
+- [Lightning Attention-2](sources/lightning-attention-2.md) - OpenNLPLab 的因果线性注意力 tiling/kernel：块内 $(QK^\top\odot M)V$、块间 $Q(KV)$ 右乘；标量衰减，不是 delta rule。TNL-LA2 0.4B 的 TGS 从 1K 到 92K 几乎走平。FlashLinearAttention 是后来的实现库。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。
 - [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
@@ -39,6 +43,7 @@
 - [Single-Rollout Asynchronous Optimization](sources/single-rollout-asynchronous-optimization.md) - 清华 + Z.AI 的异步 agentic RL 算法：单条 rollout 替代 GRPO 组采样，DIS token mask + critic；声明用于 GLM-5.2。
 - [VAPO 技术报告](sources/vapo.md) - ByteDance Seed 的 long-CoT value-model-based PPO：校准 critic、解耦 actor/critic GAE 并按 response 长度自适应 $\lambda$，Qwen2.5-32B 的 AIME 2024 avg@32 报 60.4；证据仍限单 backbone / 单 benchmark。
 - [DAPO 技术报告](sources/dapo.md) - ByteDance Seed + 清华 AIR 等开源大规模 LLM RL 系统，四件套（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping）把 Qwen2.5-32B AIME24 avg@32 从 naive GRPO 30 提到 50。
+- [DeepSeekMath](sources/deepseekmath.md) - DeepSeek-AI 的 7B 数学报告，GRPO 一手出处：丢掉 critic、同题组内相对奖励当 baseline；MATH 51.7%（无工具、无投票）。后续 DAPO / GSPO / IcePop 都从这条目标改起。
 - [DPO](sources/dpo.md) - Stanford 的 NeurIPS 2023 论文：把 KL-constrained RLHF 的最优策略写成闭式，用 Bradley-Terry 偏好差消去配分函数，把 PPO 回路收成一条 logistic 分类损失。最大实验 6B；与 DAPO 同名不同族。
 - [Iterative RPO](sources/iterative-rpo.md) - Meta FAIR + NYU：DPO 上给 winner 再加长度归一化 NLL（TRL `rpo_alpha=1.0`），按最终答案对错造 pair 并迭代；Llama-2-70B-Chat 的 GSM8K 55.6→81.6。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
@@ -49,12 +54,17 @@
 - [Gemma 4 技术报告](sources/gemma-4.md) - Google DeepMind 的 Gemma 4 arXiv 报告，原生多模态 dense + MoE 家族（E2B~31B），重点是 encoder-free 12B、5:1 SWA/GA + key-as-value + p-RoPE 长上下文、MTP drafter 和 QAT 量化。
 - [InternVLA-A1.5 技术报告](sources/internvla-a1.5.md) - 上海 AI Lab 的统一 VLA 机器人模型，Qwen-3.5 2B backbone + 460M unified expert + latent foresight（frozen WAN2.2 蒸馏），6 项仿真 benchmark 全部最优。
 - [SayCan](sources/saycan.md) - Robotics at Google 的分层接地（CoRL 2022）：LLM 打「有没有用」× 技能 value function 打「能不能做」；厨房 101 条指令规划 84%、执行 74%。不是 VLA，LLM 不输出末端动作。
+- [Inner Monologue](sources/inner-monologue.md) - Robotics at Google 的语言反馈闭环（CoRL 2022）：成功检测 / 场景 / 人类回答写成文字注入冻结 LLM；厨房实验叠在 SayCan affordance 上，120 次 30.8%→60.4%。不是 VLA。
 - [RT-2](sources/rt-2.md) - Google DeepMind 的 VLA 定义文（CoRL 2023）：动作写成 text token，PaLI-X / PaLM-E 与互联网 VQA co-fine-tune；未见平均 62% vs RT-1 32%。不是 OpenVLA 对照的 RT-2-X。
 - [OpenVLA](sources/openvla.md) - 开源 7B VLA（CoRL 2024）：Prismatic-7B 把 7 维动作写成 256-bin token，Open X-Embodiment 约 970k 真实轨迹全量 fine-tune；29 任务上以 7B 超过 RT-2-X 55B。
 - [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
 - [π0.5](sources/pi0.5.md) - π0 的开世界后作（CoRL 2025）：异构 co-training（多机器人 + web/语义 + subtask）+ 统一高低层，在未见过的家里做长周期家务。
+- [π0.7](sources/pi0.7.md) - Physical Intelligence 的可steer VLA（arXiv:2604.15483v2）：Gemma 3 4B + MEM + 860M flow expert，约 5B。不再是 PaliGemma + FAST→flow 两阶段。
 - [ASPIRE](sources/aspire.md) - NVIDIA GEAR 的 code-as-policy 具身 skill 自进化：执行引擎 + 技能库 + 进化搜索；不是 VLA 动作头，冻结 Claude Opus 4.6 写/改程序。
 - [EmbodiedSkills](sources/embodied-skills.md) - 浙大等的 VLA 上层 AgentLoop：技能决策是 execution proposal，runtime 先验后验；低层任务特化 π0.5 报 RoboTwin 2.0 86.20% / LIBERO 97.40%，环本身的证据是消融 −38.0 / −51.8 pp。
+- [EmbodiSkill](sources/embodiskill.md) - 清华 AIR + MSR 等的 training-free 具身 skill 自进化：skill-aware reflection 区分技能缺陷与执行偏差，冻结 LLM 只改技能正文；ALFWorld 上冻结 Qwen3.5-27B 达 93.28%。不是 EmbodiedSkills，也不是 ASPIRE 的程序库。
+- [AtomicVLA](sources/atomicvla.md) - 中山大学等：在 π0 / π0.5 连续 action expert 上加 SG-MoE，按原子技能抽象做 top-1 路由；不是第四种动作头。LIBERO 相对 π0 +2.4 / Long +10 pp，真机 AtomicVLA* 相对 π0.5 长周期 +18.3。
+- [HunyuanOCR 1.0 技术报告](sources/hunyuan-ocr-1.0.md) - 腾讯 Hunyuan Vision 的 1B 端到端 OCR VLM 首发：Hunyuan-ViT + Hunyuan-0.5B + GRPO；OmniDocBench（v1.5 协议）94.10。不要和 1.5 混版本。
 - [HunyuanOCR-1.5 技术报告](sources/hunyuan-ocr-1.5.md) - 腾讯 + 中科院信工所 + 南开的轻量端到端 OCR VLM 报告，DFlash block-diffusion 推测解码（Transformers 6.37× / vLLM 2.14×）+ Agentic Data Flow 数据构造 + 三组件 reward RL。
 - [UniClawBench](sources/uniclawbench.md) - HKU MMLab + Meituan 的 proactive agent 评测基准，400 双语真实世界任务，5 维能力分解，三角色闭环评测（executor + hidden supervisor + user simulator），跨模型×跨框架实验揭示 framework > model。
 - [KAT-Coder-V2 技术报告](sources/kat-coder-v2.md) - 快手 KwaiKAT 的 agentic coding 模型，Specialize-then-Unify 五域分治 + KwaiEnv 模块化沙箱 + MCLA 稳定 MoE RL + Tree Training 6.2× 加速 + OPD 专家融合。
@@ -76,10 +86,13 @@
 - [Qwen-UI-Agent 技术报告](sources/qwen-ui-agent.md) - 阿里 MAI-UI Team 的 real-world-centric foundation GUI agent：真机+沙箱、hybrid GUI+CLI 批动作、AutoResearch 飞轮、Action RL→Online RL 与 proactive harness；MobileWorld-Real 92.2%、OSWorld-Verified 79.5%。
 - [Agent-World 技术报告](sources/agent-world.md) - 人大 + ByteDance Seed 的自演化 agent 训练场：Agentic Environment-Task Discovery（1978 环境 / 19822 工具，MCP/工具文档/PRD 挖主题 + graph-based + programmatic 任务合成）+ Continuous Self-Evolving Agent Training（多环境 GRPO RL + 诊断弱环境→定向扩展→continue RL 的 co-evolution），跨 23 benchmark。
 - [Qwen-AgentWorld 技术报告](sources/qwen-agent-world.md) - Qwen Team 的 native language world model（LWM），首个覆盖 7 域（MCP/Search/Terminal/SWE/Android/Web/OS）的 agentic 环境模拟器，三阶段 CPT→SFT→RL（"injects/activates/sharpens"）+ AgentWorldBench（5 维 rubric reference-grounded judging）+ 解耦（Sim RL 可控模拟超真实环境）/ 统一（LWM warm-up 跨任务迁移）两种 agent 增强范式。
+- [ECHO](sources/echo.md) - 微软研究院：GRPO 同一前向上给终端观测 token 加辅助交叉熵，不另训模拟器、不额外 rollout；TerminalBench-2.0 上 Qwen3-8B/14B 相对 GRPO 近乎翻倍。不是 MoE 通信栈里的 ECHO/UltraEP。
 - [MinerU2.5-Pro 技术报告](sources/mineru-2-5-pro.md) - 上海 AI Lab + PKU + SJTU + 商汤的数据中心文档解析报告，固定 1.2B 架构，Data Engine（DDAS + CMCV + Judge-and-Refine）+ 三阶段训练把 OmniDocBench v1.6 从 92.98 推到 95.69，并修正评测匹配偏差（MGAM）+ 引入 Hard 子集；含 HunyuanOCR 1.0 自报分与统一重测分的跨源分歧。
 - [GLM-OCR 技术报告](sources/glm-ocr.md) - 智谱 AI + 清华的 0.9B 轻量 OCR VLM，CogViT + GLM 解码器 + MTP（训练+推理共用共享参数多头，~50% 吞吐提升）+ 两阶段 pipeline + 文档解析/KIE 双任务统一，OmniDocBench v1.5 SOTA 94.62；含 v1.5 自报 vs v1.6 统一重测的评测版本差异。
 - [MinerU2.5 技术报告](sources/mineru-2-5.md) - 上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM，coarse-to-fine 两阶段 + Data Engine（IMIC 单模型推理一致性挖 hard case）。MinerU2.5-Pro 的基座，IMIC 是 CMCV 的改进对象。
 - [Ling and Ring 2.6 技术报告](sources/ling-2.6.md) - Inclusion AI 的 Ling-2.6 / Ring-2.6 万亿参数 agentic 模型族，7:1 Lightning Attention + MLA 混合线性注意力 retrofit、token efficiency 后训练、KPop agentic RL。
+- [Ring-1T 技术报告](sources/ring-1t.md) - Inclusion AI 万亿 thinking 模型（1T / ~50B）：IcePop 用 train/infer 比值区间校准并丢弃越界 token，C3PO++ 按 token budget 切分长 rollout；AIME-2025 93.4、CodeForces 2088。KPop 的前作。
+- [R3：Rollout Routing Replay](sources/r3.md) - 北大 + 小米：把推理引擎的 MoE 专家 mask 重放到训练前向，softmax 仍走训练 logits；Qwen3-30B-A3B 上 KL 接近 dense，无 R3 的 GRPO 会崩。不要和 GSPO 的 Recompute Routing Replay 混。
 - [Unlimited OCR Works](sources/unlimited-ocr.md) - Baidu 的 OCR 报告，提出 Reference Sliding Window Attention（R-SWA），解码时保持 KV cache 恒定，单次前向传播转录数十页文档。
 - [Mach-Mind-4-Flash 技术报告](sources/mach-mind-4-flash.md) - 理想汽车的 35B MoE agentic 模型（3B 激活），基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练（三轨并行 RL + MOPD 融合 + HMPO token 效率），统一 RL/OPD 训练框架。
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
@@ -90,6 +103,7 @@
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
 - [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
+- [YaRN](sources/yarn.md) - Nous Research + EleutherAI 的 RoPE 扩展方法：NTK-by-parts 按维切分频率 + attention temperature；微调不足 0.1% 预训练数据把 Llama 2 推到 128K，Dynamic-YaRN 无微调可超 2×。Qwen3 / Qwen3-Next 推理外推的一手定义。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。
@@ -122,7 +136,9 @@
 - [GLM-5V-Turbo](models/glm-5v-turbo.md) - GLM-5 家族的多模态 agent 基座模型，CogViT + MMTP + 30+ 类别多模态联合 RL，多模态（文本 + 图像 + 视频 + GUI + 文档 + 网页）。
 - [MiMo-V2-Flash](models/mimo-v2-flash.md) - 309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。
 - [DeepSeek-V4](models/deepseek-v4.md) - 包含 DeepSeek-V4-Flash 和 DeepSeek-V4-Pro 的模型族，目标是原生 1M token 上下文。
+- [DeepSeekMath](models/deepseekmath.md) - DeepSeek-AI 的 7B 数学推理族（Base / Instruct / RL），从 Coder-Base-v1.5 继续预训练；RL 变体是 GRPO 发布检查点，纯文本。
 - [MiniMax-M2 Series](models/minimax-m2-series.md) - 229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。
+- [MiniMax-M1](models/minimax-m1.md) - MiniMax 的 456B / 45.9B hybrid-attention reasoning 族（40k / 80k），7:1 Lightning Attention + softmax，CISPO RL，原生 1M，纯文本。
 - [MiniMax-M3](models/minimax-m3.md) - 428B 总参数 / 22B 激活参数（+ 600M visual encoder）的原生 MSA 多模态 MoE 模型，配套 MSA 报告释出。
 - [Kimi K2.5](models/kimi-k2.5.md) - 1.04T 总参数 / 32B 激活参数的 multimodal agentic MoE 模型，强调 Agent Swarm。
 - [Kimi Linear](models/kimi-linear.md) - 48B 总参数 / 3B 激活参数的混合线性注意力 MoE 研究模型，KDA:MLA = 3:1，验证线性注意力可 drop-in 替换 full attention。
@@ -137,6 +153,9 @@
 - [OpenVLA](models/openvla.md) - 开源 7B VLA：Llama-2-7B + DINOv2/SigLIP，图像+指令→离散动作 token→连续 7D 控制；后续 skill 论文对照的离散 token 基线。
 - [π0](models/pi0.md) - Physical Intelligence 3.3B VLA：PaliGemma + flow matching action expert，多路图像+语言+本体感觉→连续动作块，最高 50 Hz。
 - [π0.5](models/pi0.5.md) - π0 的开世界 VLA：同一 flow expert，加异构 co-training 与统一 subtask 头；多路图像+语言→subtask 文本+连续动作。
+- [π0.7](models/pi0.7.md) - Physical Intelligence 约 5B 可steer VLA：Gemma 3 4B + MEM + 860M flow expert。不再是 PaliGemma + FAST→flow。
+- [AtomicVLA](models/atomicvla.md) - 中山大学等的 VLA：AtomicVLA 建在 π0、AtomicVLA* 建在 π0.5；技能是 SG-MoE 路由，低层仍是连续 action expert。不是第四种动作头。
+- [HunyuanOCR-1.0](models/hunyuan-ocr-1.0.md) - 腾讯 1B 端到端 OCR VLM 首发，Hunyuan-ViT + Hunyuan-0.5B + GRPO；OmniDocBench v1.5 自报 94.10，v1.6 统一重测 89.87。
 - [HunyuanOCR-1.5](models/hunyuan-ocr-1.5.md) - 腾讯轻量端到端 OCR VLM（1B），DFlash block-diffusion 推测解码 + Agentic Data Flow 数据构造，OmniDocBench v1.6 总分 94.74。
 - [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
@@ -157,6 +176,7 @@
 - [GLM-OCR](models/glm-ocr.md) - 智谱 AI + 清华的 0.9B 轻量 OCR VLM（CogViT ~400M + GLM ~500M），MTP 共享参数多头加速（~50% 吞吐提升）+ 两阶段 pipeline + 文档解析/KIE 双任务统一，多模态（文本+图像输入；结构化 Markdown/JSON 输出）。
 - [MinerU2.5](models/mineru-2-5.md) - 上海 AI Lab + PKU + SJTU 的 1.2B 解耦文档解析 VLM（NativeRes-ViT 675M + Qwen2-0.5B），coarse-to-fine 两阶段 + Data Engine（IMIC），MinerU2.5-Pro 的基座，多模态（文本+图像输入；结构化 Markdown 输出）。
 - [Ling-2.6 / Ring-2.6](models/ling-2.6.md) - Inclusion AI 万亿参数 agentic 模型族（Ling-2.6 instant + Ring-2.6 thinking），7:1 Lightning Attention + MLA 混合线性注意力 retrofit，KPop agentic RL，纯文本。
+- [Ring-1T](models/ring-1t.md) - Inclusion AI 1T / ~50B thinking MoE，Ling-1T-base + GQA，IcePop + C3PO++ RL，开源权重，纯文本。不要和 Ring-2.6 混成同一代。
 - [Unlimited OCR](models/unlimited-ocr.md) - Baidu 的 OCR-specialized VLM（基于 DeepSeek OCR），用 R-SWA 保持恒定 KV cache 实现长文档一次性转录，多模态（文本+图像输入；文本输出）。
 - [Mach-Mind-4-Flash](models/mach-mind-4-flash.md) - 理想汽车 35B / 3B 激活的 agentic MoE 模型，基于 Qwen3.5-35B-A3B，specialization-then-integration 后训练 + 统一 RL/OPD loss + MOPD 融合 + HMPO token 效率，纯文本。
 - [Kimi K3](models/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.78T/104B 激活），Hybrid KDA-MLA（3:1）+ Attention Residuals + Stable LatentMoE（896 routed/16 active）+ MoonViT-V2 原生视觉 + 1M 上下文，多模态（文本+图像+视频）。
@@ -170,8 +190,8 @@
 ## 概念
 
 - [Agentic engineering](concepts/agentic-engineering.md) - 这些报告如何定义长周期软件工程和工具使用任务。
-- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。SayCan 是分层 LLM planner（不是 VLA）；RT-2 造词并封闭落地离散 token + 网页 co-fine-tune；OpenVLA 开源 256-bin；π0 连续 flow + action expert；π0.5 开世界 co-training + 统一 subtask。EmbodiedSkills 是叠在 π0.5 上的 AgentLoop，不是第四种动作头。
-- [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 技能是可检索的执行知识（ASPIRE 里是 code-as-policy 程序+修复），闭环验证后写入库；EmbodiedSkills 是另一条路：固定 typed 合同 + AgentLoop，不扩张程序库。
+- [Vision-Language-Action](concepts/vision-language-action.md) - 预训练 VLM 看图+指令、输出机器人动作。SayCan / Inner Monologue 是分层 LLM planner（不是 VLA；后者只加语言反馈闭环）；RT-2 造词并封闭落地离散 token + 网页 co-fine-tune；OpenVLA 开源 256-bin；π0 连续 flow + action expert；π0.5 开世界 co-training + 统一 subtask；π0.7 仍是 flow，但换成 Gemma 3 + MEM + 860M expert，不再是 PaliGemma + FAST→flow。AtomicVLA 是 SG-MoE 技能路由，低层仍是 π0 连续专家，不是第四种动作头。EmbodiedSkills / EmbodiSkill 也不是动作头。
+- [具身 skill 自进化](concepts/embodied-skill-self-evolution.md) - 三条路：ASPIRE 写/改程序并扩张库；EmbodiSkill 冻结 LLM、skill-aware reflection 只改技能正文；EmbodiedSkills 固定 typed 合同 + AgentLoop，库不扩张。
 - [高效长上下文注意力](concepts/efficient-long-context-attention.md) - DSA、混合 SWA/GA、CSA/HCA 与 V4.1 CSA2 跨层 KV/索引共享；位置角 OOD 是正交轴，见零样本 RoPE 扩展。
 - [Agentic 模型的后训练](concepts/post-training-for-agentic-models.md) - 面向 agent 的 RL、MOPD、蒸馏、VAPO 这类 value-based credit assignment、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout；DPO 仅作离线偏好历史对照。
 - [多 token 预测](concepts/multi-token-prediction.md) - MTP 作为训练目标和 speculative decoding 机制；含「当 MTP-1 不够：DSpark 接管 V4 生产端」段，解释为什么 V3/V3.2/V4 一直只敢部署 MTP-1。

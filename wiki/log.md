@@ -1,5 +1,77 @@
 # 日志
 
+## [2026-09-12] ingest | Inner Monologue
+
+Huang / Xia / Xiao 等，Robotics at Google（arXiv:2207.05608v1，CoRL 2022）。新增 `raw/2207.05608v1.pdf`、`sources/inner-monologue.md`，提取 Figure 1/2/3。不建模型页。Headline：冻结 LLM 读成功/场景/人类文字做重试重规划；厨房叠在 SayCan affordance 上，value function 不回写 LLM。不是 VLA。回写 SayCan、VLA、EmbodiSkill、具身 skill 自进化。
+
+## [2026-09-12] ingest | Mamba-2
+
+Dao & Gu（arXiv:2405.21060v1，ICML 2024）。新增 `raw/2405.21060v1.pdf`、`sources/mamba-2.md`，提取 Figure 4/5/6/10。不建模型页。Headline：SSD = 标量恒等选择性 SSM 对偶 1-semiseparable SMA，不是 delta rule；kernel 相对 Mamba scan 2–8×。回写线性注意力概念页、GDN、Lightning-2、Nemotron 3 Ultra、Qwen3-Next 博客。
+
+## [2026-09-12] maintenance | HunyuanOCR 1.5 断链与 K3 ECHO 消歧
+
+`sources/hunyuan-ocr-1.5.md` 两条概念链改到 `../concepts/`（多 Token 预测、Agentic Engineering）。`sources/kimi-k3.md` 标明 MoonEP 对照的 ECHO/UltraEP 是 MoE 通信栈，不是 [ECHO](sources/echo.md)。`raw/` 未改。
+
+## [2026-09-12] ingest | HunyuanOCR 1.0
+
+腾讯 Hunyuan Vision（arXiv:2511.19575v2）。新增 `sources/hunyuan-ocr-1.0.md`、`models/hunyuan-ocr-1.0.md`，提取 Figure 1/2/3。不覆盖 `hunyuan-ocr-1.5`。Headline：1B 端到端、四阶段预训练 + GRPO；OmniDocBench 94.10 是 Ouyang 2024 / v1.5 协议。钉三套分：v1.5 94.10、1.5 报告 v1.6 自报 92.03、MinerU 统一重测 89.87。回写 1.5 / MinerU / GLM-OCR / Unlimited OCR。`raw/` 未改。
+
+## [2026-09-12] ingest | ECHO
+
+Microsoft Research（arXiv:2605.24517v1）。新增 `sources/echo.md`，提取 Figure 1/2/3。不建模型页。Headline：GRPO 同一前向上给终端观测 token 加 CE，TB2 上 Qwen3-8B 2.70→5.17、14B 5.17→10.79。校准 Qwen-AgentWorld 把 ECHO 写成独立 simulator 过宽。不是 K3 里 MoE EP 的 ECHO/UltraEP。`raw/` 未改。
+
+## [2026-09-12] maintenance | 尚未 ingest 待追问分类
+
+已闭合：π0.6 / Qwen3.6 / QB 独立报告不建页。找论文可解：Inner Monologue 2207.05608、Open X-Embodiment / RT-2-X 2310.08864、IPO 2310.12036、KTO 2402.01306、ORPO 2403.07691、SimPO 2405.14734。找论文也答不了：DPO 为何退出 2026 RLVR 栈。`raw/` 未改。
+
+## [2026-09-12] maintenance | 第一波三路 ingest 收口
+
+核 A 通过。`sources/ling-2.6.md` 补到 `lightning-attention-2.md` 的相对链接；`kat-coder-v2.md` 去掉把 IcePop 写成 routing replay 的混写。index 十个第一波 slug 各一行、无断裂。CISPO / IcePop / R3 源头链已齐。`raw/` 未改。
+
+## [2026-09-12] ingest | R3 / Rollout Routing Replay
+
+北大 + 小米 LLM-Core（arXiv:2510.11370v2）。新增 `sources/r3.md`，提取 Figure 1/2/3。不建模型页。Headline：重放推理 mask、保留训练 softmax 梯度；相对 GSPO 的 Recompute Routing Replay，修的是框架缝，`mini_step=1` 仍有效。校准 train–rollout 第二层与 Miles / MiMo 的转述；60 MB/轨迹是 Miles 估算不是原文。`raw/` 未改。
+
+## [2026-09-12] ingest | π0.7
+
+Physical Intelligence（arXiv:2604.15483v2）。新增 `sources/pi0.7.md`、`models/pi0.7.md`，提取 Figure 1/2/6。Headline：Gemma 3 4B + MEM + 860M flow expert，约 5B；**不再是 PaliGemma + FAST→flow 两阶段**。FAST 只作 Knowledge Insulation 的 VLM 训练信号。开箱对标 π\*0.6 RL / π0.6 SFT specialist；跨本体衬衫折叠 π0.7 (GC) 85.6% / 80%。不建 π0.6 页。回写 VLA 概念页与 π0 / π0.5。`raw/` 未改。
+
+## [2026-09-12] ingest | MiniMax-M1 / CISPO
+
+MiniMax（arXiv:2506.13585v1）。新增 `sources/minimax-m1.md`、`models/minimax-m1.md`，提取 Figure 1/2/3/4。Headline：CISPO 夹 IS 权重（stop-grad）、不丢 token，原文不下 IS 下界；Laguna 的 $(1,4)$ 是采用超参。456B / 45.9B hybrid Lightning Attention，1M 上下文。把 CISPO 外链改成相对链接。未改线性注意力概念页。`raw/` 未改。
+
+## [2026-09-12] ingest | AtomicVLA
+
+中山大学 + 鹏城 + 引望（arXiv:2603.07648v2）。新增 `sources/atomicvla.md`、`models/atomicvla.md`，提取 Figure 1–3。AtomicVLA 建在 π0、AtomicVLA* 建在 π0.5；技能是 SG-MoE top-1 路由，低层仍是连续 action expert。校准「第四种动作头」。LIBERO 相对 π0 +2.4 / Long +10 pp；CALVIN 平均长度 +0.22 / +0.25；真机 AtomicVLA* 相对 π0.5 长周期 +18.3、持续学习 +21。回写 VLA 概念页与 π0 / π0.5。`raw/` 未改。
+
+## [2026-09-12] ingest | Lightning Attention-2
+
+Qin et al.（OpenNLPLab，arXiv:2401.04658v2）。新增 `sources/lightning-attention-2.md`，提取 Figure 1/2。不建模型页。Headline：因果线性注意力的 tiling/kernel，状态仍是标量衰减外积累加，不是 GDN/KDA 的 delta rule；FlashLinearAttention 是代码库。回写线性注意力概念页与高效长上下文表。未改 `ling-2.6.md`。`raw/` 未改。
+
+## [2026-09-12] ingest | DeepSeekMath / GRPO
+
+DeepSeek-AI + 清华 + 北大（arXiv:2402.03300v3）。新增 `sources/deepseekmath.md`、`models/deepseekmath.md`，提取 Figure 1/2/4/5/7。Headline：7B 无工具 MATH 51.7%；GRPO 丢掉 critic、组内相对奖励当 baseline，KL 直接进 loss。不建 GRPO 近亲概念页；回写 RL 比较页基线行与后训练概念页。`raw/` 未改。
+
+## [2026-09-12] ingest | Native Sparse Attention
+
+Yuan / Gao / Dai 等（DeepSeek-AI + 北大，arXiv:2502.11089v2）。新增 `sources/nsa.md`，提取 Figure 1/2/3。不建模型页。Headline：三分支 compressed / selected block / sliding window，选择分数来自压缩注意力而非独立 indexer；从头稀疏 + LM loss。校准稀疏对比表与 DSA 前作叙述；InfLLM-V2「零样本无参」未能用本页核实，留待追问。`raw/` 未改。
+
+## [2026-09-12] ingest | EmbodiSkill
+
+清华 AIR + MSR 等（arXiv:2605.10332v2）。新增来源页 `sources/embodiskill.md`，提取 Figure 1–3。不建模型页：产出是技能正文 + 附录，执行器冻结。Headline：ALFWorld 上 Qwen3.5-27B + GPT-5.2 达 93.28%；摘要 31.58% / 19.04% 是相对涨幅，\(\Delta_{\mathrm{aware}}\) +14.92 才是百分点。与 ASPIRE（程序库）和 EmbodiedSkills（typed 合同，slug `embodied-skills`）钉成三条路。更新概念页、VLA、ASPIRE、EmbodiedSkills、SayCan。`raw/` 未改。
+
+## [2026-09-12] ingest | Ring-1T / IcePop
+
+Inclusion AI Ling Team（arXiv:2510.18855v2）。新增 `sources/ring-1t.md`、`models/ring-1t.md`，提取 Figure 2/3/4/5/6。Headline：1T / ~50B thinking MoE，IcePop 用 $k=\pi_{\mathrm{train}}(\theta_{\mathrm{old}})/\pi_{\mathrm{infer}}$ 区间校准并丢弃越界 token（对照 TIS 阻尼），C3PO++ 按 token budget 切长 rollout。校准 wiki 里仅从 Ring-2.6 转述的 IcePop。`raw/` 未改。
+
+## [2026-09-12] ingest | YaRN: Efficient Context Window Extension of Large Language Models
+
+Peng / Quesnelle / Fan / Shippole（arXiv:2309.00071v3）。新增 `sources/yarn.md`，提取 Figure 1/3/8。不建模型页。Headline：YaRN = NTK-by-parts 频率切分 + attention temperature；Code Llama 的 1M ABF 是 NTK-aware 不是 YaRN；原文零样本路径是 Dynamic-YaRN。回写零样本 RoPE 概念页、Jet-Long、Qwen3 / Qwen3-Next 的 YaRN 配方句。`raw/` 未改。
+
+## [2026-09-12] maintenance | CISPO 与 Qiu LBL 引用校正
+
+CISPO 一手是 MiniMax-M1（arXiv:2506.13585），不是 MiniMax-M2 系列；wiki 尚无 `sources/minimax-m1.md`，已把错链到 `minimax-m2-series` 的出处改为 M1 外链，并写明 M2 不是源头。Laguna 把 Qiu 的 global-batch LBL 错写成 arXiv:2502.10325（Choudhury Process Reward Models），已改为 arXiv:2501.11873（*Demons in the Detail*）。未建 stub / 来源页，`raw/` 未改。
+
 ## [2026-09-12] ingest | AKL：Rethinking KL Divergence in LLM KD
 
 Wu et al.（HKU + 清华 + 腾讯，arXiv:2404.02657v4，COLING 2025）。新增 `raw/2404.02657v4.pdf`、来源页 `sources/akl.md`，提取 Figure 1–4。不建模型页。Headline：逐步 softmax 上 FKL/RKL 同驻点 \(q=p\)；连续高斯 toy 的 mode-seeking 不适用于离散词表；有限 epoch 里 FKL 先 head、RKL 先 tail。AKL 按 head/tail 缺口加权。校准 GKD/MiniLLM/MOPD 第二层，并限定理论覆盖不到 sampled-token PG。
