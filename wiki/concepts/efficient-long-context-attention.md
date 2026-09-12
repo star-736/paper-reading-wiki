@@ -67,12 +67,12 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 
 ## 正交轴：位置编码还在不在训练网格上
 
-上表六条路线回答的是「算哪些 token、KV 多大」。另一件独立的事是：RoPE 的旋转角一旦越出预训练窗，即使仍做 dense softmax，长窗也会崩。开源权重的默认补丁是 [YaRN](../sources/yarn.md)（按维切分频率 + attention temperature）/ NTK-aware / Self-Extend / DCA 这类**位置重映射**，不改注意力核、不改 KV 布局。[Jet-Long](../sources/jet-long.md) 把这条轴写成解析式动态分组，并在 Qwen3-1.7B/4B/8B-Base 上打赢官方 YaRN factor=4 配方。Kimi 系则走另一头：全局 MLA 用 NoPE，从根上躲开 YaRN。细节见 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)。两条轴可叠加（Jet-Long 已迁到 softmax+线性 hybrid），但目前没有 DSA / MLA 上的实验。
+上表六条路线回答的是「算哪些 token、KV 多大」。另一件独立的事是：RoPE 的旋转角一旦越出预训练窗，即使仍做 dense softmax，长窗也会崩。开源权重的默认补丁是 [YaRN](../sources/yarn.md)（按维切分频率 + attention temperature）/ NTK-aware / Self-Extend / [Dual Chunk Attention](../sources/dual-chunk-attention.md) 这类**位置重映射**，不改注意力核、不改 KV 布局。DCA 仍做 dense softmax，只把相对位置按 chunk 拆成 Intra / Inter / Successive，不要写成稀疏注意力。[Jet-Long](../sources/jet-long.md) 把这条轴写成解析式动态分组，并在 Qwen3-1.7B/4B/8B-Base 上打赢官方 YaRN factor=4 配方。Kimi 系则走另一头：全局 MLA 用 NoPE，从根上躲开 YaRN。细节见 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)。两条轴可叠加（Jet-Long 已迁到 softmax+线性 hybrid），但目前没有 DSA / MLA 上的实验。
 
 ## 进一步阅读
 
-- [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（位置角 OOD，与本页的计算/KV 轴正交）；方法原文 [YaRN](../sources/yarn.md)
-- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）；因果线性注意力 kernel 见 [Lightning Attention-2](../sources/lightning-attention-2.md)；SSM / SSD 见 [Mamba-2](../sources/mamba-2.md)
+- [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（位置角 OOD，与本页的计算/KV 轴正交）；方法原文 [YaRN](../sources/yarn.md)、[Dual Chunk Attention](../sources/dual-chunk-attention.md)
+- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）；因果线性注意力 kernel 见 [Lightning Attention-2](../sources/lightning-attention-2.md)；SSM / SSD 见 [Mamba-2](../sources/mamba-2.md)；delta 并行训练见 [DeltaNet](../sources/delta-net.md)
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)（含 QSA 的层内压缩分叉）；前作 [NSA](../sources/nsa.md)
 - [跨层索引复用](cross-layer-index-reuse.md)
 - [百万 token 上下文服务](million-token-context-serving.md)

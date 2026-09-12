@@ -1,5 +1,17 @@
 # 日志
 
+## [2026-09-13] ingest | DeltaNet
+
+Yang / Wang 等（arXiv:2406.06484v6，NeurIPS 2024）。新增 `raw/2406.06484v6.pdf`、`sources/delta-net.md`，提取 Figure 1/2/4。不建模型页。Headline：Schlag 的 delta 更新 + WY Householder chunkwise 并行；1.3B/100B Wiki ppl 16.87、零样本 51.6，超过 Mamba/GLA；缺 $\alpha_t$，召回受 128× 状态限制。回写线性注意力概念页与 GDN / GLA / Kimi Linear。`raw/` 新增该 PDF。
+
+## [2026-09-13] ingest | Dual Chunk Attention
+
+An / Huang / Zhang / Gong / Qiu / Zhou / Kong（arXiv:2402.17463v2，ICML 2024）。新增 `raw/2402.17463v2.pdf`、`sources/dual-chunk-attention.md`，提取 Figure 1/2/4。不建模型页。Headline：DCA 改注意力相对位置矩阵（Intra/Inter/Successive），training-free，不是稀疏注意力也不是 YaRN；Llama2 70B 96k +0.56 PPL，摘要口径 >100k，实用 QA 截在 16k。回写零样本 RoPE 概念页、YaRN、Jet-Long 对照表、Qwen3 的 YaRN+DCA 配方句。`raw/` 新增该 PDF。
+
+## [2026-09-13] ingest | KTO
+
+Ethayarajh 等（arXiv:2402.01306v5，ICML 2024）。新增 `raw/2402.01306v5.pdf`、`sources/kto.md`，提取 Figure 1/3/5。不建模型页。Headline：离线 HALO，前景理论价值函数，二元 desirable/undesirable，不需要 pair；1B–30B 匹配或超过 DPO，Zephyr-β GSM8K 40.0→53.5。回写 DPO 待追问、RL 比较页离线偏好节、后训练历史对照。不进 GRPO 主表，也不解释 DPO 为何退出 2026 栈。`raw/` 新增该 PDF。
+
 ## [2026-09-13] ingest | InfLLM-V2
 
 清华 + OpenBMB（arXiv:2509.24663v1）。新增 `raw/2509.24663v1.pdf`、`sources/infllm-v2.md`、`models/minicpm-4.1.md`，提取 Figure 1/2/5。Headline：复用 dense KV、压缩只打分、短序列切回 dense；5B 短→长，RULER-32k 稀疏 82.62 vs Full 84.26。校正比较页「零样本无参」旧行。NSA 对照是同一 8B 适应，不是 NSA 原文从头稀疏。`raw/` 新增该 PDF。

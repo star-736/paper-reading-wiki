@@ -82,7 +82,7 @@ Table 2（零样本；末列是准确率类任务平均）：
 ## 与已有沉淀的关系
 
 - **KDA 的 channel-wise 门来自本页，delta 不来自本页。** [Kimi Linear](kimi-linear.md) 把 GDN 的 head-wise 标量 $\alpha_t$ 换成 $\mathrm{Diag}(\alpha_t)$，「思路承自 GLA」。GLA 自己的写入仍是 $k^\top v$，没有 $\beta$、没有按 key 擦旧。
-- **GDN 走的是另一条门。** [Gated DeltaNet](gated-delta-net.md) 在 Mamba-2 式**标量**门上加 delta。先有 GLA 的细门、再有 GDN 的 delta，KDA 才把两者叠起来。不要写成 GDN 从 GLA 升级而来。
+- **GDN 走的是另一条门。** [Gated DeltaNet](gated-delta-net.md) 在 Mamba-2 式**标量**门上加 delta。delta 的并行训练见 [DeltaNet](delta-net.md)（同作者、同数据对照里的 DeltaNet 行）。先有 GLA 的细门、再有 DeltaNet 的 delta，KDA 才把两者叠起来。不要写成 GDN 从 GLA 升级而来。
 - **FlashLinearAttention 算法 ≠ 后来的 FLA 仓库总称。** 本页 §3 把 I/O-aware chunkwise 实现命名为 FLASHLINEARATTENTION。[Lightning Attention-2](lightning-attention-2.md) 是同代的因果线性 tiling（标量 $\lambda$，块内左乘、块间右乘），不是本页的带门二级 chunk。后来 `flash-linear-attention` 仓库把 Lightning / GLA / RetNet / GDN 收在一起，那是实现层伞名，见 Lightning-2 来源页。
 - **[Mamba-2](mamba-2.md) 在 Table 1 是标量门档。** 本页讨论的 Mamba 主要是 Mamba-1（满秩 $G_t$、SRAM 物化、状态不能太大）；Mamba-2 的标量恒等 $A$ 是后作对照。
 - **[RWKV](rwkv.md) 在本页是 MQAR 弱基线（RWKV-4）和 Table 1 的 RWKV-6 参数化。** RWKV-4 不是矩阵状态线性注意力。
@@ -97,4 +97,4 @@ Table 2（零样本；末列是准确率类任务平均）：
 
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
 - 同族对照：[Lightning Attention-2](lightning-attention-2.md)（标量衰减 tiling）、[Mamba-2](mamba-2.md)（SSD，标量恒等 SSM）、[RWKV](rwkv.md)（channel-wise 1D WKV，不是矩阵 $S$）
-- 后作：[Gated DeltaNet](gated-delta-net.md)（标量门 + delta）、[Kimi Linear](kimi-linear.md)（GLA 式细门 + delta）
+- 同作者后作：[DeltaNet](delta-net.md)（delta，无门；Table 1 与本页同数据）、[Gated DeltaNet](gated-delta-net.md)（标量门 + delta）、[Kimi Linear](kimi-linear.md)（GLA 式细门 + delta）

@@ -86,5 +86,5 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - 同属「固定状态、非 delta rule」：[Mamba-2](mamba-2.md)（标量恒等选择性 SSM / SSD，不是线性注意力 tiling）、[Gated Linear Attention](gated-linear-attention.md)（channel-wise 门 + FlashLinearAttention 算法名）、[RWKV](rwkv.md)（channel-wise 1D WKV）
-- 后作对照（delta-rule 族，不是本页机制）：[Gated DeltaNet](gated-delta-net.md)、[Kimi Linear](kimi-linear.md)
+- 后作对照（delta-rule 族，不是本页机制）：[DeltaNet](delta-net.md)、[Gated DeltaNet](gated-delta-net.md)、[Kimi Linear](kimi-linear.md)
 - 生产采用属本族：[MiniMax-M1](minimax-m1.md)（7 Lightning : 1 softmax；CISPO 不在本页写）、[Ling-2.6](ling-2.6.md)（7 Lightning : 1 MLA；IcePop 回链不在本路写）。同比例、全局层不同，不要把 M1 写成 MLA hybrid

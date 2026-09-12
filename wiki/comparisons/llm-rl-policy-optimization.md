@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE。DPO 是离线偏好闭式解，与 DAPO 同名不同族，单独成节。"
+description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE。DPO / KTO 是离线偏好 HALO，与 DAPO 同名不同族，单独成节，不进 GRPO 主表。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -26,7 +26,7 @@ timestamp: 2026-06-25
 
 如果把它们都简写成「比 GRPO 更好」，检索时会混掉层级。本页按抽象层级拆开。
 
-**不要把 DPO 和 DAPO 混在一起。** [DPO](../sources/dpo.md)（Rafailov et al.，NeurIPS 2023）是离线偏好对上的闭式分类损失，目标是绕开 RL；[DAPO](../sources/dapo.md)（ByteDance Seed，2025）是 on-policy GRPO 的大规模 recipe。本页主表只收 RL 轴上的方法。DPO 的位置见下文「离线偏好：DPO 不在这张 RL 表里」。
+**不要把 DPO 和 DAPO 混在一起。** [DPO](../sources/dpo.md)（Rafailov et al.，NeurIPS 2023）是离线偏好对上的闭式分类损失，目标是绕开 RL；[DAPO](../sources/dapo.md)（ByteDance Seed，2025）是 on-policy GRPO 的大规模 recipe。本页主表只收 RL 轴上的方法。DPO / KTO 的位置见下文「离线偏好：DPO / KTO 不在这张 RL 表里」。也不要把 [KTO](../sources/kto.md) 写成 GRPO 变体或 DAPO 近亲。
 
 ## 一张表
 
@@ -154,7 +154,7 @@ Miles 的 §9 案例给了这一层在真实配置下的量级：BF16 训练 + F
 
 Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界裁到 5）是**采用方超参**，不要回写成 M1 原文。它与 DAPO Clip-Higher「放宽上界」是否互补，以及 CISPO 的 token-level IS 权重能否接到 GSPO/SAPO 上，两边都没有消融。
 
-## 离线偏好：DPO 不在这张 RL 表里
+## 离线偏好：DPO / KTO 不在这张 RL 表里
 
 上面每一行都还在 **on-policy RL** 里改东西：advantage 从哪来、ratio 按什么单元 clip、batch 里哪些 prompt/token 进梯度。 [DPO](../sources/dpo.md) 问的是前一个问题：**KL-constrained reward max 能不能根本不跑 RL。**
 
@@ -162,15 +162,17 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 
 和本页方法的分叉有三层：
 
-| | DPO | 本页 RL 方法（DAPO / GSPO / …） |
-| --- | --- | --- |
-| 数据 | 离线偏好对，来自 $\pi_{\mathrm{ref}}$ / $\pi_{\mathrm{SFT}}$ | 当前策略 on-policy rollout |
-| 监督 | 成对比较（Bradley-Terry） | 可验证奖励 / group-relative advantage / critic |
-| 优化 | 一条分类损失，无 RL 环 | clipped policy gradient（或 value-based PPO） |
+| | DPO | KTO | 本页 RL 方法（DAPO / GSPO / …） |
+| --- | --- | --- | --- |
+| 数据 | 离线偏好对，来自 $\pi_{\mathrm{ref}}$ / $\pi_{\mathrm{SFT}}$ | 离线二元 desirable / undesirable，**不需要 pair** | 当前策略 on-policy rollout |
+| 监督 | 成对比较（Bradley-Terry） | 前景理论价值函数（增益凹 / 损失凸的 logistic） | 可验证奖励 / group-relative advantage / critic |
+| 优化 | 一条分类损失，无 RL 环 | 一条 HALO 损失，无 RL 环 | clipped policy gradient（或 value-based PPO） |
 
 它和 [OPD](on-policy-distillation.md) 也常被一起说成「不用 RL」，但 OPD 的监督是 teacher 在 **student 自己采样轨迹** 上的 reverse-KL，不是离线偏好标签。DPO 原文实验停在 6B、情感 / 摘要 / 单轮对话；2026 已收录报告的后训练主轴已经换到 RLVR + MOPD。把 DPO 放进本页是为了挡住「搜 DPO 落到 DAPO」和「把闭式偏好当 GRPO 变体」两条检索事故，不是主张它仍是当前 agentic 栈的一等算法。
 
 [Iterative RPO](../sources/iterative-rpo.md)（Pang et al.，TRL `rpo_alpha`）仍在这条离线偏好轴上，只是给 winner 再加长度归一化 NLL：$\mathcal{L}=\mathcal{L}_{\mathrm{DPO}}+\alpha\mathcal{L}_{\mathrm{NLL}}(y_w)$，$\alpha=1$。动机是纯 DPO 会压低 chosen logprob。完整论文还按最终答案对错重新采样 pair 并迭代；TRL 默认只实现损失项。它和 [VAPO](../sources/vapo.md) 的 positive-example LM loss 同构（正样本再 SFT），一个挂 DPO、一个挂 PPO。不要把它写进上表当 GRPO 变体，也不要和 Regularized Preference Optimization（SFT 权重约 0.005）或 ORPO 混名。
+
+[KTO](../sources/kto.md)（Ethayarajh et al.，ICML 2024）也仍在这条离线轴上，**仍然不进上面的 GRPO 主表**。它不改 DPO Eq. 7，而是换人类价值函数：二元信号 + logistic $v$ + KL 参考点。1B–30B 上匹配或超过 DPO，主数字是 Zephyr-β-SFT + UltraFeedback 的 GSM8K 40.0→53.5。不要把「不需要 pair」夸成生产 agentic RL 替代，也不要用它解释「2026 为何不用 DPO」——那条找论文也答不了。
 
 ## 与模型报告的关系
 
@@ -197,11 +199,11 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
 - DeepSeekMath Figure 7 的「RL 抬 Maj@K、不抬 Pass@K」是否在更大模型或可验证环境 RLVR 上仍成立？后续报告几乎不复现这条曲线。
 - MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
-- 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？本页没有一手来源回答。
+- 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？[KTO](../sources/kto.md) 把监督改成二元，仍不回答生产弃用因果。本页没有一手来源回答。
 
 ## 相关页面
 
-- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
+- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[KTO](../sources/kto.md)（二元 HALO，不需要 pair，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 系统侧来源：[R3](../sources/r3.md)（MoE 路由重放，与本页 ratio 方法正交）、[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[DeepSeekMath](../models/deepseekmath.md)（GRPO 发布检查点）、[MiniMax-M1](../models/minimax-m1.md)（CISPO 发布检查点）、[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

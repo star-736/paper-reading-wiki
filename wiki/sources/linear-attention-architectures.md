@@ -70,7 +70,7 @@ $$\epsilon_{l,t}=P_l s_{l,t},\qquad h_{l,t}\leftarrow h_{l,t}+\epsilon_{l,t},\qq
 
 ## 与已有沉淀的关系
 
-- 对 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)，它补的是 DeltaNet/GDN/KDA/GDN-2 的同式比较与新问题：“固定长度的 sequence memory 之外，是否能轻量地传递跨层信息”。
+- 对 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)，它补的是 DeltaNet/GDN/KDA/GDN-2 的同式比较与新问题：“固定长度的 sequence memory 之外，是否能轻量地传递跨层信息”。DeltaNet 作为可训练算子的一手见 [DeltaNet](delta-net.md)，不是本页。
 - 对 [Attention Residuals](../concepts/attention-residuals.md)，CLVR 是相邻但不同的深度通路：AttnRes 以 learned depth attention 聚合 layer outputs 并替换 residual sum；CLVR 从**线性记忆内部**取 write value，以加法注入 residual stream，保留 host 的线性时间递推。
 - 不新建模型页：论文训练的 350M、1.3B、3B 模型都是受控实验载体，并非对外发布的模型实体。
 

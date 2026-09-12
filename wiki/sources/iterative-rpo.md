@@ -79,6 +79,7 @@ MATH 上标准 DPO 相对基座是掉点的（12.4 / 10.5 vs 12.5）。作者把
 ## 与其他页面的关系
 
 - [DPO](dpo.md)：本页的 $\mathcal{L}_{\mathrm{DPO}}$ 就是 DPO Eq. 7；NLL 是后加的、原文没有的项。DPO 页待追问里「后续偏好方法」现在有这一条可核的一手来源。
+- [KTO](kto.md)：另一条离线 HALO，连 pair 都不需要，改的是人类价值函数而不是在 Eq. 7 上加 NLL。本页仍要 $(c^w,y^w,c^l,y^l)$。
 - [VAPO](vapo.md)：positive-example LM loss 是 PPO 版「正样本再 SFT 一遍」；权重 $\mu=0.1$，本页 $\alpha=1$。
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：仍不进 GRPO 主表。迭代采样让 pair 来自当前策略，但更新还是 DPO+NLL，不是 clipped policy gradient。
 - Regularized Preference Optimization（[2405.16436](https://arxiv.org/abs/2405.16436)）公式外形相近，TRL 现在也能用 `loss_type=["sigmoid","sft"]` 复现，但推荐 SFT 权重是 0.005 不是 1.0。
@@ -93,5 +94,5 @@ MATH 上标准 DPO 相对基座是掉点的（12.4 / 10.5 vs 12.5）。作者把
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DPO](dpo.md)、[VAPO](vapo.md)、[DAPO](dapo.md)
+- 相邻算法：[DPO](dpo.md)、[KTO](kto.md)、[VAPO](vapo.md)、[DAPO](dapo.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

@@ -29,7 +29,7 @@ $$S_t = S_{t-1} + k_t v_t^\top,\qquad o_t = S_t q_t$$
 | 朴素 / 标量衰减线性注意力 | $S_t = \lambda S_{t-1} + k_t v_t^\top$（$\lambda=1$ 即无遗忘） | 无定向擦写。因果训练的 cumsum 会毁掉并行；[Lightning Attention-2](../sources/lightning-attention-2.md) 用块内左乘 + 块间右乘 tiling 把墙钟速度拉回理论 $O(n)$——**这是 kernel，不改状态方程** | 复杂度从 $O(L^2)$ 降到 $O(L)$；decode 无随长度增长的 KV |
 | **Mamba-2（SSD）** | $S_t = \alpha_t S_{t-1} + v_t k_t^\top$，$\alpha_t$ **数据相关**标量（$A_t=\alpha_t I$） | 选择性 SSM，不是 delta rule。$A$ 从 Mamba-1 的对角再收成标量×单位阵；对偶于 1-semiseparable SMA；SSD 算法块内二次注意力、块间低秩扫描 | 整块按输入决定忘多少 + 更大状态扩张 $N$；仍无法按 key 定向擦写 |
 | **GLA** | $S_t = \mathrm{Diag}(\alpha_t)S_{t-1} + k_t^\top v_t$ | [Gated Linear Attention](../sources/gated-linear-attention.md)：数据相关 **channel-wise** 门，写入仍是外积。FlashLinearAttention 是本篇的 I/O-aware chunkwise 算法；细门迫使二级 chunk + 对数域 | KDA 细门的前身；**没有** $(I-\beta kk^\top)$ |
-| DeltaNet | $S_t = (I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 把递推看成对重构损失 $\tfrac12\lVert S k_t - v_t\rVert^2$ 做在线梯度下降（经典 **delta rule**）；rank-1 更新等价于广义 Householder 变换，可 chunkwise 并行 | 让记忆「自我纠错」，但旧关联仍永久保留 |
+| **DeltaNet** | $S_t = (I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | [DeltaNet](../sources/delta-net.md)（Yang 等，NeurIPS 2024）：Schlag 2021 的 delta 更新；本页是 WY Householder 的 chunkwise 并行训练。没有 $\alpha_t$ 遗忘门。概念表用 GDN/Kimi 的左乘写法，原文是 $S_{t-1}(I-\beta kk^\top)+\beta vk^\top$ | 按 key 定向擦写；缺 decay，长度外推弱、状态难铺大 |
 | Gated DeltaNet（GDN） | $S_t = \alpha_t(I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 加一个 **head-wise 标量遗忘门** $\alpha_t\in[0,1]$（作用类似对快速权重的 weight decay / 数据相关 L2 正则）。GDN 原文（[来源页](../sources/gated-delta-net.md)）的洞察：门控负责「快速整块清空」、delta rule 负责「定向精确更新」，两者互补——$\alpha_t\to0$ 瞬间清空记忆，$\alpha_t\to1$ 退化成纯 delta rule | 可控的记忆寿命，缓解干扰，改善稳定性与长上下文泛化 |
 | **KDA**（Kimi Linear） | $S_t = (I-\beta_t k_t k_t^\top)\mathrm{Diag}(\alpha_t)S_{t-1} + \beta_t k_t v_t^\top$ | 把 GDN 的标量门换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维独立遗忘速率（思路承自 GLA） | 更精细地调度有限状态记忆，在合成检索任务上超过 GDN、Mamba2 |
 | **KDA（Kimi K3 升级）** | 同上结构，但 decay 参数化从无界 negative-Softplus 换成 **scaled sigmoid**（有下界）；输出门从低秩换成 **full-rank** | `g_t = g_min·Sigmoid(e^A·z_t) ∈ (g_min, 0)`，`g_min=-5` 固定 → retention factor `α > e^-5 ≈ 6.7e-3`，16-token tile 累积 log-decay ∈ (-80, 0) → reciprocal `1/Γ` 不溢出 BF16 → **所有因果 tile（含对角）用 dense Tensor Core MMA**，消掉 position-pair diagonal 路径 | 解锁 KDA 在 3T 级生产模型的硬件效率；K3 用 69 KDA + 24 MLA 的 3:1 混合栈，1M context NoPE 外推 |
@@ -52,7 +52,13 @@ Mamba-2 的块级改动（并行投影 $A,X,B,C$ + 输出前 Norm + multi-value 
 
 ### GLA 不是 delta rule
 
-[Gated Linear Attention](../sources/gated-linear-attention.md)（Yang 等，ICML 2024）给矩阵状态加 **数据相关对角门**：$S_t=\mathrm{Diag}(\alpha_t)S_{t-1}+k_t^\top v_t$。$\alpha_t$ 每个特征维独立遗忘，写入仍是外积。KDA 的细门从这里来；delta 从 DeltaNet / GDN 来。FlashLinearAttention 这个名字也出在这篇（I/O-aware chunkwise），后来才变成仓库伞名。
+[Gated Linear Attention](../sources/gated-linear-attention.md)（Yang 等，ICML 2024）给矩阵状态加 **数据相关对角门**：$S_t=\mathrm{Diag}(\alpha_t)S_{t-1}+k_t^\top v_t$。$\alpha_t$ 每个特征维独立遗忘，写入仍是外积。KDA 的细门从这里来；delta 从 [DeltaNet](../sources/delta-net.md) / GDN 来。FlashLinearAttention 这个名字也出在这篇（I/O-aware chunkwise），后来才变成仓库伞名。
+
+### DeltaNet 是 delta rule，没有门
+
+[DeltaNet](../sources/delta-net.md)（Yang 等，NeurIPS 2024）把 Schlag 2021 的更新做成可规模训练的算子。状态方程是 $S_t=S_{t-1}(I-\beta_t k_tk_t^\top)+\beta_t v_tk_t^\top$，**没有** $\alpha_t$。贡献是 WY 表示 + UT 变换的 chunkwise kernel，不是发明这条规则。1.3B / 100B 上 Wiki ppl 16.87、零样本平均 51.6，超过同数据 Mamba / GLA；召回在 1.3B 落后 GLA，因为状态扩张只有 128×（GLA 256×）。作者在 v6 §5.3 自己写：缺显式 decay，长度外推弱——后作就是 [GDN](../sources/gated-delta-net.md) 加的那一扇门。
+
+隔层 SWA、只换两层全局注意力，是本页的 hybrid 实验，不是后来 Kimi / Qwen 的 3:1。
 
 ### RWKV-4 不是矩阵状态
 
@@ -131,6 +137,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 ## 跨报告信号
 
 - **[Mamba-2](../sources/mamba-2.md)（Dao & Gu，ICML 2024，原文已入库）**：SSD 框架的一手出处。选择性 SSM 收成标量恒等 $A$，对偶于 1-semiseparable SMA；SSD kernel 相对 Mamba scan 2–8×。**不是 delta rule**。GDN 的门从这里来，delta 从 DeltaNet 来。Nemotron 3 Ultra 的 SSM 层、Qwen3-Next「不选 Mamba2」的对照，都以本页为机制原文。
+- **[DeltaNet](../sources/delta-net.md)（Yang 等，NeurIPS 2024，原文已入库）**：delta 更新可规模训练的一手。Schlag 起的名；本页用 WY Householder 做 chunkwise 并行。1.3B / 100B 超过 Mamba / GLA；缺 $\alpha_t$，长度外推和状态尺寸是作者写明的上限。GDN 的 delta 从这里来，门不从这里来。
 - **[Gated DeltaNet（GDN）](../sources/gated-delta-net.md)（Yang 等，ICLR 2025，原文已入库）**：演进链中间一环的**一手出处**。提出 gated delta rule——门控（快速整块清空）+ delta rule（定向精确更新）互补合体，超过 Mamba2 和 DeltaNet，并自提「GDN + 滑窗/Mamba2」混合架构。KDA 与 Qwen3-Next 系的线性层都建在它之上。
 
   ![Gated DeltaNet Figure 1：GDN 的（混合）架构与 block 设计。左/中为两种混合栈——H1 = Gated DeltaNet + SWA（滑窗注意力）+ MLP 交替，H2 = Mamba2 + Gated DeltaNet + SWA + MLP 交替（均 N× 重复）；右为 Gated Delta Rule block 内部：q/k 走 Linear→ShortConv→SiLU→L2Norm、v 走 Linear→ShortConv→SiLU、α/β 由 Linear 投影得到，一并喂进 Gated Delta Rule，输出经 Norm、再被一个输出门逐元素相乘后 Linear 投影。这张图正是 Kimi Linear 那张 KDA 结构图的「前身模板」。](../assets/gated-delta-net/fig1-hybrid-architecture.png)
@@ -159,13 +166,13 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 
 - KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？**已部分厘清**（见「KDA 的硬件效率」开头）：需 cache 的状态 $S_t$ 大小不变，增量在「瞬时门值（×$d_k$，激活非持久）+ 门投影参数（低秩压住）+ DPLR 算子复杂度」三处。**仍待补的精确数字**：低秩门投影的秩与具体参数增量、相对 GDN 的端到端显存/吞吐差，需查配置表与实测。
 - 线性注意力在长 trajectory RL 上，固定状态会不会比 softmax 更易丢失关键中间信息？Kimi Linear 称 RL 阶段也追平，但机制层面的稳健性证据有限。
-- Lightning-2、Mamba-2、GLA、RWKV-4 已核：Lightning-2 是标量衰减 tiling；Mamba-2 是 SSD；GLA 是 channel-wise 门、无 delta；RWKV-4 是 channel-wise 1D WKV。RWKV-7 的 generalized delta 仍待补。
+- Lightning-2、Mamba-2、GLA、DeltaNet、RWKV-4 已核：Lightning-2 是标量衰减 tiling；Mamba-2 是 SSD；GLA 是 channel-wise 门、无 delta；DeltaNet 是 delta、无门；RWKV-4 是 channel-wise 1D WKV。Schlag 2021 原配方与 RWKV-7 的 generalized delta 仍待补。
 - DPLR「把 $a,b$ 绑定到 $k$」是否损失了通用 DPLR 的某些表达力？报告说「representational capacity 与通用 DPLR 对齐」，但这是 KDA 自述，外部尚无独立验证。
 - CLVR 的小幅收益能否经多 seed、长上下文 associative recall 和 KDA / GDN-2 host 复现？目前只覆盖 DeltaNet / GDN，且论文未给 inference benchmark；不要把训练 loss 的方向性外推为 serving 收益。
 
 ## 相关页面
 
-- 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 跨层 write-value 路由）、[Lightning Attention-2](../sources/lightning-attention-2.md)（因果线性注意力 tiling，非 delta rule）、[Gated Linear Attention](../sources/gated-linear-attention.md)（channel-wise 门，无 delta；FlashLinearAttention 算法名）、[RWKV](../sources/rwkv.md)（channel-wise 1D WKV，非矩阵 $S$）、[Mamba-2](../sources/mamba-2.md)（SSD / 标量恒等选择性 SSM，非 delta rule）、[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（KDA scaled sigmoid 升级 + KCP）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（GDN vs SWA 消融 + sigmoid 输出门 + FlashQLA）、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[MiniMax-M1](../sources/minimax-m1.md)（7:1 Lightning : softmax；CISPO 不在本路写）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（7:1 Lightning : MLA；IcePop 由 A 路回链）、[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（生产 hybrid Mamba-2 + GQA）
+- 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 跨层 write-value 路由）、[Lightning Attention-2](../sources/lightning-attention-2.md)（因果线性注意力 tiling，非 delta rule）、[Gated Linear Attention](../sources/gated-linear-attention.md)（channel-wise 门，无 delta；FlashLinearAttention 算法名）、[DeltaNet](../sources/delta-net.md)（delta rule 并行训练，无遗忘门）、[RWKV](../sources/rwkv.md)（channel-wise 1D WKV，非矩阵 $S$）、[Mamba-2](../sources/mamba-2.md)（SSD / 标量恒等选择性 SSM，非 delta rule）、[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（KDA scaled sigmoid 升级 + KCP）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（GDN vs SWA 消融 + sigmoid 输出门 + FlashQLA）、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[MiniMax-M1](../sources/minimax-m1.md)（7:1 Lightning : softmax；CISPO 不在本路写）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（7:1 Lightning : MLA；IcePop 由 A 路回链）、[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（生产 hybrid Mamba-2 + GQA）
 - [注意力门控](attention-gating.md)
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（Kimi Linear 的全局层底座）
 - [高效长上下文注意力](efficient-long-context-attention.md)

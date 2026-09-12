@@ -134,6 +134,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - [R3](../sources/r3.md)：如何把 MoE 推理时选中的专家 mask 重放到训练前向，先收路由缝，再交给 GRPO / GSPO / TIS。
 - DAPO / GSPO / SAPO：如何把这条 group-based RL 的 policy update 做稳、做可扩展。
 - [DPO](../sources/dpo.md)：如何把 KL-constrained RLHF 收成离线偏好对上的一条 logistic 损失，不再训独立 RM、也不在训练环里采样。这是 2023 的闭式偏好路线；已收录的 2026 报告几乎都改走 RLVR / GRPO 家族和 MOPD，本条只作历史对照，避免与 DAPO 撞名。
+- [KTO](../sources/kto.md)：如何用前景理论价值函数在**不需要 pair** 的二元 desirable/undesirable 信号上做离线对齐。仍是 2024 的离线 HALO，不是 2026 RLVR / GRPO 主轴，也不解释 DPO 为何退出生产栈。不要把「不需要 pair」写成 agentic RL 替代。
 - [Iterative RPO](../sources/iterative-rpo.md)：如何在 DPO 上给 winner 再加一条 SFT（TRL `rpo_alpha`）。纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。与 VAPO 的 positive-example NLL 同构，只是挂在 DPO 而不是 PPO。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
@@ -173,4 +174,4 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
 - “保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
 - Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
-- 2026 报告几乎不用 [DPO](../sources/dpo.md)：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？仓库里还没有一手来源回答。
+- 2026 报告几乎不用 [DPO](../sources/dpo.md)：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？[KTO](../sources/kto.md) 把监督改成二元、仍是离线 HALO，同样不回答这条生产弃用因果。仓库里还没有一手来源回答。

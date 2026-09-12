@@ -33,6 +33,7 @@
 - [Mamba-2](sources/mamba-2.md) - Dao + Gu 的 SSD：标量恒等选择性 SSM，对偶于 1-semiseparable SMA，不是 delta rule。SSD kernel 相对 Mamba scan 2–8×；GDN 的门与 Nemotron 3 Ultra SSM 层的前作。
 - [Lightning Attention-2](sources/lightning-attention-2.md) - OpenNLPLab 的因果线性注意力 tiling/kernel：块内 $(QK^\top\odot M)V$、块间 $Q(KV)$ 右乘；标量衰减，不是 delta rule。TNL-LA2 0.4B 的 TGS 从 1K 到 92K 几乎走平。FlashLinearAttention 算法名出在 GLA，后来才成仓库伞名。
 - [Gated Linear Attention](sources/gated-linear-attention.md) - Yang 等 ICML 2024：数据相关 channel-wise 门 $\mathrm{Diag}(\alpha_t)$，写入仍是外积，没有 delta。KDA 细门的前身。FlashLinearAttention 算法名出在本篇。
+- [DeltaNet](sources/delta-net.md) - Yang 等 NeurIPS 2024：把 Schlag 的 delta rule 做成 WY Householder 的 chunkwise 并行训练；1.3B/100B 上 ppl 与零样本超过 Mamba/GLA，召回受状态尺寸限制。GDN 的 delta 前作，没有遗忘门。
 - [RWKV](sources/rwkv.md) - Peng 等 EMNLP 2023：AFT 收成 RNN。WKV 是 channel-wise 指数衰减加权，推理 $O(d)$，不是矩阵 $S$、不是 delta rule。发布 169M–14B、Pile 330B。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。
 - [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。
@@ -50,6 +51,7 @@
 - [DeepSeekMath](sources/deepseekmath.md) - DeepSeek-AI 的 7B 数学报告，GRPO 一手出处：丢掉 critic、同题组内相对奖励当 baseline；MATH 51.7%（无工具、无投票）。后续 DAPO / GSPO / IcePop 都从这条目标改起。
 - [DPO](sources/dpo.md) - Stanford 的 NeurIPS 2023 论文：把 KL-constrained RLHF 的最优策略写成闭式，用 Bradley-Terry 偏好差消去配分函数，把 PPO 回路收成一条 logistic 分类损失。最大实验 6B；与 DAPO 同名不同族。
 - [Iterative RPO](sources/iterative-rpo.md) - Meta FAIR + NYU：DPO 上给 winner 再加长度归一化 NLL（TRL `rpo_alpha=1.0`），按最终答案对错造 pair 并迭代；Llama-2-70B-Chat 的 GSM8K 55.6→81.6。
+- [KTO](sources/kto.md) - Stanford + Contextual AI 的 ICML 2024 论文：用 Kahneman-Tversky 前景理论价值函数做离线对齐，二元 desirable/undesirable、不需要 pair；1B–30B 上匹配或超过 DPO。不是 GRPO 变体。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
 - [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
@@ -108,6 +110,7 @@
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
 - [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
 - [YaRN](sources/yarn.md) - Nous Research + EleutherAI 的 RoPE 扩展方法：NTK-by-parts 按维切分频率 + attention temperature；微调不足 0.1% 预训练数据把 Llama 2 推到 128K，Dynamic-YaRN 无微调可超 2×。Qwen3 / Qwen3-Next 推理外推的一手定义。
+- [Dual Chunk Attention](sources/dual-chunk-attention.md) - HKU + 阿里的 training-free 长上下文扩展：把 RoPE 注意力按 chunk 拆成 Intra / Inter / Successive 三路位置重映射，不改权重、兼容 Flash Attention；Llama2 70B 外推过 100k，并可与 PI / NTK / YaRN 正交叠加。Qwen3 公开推理配方的 DCA 一手出处。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。

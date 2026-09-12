@@ -19,7 +19,7 @@ resource: "../../raw/2607.07740v2.pdf"
 
 ## 核心结论
 
-1. **零样本扩展是开源权重的主部署路径**。长文档 QA、仓库级代码、RAG 和 agentic 轨迹经常把输入推到预训练窗的一个数量级之外；直接训长上下文既贵又容易伤短窗表现。主流零样本方法（YaRN / Self-Extend / DCA）**预先固定一个缩放因子**：激进则伤短窗，保守则长窗崩。长度自适应变体（AdaGroPE / LaMPE / SELF）用拟合或距离相关日程，需要 per-model 调参（§1、§2.2）。这里当基线的 YaRN 是 HuggingFace `rope_type=yarn` 的固定 factor，对应 [YaRN 原文](yarn.md) Definition 2（NTK-by-parts 频率切分 + attention temperature），不是 NTK-aware / ABF，也不是原文的 Dynamic-YaRN。
+1. **零样本扩展是开源权重的主部署路径**。长文档 QA、仓库级代码、RAG 和 agentic 轨迹经常把输入推到预训练窗的一个数量级之外；直接训长上下文既贵又容易伤短窗表现。主流零样本方法（[YaRN](yarn.md) / Self-Extend / [DCA](dual-chunk-attention.md)）**预先固定一个缩放因子**：激进则伤短窗，保守则长窗崩。长度自适应变体（AdaGroPE / LaMPE / SELF）用拟合或距离相关日程，需要 per-model 调参（§1、§2.2）。这里当基线的 YaRN 是 HuggingFace `rope_type=yarn` 的固定 factor，对应 [YaRN 原文](yarn.md) Definition 2（NTK-by-parts 频率切分 + attention temperature），不是 NTK-aware / ABF，也不是原文的 Dynamic-YaRN。
 2. **Jet-Long：双焦点 + 解析式动态 G**。局部窗 $w_0$ 保留原版 RoPE（预训练行为原样）；远程窗把位置别名到训练网格，$G=\max(1,\lceil L/w_{\text{pretrained}}\rceil)$，$f(x)=\lfloor x/G\rfloor$。$L\le w_{\text{pretrained}}$ 时 $G=1$、$f$ 是恒等，**数学上退回基座**（§3.1、Eq. 2–3）。
 3. **推理几乎免费**。KV cache 只存未压缩的基座位置；远程视图用 RoPE 可加性 $R_a R_b=R_{a+b}$ 在寄存器里做 correction rotation，**G 中途变了也不重写 cache**。Prefill 用 inclusion–exclusion 三次 FlashAttention 合并，融进单一 CuTe kernel 后，Qwen3-8B 在 H100 上 64K–128K prefill 达 FA2 的 1.28–1.39×（逼近 Hopper-only FA4 的 1.53×），decode 各长度 ≥0.96× FA2（§3.2–3.3、§4.6、Table 7）。
 4. **Qwen3 三尺寸上领先最强零样本基线**。RULER 13 任务 × 7 长度平均：相对最强基线 +4.79 / +2.18 / +2.03 pp（1.7B/4B/8B）。HELMET-RAG 在 4B/8B 最优，1.7B 落后 Self-Extend 0.73 pp。PG-19 三尺寸都最低。官方 Qwen3 推理配方（YaRN factor=4，32K→128K）在这篇的对照里是最弱的一组之一，1.7B 上甚至低于不扩展的 Base（RULER 52.99 vs 60.93）（Table 1、Appendix C）。
@@ -33,7 +33,7 @@ resource: "../../raw/2607.07740v2.pdf"
 
 RoPE 模型越出训练窗有两个失败模式（§2.1）：**(i) 位置 OOD**——低频分量的旋转角超出训练分布；**(ii) softmax 扩散 + 中间位置偏差**。Jet-Long 只打第一条：把远程相对角别名回预训练见过的离散网格。第二条留给稀疏 / 线性 / SSM 等架构（§5）。
 
-它继承 Self-Extend 的双窗分解（DCA 是「三路」近亲）：查询 $q$、键 $k$ 的预 softmax 分数（Eq. 1）
+它继承 Self-Extend 的双窗分解（[DCA](dual-chunk-attention.md) 是「三路」近亲，Intra / Inter / Successive）：查询 $q$、键 $k$ 的预 softmax 分数（Eq. 1）
 
 $$
 S(q,k)=\begin{cases}
@@ -90,9 +90,9 @@ $$O_{\text{final}}=\frac{W_A O_A+W_B O_B-W_C O_C}{W_A+W_B-W_C}$$
 
 ## 评测要点
 
-设置（§4.1、Appendix C）：Qwen3-1.7B/4B/8B-**Base**，原生训练窗 32,768，RoPE $\theta=10^6$，无微调扩到 131,072。主结果 $w_0=2048$。RULER / HELMET-RAG 贪心解码；PG-19 是 100 本书、stride 1024 的 teacher-forced ppl。对照超参跨尺寸、跨长度固定：DNTK `rope_type=dynamic, factor=4.0`；YaRN `rope_type=yarn, factor=4.0, max_position_embeddings=131072`（即 32K×4=128K，与 [Qwen3 报告](qwen3.md) 的官方推理配方同结构；按 [YaRN 原文](yarn.md) 这是固定 $s$ 的 Definition 2，不是 Dynamic-YaRN，也不是训练期 ABF）；DCA `chunk_size=20480, local_window=4096`；Self-Extend `group_size=8, window_size=1024`。
+设置（§4.1、Appendix C）：Qwen3-1.7B/4B/8B-**Base**，原生训练窗 32,768，RoPE $\theta=10^6$，无微调扩到 131,072。主结果 $w_0=2048$。RULER / HELMET-RAG 贪心解码；PG-19 是 100 本书、stride 1024 的 teacher-forced ppl。对照超参跨尺寸、跨长度固定：DNTK `rope_type=dynamic, factor=4.0`；YaRN `rope_type=yarn, factor=4.0, max_position_embeddings=131072`（即 32K×4=128K，与 [Qwen3 报告](qwen3.md) 的官方推理配方同结构；按 [YaRN 原文](yarn.md) 这是固定 $s$ 的 Definition 2，不是 Dynamic-YaRN，也不是训练期 ABF）；[DCA](dual-chunk-attention.md) `chunk_size=20480, local_window=4096`；Self-Extend `group_size=8, window_size=1024`。
 
-读数时要分清两件事：**Qwen3-4B/8B 模型卡上的 128K 已经是 YaRN+DCA 推理扩展**；本页 Table 1 的 Base 列是**不套任何扩展、32K 训练窗原样外推**，128K 上会崩。YaRN 列才接近官方开源推理路径。
+读数时要分清两件事：**Qwen3-4B/8B 模型卡上的 128K 已经是 [YaRN](yarn.md)+[DCA](dual-chunk-attention.md) 推理扩展**；本页 Table 1 的 Base 列是**不套任何扩展、32K 训练窗原样外推**，128K 上会崩。YaRN 列才接近官方开源推理路径的频率半边，官方还叠了 DCA。
 
 Table 1（原文，RULER / HELMET-RAG 为 13 或 4 任务在 4K–128K 七个长度上的平均准确率；PG-19 为七长度几何平均 ppl，越低越好）：
 
@@ -101,7 +101,7 @@ Table 1（原文，RULER / HELMET-RAG 为 13 或 4 任务在 4K–128K 七个长
 | Base | 60.93 / 69.94 / 73.13 / 68.00 | 36.20 / 44.33 / 47.24 / 42.59 | 16.13 / 14.84 / 12.80 / 14.59 |
 | DNTK | 69.14 / 79.75 / 83.54 / 77.48 | 41.27 / 50.81 / 55.55 / 49.21 | 12.60 / 10.78 / 9.13 / 10.84 |
 | YaRN | 52.99 / 70.11 / 78.49 / 67.20 | 32.24 / 43.63 / 53.41 / 43.09 | 16.39 / 12.08 / 9.91 / 12.79 |
-| DCA | 67.80 / 80.19 / 81.08 / 76.36 | 41.77 / 51.91 / 56.12 / 49.93 | 11.77 / 9.89 / 8.77 / 10.14 |
+| [DCA](dual-chunk-attention.md) | 67.80 / 80.19 / 81.08 / 76.36 | 41.77 / 51.91 / 56.12 / 49.93 | 11.77 / 9.89 / 8.77 / 10.14 |
 | Self-Extend | 67.86 / 80.84 / 84.71 / 77.80 | **43.01** / 52.98 / 56.86 / 50.95 | 11.85 / 9.95 / 8.81 / 10.20 |
 | Jet-Long | **73.93 / 83.02 / 86.74 / 81.23** | 42.28 / **53.61 / 57.34 / 51.08** | **11.72 / 9.85 / 8.73 / 10.10** |
 
@@ -143,5 +143,6 @@ $w_0$ 消融（Table 5，Qwen3-4B/8B，64K/96K/128K）：$w_0=0$ 把局部窗缩
 
 - 概念：[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
 - 频率缩放前作：[YaRN](yarn.md)（NTK-by-parts + attention temperature 的一手定义；本页 HF `rope_type=yarn` 基线对应 Definition 2）
+- 固定分组前作：[Dual Chunk Attention](dual-chunk-attention.md)（本页 Table 1 的 DCA 基线；三路位置重映射，不是稀疏注意力）
 - 评测底座：[Qwen3 技术报告](qwen3.md)、[Qwen3](../models/qwen3.md)
 - 生产中的 YaRN / NoPE：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Laguna M.1/XS.2 技术报告](laguna-m1-xs2.md)、[Kimi Linear 技术报告](kimi-linear.md)、[Kimi K3 技术报告](kimi-k3.md)
