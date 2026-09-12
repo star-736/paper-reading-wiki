@@ -19,11 +19,12 @@ resource:
 - arXiv：[2607.04884](https://arxiv.org/abs/2607.04884)
 - 团队：中科院信工所 + 腾讯（大语言模型部）+ 南开大学
 - 模型：[HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md)
+- 前作：[HunyuanOCR 1.0](hunyuan-ocr-1.0.md)（arXiv:2511.19575，同架构首发）
 - 日期：2026-07-07
 
 ## 核心结论
 
-HunyuanOCR-1.5 不重新设计 HunyuanOCR-1.0 的架构，而是围绕「更快」和「更好」两个目标做系统升级：
+HunyuanOCR-1.5 不重新设计 [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) 的架构，而是围绕「更快」和「更好」两个目标做系统升级：
 
 1. **更快——DFlash 推测解码**：把 block-diffusion draft model 适配到 OCR 解码，在保持输出分布不变的前提下，Transformers 推理 6.37× 加速、vLLM 2.14× 加速，是所有轻量 OCR VLM 中最快的。
 2. **更好——Agentic Data Flow**：agent 驱动的数据构造系统，把模型弱点转化为可执行数据需求，自主完成物料搜索、质量验证和 pipeline 开发，系统提升古文字 OCR、低资源多语言、多图 QA 等长尾能力。
@@ -84,7 +85,7 @@ Agent 配备的工具：web search、OCR 服务、VLM 服务、文件处理脚�
 
 SFT 阶段建立干净、高度结构化的基础：精炼训练数据、统一 prompt 接口。
 
-RL 阶段使用 IcePop（GRPO 变体）+ 三组件 reward 系统：
+RL 阶段使用 [IcePop](ring-1t.md)（GRPO 变体，一手出处 Ring-1T）+ 三组件 reward 系统：
 
 ![RL 框架总览：三组件 reward 系统协同优化 OCR 模型。左：文档解析事实性 reward（plain text edit distance + table/chart element-specific）；中：QA 一致性判官 reward（LLM-as-judge，VQA 二值、翻译软分 [0,5]）；右：退化抑制 reward（overlong penalty + repeated fragment penalty）。](../assets/hunyuan-ocr-1.5/fig4-rl-framework.png)
 
@@ -94,7 +95,7 @@ RL 阶段使用 IcePop（GRPO 变体）+ 三组件 reward 系统：
 2. **QA 一致性判官 reward**：LLM-as-judge 验证模型回答与参考的语义一致性。VQA 为二值（0/1），翻译为软分 [0, 5] 并做 debiased mapping 扩展中段分辨率。
 3. **退化抑制 reward**：overlong output penalty（超长直接 reward=0）+ repeated fragment penalty（检测连续重复模式，reward=0），抑制 OCR 长输出的退化。
 
-IcePop 的关键是 train-inference ratio mask：用 $c_{i,t} = \pi_{\text{train}} / \pi_{\text{infer}}$ 的比值落在 $[\alpha_m, \beta_m]$ 区间内的 token 才参与更新，区间外的 token $s_{i,t}=0$ 不贡献梯度。
+IcePop 的关键是 train-inference ratio mask：用 $c_{i,t} = \pi_{\text{train}} / \pi_{\text{infer}}$ 的比值落在 $[\alpha_m, \beta_m]$ 区间内的 token 才参与更新，区间外的 token $s_{i,t}=0$ 不贡献梯度。算法定义见 [Ring-1T](ring-1t.md) Eq. 1–2。
 
 ## 评测要点
 
@@ -120,13 +121,15 @@ OmniDocBench v1.6（端到端文档解析）总分 94.74，是 1B 级模型 SOTA
 
 - DFlash 的 draft model（90.7M / 5 层）在高并发下是否有 DSpark 论文指出的静态多 token drafter 吞吐反噬问题？报告只给了 c=1 到 c=32 的数据，c=32 时加速比已从 2.14× 降到 1.80×。
 - Agentic Data Flow 的 agent 具体用什么模型驱动？报告提到 Qwen3.5 参与标注，但 agent 本身的 backbone 未明确。
-- IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？三者都在 GRPO 框架上改 ratio/clipping 粒度。
-- **HunyuanOCR 1.0 自报分与统一重测分分歧**：本报告自报表中 HunyuanOCR-1.0 = 92.03（OmniDocBench v1.6），但 [MinerU2.5-Pro](mineru-2-5-pro.md) 在统一环境用 MGAM 重测同一模型（HunyuanOCR 1.0，arXiv:2511.19575）= 89.87（Full），差约 2.16 分。根因未明（可能与匹配逻辑、评测代码、test 子集有关），读分时须区分自报分与统一重测分。注意：HunyuanOCR-1.5 自身 94.74 尚无统一重测分对照。
+- IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？IcePop 一手出处（[Ring-1T](ring-1t.md) Appendix A.1）写它不依赖 sequence-level 优化、可与 GSPO 并进，但本报告没有组合实验。
+- **HunyuanOCR 1.0 三套 OmniDocBench 分数**：[1.0 原文](hunyuan-ocr-1.0.md) Table 4 = **94.10**（Ouyang 2024 协议，附录写成 v1.5）；本报告自报 1.0 的 v1.6 = **92.03**；[MinerU2.5-Pro](mineru-2-5-pro.md) 统一重测 v1.6 Full = **89.87**。v1.5→v1.6 自报已对上版本；**92.03 vs 89.87 仍未归因**。1.5 自身 94.74 尚无统一重测。
 
 ## 相关页面
 
 - [HunyuanOCR-1.5](../models/hunyuan-ocr-1.5.md) - 模型身份页
+- [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) - 同架构前作；v1.5 自报 94.10，本报告的 92.03 是 v1.6
 - [MinerU2.5-Pro](mineru-2-5-pro.md) - 同属轻量文档解析 VLM，提供 HunyuanOCR 1.0 的统一重测分对照（见待追问）
 - [Unlimited OCR Works](unlimited-ocr.md) - 同属 OCR VLM 家族，走恒定 KV cache attention 路线（R-SWA）而非推测解码
-- [多 Token 预测](multi-token-prediction.md) - DFlash 作为 block-diffusion 推测解码变体
-- [Agentic Engineering](agentic-engineering.md) - Agentic Data Flow 作为 agent 驱动自动化的一个实例
+- [多 Token 预测](../concepts/multi-token-prediction.md) - DFlash 作为 block-diffusion 推测解码变体
+- [Agentic Engineering](../concepts/agentic-engineering.md) - Agentic Data Flow 作为 agent 驱动自动化的一个实例
+- [Ring-1T](ring-1t.md) - IcePop 一手出处

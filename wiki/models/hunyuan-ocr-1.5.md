@@ -10,7 +10,7 @@ timestamp: 2026-07-11
 
 ## 身份
 
-HunyuanOCR-1.5 是腾讯 + 中科院信工所 + 南开大学发布的轻量端到端 OCR-specialized VLM，在 HunyuanOCR-1.0 基础上围绕「更快」和「更好」做系统升级，不重新设计架构。核心升级是 DFlash 推测解码（推理加速）和 Agentic Data Flow（agent 驱动数据构造补长尾能力）。
+HunyuanOCR-1.5 是腾讯 + 中科院信工所 + 南开大学发布的轻量端到端 OCR-specialized VLM，在 [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) 基础上围绕「更快」和「更好」做系统升级，不重新设计架构。核心升级是 DFlash 推测解码（推理加速）和 Agentic Data Flow（agent 驱动数据构造补长尾能力）。
 
 ## 关键事实
 
@@ -41,6 +41,7 @@ HunyuanOCR-1.5 的定位不是通用 VLM，而是 OCR-specialized VLM——把�
 ## 相关页面
 
 - [HunyuanOCR-1.5 技术报告](../sources/hunyuan-ocr-1.5.md)
+- [HunyuanOCR-1.0](hunyuan-ocr-1.0.md) - 同架构前作，GRPO 而非 IcePop
 - [Unlimited OCR](unlimited-ocr.md) - 同属 OCR VLM 家族，走 R-SWA 恒定 KV cache 路线
 - [多 Token 预测](../concepts/multi-token-prediction.md) - DFlash 在推测解码谱系中的位置
 - [Agentic Engineering](../concepts/agentic-engineering.md) - Agentic Data Flow 的上下文

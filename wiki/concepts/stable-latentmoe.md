@@ -114,7 +114,7 @@ margins `s_{i,j} - α_i^{(t)}` 减掉 biased cutoff，旧 bias 只通过 cutoff 
 - **[Ling-2.6](../sources/ling-2.6.md)**：256 routed + 1 shared, 8 active，fine-grained MoE（expert intermediate=2048），前 4 层 dense FFN。规模与稀疏度都远低于 K3，未走 latent 压缩路线，也未提激活爆炸或负载失衡的专门解法——说明这两类问题在 ~1T / 256-expert 规模尚未尖锐到需要 Stable LatentMoE 级别的工程。
 - **[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)**：另一条 **LatentMoE 生产集成**，但不是 Stable 三组件。550B/55B，512 routed / top-22，latent 2048（相对 hidden 8192 是 1/4，比 K3 的 d/2 更窄），引用 Elango et al. 2026。报告没有公开 SiTU-GLU 或 Quantile Balancing；预训练用 MaxVio 当健康代理，第一层 MaxVio 到 12T 时约 12，第二次 loss 发散后把总 token 收到 20T。这是「LatentMoE 结构」与「K3 用来稳住 896-expert 的三组件」必须分开记的对照点。
 - **SiTU-GLU 与 GLU/SwiGLU 家族**：SwiGLU 是当前 LLM FFN 主流（K2/Qwen3/DeepSeek 系都用）。SiTU-GLU 是首个为 3T 规模 + 极端稀疏 MoE 设计的 bounded 变体。与 hard clamping 的区别（smooth cap 保留饱和区梯度）是 K3 报告强调的训练优势点，但缺跨模型的对比 ablation。
-- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2 系 / DeepSeek-V3 起 / MiniMax-M2 / Ling-2.6 用；Qwen3 走的是 aux loss 路线而非 bias）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。完整谱系见 [MoE 负载均衡谱系](moe-load-balancing.md)。
+- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2 系 / DeepSeek-V3 起 / MiniMax-M2 / Ling-2.6 用；Qwen3 走的是 aux loss 路线而非 bias）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。完整谱系见 [MoE 负载均衡谱系](moe-load-balancing.md)。这里的 ECHO 是 MoE expert-parallel 通信栈，**不是** [ECHO 终端观测辅助 CE](../sources/echo.md)。**已闭合：不臆造 QB 独立报告**，Quantile Balancing 的一手在 [Kimi K3](../sources/kimi-k3.md)。
 
 ## 为什么重要
 
