@@ -71,7 +71,7 @@ Algorithm 1（§4 原文）：每步对全部技能算 \(p^{\mathrm{LLM}}_\pi = 
 
 规划用的 LLM **不**做具身 SFT 或 RL。PaLM-SayCan 的 LLM 是冻结的 540B PaLM，除非做模型尺寸消融（§5、Table 3）。加新技能的方式是：写入选项集合、提供配套 value function、在 prompt 里加一条例子——抽屉操作 21 条查询规划 100%、执行 33%，且「对其它指令没有性能损失」（§5.2、Appendix E.3）。
 
-Chain-of-thought 也不是训新权重：先生成 `Explanation`，再把解释放进 scoring 的 prompt，用来补否定和需要推理的查询（§5.2、Table 4）。闭环纠错本页做不到；作者把 Inner Monologue 写成后续（§5 末，Huang et al.）。**找论文可解**：Huang et al., *Inner Monologue: Embodied Reasoning through Planning with Language Models*，[arXiv:2207.05608](https://arxiv.org/abs/2207.05608)。本库尚未 ingest，不把那篇的闭环反馈写进本页机制。
+Chain-of-thought 也不是训新权重：先生成 `Explanation`，再把解释放进 scoring 的 prompt，用来补否定和需要推理的查询（§5.2、Table 4）。闭环纠错本页做不到；作者把 [Inner Monologue](inner-monologue.md) 写成后续（§5 末，Huang et al.）。那篇把成功检测 / 场景描述 / 人类回答写成文字注入 LLM prompt；厨房实验仍用本页的 affordance 接地，value function **不**回写给语言模型。不要把那篇的闭环反馈写进本页机制。
 
 开源 Colab（§6）是另一套实现：CLIPort 做 pick-place，没有 value function，用 ViLD 检测器当 affordance，GPT-3 当 LLM。不要和厨房 PaLM-SayCan 主表横比。
 
@@ -130,12 +130,12 @@ Appendix Table 6 还在纯生成（无 value function、USE 投影）上比了 P
 
 - 继承 LLM 的偏见与训练数据依赖。
 - **主瓶颈是底层技能的范围和可靠性**，不是规划文案。
-- 技能报了高 value 却失败时，系统不容易反应；作者认为可以用 prompt 纠错，但本页没做成。
+- 技能报了高 value 却失败时，系统不容易反应；作者认为可以用 prompt 纠错，但本页没做成。后作 [Inner Monologue](inner-monologue.md) 用成功检测文字做重试，厨房 120 次评估上相对本页方法从 30.8% 到 60.4%（那篇 Table 3，协议不是本页 101 条）。
 - 自然语言是不是编程机器人的对本体，原文自己列为开放问题。
 
 ## 待追问
 
-- **找论文可解**：Inner Monologue（Huang et al., [arXiv:2207.05608](https://arxiv.org/abs/2207.05608)）给本页加环境反馈闭环。本页 SayCan 每步只通过当前 value function 看世界；闭环纠错不能从本 PDF 推出。
+- **已闭合**：闭环语言反馈见 [Inner Monologue](inner-monologue.md)。本页每步只通过当前 value function 看世界；那篇的 Success/Object 文字不从本 PDF 推出。厨房数字不能和本页 101 条 84%/74% 横比。
 - Code as Policies 把技能写成可执行程序，[ASPIRE](aspire.md) 再把程序库做成自进化；[EmbodiSkill](embodiskill.md) 从轨迹改技能正文。和本页「固定技能表 + value function」差在哪一层，不能用本页 84% 去填那些表。EmbodiSkill §2.2 把本页写成选已有技能、不从轨迹修订。
 - [EmbodiedSkills](embodied-skills.md) 的 proposal × runtime 先验后验，和本页 LLM × affordance 是不是同一因式分解换了实现，两边原文都没对照。
 - 551 条技能里评测实际启用了多少条，Appendix D 未在本页逐条核对。
@@ -143,6 +143,7 @@ Appendix Table 6 还在纯生成（无 value function、USE 投影）上比了 P
 ## 相关页面
 
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（本页是分层 LLM planner，**不是** VLA 动作头）
+- 语言反馈闭环后作，厨房实验叠在本页 affordance 上：[Inner Monologue](inner-monologue.md)
 - RT-2 针对的分层接法：[RT-2](rt-2.md) · [模型](../models/rt-2.md)
 - π0 把高层 VLM 写成外挂、并点名类似本页：[π0](pi0.md)
 - 固定技能合同、不是本页的 value function 库：[EmbodiedSkills](embodied-skills.md)

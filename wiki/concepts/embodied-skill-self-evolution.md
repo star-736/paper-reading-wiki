@@ -21,7 +21,7 @@ timestamp: 2026-09-12
 三个对比还要先分清：
 
 - **与 [VLA](vision-language-action.md)**：VLA 更新的是动作网络权重（离散 bin / flow expert / co-training）。ASPIRE 对照表里出现 OpenVLA / π0 / π0.5，但系统本身写/改程序；EmbodiSkill 的执行器是冻结 Qwen，不是动作头。不要把这三条路读成第四种动作头。
-- **与 [SayCan](../sources/saycan.md)**：那边的 skill 是评测时**固定**的语言条件策略 + value function，LLM 只在这张表上打分；库不会因失败写入新条目。ASPIRE 的库会扩张，EmbodiSkill 的正文会改写，EmbodiedSkills 的合同保持固定。不要用 SayCan 的 84% 规划去填这三张表。
+- **与 [SayCan](../sources/saycan.md) / [Inner Monologue](../sources/inner-monologue.md)**：那边的 skill 是评测时**固定**的语言条件策略 + value function，LLM 只在这张表上打分；库不会因失败写入新条目。Inner Monologue 只是把成功/场景/人类回答写成文字送回 LLM，技能集合仍然固定。ASPIRE 的库会扩张，EmbodiSkill 的正文会改写，EmbodiedSkills 的合同保持固定。不要用 SayCan 的 84% 规划或 Inner Monologue 厨房 60.4% 去填这三张表。
 - **与软件 agent 的 skill 文件**（[Macaron HCP](../sources/macaron-v1.md) / [Prime Agent](../sources/prime-agent.md) L3 skills）：对象从终端、工具、REPL 变成机器人感知–运动与接触动力学。同构的是「L0 不动、改可复用程序」；差异是痕迹是多模态 robot trace 或具身轨迹，sim-to-real 运的是 know-how 而不是像素或权重。
 - **与 [AtomicVLA](../sources/atomicvla.md)**：那边的 skill 是 **SG-MoE 专家模块**，低层仍是 [π0](../models/pi0.md) / [π0.5](../models/pi0.5.md) 连续 action expert，不是本页三条路里的程序、正文或 typed 合同。入口在 [VLA](vision-language-action.md)，不要读成第四种动作头，也不要用它的 LIBERO / 真机数字填本页。
 
@@ -55,5 +55,6 @@ timestamp: 2026-09-12
 - 已 ingest 的三条路：[ASPIRE](../sources/aspire.md) · [EmbodiSkill](../sources/embodiskill.md) · [EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Vision-Language-Action](vision-language-action.md)、[Agent harness](agent-harness.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)
 - 固定技能表 + value function，不是本页：[SayCan](../sources/saycan.md)
+- 语言反馈闭环，库仍固定，也不是本页：[Inner Monologue](../sources/inner-monologue.md)
 - VLA 对照来源：[OpenVLA](../sources/openvla.md)、[π0](../sources/pi0.md)、[π0.5](../sources/pi0.5.md)、[π0.7](../sources/pi0.7.md)（Gemma 3 + MEM，不是第四种动作头）、[AtomicVLA](../sources/atomicvla.md)（SG-MoE 路由，不是本页三条路）
 - 软件侧 skill / harness：[Prime Agent](../sources/prime-agent.md)、[Macaron-V1](../sources/macaron-v1.md)

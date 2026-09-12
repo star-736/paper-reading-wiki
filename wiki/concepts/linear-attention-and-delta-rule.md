@@ -3,7 +3,7 @@ type: Concept
 title: "线性注意力与 delta rule"
 description: "朴素线性注意力 → DeltaNet → GDN → KDA 的演进，遗忘门 + delta rule 如何把线性注意力质量追回 softmax。"
 tags: ["concept", "linear-attention-and-delta-rule"]
-timestamp: 2026-06-21
+timestamp: 2026-09-12
 ---
 
 # 线性注意力与 delta rule
@@ -26,11 +26,30 @@ $$S_t = S_{t-1} + k_t v_t^\top,\qquad o_t = S_t q_t$$
 
 | 阶段 | 状态更新（简化） | 关键改动 | 解决的问题 |
 | --- | --- | --- | --- |
-| 朴素线性注意力 | $S_t = S_{t-1} + k_t v_t^\top$ | 无遗忘 | 复杂度从 $O(L^2)$ 降到 $O(L)$ |
+| 朴素 / 标量衰减线性注意力 | $S_t = \lambda S_{t-1} + k_t v_t^\top$（$\lambda=1$ 即无遗忘） | 无定向擦写。因果训练的 cumsum 会毁掉并行；[Lightning Attention-2](../sources/lightning-attention-2.md) 用块内左乘 + 块间右乘 tiling 把墙钟速度拉回理论 $O(n)$——**这是 kernel，不改状态方程** | 复杂度从 $O(L^2)$ 降到 $O(L)$；decode 无随长度增长的 KV |
+| **Mamba-2（SSD）** | $S_t = \alpha_t S_{t-1} + v_t k_t^\top$，$\alpha_t$ **数据相关**标量（$A_t=\alpha_t I$） | 选择性 SSM，不是 delta rule。$A$ 从 Mamba-1 的对角再收成标量×单位阵；对偶于 1-semiseparable SMA；SSD 算法块内二次注意力、块间低秩扫描 | 整块按输入决定忘多少 + 更大状态扩张 $N$；仍无法按 key 定向擦写 |
 | DeltaNet | $S_t = (I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 把递推看成对重构损失 $\tfrac12\lVert S k_t - v_t\rVert^2$ 做在线梯度下降（经典 **delta rule**）；rank-1 更新等价于广义 Householder 变换，可 chunkwise 并行 | 让记忆「自我纠错」，但旧关联仍永久保留 |
 | Gated DeltaNet（GDN） | $S_t = \alpha_t(I-\beta_t k_t k_t^\top)S_{t-1} + \beta_t k_t v_t^\top$ | 加一个 **head-wise 标量遗忘门** $\alpha_t\in[0,1]$（作用类似对快速权重的 weight decay / 数据相关 L2 正则）。GDN 原文（[来源页](../sources/gated-delta-net.md)）的洞察：门控负责「快速整块清空」、delta rule 负责「定向精确更新」，两者互补——$\alpha_t\to0$ 瞬间清空记忆，$\alpha_t\to1$ 退化成纯 delta rule | 可控的记忆寿命，缓解干扰，改善稳定性与长上下文泛化 |
 | **KDA**（Kimi Linear） | $S_t = (I-\beta_t k_t k_t^\top)\mathrm{Diag}(\alpha_t)S_{t-1} + \beta_t k_t v_t^\top$ | 把 GDN 的标量门换成 **channel-wise 细粒度门** $\mathrm{Diag}(\alpha_t)$——每个特征维独立遗忘速率（思路承自 GLA） | 更精细地调度有限状态记忆，在合成检索任务上超过 GDN、Mamba2 |
 | **KDA（Kimi K3 升级）** | 同上结构，但 decay 参数化从无界 negative-Softplus 换成 **scaled sigmoid**（有下界）；输出门从低秩换成 **full-rank** | `g_t = g_min·Sigmoid(e^A·z_t) ∈ (g_min, 0)`，`g_min=-5` 固定 → retention factor `α > e^-5 ≈ 6.7e-3`，16-token tile 累积 log-decay ∈ (-80, 0) → reciprocal `1/Γ` 不溢出 BF16 → **所有因果 tile（含对角）用 dense Tensor Core MMA**，消掉 position-pair diagonal 路径 | 解锁 KDA 在 3T 级生产模型的硬件效率；K3 用 69 KDA + 24 MLA 的 3:1 混合栈，1M context NoPE 外推 |
+
+### Lightning Attention-2 不是 delta rule
+
+[Lightning Attention-2](../sources/lightning-attention-2.md)（OpenNLPLab，2024-01）解决的是**因果线性注意力怎么在 GPU 上真的线性训**。状态仍是 $kv_t=\lambda\,kv_{t-1}+k_t^\top v_t$，标量衰减、外积累加。块内走 $[(Q_iK_i^\top)\odot M]V_i$，块间走 $\Lambda Q_i(KV)$。它不引入 $\beta$、不按 key 擦旧关联。和 GDN 的 chunkwise parallel form 同属「块内密集、块间传状态」，方程不是一家。
+
+### Mamba-2 也不是 delta rule
+
+[Mamba-2](../sources/mamba-2.md)（Dao & Gu，ICML 2024）走的是 **structured state space**，不是 delta-rule 线性注意力。[Gated DeltaNet](../sources/gated-delta-net.md) 标题里的 "Improving Mamba2 with Delta Rule" 说的就是：先有 Mamba-2 的门，再**另外**加上 delta。
+
+核心层是 **SSD**（Structured State Space Duality，§5）：把 Mamba-1 对角 $A_t$ 再收成标量×单位阵 $A_t=\alpha_t I$。递推仍是 $h_t=\alpha_t h_{t-1}+B_t x_t$——整块衰减 + 外积写入。二次对偶是 $(L\circ QK^\top)V$，其中 $L$ 是数据相关的 1-半可分掩码（$\alpha$ 的累积乘积），不是 softmax，也没有 $(I-\beta kk^\top)$。SSD 算法（§6）把半可分矩阵按 chunk 切开：对角块走二次注意力吃 matmul，非对角块走低秩状态传递。这和 Lightning-2、GDN 的 tiling **同属「块内密集、块间传状态」**，状态方程三家都不同。
+
+![Mamba-2 Figure 4：左表 SSM 与 SMA 符号对应（C↔Q、B↔K、X↔V）；右图嵌套集合里，标量恒等 SSM 与 1-semiseparable SMA 的交集才是 SSD。RetNet / Linear Attention 落在这个交集，一般对角 SSM（S6）在交集之外。](../assets/mamba-2/fig4-ssd-duality.png)
+
+> Figure 4（[Mamba-2](../sources/mamba-2.md) 原文截图，§5.3）：SSD 是 SSM 与 structured masked attention 的交集，不是 delta-rule 族。
+
+Mamba-2 的块级改动（并行投影 $A,X,B,C$ + 输出前 Norm + multi-value 头）不改变这条规则。生产侧 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 用的就是这种 Mamba-2 SSM，周期插 GQA，不是 KDA。Qwen3-Next 则明确选 GDN、不选 Mamba-2（[官方博客](../sources/qwen3-next-blog.md)：「in-context learning 强于 … Mamba2」）。
+
+**FlashLinearAttention 是代码库**，不是机制名。原文代码在 [OpenNLPLab/lightning-attention](https://github.com/OpenNLPLab/lightning-attention)；后来的 FLA 仓库把 Lightning / GLA / RetNet / GDN 等算子收在一起。
 
 > **Qwen3-Next / Qwen3.5 停在 GDN 这一环，机制上未升级到 KDA。** 它们的线性层用的就是 GDN 原版的 gated delta rule（$\alpha_t$ 是 **head-wise 标量门**，不是 KDA 的 channel-wise 向量门），且 $\alpha_t$ 沿用 GDN 自己规定的 Mamba2 式参数化（原文脚注「We use Mamba2's parameterization for α」）——所以「用 Mamba2 式 α」恰恰是忠实沿用 GDN、不是 Qwen 的改动。判据：HF `config.json` 的 `linear_num_*_heads` + 每 head 一个 `A_log`/`dt_bias` 坐实标量门（代码/config tier-1）。机制沿用 ≠ 模块实现无改动——Qwen 在 block 实现层有工程化改动（value head 2× key head、投影与输出门融合等），那是另一层，见官方 `transformers` modeling，不在本机制演进链内。
 
@@ -102,6 +121,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 
 ## 跨报告信号
 
+- **[Mamba-2](../sources/mamba-2.md)（Dao & Gu，ICML 2024，原文已入库）**：SSD 框架的一手出处。选择性 SSM 收成标量恒等 $A$，对偶于 1-semiseparable SMA；SSD kernel 相对 Mamba scan 2–8×。**不是 delta rule**。GDN 的门从这里来，delta 从 DeltaNet 来。Nemotron 3 Ultra 的 SSM 层、Qwen3-Next「不选 Mamba2」的对照，都以本页为机制原文。
 - **[Gated DeltaNet（GDN）](../sources/gated-delta-net.md)（Yang 等，ICLR 2025，原文已入库）**：演进链中间一环的**一手出处**。提出 gated delta rule——门控（快速整块清空）+ delta rule（定向精确更新）互补合体，超过 Mamba2 和 DeltaNet，并自提「GDN + 滑窗/Mamba2」混合架构。KDA 与 Qwen3-Next 系的线性层都建在它之上。
 
   ![Gated DeltaNet Figure 1：GDN 的（混合）架构与 block 设计。左/中为两种混合栈——H1 = Gated DeltaNet + SWA（滑窗注意力）+ MLP 交替，H2 = Mamba2 + Gated DeltaNet + SWA + MLP 交替（均 N× 重复）；右为 Gated Delta Rule block 内部：q/k 走 Linear→ShortConv→SiLU→L2Norm、v 走 Linear→ShortConv→SiLU、α/β 由 Linear 投影得到，一并喂进 Gated Delta Rule，输出经 Norm、再被一个输出门逐元素相乘后 Linear 投影。这张图正是 Kimi Linear 那张 KDA 结构图的「前身模板」。](../assets/gated-delta-net/fig1-hybrid-architecture.png)
@@ -112,7 +132,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 - **[Linear Attention Architectures](../sources/linear-attention-architectures.md)（ETH Zurich，2026-07）**：把 DeltaNet / GDN / KDA / GDN-2 放进一套关联记忆记号做匹配训练比较，并将问题从“单层状态如何写 / 忘”延伸到“跨层该传什么”。其 CLER 直接传 write error 到接收层 value target 未获稳定收益；改为将**完整 write value**零初始化投影、加到共享 residual stream 的 CLVR，在所有已报 single-run 匹配行有小幅 loss 降低，但随规模 / 训练长度缩小，不能超出初步机制证据解读。它说明 delta-rule 的 write error 是本层纠错量，不等于适合跨层复用的表示。
 - **Qwen3-Next 系（[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)/Omni、[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)）**：另一条把 GDN 放进生产模型的路线，且**全局层选择不同**--用「带输出门的 full attention（[gated attention](attention-gating.md)）」而非 Kimi Linear 的 MLA，同样 3:1 混合。Qwen3-Next 无技术报告，但[官方博客](../sources/qwen3-next-blog.md)把这条设计讲明白了：3:1 是「**75% layers use Gated DeltaNet, 25% keep standard attention**」的官方原话（不只是 HF config `layer_types` 推断），选 GDN 的理由是「systematic experiments」下它的 **in-context learning 强于 Sliding Window Attention 或 Mamba2**。这个「GDN > SWA」现在有数字：[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md) Table 1 在 25B-A3B 上 GDN hybrid 平均 53.81 vs SWA hybrid 51.15 vs full 49.87（作者写明表不能拆开每一项增益的因果）。3.8 线性层仍停在 GDN，但输出门改成 sigmoid（原论文是 SiLU），全模型 Zero-Centered RMSNorm，训练 kernel 换 FlashQLA；全局层在 256K CPT 换成 [QSA](../sources/qwen3.8-next.md)，不是继续 dense gated attention。据第三方分析，Kimi Linear 本质就是把 Qwen3-Next 那个 gated-attention 全局层换成了 MLA（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。Qwen3.5-Omni 还把 GDN 降 KV-cache I/O 的价值延伸到长音视频序列。
 - **[InternVLA-A1.5](../models/internvla-a1.5.md)（上海 AI Lab，2026-07，VLA 机器人操作）**：GDN 混合注意力跨出语言/多模态对话、进入**机器人实时控制**领域的采用证据。该模型用 Qwen3.5 2B（3:1 GDN:full attention）做 VLM backbone，处理多视角图像 token 序列做机器人操作决策。GDN 降 KV-cache I/O 的价值在实时控制的多视角图像序列场景同样成立。论文明写 backbone "employs an efficient hybrid attention mechanism that interleaves 3 Gated DeltaNet linear attention layers with 1 standard full attention layer"（§ 2，原文确证）。这是 GDN 作为通用 token mixer（不只服务于语言模型）的信号。
-- **[Ling-2.6](../sources/ling-2.6.md)（Inclusion AI，2026-06，万亿参数 agentic）**：另一条混合线性注意力生产路线，但线性层用的**不是 GDN/KDA 的 delta rule 家族**，而是 **Lightning Attention**（Qin et al. 2024，FlashLinearAttention kernel），gating 机制不同。混合比例为 **7:1**（7 Lightning Attention : 1 MLA），比 Kimi Linear / Qwen3-Next 的 3:1 更激进——scaling law 实验在 M=2/4/8/16 中选 M=8 最优，M=16 已退化，说明线性注意力仍有容量上限。全局层选 MLA（与 Kimi Linear 同路、与 Qwen3-Next 的 gated attention 不同）。独特之处是 **retrofit 而非从头训练**：从 Ling-2.0 的 GQA checkpoint 经四阶段迁移（Lightning Attention 转换 -> MLA 转换，含 QK Norm absorption + Partial RoPE adaptation）无损转换为 hybrid 架构。Lightning Attention 的内部机制（是否也用 delta rule、还是纯 gated linear recurrence）报告未展开，待追问。
+- **[Ling-2.6](../sources/ling-2.6.md)（Inclusion AI，2026-06，万亿参数 agentic）**：另一条混合线性注意力生产路线，线性层属 **Lightning Attention 本族**（标量衰减线性递推 + tiling kernel），**不是** GDN/KDA 的 delta rule。[Lightning Attention-2](../sources/lightning-attention-2.md) 是这条核的一手定义。混合比例 **7:1**（7 Lightning Attention : 1 MLA），比 Kimi / Qwen 的 3:1 更激进。来源页由 A 路维护，IcePop 回链不在本路写。
 - 混合而非纯线性：纯线性注意力的有限状态做不好长程检索，所以 Kimi Linear 保留 1/4 的全局 [MLA](multi-head-latent-attention.md) 层、Qwen3-Next / 3.5 保留 1/4 的全局 gated attention 层、[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) 把那 1/4 在 CPT 换成 QSA、Ling-2.6 保留 1/8 的全局 MLA 层、**Kimi K3 保留 1/4 的 Gated MLA 层**维持全局信息流——这与「稀疏注意力在 MLA 上加 top-k」是两种不同的省法（一个换 token mixer，一个少看 token）。Qwen3.8 是同一混合骨架上再叠内容稀疏，两条省法同时用。混合比例本身成为新的架构超参：3:1（Kimi Linear/K3/Qwen）vs 7:1（Ling-2.6），选哪个取决于线性注意力变体的质量和模型规模。K3 在 3T 规模仍选 3:1，说明 KDA 升级（scaled sigmoid）提升了线性层质量但未到能再压低全局层比例的程度。
 - **RoPE 扩展可叠在 hybrid 的 softmax 层上**。[Jet-Long](../sources/jet-long.md) 把动态双焦点 RoPE 零样本迁到 Jet-Nemotron（softmax 与线性层交错），不重训就把 128K RULER 从崩盘拉回 ~33 分。它只改仍带 RoPE 的 softmax 层；线性层的位置信息仍靠 decay。这是 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md) 与本页的交叉点，不是线性注意力本身的贡献。
 - **门的两种含义别混**：线性注意力里的「门」（GDN/KDA 的遗忘门 $\alpha_t$）控制 RNN 状态记忆寿命；softmax 注意力里的「门」（见 [注意力门控](attention-gating.md)）是给 SDPA 输出注入非线性 + 去 attention sink。同名不同事。
@@ -127,7 +147,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 
 - KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？**已部分厘清**（见「KDA 的硬件效率」开头）：需 cache 的状态 $S_t$ 大小不变，增量在「瞬时门值（×$d_k$，激活非持久）+ 门投影参数（低秩压住）+ DPLR 算子复杂度」三处。**仍待补的精确数字**：低秩门投影的秩与具体参数增量、相对 GDN 的端到端显存/吞吐差，需查配置表与实测。
 - 线性注意力在长 trajectory RL 上，固定状态会不会比 softmax 更易丢失关键中间信息？Kimi Linear 称 RL 阶段也追平，但机制层面的稳健性证据有限。
-- DeltaNet/GDN/KDA 之外，Mamba2、GLA、RWKV 等线性/SSM 变体与这条链的关系，值得补一张更全的谱系图（GDN 原文已把 Mamba2/DeltaNet 作为对照基线，可据其 § 2 补全 delta-rule 之外的一支）。
+- Lightning Attention-2 与 Mamba-2 的内部机制已核：前者是固定/标量衰减线性注意力 tiling，后者是标量恒等选择性 SSM / SSD，都不是 delta rule。GLA、RWKV 与这条链的其余关系仍待补（GDN 原文已把 Mamba2/DeltaNet 作为对照基线）。
 - DPLR「把 $a,b$ 绑定到 $k$」是否损失了通用 DPLR 的某些表达力？报告说「representational capacity 与通用 DPLR 对齐」，但这是 KDA 自述，外部尚无独立验证。
 - CLVR 的小幅收益能否经多 seed、长上下文 associative recall 和 KDA / GDN-2 host 复现？目前只覆盖 DeltaNet / GDN，且论文未给 inference benchmark；不要把训练 loss 的方向性外推为 serving 收益。
 
@@ -135,7 +155,7 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 
 - 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 跨层 write-value 路由）
 
-- 来源：[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（KDA scaled sigmoid 升级 + KCP）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（GDN vs SWA 消融 + sigmoid 输出门 + FlashQLA）、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（Lightning Attention 7:1 hybrid，retrofit 路线）
+- 来源：[Lightning Attention-2](../sources/lightning-attention-2.md)（因果线性注意力 tiling，非 delta rule）、[Mamba-2](../sources/mamba-2.md)（SSD / 标量恒等选择性 SSM，非 delta rule）、[Gated DeltaNet 报告](../sources/gated-delta-net.md)（GDN 一手出处）、[Kimi Linear 技术报告](../sources/kimi-linear.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（KDA scaled sigmoid 升级 + KCP）、[Qwen3-Coder-Next](../sources/qwen3-coder-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（GDN vs SWA 消融 + sigmoid 输出门 + FlashQLA）、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md)（GDN 在 VLA 机器人领域的采用）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（7:1 Lightning Attention hybrid；IcePop 由 A 路回链）、[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)（生产 hybrid Mamba-2 + GQA）
 - [注意力门控](attention-gating.md)
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（Kimi Linear 的全局层底座）
 - [高效长上下文注意力](efficient-long-context-attention.md)

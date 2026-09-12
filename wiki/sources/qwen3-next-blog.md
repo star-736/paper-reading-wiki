@@ -25,7 +25,7 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 ## 核心结论（官方原话）
 
 - **混合动机**：「linear attention is fast but **weak at recall**; standard attention is **expensive and slow** during inference.」——单用任一种都有短板，故混合。
-- **为什么选 GDN**：「systematic experiments」下，**Gated DeltaNet 的 in-context learning 能力强于 Sliding Window Attention 或 Mamba2**。
+- **为什么选 GDN**：「systematic experiments」下，**Gated DeltaNet 的 in-context learning 能力强于 Sliding Window Attention 或 [Mamba-2](mamba-2.md)**。Mamba-2 是标量恒等选择性 SSM，不是 GDN 的 delta rule；博客只给对比结论，没有对照表。
 - **3:1 比例（官方明说，非 config 推断）**：「mix Gated DeltaNet with standard attention at a **3:1 ratio（75% layers use Gated DeltaNet, 25% keep standard attention）**」，混合栈「consistently outperforms any monolithic architecture」。
 - **全局 attention 层的增强**：加 **attention output gating** 以「eliminate **Attention Sink** and **Massive Activation**」（即 [Gated Attention](gated-attention.md) 那篇的结论被 Qwen 官方采纳）。
 
@@ -35,7 +35,7 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 - **MoE**：512 total experts（10 routed + 1 shared），对比 Qwen3 的 128 experts / 8 routed；80B 总参 / ~3B 激活。
 - **MTP**：原生 **Multi-Token Prediction**，高接受率 speculative decoding，并做多步训练保持训练/推理一致。
 - **训练效率**：15T token（Qwen3 36T 语料的均匀子集），GPU 时低于 Qwen3-30A-3B 的 80%、仅 Qwen3-32B 的 9.3% 算力；32K+ 上下文推理吞吐 >10×。
-- **长上下文**：原生 262,144 token，YaRN 外推验证到 1M。这里 YaRN 作用在已经 256K 训过的 hybrid 栈上，与 [Qwen3](qwen3.md) 从 32K 零样本 4× 不是同一难度；谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
+- **长上下文**：原生 262,144 token，YaRN 外推验证到 1M。这里 YaRN 作用在已经 256K 训过的 hybrid 栈上，与 [Qwen3](qwen3.md) 从 32K 零样本 4× 不是同一难度。[YaRN 原文](yarn.md) 的一手定义是 NTK-by-parts 频率切分 + attention temperature（Definition 2）；博客未写 $s$、$\alpha$、$\beta$、$t$，也未写 Dynamic Scaling。谱系见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)。
 
 ## 评测要点
 
@@ -50,5 +50,6 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 
 - 机制一手出处：[Gated DeltaNet 报告](gated-delta-net.md)、[Gated Attention 报告](gated-attention.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)
+- 长上下文外推定义：[YaRN](yarn.md)
 - 模型：[Qwen3-Coder-Next](../models/qwen3-coder-next.md)、[Qwen3.5](../models/qwen3.5.md)
 - 同家族来源：[Qwen3-Coder-Next 技术报告](qwen3-coder-next.md)、[Qwen3.5-Omni 技术报告](qwen3.5-omni.md)、[Qwen3.8-Next 架构报告](qwen3.8-next.md)

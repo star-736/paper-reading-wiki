@@ -3,7 +3,7 @@ type: Concept
 title: "高效长上下文注意力"
 description: "DSA、混合 SWA/GA、CSA 和 HCA 的对比。"
 tags: ["concept", "efficient-long-context-attention"]
-timestamp: 2026-06-06
+timestamp: 2026-09-12
 ---
 
 # 高效长上下文注意力
@@ -19,15 +19,15 @@ timestamp: 2026-06-06
 | 路线 | 代表方案 / 模型 | 核心思想 | 主要收益 | 主要风险 |
 | --- | --- | --- | --- | --- |
 | 内容稀疏（token 级） | DSA / [GLM-5](../models/glm-5.md) / [Keye-VL-2.0](../models/keye-vl-2.md) | lightning indexer 给 query 选 top-k token，所有 query head 共享一个 top-k。Keye-VL-2.0 首次把 DSA 从 MLA 适配到 GQA backbone（indexer MQA + aggregation GQA），256K 多模态上下文下 prefill 降至 0.32×、decode 降至 0.20×。 | 长程信息访问自适应；可从 dense checkpoint 继续训练得到；Keye-VL-2.0 证明 DSA 不依赖 MLA。 | indexer 的 top-k 稳定性会影响 RL；indexer 自身仍是 O(NL²)。 |
-| 内容稀疏（block 级） | [MSA](../sources/msa.md) / MiniMax-M3；**QSA** / [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | MSA：GQA 上 Index Branch，每 group 独立选 n 个 KV 块（B=128）。QSA：只替换 3:1 GDN hybrid 的全局层，indexer 先把 key AvgPool 成 $r=4$ micro-block 再展开回 token（$K=2048$）。 | MSA 块级 IO 规整，1M context 14× prefill / 7× decode。QSA 把 indexer 从 $O(n^2)$ 降到 $O(n^2/r)$，1M kernel 相对 GQA prefill 7.6× / decode 4.9×；短任务不掉、RULER 512K–1M 与 MRCR 反而升。 | MSA 评测停在预训练。QSA 是 CPT 从 dense 全局层改过来，没有 from-scratch sparse，也没有 RL 稳定性数据；加速是 attention kernel 级。 |
+| 内容稀疏（block 级） | [NSA](../sources/nsa.md)；[MSA](../sources/msa.md) / MiniMax-M3；[MoBA](../sources/moba.md)；**QSA** / [Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md) | NSA：压缩 token / 选块 / 滑窗三分支门控，选择分数来自压缩注意力。MSA：GQA 上 Index Branch，每 group 独立选 n 个 KV 块（B=128）。MoBA：query 对块均值 $K$ 打分，每 head 独立 top-k，当前块强制选中；无额外 indexer 参数。QSA：只替换 3:1 GDN hybrid 的全局层，indexer 先把 key AvgPool 成 $r=4$ micro-block 再展开回 token（$K=2048$）。 | NSA 27B 从头稀疏预训练不低于 Full Attention，64K decode/forward/backward 报 11.6×/9.0×/6.0×。MSA 块级 IO 规整，1M context 14× prefill / 7× decode。MoBA 1M prefill 相对 FlashAttention 报 6.5×，与 full 同参数可切换。QSA 把 indexer 从 $O(n^2)$ 降到 $O(n^2/r)$，1M kernel 相对 GQA prefill 7.6× / decode 4.9×。 | NSA 没有独立 indexer、没有 128K/1M 质量、没有 RL。MSA 评测停在预训练。MoBA 下游评测 decode 切回 full，没有 RL。QSA 是 CPT 从 dense 全局层改过来，没有 from-scratch sparse，也没有 RL 稳定性数据。 |
 | 模式稀疏 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) / [Gemma 4](../models/gemma-4.md) / [Laguna](../models/laguna.md) / [Unlimited OCR](../models/unlimited-ocr.md) | 5 个 SWA 层配 1 个 GA 层（Gemma 4 E2B 用 4:1）；Laguna XS.2 用 3:1（更偏全局）。Gemma 4 额外在全局层做 key-as-value + p-RoPE + KV sharing，全局 KV cache -37.5%。Unlimited OCR 的 R-SWA 更激进：全部层用 SWA，但把 reference token（视觉+prompt）排除在滑动窗口之外全局固定可见，KV cache 恒定 $L_m + n$ 不随输出增长。 | 架构简单，KV 和 attention 成本下降。Unlimited OCR 在 6144 token 输出时 TPS 比 DeepSeek OCR 高 35%，KV cache 完全恒定。 | 对需要任意长程交互的任务可能不如内容自适应。Unlimited OCR 的 128-token 窗口对跨页远距离引用（如第 20 页引用第 1 页的图表编号）覆盖力不足，除非信息经 reference token 间接传递。 |
 | 压缩注意力 | [DeepSeek-V4](../models/deepseek-v4.md) | CSA/HCA 先压缩 KV，再做稀疏或密集注意力。 | 支持 1M context，KV-cache 极大降低。 | 架构、kernel、cache 管理复杂。 |
-| 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md)；Lightning Attention / [Ling-2.6](../models/ling-2.6.md)；Mamba-2 / [Nemotron 3 Ultra](../models/nemotron-3-ultra.md) | 大多数层用固定状态的 token mixer（无随长度增长的 KV），少数层保留全局 softmax。Kimi Linear 用 3:1（KDA:MLA）；Ling-2.6 用 7:1（Lightning Attention:MLA）；Nemotron 3 Ultra 用 **Mamba-2 SSM + 周期 GQA Attention**（64 Q / 2 KV），不是 delta-rule 线性层，也不是 MLA。Ling-2.6 独特之处是从 GQA checkpoint retrofit 而非从头训练。 | decode 时线性/SSM 层无（或极小）KV cache，Kimi Linear 1M context KV 降 75%、吞吐 6.3×；Ling-2.6 256K decode 为 Nemotron-3-Super 1.3×、GLM-4.5-Air 4.3×；Ultra 8K/64K 相对 GLM-5.1 报 5.9×（TRT-LLM vs vLLM 口径）。 | 固定状态容量有限，长程精确检索靠全局层兜底；Ling-2.6 的 M=16（15:1）已退化。Ultra 的 Attention 是 GQA 不是内容稀疏，1M 能力来自 CPT（92% 迭代走 1M、8% 走 4K）而不是 indexer。 |
+| 线性 / 混合 | KDA / [Kimi Linear](../models/kimi-linear.md)；[Lightning Attention-2](../sources/lightning-attention-2.md) / [Ling-2.6](../models/ling-2.6.md)；[Mamba-2](../sources/mamba-2.md) / [Nemotron 3 Ultra](../models/nemotron-3-ultra.md) | 大多数层用固定状态的 token mixer（无随长度增长的 KV），少数层保留全局 softmax。Kimi Linear 用 3:1（KDA:MLA）；Ling-2.6 用 7:1（Lightning Attention:MLA）；Nemotron 3 Ultra 用 **Mamba-2 SSM + 周期 GQA Attention**（64 Q / 2 KV），不是 delta-rule 线性层，也不是 MLA。Mamba-2 原文是标量恒等选择性 SSM（SSD），对偶于 1-semiseparable SMA。Ling-2.6 独特之处是从 GQA checkpoint retrofit 而非从头训练。 | decode 时线性/SSM 层无（或极小）KV cache，Kimi Linear 1M context KV 降 75%、吞吐 6.3×；Ling-2.6 256K decode 为 Nemotron-3-Super 1.3×、GLM-4.5-Air 4.3×；Ultra 8K/64K 相对 GLM-5.1 报 5.9×（TRT-LLM vs vLLM 口径）。 | 固定状态容量有限，长程精确检索靠全局层兜底；Ling-2.6 的 M=16（15:1）已退化。Ultra 的 Attention 是 GQA 不是内容稀疏，1M 能力来自 CPT（92% 迭代走 1M、8% 走 4K）而不是 indexer。 |
 | 学习式驱逐 | [KVpop](../sources/kvpop.md) | 用 future-attention target 在 eviction boundary 监督 keep-or-drop 决策，永久丢弃 token 强制固定 per-head KV budget $B=s+w+k$。可选 mLSTM 延迟打分利用近未来上下文。 | Qwen3-8B 在 88% 压缩下保留 100% teacher 性能；固定 per-head budget 使 GPU 执行更规整，比 DMS 更快；memory bound 解决后 131k token 生成 VRAM 仅 19GB。 | 与 sparse retrieval 正交（后者不 bound memory）；目前是 post-training retrofit，未验证 from-scratch 或 MLA 架构。 |
 
 ## 机制层理解
 
-DSA 不是固定窗口，而是先用 indexer 为 query 找出重要的历史 KV entries，再只对这些 entries 做注意力。它的直觉是：长上下文里绝大多数历史 token 对当前 token 并不重要，因此密集注意力浪费计算。GLM-5 报告中，DSA 从 dense base model 继续训练而来，目标是在不从头训练的情况下把长上下文成本降下来。
+DSA 不是固定窗口，而是先用 indexer 为 query 找出重要的历史 KV entries，再只对这些 entries 做注意力。它的直觉是：长上下文里绝大多数历史 token 对当前 token 并不重要，因此密集注意力浪费计算。GLM-5 报告中，DSA 从 dense base model 继续训练而来，目标是在不从头训练的情况下把长上下文成本降下来。同一团队更早的 [NSA](../sources/nsa.md) 还没有独立 Lightning Indexer：压缩支路的注意力分数直接当选块重要性，再和滑窗支路门控相加，并且是从头稀疏预训练。DSA 相对 NSA 收成一路、粒度收到 token、补上 indexer 与 KL，见 [NSA 来源页](../sources/nsa.md#dsa-相对-nsa-改了什么)。
 
 MSA 在内容稀疏这一支里走相反方向：把粒度从 token 抬到 block（B=128，n=16），并把 top-k 从"所有 query head 共享"改成"每个 GQA group 独立选块"。block-level 让访存更规整，KV-outer iteration 配合 query gather 能把 FLOPs/IO 比从 d 提到约 ⅔·G·d；GQA-group 独立选块则保留了多组检索的多样性。代价是新增了两个 idx 投影矩阵，部署门槛比 DSA 那种"零参数改动"的 indexer 高一点。
 
@@ -67,13 +67,13 @@ DSA、MSA 这类内容稀疏方案都把"主注意力"成本从 O(L²) 降到 O(
 
 ## 正交轴：位置编码还在不在训练网格上
 
-上表六条路线回答的是「算哪些 token、KV 多大」。另一件独立的事是：RoPE 的旋转角一旦越出预训练窗，即使仍做 dense softmax，长窗也会崩。开源权重的默认补丁是 YaRN / NTK / Self-Extend / DCA 这类**零样本位置重映射**，不改注意力核、不改 KV 布局。[Jet-Long](../sources/jet-long.md) 把这条轴写成解析式动态分组，并在 Qwen3-1.7B/4B/8B-Base 上打赢官方 YaRN factor=4 配方。Kimi 系则走另一头：全局 MLA 用 NoPE，从根上躲开 YaRN。细节见 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)。两条轴可叠加（Jet-Long 已迁到 softmax+线性 hybrid），但目前没有 DSA / MLA 上的实验。
+上表六条路线回答的是「算哪些 token、KV 多大」。另一件独立的事是：RoPE 的旋转角一旦越出预训练窗，即使仍做 dense softmax，长窗也会崩。开源权重的默认补丁是 [YaRN](../sources/yarn.md)（按维切分频率 + attention temperature）/ NTK-aware / Self-Extend / DCA 这类**位置重映射**，不改注意力核、不改 KV 布局。[Jet-Long](../sources/jet-long.md) 把这条轴写成解析式动态分组，并在 Qwen3-1.7B/4B/8B-Base 上打赢官方 YaRN factor=4 配方。Kimi 系则走另一头：全局 MLA 用 NoPE，从根上躲开 YaRN。细节见 [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)。两条轴可叠加（Jet-Long 已迁到 softmax+线性 hybrid），但目前没有 DSA / MLA 上的实验。
 
 ## 进一步阅读
 
-- [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（位置角 OOD，与本页的计算/KV 轴正交）
-- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）
-- [DeepSeek Sparse Attention](deepseek-sparse-attention.md)（含 QSA 的层内压缩分叉）
+- [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（位置角 OOD，与本页的计算/KV 轴正交）；方法原文 [YaRN](../sources/yarn.md)
+- [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（正交的第五条路线）；因果线性注意力 kernel 见 [Lightning Attention-2](../sources/lightning-attention-2.md)；SSM / SSD 见 [Mamba-2](../sources/mamba-2.md)
+- [DeepSeek Sparse Attention](deepseek-sparse-attention.md)（含 QSA 的层内压缩分叉）；前作 [NSA](../sources/nsa.md)
 - [跨层索引复用](cross-layer-index-reuse.md)
 - [百万 token 上下文服务](million-token-context-serving.md)
 - [条件记忆](conditional-memory.md)（不改注意力核，卸掉局部 $N$-gram）

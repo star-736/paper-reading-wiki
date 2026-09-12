@@ -23,6 +23,7 @@
 - [Kimi K2.5 技术报告](sources/kimi-k2.5.md) - Kimi K2.5 的 arXiv 技术报告，重点是视觉 agentic intelligence、zero-vision SFT 和 Agent Swarm。
 - [MSA 技术报告](sources/msa.md) - MiniMax Sparse Attention 的 arXiv 报告，GQA-block 级稀疏 + 每个 group 独立 top-k，1M context 下 14× prefill / 7× decode。
 - [NSA](sources/nsa.md) - DeepSeek-AI + 北大的 Native Sparse Attention：压缩 token / 选块 / 滑窗三分支门控，选择分数来自压缩注意力；27B GQA+MoE 预训练不低于 Full Attention，64K decode/forward/backward 报 11.6×/9.0×/6.0×。DSA 的直接前作。
+- [MoBA](sources/moba.md) - Moonshot AI 的 Mixture of Block Attention：query 对 KV 块均值打分、每 head 独立 top-k，当前块强制选中；与 full attention 同参数可切换。1M prefill 相对 FlashAttention 报 6.5×；评测 decode 切回 full。不是独立 indexer。
 - [IndexCache 技术报告](sources/indexcache.md) - 清华 + Z.ai 在 DSA 上做跨层索引复用，1/4 retention 即可在 30B 和 GLM-5 上保留质量并拿到端到端加速。
 - [Kimi Linear 技术报告](sources/kimi-linear.md) - Moonshot AI 的混合线性注意力，KDA（细粒度门 delta rule）3:1 配 Full MLA，首次在公平对比下全面追平 full attention，1M context KV 降 75%、decode 6.3×。
 - [Linear Attention Architectures 技术报告](sources/linear-attention-architectures.md) - ETH Zurich 的机制比较研究：统一 DeltaNet/GDN/KDA/GDN-2 递归记忆表述，CLVR 将内部 write value 路由到共享 residual stream；增益方向一致但仍属 single-run 初步证据。

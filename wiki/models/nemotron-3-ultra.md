@@ -39,7 +39,7 @@ Nemotron 3 Ultra 是 NVIDIA 2026-06 发布的开放权重 MoE，Nemotron 3 家�
 
 四件事把它和同档开源 MoE 分开：
 
-1. **Hybrid Mamba-2 而不是 SWA/线性注意力/稀疏 softmax。** 长上下文成本主要靠 SSM 固定状态压 KV，Attention 层仍是 64/2 GQA。和 [Kimi Linear](kimi-linear.md) 的 KDA、[Ling-2.6](ling-2.6.md) 的 Lightning Attention 同属「大多数层不用 softmax KV」这一支，但是 Mamba-2 而不是 delta-rule 线性层。见 [高效长上下文注意力](../concepts/efficient-long-context-attention.md)。
+1. **Hybrid [Mamba-2](../sources/mamba-2.md) 而不是 SWA/线性注意力/稀疏 softmax。** 长上下文成本主要靠 SSM 固定状态压 KV，Attention 层仍是 64/2 GQA。和 [Kimi Linear](kimi-linear.md) 的 KDA、[Ling-2.6](ling-2.6.md) 的 Lightning Attention 同属「大多数层不用 softmax KV」这一支，但是标量恒等选择性 SSM，不是 delta-rule 线性层。见 [高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)。
 2. **LatentMoE 生产集成，但不是 K3 那套稳定化。** routed 在 latent 2048，512/22；没有公开 Quantile Balancing 或 SiTU-GLU。预训练后期第一层 MaxVio 升到约 12，第二次 loss 发散后把 20T 当权宜上限。
 3. **NVFP4 从预训练贯穿到一份部署 checkpoint。** 作者称为当时最大规模稳定 NVFP4 训练；BF16 对照消融说明第二次发散不是低精度本身。
 4. **后训练保留 RLVR，再用两轮 MOPD 融合 >10 个域教师。** 这与 [DeepSeek-V4](deepseek-v4.md)「OPD 替换 mixed RL」相反，与 [MiMo-V2-Flash](mimo-v2-flash.md) 同属融合派，但 Ultra 是目前唯一公开跑完 **teacher–student 两轮 co-evolution** 并给出按域恢复率的报告。详见 [MOPD](../concepts/multi-teacher-on-policy-distillation.md)。
@@ -47,6 +47,7 @@ Nemotron 3 Ultra 是 NVIDIA 2026-06 发布的开放权重 MoE，Nemotron 3 家�
 ## 相关页面
 
 - [Nemotron 3 Ultra 技术报告](../sources/nemotron-3-ultra.md)
+- [Mamba-2](../sources/mamba-2.md)（hybrid 栈里 SSM 层的机制原文）
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

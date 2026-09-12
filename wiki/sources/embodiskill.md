@@ -162,12 +162,12 @@ Table 3。Gemini 行未再写 No skill，该列只依赖执行器。Qwen3.5-27B 
 - Qwen3.5-27B + Gemini 的 skill-aware 边际只有 +1.49 pp。是 Gemini 已经把粗更新做得够稳，还是反思类型在这个组合上失效？
 - 原文没有独立 Limitations 节。技能文档膨胀、过时条款、附录噪音，都没有机制消融。
 - 近邻不要混名（**已闭合**）：[ASPIRE](aspire.md) 写/改程序并扩张库；[EmbodiedSkills](embodied-skills.md) 固定 typed 合同 + AgentLoop；本页冻结 LLM 改技能正文。[AtomicVLA](atomicvla.md) 技能是 SG-MoE 路由，低层仍是 π0 连续专家，ALFWorld 93.28% 不能填它的 LIBERO 表。[SayCan](saycan.md) 是固定技能表 × value function。
-- **找论文可解**：Inner Monologue（Huang et al., [arXiv:2207.05608](https://arxiv.org/abs/2207.05608)）是 SayCan 的闭环后作，不能从本页或 SayCan 推出。本库尚未 ingest。
+- **已闭合**：[Inner Monologue](inner-monologue.md) 是 SayCan 的语言反馈闭环，技能库仍固定，只把成功/场景写成文字给 LLM。不能从本页推出，也不要把本页的技能正文改写写成那篇的闭环。
 
 ## 相关页面
 
 - 概念：[具身 skill 自进化](../concepts/embodied-skill-self-evolution.md) · [Vision-Language-Action](../concepts/vision-language-action.md)（本页不是动作头）
 - 另两条路，不要混名：[ASPIRE](aspire.md)（程序库 + 进化搜索）· [EmbodiedSkills](embodied-skills.md)（typed 合同 + AgentLoop）
-- 固定技能表，库不进化：[SayCan](saycan.md)
+- 固定技能表，库不进化：[SayCan](saycan.md) · 语言反馈闭环、库仍固定：[Inner Monologue](inner-monologue.md)
 - 冻结执行器身份：[Qwen3.5](../models/qwen3.5.md) · [Qwen3-VL](../models/qwen3-vl.md)
 - 不是本页低层：[π0](pi0.md) · [π0.5](pi0.5.md) · [OpenVLA](openvla.md) · [AtomicVLA](atomicvla.md)

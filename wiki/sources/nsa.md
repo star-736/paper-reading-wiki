@@ -127,4 +127,5 @@ CoT：从 DeepSeek-R1 蒸馏，10B token、32K 数学轨迹 SFT。AIME 24，温�
 - 概念：[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - 对比：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
 - 后作与叠加：[DeepSeek-V3.2](deepseek-v32.md)、[IndexCache](indexcache.md)、[MSA](msa.md)
+- 同时期块稀疏、门是块均值不是压缩注意力：[MoBA](moba.md)
 - 32K 续训用的位置扩展：[YaRN](yarn.md)

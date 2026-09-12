@@ -34,7 +34,7 @@ Headline 是吞吐而不是全面登顶：8K 输入 / 64K 输出、GB200、max-t
 
 ### 总体架构（已据 Table 1 + `§2.1` 核实）
 
-沿用 Nemotron 3 Super 的 hybrid Mamba-Attention MoE，放大到 550B/55B。大多数层是 Mamba-2 + LatentMoE，周期插入 GQA Attention + LatentMoE；MTP 两个 head **共享参数**，每个 head 是一层 Attention + 一层 MoE。
+沿用 Nemotron 3 Super 的 hybrid Mamba-Attention MoE，放大到 550B/55B。大多数层是 [Mamba-2](mamba-2.md) + LatentMoE，周期插入 GQA Attention + LatentMoE；MTP 两个 head **共享参数**，每个 head 是一层 Attention + 一层 MoE。Mamba-2 层的状态方程与 SSD 算法见该来源页；本报告只给生产配置（state 128 / groups 8 / heads 256 / head dim 64），不重推机制。
 
 | 维度 | 值 |
 | --- | --- |
@@ -52,7 +52,7 @@ Headline 是吞吐而不是全面登顶：8K 输入 / 64K 输出、GB200、max-t
 
 > Figure 2 | Nemotron 3 Ultra layer pattern. Similar to Nemotron 3 Super, we use a hybrid Mamba-Attention architecture scaled sparsely using LatentMoE layers.（`§2.1`）
 
-LatentMoE 引用 Elango et al. 2026，和 [Kimi K3 的 Stable LatentMoE](../concepts/stable-latentmoe.md) 同属「routed 在 latent 空间」这一支，但配方不同：Ultra 是 512 expert / top-22、latent 2048，没有公开 SiTU-GLU 或 Quantile Balancing。注意力层是 **GQA 而非 MLA**，长上下文收益主要来自多数层的 Mamba-2 固定状态，而不是稀疏 softmax。
+LatentMoE 引用 Elango et al. 2026，和 [Kimi K3 的 Stable LatentMoE](../concepts/stable-latentmoe.md) 同属「routed 在 latent 空间」这一支，但配方不同：Ultra 是 512 expert / top-22、latent 2048，没有公开 SiTU-GLU 或 Quantile Balancing。注意力层是 **GQA 而非 MLA**，长上下文收益主要来自多数层的 [Mamba-2](mamba-2.md) 固定状态，而不是稀疏 softmax，也不是 KDA / Lightning Attention。
 
 ### 预训练
 
@@ -97,7 +97,7 @@ Base 评测 Table 2：MMLU-Pro 79.07、MATH 82.00、HumanEval 83.84，相对 Dee
 
 $$\hat A_t = \mathrm{sg}\big[\log \pi_{T_i}(y_t|s_t) - \log \pi_{\mathrm{prox}}(y_t|s_t)\big]$$
 
-异步实现把 **behavior policy** 和作为 trust-region 中心的 **proximal policy** 拆开，behavior-to-prox 重要性比 \(c_t\) + PPO clip 的 \(r_t(\theta)\)，token mask 用 [IcePop](../comparisons/llm-rl-policy-optimization.md)（`§3.3.1` 公式 3）。生成长度 **192K**（对齐最长的 teacher 训练）；batch **1024 prompt × 1 rollout**——消融里多样本 rollout 没有额外收益。
+异步实现把 **behavior policy** 和作为 trust-region 中心的 **proximal policy** 拆开，behavior-to-prox 重要性比 \(c_t\) + PPO clip 的 \(r_t(\theta)\)，token mask 用 [IcePop](ring-1t.md)（`§3.3.1` 公式 3；一手出处 Ring-1T）。生成长度 **192K**（对齐最长的 teacher 训练）；batch **1024 prompt × 1 rollout**——消融里多样本 rollout 没有额外收益。
 
 **Warmup**（`§3.3.3`）：teacher 与 student 若走不同 SFT，student 轨迹对 teacher 是 OOD，监督不可靠。对策是 MOPD 前做一次很轻的、取自 teacher 训练分布的 SFT。Table 4：
 
@@ -163,6 +163,7 @@ Table 10 与六家开源对照（MiniMax-2.7、GLM-5.1、Kimi-K2.6、Qwen-3.5、
 ## 相关页面
 
 - [Nemotron 3 Ultra（模型页）](../models/nemotron-3-ultra.md)
+- [Mamba-2](mamba-2.md)（hybrid 栈里 SSM 层的 SSD 机制原文，不是 delta rule）
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
@@ -170,3 +171,4 @@ Table 10 与六家开源对照（MiniMax-2.7、GLM-5.1、Kimi-K2.6、Qwen-3.5、
 - [Stable LatentMoE](../concepts/stable-latentmoe.md) / [高效长上下文注意力](../concepts/efficient-long-context-attention.md) / [多 token 预测](../concepts/multi-token-prediction.md)
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 - [2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
+- [Ring-1T](ring-1t.md) - IcePop 一手出处

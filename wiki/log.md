@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-09-12] ingest | MoBA
+
+Moonshot AI（arXiv:2502.13189v1）。新增 `raw/2502.13189v1.pdf`、`sources/moba.md`，提取 Figure 1/2。不建模型页。Headline：块均值 gating、每 head 独立 top-k，不是共享 indexer；与 full 同参数可切换；1M prefill 6.5×，decode 评测切回 full。校正比较表「共享」二手行。回写稀疏对比、高效长上下文、MLA、MSA。
+
 ## [2026-09-12] ingest | Inner Monologue
 
 Huang / Xia / Xiao 等，Robotics at Google（arXiv:2207.05608v1，CoRL 2022）。新增 `raw/2207.05608v1.pdf`、`sources/inner-monologue.md`，提取 Figure 1/2/3。不建模型页。Headline：冻结 LLM 读成功/场景/人类文字做重试重规划；厨房叠在 SayCan affordance 上，value function 不回写 LLM。不是 VLA。回写 SayCan、VLA、EmbodiSkill、具身 skill 自进化。

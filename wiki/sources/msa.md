@@ -60,7 +60,7 @@ MSA 是构建在 Grouped Query Attention（GQA）之上的 blockwise 稀疏注�
 ## 与已有沉淀的关系
 
 - 同样属于 [高效长上下文注意力](../concepts/efficient-long-context-attention.md) 中的"内容自适应稀疏"路线，与 [DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md) 是同代竞争方案。两者关键差异：DSA 是 **token-level、所有 query head 共享一个 top-k**；MSA 是 **block-level、每个 GQA group 独立 top-k**。
-- 与 NSA、MoBA、InfLLM-V2 一起属于"natively trained sparse attention"族，区别于 H2O / SnapKV / Quest / MInference / FlexPrefill 这类训练后稀疏化方法。
+- 与 [NSA](nsa.md)、[MoBA](moba.md)、InfLLM-V2 一起属于"natively trained sparse attention"族，区别于 H2O / SnapKV / Quest / MInference / FlexPrefill 这类训练后稀疏化方法。MoBA 的门是块均值点积、每 head 独立、无额外 indexer；MSA 是独立 Index Branch + 每 GQA group。
 - MSA 报告里第一次把 sparse-attention 训练稳定性和 KL 对齐目标的等价性写得比较干净（Proposition：multi-token 多 KL = 对均值分布的单 KL）。这条数学事实在 [IndexCache](indexcache.md) 的多层蒸馏里也被独立用到。
 
 ## 公开 kernel 实现
