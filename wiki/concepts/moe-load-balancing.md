@@ -33,8 +33,8 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 | MiniMax-M2 | bias（变体） | sigmoid gating + learnable expert-specific bias，"greatly reducing reliance on auxiliary losses"，显式引 Wang et al. 2024a | [M2 报告](../sources/minimax-m2-series.md) §2 |
 | MiMo-V2-Flash | 混合 | expert bias update factor 0.001 + MoE sequence aux loss 1e-5 | [MiMo 报告](../sources/mimo-v2-flash.md) |
 | Ling-2.6 / Ring-2.6 | bias | aux-loss-free，bias-update rate γ=0.001→0.0001（后期衰减） | [Ling-2.6 报告](../sources/ling-2.6.md) |
-| Qwen3 | aux loss（演进） | global-batch load balancing loss（Qiu et al., 2025），非 micro-batch 口径 | [Qwen3 报告](../sources/qwen3.md) |
-| Laguna XS.2 | aux loss | Qiu et al. 2025 aux loss（只在非 padding token 上算） | [Laguna 报告](../sources/laguna-m1-xs2.md) |
+| Qwen3 | aux loss（演进） | global-batch load balancing loss（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*），非 micro-batch 口径 | [Qwen3 报告](../sources/qwen3.md) |
+| Laguna XS.2 | aux loss | [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）aux loss（只在非 padding token 上算） | [Laguna 报告](../sources/laguna-m1-xs2.md) |
 | GLM-5 | 未披露 | 报告只提 256 experts / 80 层为减 EP 通信开销，未写负载均衡方法 | [GLM-5 报告](../sources/glm-5.md) |
 
 读法：**bias 路线是 DeepSeek 系及 Kimi 系的家族传统**（同源于本论文，作者重叠），aux loss 路线在 Qwen 系仍有强生命力（global-batch 口径是它对"鼓励专家专业化"的回答），两家并未收敛到单一答案。MiMo/V4 的混合配置（bias + 轻序列级 loss）暗示纯 bias 在**单序列粒度**上有盲区——原论文只测了 global/batch 口径。[Engram](../sources/engram.md) 的 27B/40B 研究模型同样写 Loss-Free（Appendix A），不是生产部署，只说明 DeepSeek 方法论文继续沿用这条配方。

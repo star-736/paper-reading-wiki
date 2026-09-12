@@ -108,7 +108,7 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 - 正文说支持 20+ MoE，实验只报 Qwen3.6-35B-A3B、DeepSeek-V4-Flash、GLM-5.2；其余模型列表、量化格式和是否走过 CUDA-graph 快路径需查 GitHub / flashml.ai。
 - GLM-5.2 在本文是 753B / 40B active、NVFP4 433 GB checkpoint。本 wiki 的 [GLM-5](../models/glm-5.md) 技术报告是 744B / 40B，[GLM-5.3](../models/glm-5-3.md) 称沿用 GLM-5.2 base 但未披露参数。753B 与 744B 不要画等号。
 - Figure 1 caption：Kimi-K3 开源但超出消费级内存（594 GB）。本 wiki 的 [Kimi K3](../models/kimi-k3.md) 是 2.78T / 104B，未在本文实验。
-- Qwen3.6-35B-A3B 是评测骨干，wiki 目前只有 [Qwen3.5](../models/qwen3.5.md) 家族页，没有 Qwen3.6 模型页。
+- **找论文也答不了 / 已闭合**：Qwen3.6-35B-A3B 是评测骨干，不为此臆造 Qwen3.6 独立架构页；wiki 只有 [Qwen3.5](../models/qwen3.5.md) 家族页。
 - 3090/4090/5090 的端侧数字来自「双路服务器 + 6 线程 cap」的仿真，桌面/笔记本两台才是真实消费级；跨档读数要带这个口径。
 - 最差 TTFT < 44 s 是原文概括；Figure 3 只画 mean TTFT，tail 分布未给表。
 - 论文明确不比较跨引擎 wall-clock（轨迹分叉）。「交互式」指 decode tok/s 与 TTFT，不是端到端任务完成时间。

@@ -113,7 +113,7 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 - **[MiniMax-M2](../sources/minimax-m2-series.md)**："Routing is implemented using sigmoid gating with learnable expert-specific bias terms, which improves load balancing while greatly reducing reliance on auxiliary losses (**Wang et al., 2024a**)"——把 bias 做成可学习参数并显式引用本论文。
 - **[MiMo-V2-Flash](../sources/mimo-v2-flash.md)**：混合路线——expert bias update factor 0.001（Stage 1/2）**加上** MoE sequence auxiliary loss 1e-5；与 V4 的"纯 bias + 轻序列级 loss"同型，但 MiMo 的序列级 loss 明显更重。
 - **[Ling-2.6](../sources/ling-2.6.md)**：auxiliary-loss-free load balancing（bias-update rate γ=0.001 → 0.0001，训练后期衰减），Inclusion AI 侧的独立采用证据。
-- **[Qwen3](../sources/qwen3.md)（对照，非采用）**：Qwen3 用的是 global-batch load balancing **loss**（Qiu et al., 2025）——aux-loss-based 阵营在生产模型里仍是主流选项之一；[Laguna XS.2](../sources/laguna-m1-xs2.md) 同路线（Qiu et al. 2025 aux loss，只在非 padding token 上算）。**注意：本 wiki 此前在 Stable LatentMoE 页写"aux-loss-free sign update（K2/Qwen3 用）"是错的——Qwen3 走的是 loss 路线，已修正。**
+- **[Qwen3](../sources/qwen3.md)（对照，非采用）**：Qwen3 用的是 global-batch load balancing **loss**（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*）——aux-loss-based 阵营在生产模型里仍是主流选项之一；[Laguna XS.2](../sources/laguna-m1-xs2.md) 同路线（同一 Qiu 文 aux loss，只在非 padding token 上算）。**注意：本 wiki 此前在 Stable LatentMoE 页写"aux-loss-free sign update（K2/Qwen3 用）"是错的——Qwen3 走的是 loss 路线，已修正。**
 
 **谱系总表**（详见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）：auxiliary loss（Switch/GShard → V2 三重 loss → Qwen3 global-batch / Laguna）↔ auxiliary-loss-free bias（**本论文** → V3/V4 + 序列级 loss、K2 系、MiniMax-M2 可学习 bias、MiMo 混合、Ling-2.6）→ QB（K3，896-expert 规模的 exact 解）。
 

@@ -144,7 +144,7 @@ LIBERO 是附录 E 的**目标套件监督微调**（不是 zero-shot），每�
 
 - 离散 256-bin 自回归动作头，相对后续 flow-matching 连续动作到底损失了多少精度与高频控制能力？OpenVLA 原文没有这场比较。[π0](pi0.md) §VI-A 把 OpenVLA 重训到 π 混合物，归因于「不支持 action chunking / 高频」——那是 π 协议，不是本页 Bridge/Google robot 表。
 - §6 自己问的 action chunking：加上之后能否补齐相对 Diffusion Policy 的灵巧度，而不放弃语言接地优势？
-- RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。原版 [RT-2](rt-2.md) Table 6 已显示同 backbone 上 co-fine-tune > 只 fine-tune；RT-2-X 尚未单独 ingest。
+- RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。原版 [RT-2](rt-2.md) Table 6 已显示同 backbone 上 co-fine-tune > 只 fine-tune。**找论文可解**：RT-2-X 在 Open X-Embodiment（Padalkar et al., [arXiv:2310.08864](https://arxiv.org/abs/2310.08864)），本库尚未单独 ingest。
 - 单臂 7D 末端 + 单第三人称图这条数据约束，后续 skill / 双臂 / 长周期组合论文要改哪一层（观察、动作空间，还是只改后训练）？
 
 ## 相关页面
