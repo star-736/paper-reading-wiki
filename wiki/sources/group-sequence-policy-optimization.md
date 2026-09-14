@@ -85,6 +85,7 @@ GSPO 的核心 insight 是：MoE 即使单 token activated experts 有波动，�
 
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：GSPO 是「sequence-level importance sampling 派」，从理论上重写 GRPO 的 ratio / clipping 单元。
 - [Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)：SAPO 继承 GSPO 的 sequence-coherence 目标，但认为 GSPO hard clipping 会整条 sequence 丢掉 near-on-policy token 的学习信号，因此改成 token-adaptive soft gate。
+- [Cumulative Token Policy Optimization](cumulative-token-policy-optimization.md)：CTPO 在 bias–variance 谱上把 GSPO 的长度归一化 ratio 标为「数值稳但作为 IS 修正有偏」，并以 prefix 连乘 $\prod_{t'\le t}r_{t'}$ 同时取无偏与低于 full sequence 的方差。这是 IS 修正口径的判断；GSPO 的 MoE routing 稳定性论据与它没有同一评测面的对照，CTPO 的 GSPO 基线也只是 dense Qwen3 上的 TIR 复现。
 - [Qwen3 技术报告](qwen3.md)：本论文称 GSPO contributed to latest Qwen3 models，但不是 Qwen3 2025-05 技术报告正文的一部分；回写 Qwen3 页时需标作后续外部算法。
 
 ## 待追问
@@ -97,5 +98,5 @@ GSPO 的核心 insight 是：MoE 即使单 token activated experts 有波动，�
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DAPO](dapo.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
+- 相邻算法：[DAPO](dapo.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)、[Cumulative Token Policy Optimization](cumulative-token-policy-optimization.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)
 - 模型/来源：[Qwen3 技术报告](qwen3.md)、[Qwen3-VL 技术报告](qwen3-vl.md)

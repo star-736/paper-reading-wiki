@@ -1,7 +1,7 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE。DPO / KTO 是离线偏好 HALO，与 DAPO 同名不同族，单独成节，不进 GRPO 主表。"
+description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / CTPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO：value-based credit assignment、GRPO recipe、sequence-level ratio、prefix-cumulative ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE。DPO / KTO 是离线偏好 HALO，与 DAPO 同名不同族，单独成节，不进 GRPO 主表。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
 timestamp: 2026-06-25
 ---
@@ -15,6 +15,7 @@ timestamp: 2026-06-25
 - VAPO 修的是 **long-CoT value-model-based PPO 的 critic bias 与 GAE credit assignment**；
 - DAPO 补的是 **GRPO 在 long-CoT 数学 RL 大规模复现时的 recipe 缺口**；
 - GSPO 改的是 **importance ratio / clipping 的优化单元**，从 token-level 改到 sequence-level；
+- CTPO 改的是 **importance ratio 的累积粒度**，从单 token 改到 prefix 连乘（到位置 $t$ 为止），并让 log-space clip 宽度随 $\sqrt t$ 增长；
 - SAPO 改的是 **trust region 的形状**，从 hard clipping 改成 temperature-controlled soft gate；
 - ARPO 改的是 **agentic rollout 的采样位置**，从完整轨迹采样改到工具反馈后的高熵 step 分叉；
 - GiGPO 改的是 **advantage 的构造单元**，在已有轨迹组上用重复环境状态做 step-level 对照，不追加 rollout；
@@ -36,6 +37,7 @@ timestamp: 2026-06-25
 | [VAPO](../sources/vapo.md) | ByteDance Seed，2025-04 | **critic / advantage estimation + PPO recipe** | Value-Pretraining、Decoupled-GAE、Length-Adaptive GAE、Clip-Higher、token-level loss、positive-example LM loss、Group-Sampling | critic 初始化偏差、长序列 reward 衰减、长度异质性、binary reward 下正样本稀缺 | Qwen2.5-32B，AIME 2024 | 明确保留 value model；同 prompt 多采样但 advantage 来自 critic，不是 group-relative reward baseline |
 | [DAPO](../sources/dapo.md) | ByteDance Seed + 清华 AIR 等，2025-03 | **GRPO recipe / 系统工程** | Clip-Higher、Dynamic Sampling、token-level loss、Overlong Reward Shaping、DAPO-Math-17K | entropy collapse、全对/全错 prompt 零梯度、长 CoT token 权重稀释、截断 reward noise | Qwen2.5-32B，AIME 2024 | 保留 GRPO group-relative clipped objective，补齐 recipe |
 | [GSPO](../sources/group-sequence-policy-optimization.md) | Qwen Team，2025-07 | **importance ratio / clipping 单元** | sequence likelihood ratio $s_i=(\pi_\theta(y_i)/\pi_{old}(y_i))^{1/|y_i|}$，response-level clipping | token-level ratio 与 sequence-level reward 不匹配；MoE expert routing 波动使 token ratio 失效 | Qwen3-30B-A3B，AIME / LiveCodeBench / CodeForces | 用 sequence-level ratio 替代 GRPO token ratio |
+| [CTPO](../sources/cumulative-token-policy-optimization.md) | UIUC + Michigan + Amazon，2026-05（preprint） | **importance ratio 的累积粒度 + clip 宽度随位置** | prefix 连乘 $\rho^{\mathrm{cum}}_t=\prod_{t'\le t} r_{t'}$（Prop. 1 无偏、Prop. 2 方差严格低于 full sequence）；log-space clip 阈值按 $t^{0.5}$ 放大 | token ratio 丢 prefix 修正有偏；full sequence ratio 的 suffix 只加方差；固定 clip 与 $\mathrm{Var}(\log\rho^{\mathrm{cum}}_t)=t\sigma^2$ 不匹配 | Qwen3-4B / 14B，TIR 数学（AIME25/26、HMMT25、BRUMO25）avg@32 | 保留 GRPO 的 group-relative outcome advantage 与无 critic；只换 ratio 单元与 clip 形状 |
 | [SAPO](../sources/soft-adaptive-policy-optimization.md) | Qwen Team，2025-12 | **soft trust region / gate 形状** | sigmoid soft gate + $sech^2$ gradient weight；$\tau_{neg}>\tau_{pos}$ | hard clipping 过脆；GSPO 整条 sequence 被裁、GRPO token 越界即零梯度 | Qwen3-30B-A3B、Qwen3-VL-30B-A3B | 保留 group-based RL，替换硬裁剪为软门控 |
 | [ARPO](../sources/agentic-reinforced-policy-optimization.md) | 人大 + 快手，2025-07 | **agentic rollout 采样结构** | 工具反馈后监控 token entropy，在高熵 tool-call step 分叉 partial rollouts；advantage attribution | trajectory-level RL 忽略工具反馈后的 step-level 决策 | Qwen2.5 / Llama3.1 / Qwen3，math/QA/deep search | 把 DAPO/GRPO/REINFORCE++ 当 trajectory-level baseline |
 | [GiGPO](../sources/gigpo.md) | NTU + Skywork，NeurIPS 2025 | **advantage 构造（episode + 同状态 step 组）** | 轨迹级 $A^E$ + anchor state grouping 的 $A^S$；折扣回报；不额外 rollout | 长周期稀疏奖励下轨迹级 GRPO 抹掉 step 好坏 | Qwen2.5-1.5B/3B/7B-Instruct，ALFWorld / WebShop / search QA | 保留 GRPO group 与 clipped objective；无重复状态时退回 GRPO |
@@ -78,6 +80,16 @@ DAPO 的 objective 仍然是 [DeepSeekMath](../sources/deepseekmath.md) 定义�
 GSPO 的判断更根本：既然 reward 是整条 response 的 reward，那么 importance sampling / clipping 也应该按整条 response 来。它认为 GRPO 的 token-level ratio 在长序列里会累积高方差，尤其 MoE 中 expert routing 波动会让 token ratio 失真。
 
 GSPO 的 sequence-level ratio 让同一 response 内所有 token 共享一个权重，训练目标和 sequence reward 对齐。代价是它牺牲了局部 token adaptivity：一条 sequence 里少数 token off-policy，hard clipping 可能让整条 sequence 的有效信号被压掉。
+
+### CTPO：不争 sequence 也不争单 token，而争 prefix 的精确修正
+
+[CTPO](../sources/cumulative-token-policy-optimization.md) 把 GSPO 与 GRPO 的分叉重写成一条 bias–variance 谱：token ratio 有偏（丢 prefix 修正）、full sequence ratio 无偏但方差高、GSPO 的长度归一化 ratio 数值稳但**作为 IS 修正仍有偏**。它给出的第三点是 prefix 连乘 $\rho^{\mathrm{cum}}_t=\prod_{t'\le t}r_{t'}$：在 token-level policy-gradient 形式下，suffix $\epsilon_t=\prod_{t'>t}r_{t'}$ 的条件期望为 1，只乘进方差不减偏差，所以截到位置 $t$ 同时拿到无偏与严格更低的方差（Prop. 1–2）。
+
+这与 GSPO 的动机不重合。GSPO 要的是「ratio 单元与 reward 单元对齐」加 MoE routing 稳定性，代价是接受 IS 偏差；CTPO 要的是「在 token-level MDP 的时间结构下做精确 prefix 修正」，代价是 ratio 的方差随位置增长——于是它必须配套第二个改动：$\mathrm{Var}(\log\rho^{\mathrm{cum}}_t)=t\sigma^2$ 让固定 clip 区间在晚 token 上 clip 到约 20%、早 token 近 0%，所以把 log-space 阈值按 $\sqrt t$ 放大。
+
+注意 CTPO 的 clip 改动与 [SAPO](../sources/soft-adaptive-policy-optimization.md) 不在同一维度：SAPO 换 trust region 的**形状**（hard clip → sigmoid soft gate），CTPO 换 trust region 的**宽度随位置的变化**（仍是 hard clip，只是区间随 $t$ 变宽）。两者都批评固定 clip，但没有互相比较。
+
+证据边界：CTPO 的实验只有 dense Qwen3-4B / 14B 上的 TIR 数学，GSPO 基线是它自己的复现而非 Qwen3-30B-A3B 的 MoE 场景；14B 上平均增益主要来自 AIME 两项，BRUMO 25 略低于 GSPO、HMMT 25 介于 GRPO 与 GSPO 之间。Table 1 把 GSPO 标为「有偏」是 IS 修正口径的判断，不等于否定 GSPO 在 MoE 稳定性上的实测结论——两边没有同一评测面的对照。
 
 ### SAPO：保留 sequence coherence，但恢复 token adaptivity
 
@@ -200,10 +212,12 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - DeepSeekMath Figure 7 的「RL 抬 Maj@K、不抬 Pass@K」是否在更大模型或可验证环境 RLVR 上仍成立？后续报告几乎不复现这条曲线。
 - MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
 - 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？[KTO](../sources/kto.md) 把监督改成二元，仍不回答生产弃用因果。本页没有一手来源回答。
+- CTPO 的 prefix 连乘在 MoE expert routing volatility 下是更敏感还是更钝？GSPO 的稳定性论据与 CTPO 的无偏论据没有同一评测面的对照，dense-only 实验无法回答。
+- CTPO 在 TIR 多轮轨迹里如何对待环境返回的非策略生成 token（是否计入 $\rho^{\mathrm{cum}}$ 连乘、clip 是否作用其上）？正文与附录未说明，需看其 VERL 实现确认。
 
 ## 相关页面
 
-- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[KTO](../sources/kto.md)（二元 HALO，不需要 pair，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
+- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[KTO](../sources/kto.md)（二元 HALO，不需要 pair，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Cumulative Token Policy Optimization](../sources/cumulative-token-policy-optimization.md)（prefix-cumulative ratio + 位置自适应 clip）、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 系统侧来源：[R3](../sources/r3.md)（MoE 路由重放，与本页 ratio 方法正交）、[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[DeepSeekMath](../models/deepseekmath.md)（GRPO 发布检查点）、[MiniMax-M1](../models/minimax-m1.md)（CISPO 发布检查点）、[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

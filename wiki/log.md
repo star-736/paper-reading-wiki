@@ -1482,3 +1482,13 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 定位：把顺序 looped Transformer 接到 Dreamer 式 latent world model（Prelude–Recurrent–Coda + Parcae 谱约束线性保留 + 延迟解码）。公开表是 ScienceWorld / AlfWorld 五步文本 next-state，对照 Claude / Gemini / Qwen API，不是 RSSM。ScienceWorld EM 68.4 vs Claude 47.2；AlfWorld EM 低于 Claude。摘要 100× 是 1B vs 闭源模型的参数比；§3.4 FLOPs 是 100 层思想实验。记录 Figure 2 caption Qwen3.7-max 与图轴 Qwen3.6-max 冲突，以及弹幕图与主实验脱节。
 
 更新 Looped Transformers（跨报告信号 + 循环对象换成环境隐状态 + 饱和待追问），并回链 Qwen-AgentWorld / LoopCoder-v2 / looped-tool-calling / BDH-CQ。`raw/` 除新增该 PDF 外未改。
+
+## [2026-09-15] ingest | Cumulative Token Policy Optimization（CTPO）
+
+新增 `raw/2605.07331v1.pdf`（arXiv:2605.07331v1，2026-05-08 preprint，UIUC + Michigan + Amazon，12 页）、来源页 `wiki/sources/cumulative-token-policy-optimization.md`，以及 Figure 1（log ρ^cum 的 √t 方差增长 + fixed/adaptive clip rate）、Figure 2（GRPO/GSPO/CTPO 训练动态）到 `wiki/assets/cumulative-token-policy-optimization/`；Table 1–3 改排为 Markdown。不发布模型实体，故不建模型页。
+
+定位：off-policy LLM RL 的 importance ratio 第三粒度。token ratio（GRPO）丢 prefix 修正有偏；full sequence ratio 无偏但 suffix 只加方差；GSPO 长度归一化 ratio 数值稳但作为 IS 修正仍有偏。CTPO 用 prefix 连乘 ρ^cum_t=∏_{t'≤t} r_{t'}（Prop. 1 无偏、Prop. 2 方差严格低于 full sequence），并因 Var(log ρ^cum_t)=tσ² 把 log-space clip 阈值按 √t 放大（εlow=0.025、εhigh=0.05）。保留 GRPO 的 group-relative outcome advantage 与无 critic。TIR 数学上 Qwen3-4B/14B avg 51.4/58.8 vs GSPO 47.7/55.5、GRPO 43.2/54.6；adaptive vs fixed clip 消融 +3.1。
+
+记录证据边界：14B 的平均增益主要来自 AIME 两项（BRUMO 25 略低于 GSPO、HMMT 25 介于两基线之间）；无 MoE 实验，与 GSPO 的 routing 稳定性论据无同评测面对照；TIR 轨迹中环境输出 token 是否进入连乘正文未说明；论文称三者 response length growth 相似，但 Figure 2 右图 CTPO 前 200 步明显更高、末段回落，已标为本页对图的观察。
+
+更新 LLM RL policy optimization 对比（主表加行 + 新增 CTPO 分叉小节 + 待追问）、GSPO 来源页与 Agentic 模型的后训练概念页反链，同步 `wiki/index.md` 来源入口。`raw/` 除新增该 PDF 外未改。

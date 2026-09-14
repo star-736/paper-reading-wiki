@@ -54,6 +54,7 @@
 - [KTO](sources/kto.md) - Stanford + Contextual AI 的 ICML 2024 论文：用 Kahneman-Tversky 前景理论价值函数做离线对齐，二元 desirable/undesirable、不需要 pair；1B–30B 上匹配或超过 DPO。不是 GRPO 变体。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
+- [Cumulative Token Policy Optimization](sources/cumulative-token-policy-optimization.md) - UIUC + Michigan + Amazon 的 preprint：IS ratio 第三粒度——到位置 $t$ 为止的 prefix 连乘（Prop. 1 无偏、Prop. 2 方差严格低于 full sequence），配 $\sqrt t$ 放大的 log-space clip；TIR 数学上 Qwen3-4B/14B avg 51.4/58.8 超 GRPO/GSPO，但 14B 增益集中在 AIME 且无 MoE 实验。
 - [DSpark 技术报告](sources/dspark.md) - PKU + DeepSeek-AI 的 speculative decoding 框架：semi-AR drafter（parallel backbone + 轻量 sequential head）+ confidence-scheduled verification，V4 preview 上线两周后整体替换生产端 MTP-1，per-user 速度 V4-Flash +60–85% / V4-Pro +57–78%。
 - [DoReMi](sources/doremi.md) - Google DeepMind + Stanford 的 NeurIPS 2023 论文：用 280M proxy model 跑 Group DRO 优化 domain weights（仅 8% 额外 FLOPs），让 8B 模型预训练加速 2.6x，所有 domain perplexity 改善，不需下游任务知识。
 - [TANDEM](sources/tandem.md) - JD.com + Oxford + 人大的 NeurIPS 2025 论文：把数据混合优化建模为 bi-level optimization，用 twin network（proxy + 动态 reference）的 loss 差度量 domain 边际收益，收敛率 O(T^{-1/4})，在 data-restricted 和 SFT 场景显著优于 DoReMi/DoGE。

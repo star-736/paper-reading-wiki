@@ -107,7 +107,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 [VAPO](../sources/vapo.md) 从另一条 value-model-based 路线回答「long-CoT 的 credit assignment 怎么做细」：先用 Monte Carlo return 预训练 critic，再以 $\lambda_{critic}=1$ / 独立 $\lambda_{policy}$ 解耦 critic 与 actor 的 GAE target，并让 $\lambda_{policy}=1-1/(\alpha l)$ 随 response 长度自适应。它同时复用 DAPO 的 Clip-Higher / token-level loss，并用在线正确轨迹的 NLL 放大稀有正样本。在 Qwen2.5-32B / AIME 2024 上，论文报告 VAPO 60.4、DAPO 50；但没有 code / agent 结果或包含 critic 成本的 wall-clock 对比，不能外推为 value-based 方法在 agent RL 上已普遍胜出。
 
-[DAPO](../sources/dapo.md)、[GSPO](../sources/group-sequence-policy-optimization.md)、[SAPO](../sources/soft-adaptive-policy-optimization.md) 则在另一条轴上回答「group-based RL 自己怎么稳定」：DAPO 补 long-CoT GRPO recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping），GSPO 把 GRPO 的 token-level ratio 改成 sequence-level ratio 以稳定 MoE，SAPO 再用 soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity。
+[DAPO](../sources/dapo.md)、[GSPO](../sources/group-sequence-policy-optimization.md)、[CTPO](../sources/cumulative-token-policy-optimization.md)、[SAPO](../sources/soft-adaptive-policy-optimization.md) 则在另一条轴上回答「group-based RL 自己怎么稳定」：DAPO 补 long-CoT GRPO recipe（Clip-Higher / Dynamic Sampling / token-level loss / overlong shaping），GSPO 把 GRPO 的 token-level ratio 改成 sequence-level ratio 以稳定 MoE，CTPO 改成到位置 $t$ 为止的 prefix 连乘 ratio 并让 log-space clip 宽度随 $\sqrt t$ 增长（实验场景正是多轮 TIR），SAPO 再用 soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity。
 
 [GiGPO](../sources/gigpo.md) 和 ARPO 相邻但花钱位置相反：它不追加 partial rollout，而是在已经按同一初始状态采好的轨迹组上，用重复环境状态做 anchor grouping，把 step-level 相对优势加到轨迹级 GRPO 信号上。ALFWorld / WebShop 上相对 GRPO 约 +13 / +9 个百分点，无重复状态时退回 GRPO。附录的 `GiGPO_dynamic` 把 DAPO recipe 接进去，用来支持层次优势与单轮 group 技巧正交。
 
