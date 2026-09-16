@@ -7,6 +7,7 @@
 | 任务 | 开始前必须读 |
 | --- | --- |
 | 任何知识库查询或改动 | `wiki/index.md` |
+| 学习、学习路线、学习记录或学习讨论写回 | `.agents/guides/learning-workflows.md` |
 | 页面、frontmatter、链接、目录或语言 | `.agents/guides/content-schema.md` |
 | `ingest`、`deepen`、`distill`、`verify`、`refactor`、`maintenance`、质量剔除 | `.agents/guides/wiki-workflows.md` |
 | 机制主张、证据等级、PDF 图表或 VLM | `.agents/guides/evidence-and-visuals.md` |

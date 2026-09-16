@@ -1,0 +1,9 @@
+{
+  "id": "wiki-knowledge-cards",
+  "name": "知识卡片",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "随机遇见 wiki 中的概念、模型与比较，打开原文继续学习。",
+  "author": "paper-reading-wiki",
+  "isDesktopOnly": true
+}

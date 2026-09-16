@@ -1499,3 +1499,13 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 - 嵌入 Figure 3 架构图，主表与弹性预算表改排为 Markdown；限定 FLOPs、96.5% 分数比与数据效率的适用范围。
 - 保留摘要／主表规模、Table 8 数字和消融表的冲突，不将条件性收敛论证写成无条件保证。
 - 官方 PDF 使用外部来源链接；raw/ 未改。图像从官方 PDF 提取，按约 300 DPI 裁剪并检查。
+
+## [2026-09-17] maintenance | 增加个人学习层与伴学约定
+
+- 新增 learning/ 总入口与 VLA 待开始主页，约定主题目录、按问题命名的学习记录和真实自测证据。
+- 增加学习工作流手册及 AGENTS.md 路由，连接 README.md、wiki/index.md 与内容规范；讨论成果按既有工作流核验后写回 wiki。
+- 本次未开展 VLA 技术学习，未改技术结论；raw/ 未改。
+
+## [2026-09-17] maintenance | 统一学习功能名称
+
+- 按用户命名统一使用「学习」，更新入口与工作流措辞；保留 learning/ 路径与文件命名。raw/ 未改。

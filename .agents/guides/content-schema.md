@@ -4,6 +4,7 @@
 
 - `raw/`：原始 PDF、文章、图片或数据，正常工作流只读；文件名保持原样。
 - `wiki/`：LLM 生成的知识层。来源、模型、概念、比较分别置于 `wiki/sources/`、`wiki/models/`、`wiki/concepts/`、`wiki/comparisons/`。
+- `learning/`：个人学习层，主题主页与单次记录的结构、frontmatter、命名遵循 [学习工作流](learning-workflows.md)。个人进度不属于论文证据。
 - `wiki/assets/<source-slug>/`：被页面引用的图像资产，必须进入版本控制。
 - `wiki/index.md`：内容目录；`wiki/log.md`：当前保留知识的已完成动作时间线；`wiki/TODO.md`：未完成工程待办。
 
