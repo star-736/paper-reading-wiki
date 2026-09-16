@@ -81,6 +81,7 @@
 - [Seed2.0 Model Card](sources/seed2.md) - 字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，含 MaaS 部署洞察、四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）和真实世界 case studies，不含架构/训练细节。
 - [KVpop 技术报告](sources/kvpop.md) - NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法：future-attention target 在 eviction boundary 监督 keep-or-drop，mLSTM 延迟打分利用近未来上下文，Qwen3-8B 88% 压缩下保留 100% teacher 性能。
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
+- [Inner Thinking Transformer（ITT）](sources/inner-thinking-transformer.md) - 百度与中科院等的层内循环：ATR 选 token、RTC 累积结果；小模型主表支持参数效率，正式版规模与数值冲突单列。
 - [LoopCoder-v2](sources/loopcoder-v2.md) - 北航 + IQuest Research 的 PLT loop-count 选择研究：7B coder 从头训练 18T tokens，gain–cost 视角发现 R=2 最优（SWE-bench Verified 64.4%）、R≥3 退化，per-loop 可解释性诊断解释饱和机制。
 - [Looped Language Models Improve Compositional Tool Calling](sources/looped-tool-calling.md) - Cambridge 的循环模型工具调用研究：循环计算主要提升多调用组合和 output-to-input 依赖绑定；Ouro adaptive exit 以较低平均循环数取得更好的算力—性能折中，但证据仍限静态单轮 benchmark。
 - [Looped World Models](sources/looped-world-models.md) - FaceMind 把 looped Transformer 接到 world model 隐状态（Prelude–Recurrent–Coda + 谱约束保留 + 延迟解码）；约 1B 在 ScienceWorld 五步 next-state 上 EM 68.4 vs Claude 47.2，AlfWorld 并非全面领先；100× 效率是对闭源 API 的参数比，不是同族对照。
@@ -169,6 +170,7 @@
 - [KAT-Coder](models/kat-coder.md) - 快手 KwaiKAT 的 agentic coding 模型族（V2 / V2.5），纯文本，Specialize-then-Unify + KwaiEnv + MCLA/Tree Training/asymmetric PPO + MOPD 专家融合，V2.5 PinchBench 94.9 第一。
 - [Seed2.0](models/seed2.md) - 字节跳动 Seed 团队多模态模型族（Pro / Lite / Mini），Model Card 不含架构/训练细节，核心是评测框架和部署洞察。
 - [VibeThinker-3B](models/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，基于 Qwen2.5-Coder-3B，MGPO + Long2Short RL + CLR，纯文本，verifiable reasoning 追平旗舰。
+- [ITT 实验模型族](models/inner-thinking-transformer.md) - LLaMA2 风格的 162M／230M／466M 纯文本实验模型，层内共享参数与 token 级额外计算；附录大模型身份另作限定。
 - [LoopCoder-v2](models/loopcoder-v2.md) - 北航 + IQuest 的 7B PLT coder 模型族，weight-tied looped Transformer（14 层共享 block），R=2 最优（SWE-bench Verified 64.4%），纯文本。
 - [LoopWM](models/loopwm.md) - FaceMind 约 1B 的 looped latent world model；公开实验是 ScienceWorld / AlfWorld 文本观测，层宽与训练配方未披露。
 - [BDH-CQ](models/bdh-cq.md) - Pathway 的 150M ARC 网格推理系统：示例递归写入 memory、查询以连续 latent workspace 迭代求解；关键模型实现未公开。
@@ -232,7 +234,7 @@
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → GLA（细门无 delta）→ DeltaNet → GDN → KDA；Lightning 是标量衰减 tiling，Mamba-2 是 SSD，RWKV-4 是 1D WKV。生产 3:1 走 GDN/KDA，7:1 走 Lightning。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
-- [Looped Transformers](concepts/looped-transformers.md) - 权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
+- [Looped Transformers](concepts/looped-transformers.md) - 含 ITT 的层内复用与 token 选择路线；权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
 - [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Pi 极小核心、DeepSeek Harness 插件核、SoL-Pi 效率层、Prime Agent 表达性膜、Macaron HCP 同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。

@@ -1492,3 +1492,10 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 记录证据边界：14B 的平均增益主要来自 AIME 两项（BRUMO 25 略低于 GSPO、HMMT 25 介于两基线之间）；无 MoE 实验，与 GSPO 的 routing 稳定性论据无同评测面对照；TIR 轨迹中环境输出 token 是否进入连乘正文未说明；论文称三者 response length growth 相似，但 Figure 2 右图 CTPO 前 200 步明显更高、末段回落，已标为本页对图的观察。
 
 更新 LLM RL policy optimization 对比（主表加行 + 新增 CTPO 分叉小节 + 待追问）、GSPO 来源页与 Agentic 模型的后训练概念页反链，同步 `wiki/index.md` 来源入口。`raw/` 除新增该 PDF 外未改。
+
+## [2026-09-17] ingest | Inner Thinking Transformer（ITT）
+
+- 直接阅读 ACL 2025 官方 PDF，新增来源页与实验模型页，补 Looped Transformers 的层内循环／token 选择定位及索引。
+- 嵌入 Figure 3 架构图，主表与弹性预算表改排为 Markdown；限定 FLOPs、96.5% 分数比与数据效率的适用范围。
+- 保留摘要／主表规模、Table 8 数字和消融表的冲突，不将条件性收敛论证写成无条件保证。
+- 官方 PDF 使用外部来源链接；raw/ 未改。图像从官方 PDF 提取，按约 300 DPI 裁剪并检查。
