@@ -1509,3 +1509,10 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 ## [2026-09-17] maintenance | 统一学习功能名称
 
 - 按用户命名统一使用「学习」，更新入口与工作流措辞；保留 learning/ 路径与文件命名。raw/ 未改。
+
+## [2026-09-17] ingest | Mixture-of-Recursions（MoR）
+
+- 阅读 arXiv:2507.10524v3，新增来源页，关联 ITT 与 Looped Transformers，同步索引。
+- 嵌入 Figure 2 路由／KV 架构和 Figure 4 吞吐／消融图；明确层级筛选、因果路由修正及两种 KV 的上下文语义。
+- 区分基座总参数与非 embedding 参数、同算力与同数据；记录 1.7B 对照及排除 KV 更新的吞吐计时边界。
+- raw/ 未改；引用官方版本 PDF；图像以约 300 DPI 裁剪并核验。未运行训练或推理复现。

@@ -105,5 +105,6 @@ Table 3 以 ITT ×4 的 PPL 10.25 为基准：去掉 RTC 为 11.02，去掉 ATR 
 
 ## 相关页面
 
+- [Mixture-of-Recursions（MoR）](mixture-of-recursions.md) — 对照层内／层栈复用、永久退出、Top-K 因果性及 KV 语义；不能用 MoR 的实现补全 ITT 未说明的部分。
 - [ITT 实验模型族](../models/inner-thinking-transformer.md) — 主体模型身份与附录规模边界。
 - [Looped Transformers](../concepts/looped-transformers.md) — 将 ITT 放在层内复用与 token 选择的交叉位置。

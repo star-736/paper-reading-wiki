@@ -1,7 +1,7 @@
 ---
 title: "Looped Transformers"
 type: Concept
-description: "权重共享的循环 Transformer：用同一 block 反复执行增加有效深度；ITT 做层内 token 选择，PLT 使延迟和 KV-cache 不随 loop count 增长"
+description: "权重共享的循环 Transformer：用同一 block 反复执行增加有效深度；ITT 做层内 token 选择，MoR 联合路由与 KV 缓存，PLT 使延迟和 KV-cache 不随 loop count 增长"
 tags: [looped-transformer, PLT, weight-sharing, test-time-compute, depth-recurrence]
 timestamp: 2026-09-17
 ---
@@ -31,9 +31,10 @@ $$h^{(0)} = \text{Embed}(x), \quad h^{(r)} = f_\theta(h^{(r-1)}), \quad r=1,\dot
 |---|---|---|
 | **MELT** [15] | 单个共享 KV cache per layer，learnable gating 更新 | KV-cache 随 R 线性增长 |
 | **PLT** [16] | CLP（cross-loop position offset）打破序列依赖 + G-SWA（shared-KV gated SWA） | 延迟 + KV-cache 同时随 R 增长 |
+| **[MoR](../sources/mixture-of-recursions.md)** | 共享中间层栈 + token 递归路由 + 递归局部 KV 或首轮 KV 共享 | 联合减少独立参数、活跃计算与缓存；另以深度批处理提升吞吐 |
 | **LT2** [6] | 用线性/稀疏 attention 替代 softmax | loop 内 attention 的二次复杂度 |
 
-**PLT 是唯一同时解决延迟和内存的方案**：CLP 使 loop 间可并行（延迟 ≈ C_block），G-SWA 冻结 loop-1 KV cache 共享给所有后续 loop（内存 O(L·S·d) 不随 R 增长）。
+**PLT 以跨 loop 并行化处理延迟和内存随循环增长的问题**：CLP 使 loop 间可并行（延迟 ≈ C_block），G-SWA 冻结 loop-1 KV cache 共享给所有后续 loop（内存 O(L·S·d) 不随 R 增长）。
 
 ### PLT 的结构性代价：CLP offset
 
@@ -47,6 +48,7 @@ LoopCoder-v2 的核心贡献是量化这个代价：定义 intrinsic offset cost
 
 ## 跨报告信号
 
+- **[Mixture-of-Recursions（MoR）](../sources/mixture-of-recursions.md)**（arXiv:2507.10524v3）：Middle-Cycle 共享中间层，比较 expert-choice 与 token-choice，以及递归局部 KV 与首轮共享 KV。360M 基座同 FLOPs 下 MoR-2 的平均分 43.1 vs 42.3，但训练 tokens 为 27B vs 20B；1.7B 基座对照仍略低于普通模型。最高 2.06× 吞吐来自放大 batch 的深度批处理，计时排除 KV 写入／更新，不等于单请求延迟减半。
 - **[Inner Thinking Transformer（ITT）](../sources/inner-thinking-transformer.md)**（ACL 2025）：百度与中科院等的层内循环方案，ATR 每步选择 token，RTC 累积输出，step encoding 区分步骤。主体 50B-token 对照中，162M ITT ×4 平均分 42.1，普通同规模 40.4；相对 Loop ×4 FLOPs 少约 30%，但仍高于普通模型。官方 PDF 的摘要规模、附录大模型数值和部分消融数字互相冲突，不能合并成统一的 scaling 结论（详见来源页）。
 - **[LoopCoder-v2](../sources/loopcoder-v2.md)**（arXiv:2606.18023v1）：首个在 18T tokens 上从头训练 PLT coder 的大规模实验。7B 模型 R=2 最优（SWE-bench Verified 64.4%），R≥3 退化。gain–cost 框架 + per-loop 可解释性诊断（hidden-state dynamics / attention evolution / output-distribution shift 三镜头三角验证）。
 - **[Looped Language Models Improve Compositional Tool Calling](../sources/looped-tool-calling.md)**（arXiv:2608.18171v1）：将 latent recurrence 的评测对象扩展到 tool-call DAG。受控 SFT 中，循环深度主要改善 BFCL 的独立多调用和 NESTful 的 output-to-input 依赖绑定；API-Bank 这类单调用 grounding 任务的收益小且不稳定。Ouro 的 adaptive exit 在保持接近最佳固定深度表现时降低平均循环次数；但原生 Ouro 没有同预训练条件的 non-looped 对照，最直接的架构隔离仍来自 OLMo / Llama retrofit。
@@ -58,6 +60,7 @@ LoopCoder-v2 的核心贡献是量化这个代价：定义 intrinsic offset cost
 
 ## 为什么重要
 
+**路由决定了缓存与可见上下文（本页综合）**：[MoR](../sources/mixture-of-recursions.md) 的递归局部缓存只让深层 token 关注同轮仍活跃的历史 token；首轮 KV 共享则保留完整历史，但复用较浅表征。因此减少 KV 的两种路径具有不同语义。MoR 的连续深度批处理是把不同请求的递归工作合批，提高吞吐；它不解除同一 token 的递归依赖，与 PLT 的并行化机制应分开比较。
 **循环粒度与算力分配是两条轴（本页综合）**：[ITT](../sources/inner-thinking-transformer.md) 提醒我们，比较循环模型时除了“共享几层、循环几次”，还要问“哪些 token 在每一步参与”。其层内复用 + Top-K 预算是细粒度路线；不应因都叫自适应深度，就把它视为按置信度永久退出，也不能从 FLOPs 节省推断具备 PLT 的并行延迟性质。ITT 的证据是主表小模型预训练与预算调整，而非任意深度外推保证。
 
 Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**的 test-time compute scaling 思路：
@@ -86,6 +89,7 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 ## 相关页面
 
+- [Mixture-of-Recursions（MoR）](../sources/mixture-of-recursions.md) — 两种递归路由、两种 KV 语义与吞吐计时边界
 - [Inner Thinking Transformer（ITT）](../sources/inner-thinking-transformer.md) — 百度等的 ATR + RTC 层内循环；含正式版证据冲突
 - [ITT 实验模型族](../models/inner-thinking-transformer.md) — LLaMA2 风格小模型与规模边界
 - [LoopCoder-v2 来源页](../sources/loopcoder-v2.md) — PLT gain–cost 分析的一手出处

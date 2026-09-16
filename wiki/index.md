@@ -83,6 +83,7 @@
 - [Seed2.0 Model Card](sources/seed2.md) - 字节跳动 Seed 团队的 Seed2.0 Series（Pro / Lite / Mini）Model Card，含 MaaS 部署洞察、四维评测框架（Science Discovery / Vibe Coding / Context Learning / Real-World Tasks）和真实世界 case studies，不含架构/训练细节。
 - [KVpop 技术报告](sources/kvpop.md) - NXAI + JKU Linz（Hochreiter 团队）的 learned eviction 方法：future-attention target 在 eviction boundary 监督 keep-or-drop，mLSTM 延迟打分利用近未来上下文，Qwen3-8B 88% 压缩下保留 100% teacher 性能。
 - [VibeThinker-3B 技术报告](sources/vibethinker-3b.md) - 新浪微博 3B dense reasoning 模型，Spectrum-to-Signal 后训练范式（MGPO + curriculum SFT + Long2Short RL + offline self-distillation + Instruct RL + CLR test-time scaling），AIME26 94.3 追平旗舰，提出 Parametric Compression-Coverage Hypothesis。
+- [Mixture-of-Recursions（MoR）](sources/mixture-of-recursions.md) - KAIST + Mila 主导的共享层栈与 token 自适应递归；两种路由／KV 方案。最高 2.06× 为排除 KV 更新的批处理吞吐；1.7B 对照保留扩展性边界。
 - [Inner Thinking Transformer（ITT）](sources/inner-thinking-transformer.md) - 百度与中科院等的层内循环：ATR 选 token、RTC 累积结果；小模型主表支持参数效率，正式版规模与数值冲突单列。
 - [LoopCoder-v2](sources/loopcoder-v2.md) - 北航 + IQuest Research 的 PLT loop-count 选择研究：7B coder 从头训练 18T tokens，gain–cost 视角发现 R=2 最优（SWE-bench Verified 64.4%）、R≥3 退化，per-loop 可解释性诊断解释饱和机制。
 - [Looped Language Models Improve Compositional Tool Calling](sources/looped-tool-calling.md) - Cambridge 的循环模型工具调用研究：循环计算主要提升多调用组合和 output-to-input 依赖绑定；Ouro adaptive exit 以较低平均循环数取得更好的算力—性能折中，但证据仍限静态单轮 benchmark。
@@ -236,7 +237,7 @@
 - [线性注意力与 delta rule](concepts/linear-attention-and-delta-rule.md) - 朴素线性注意力 → GLA（细门无 delta）→ DeltaNet → GDN → KDA；Lightning 是标量衰减 tiling，Mamba-2 是 SSD，RWKV-4 是 1D WKV。生产 3:1 走 GDN/KDA，7:1 走 Lightning。
 - [注意力门控](concepts/attention-gating.md) - softmax 注意力里加门（Gated Attention 的 SDPA 输出门、KDA 的输出门）：非线性补偿 + 消除 attention sink。
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
-- [Looped Transformers](concepts/looped-transformers.md) - 含 ITT 的层内复用与 token 选择路线；权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
+- [Looped Transformers](concepts/looped-transformers.md) - 含 ITT 层内复用与 MoR 路由／KV 联合设计；权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
 - [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Pi 极小核心、DeepSeek Harness 插件核、SoL-Pi 效率层、Prime Agent 表达性膜、Macaron HCP 同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
