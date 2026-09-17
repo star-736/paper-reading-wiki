@@ -58,7 +58,7 @@ DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模
 
 对短序列 prefill 场景，专门实现 **masked MHA 模式**来模拟 DSA 行为，在短上下文下获得更高效率。
 
-> **为什么短 prefill 走稠密 MHA 而非 DSA/吸收**：几百 token 以内，DSA 的 top-k 稀疏选择拿不到收益（要选的本来就没几个），而 MLA 吸收形态（MQA mode）又因「latent 上投影成 per-head K/V」的每-token 固定开销在短序列上不划算——此时**稠密 MHA 展开形态算力最省**。这有定量支撑：按 V2 配置推导，展开 vs 吸收的算力 crossover ≈ **341 token**，短于它吸收/展开的天平偏向稠密展开（推导见 [MLA 概念页「crossover ≈ 341 token」](../concepts/multi-head-latent-attention.md)）。序列更长才轮到 DSA 稀疏路径接管。
+> **证据边界（§2.3）**：原文确认短序列 prefill 使用 masked MHA 更高效，但未给数值切换阈值或逐项 FLOPs 归因。不能用不完整的 V2 成本估计“约 341 token”解释该选择；尤其吸收形态避免的是展开历史 K/V，不应反过来把其开销归给吸收。完整投影形状及成本边界见 [MLA 概念页](../concepts/multi-head-latent-attention.md#展开与吸收的计算成本边界)。
 
 ## 后训练
 

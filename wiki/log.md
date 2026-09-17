@@ -1526,3 +1526,7 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 ## [2026-09-17] verify | OPD 熵曲线的引用归属与多样性边界
 
 重读 MiniLLM v6 §2–3、Table 3/4、§B.4，并核对 nrehiew 本地快照及原网页图。`refuted`：把 OPD–RL 熵曲线对照归给 MiniLLM；`supported`：MiniLLM 的 mode-seeking 风险讨论与两项多样性指标接近基线。来源页补 Table 3 文本表，博客页内嵌原 SVG 经 PyMuPDF 渲染的曲线并区分观察与作者推测；MOPD 页移除普遍化断言。关闭 1 条材料待核，保留同协议多样性实验问题；当前 639 条（40 / 81 / 518）。`raw/` 未改。
+
+## [2026-09-17] verify | MLA 投影形状与 MHA 配对对照
+
+重读 V2 §2.1、§3.1.2、附录 B.1/C/D.2 与 Table 9，补 8 个投影矩阵形状、576 元素每层缓存及两组 MoE 对照。`supported`：所测配置总体质量改善且缓存更小；`refuted`：所有单项均领先（小模型 C-Eval −0.7 pp）、缓存必小于 MQA、以 Lite 配置证明 query 压缩不影响能力。矩阵形状还暴露旧 341-token 推导遗漏 query/output 成本，撤回该阈值及其 V3.2 因果解释；重读 V3.2 §2.3 / Figure 7，限定短 prefill 与 V3.1-Terminus 的证据范围。关闭 2 条追问，现余 637（38 / 81 / 518）；纯文本表重排 Markdown，既有机制图保留。`raw/` 未改。
