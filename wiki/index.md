@@ -116,7 +116,7 @@
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
-- [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiniMax-M2、MiMo、Ling-2.6 生产采用的 bias 路由一手出处。
+- [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiMo、Ling-2.6 的 bias 路由一手出处；M2 引用该文，但报告描述的是联合优化 bias，不能等同原算法。
 - [YaRN](sources/yarn.md) - Nous Research + EleutherAI 的 RoPE 扩展方法：NTK-by-parts 按维切分频率 + attention temperature；微调不足 0.1% 预训练数据把 Llama 2 推到 128K，Dynamic-YaRN 无微调可超 2×。Qwen3 / Qwen3-Next 推理外推的一手定义。
 - [Dual Chunk Attention](sources/dual-chunk-attention.md) - HKU + 阿里的 training-free 长上下文扩展：把 RoPE 注意力按 chunk 拆成 Intra / Inter / Successive 三路位置重映射，不改权重、兼容 Flash Attention；Llama2 70B 外推过 100k，并可与 PI / NTK / YaRN 正交叠加。Qwen3 公开推理配方的 DCA 一手出处。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
@@ -259,15 +259,15 @@
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。当前剩余 **637 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。当前剩余 **636 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
-| 现有材料待核 | 38 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
+| 现有材料待核 | 36 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
 | 需补外部来源 | 81 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 518 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 需实验或作者披露 | 519 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 637 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 636 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
@@ -275,7 +275,6 @@
 | --- | --- | --- |
 | MLA 后续演进与选型动机 | [MLA](concepts/multi-head-latent-attention.md#待追问) | 投影形状与 D.2 已闭合；仍需核对 V2→V3→V3.2→V4 演进和 MSA 选择 GQA 的动机。 |
 | 门控的成本和实验尺度 | [Gated Attention](sources/gated-attention.md#待追问)、[GDN](sources/gated-delta-net.md#待追问)、[KDA](concepts/linear-attention-and-delta-rule.md#待追问) | 先补参数和训练规模，再把未测的端到端成本留作实验问题。 |
-| 负载均衡配置 | [Loss-Free Balancing](sources/loss-free-balancing.md#待追问) | 回 GLM 与 M2 报告核对披露范围及 learnable bias 语义。 |
 | 小激活编码模型评测 | [Qwen3-Coder-Next](sources/qwen3-coder-next.md#待追问) | 补 SWE-bench 数字、对照对象与协议。 |
 | 附录中的具体设置 | [Inner Monologue](sources/inner-monologue.md#待追问)、[SayCan](sources/saycan.md#待追问)、[RWKV](sources/rwkv.md#待追问) | 分别补描述器、启用技能数量及附录任务明细。 |
 

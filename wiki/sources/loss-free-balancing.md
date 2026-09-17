@@ -14,12 +14,12 @@ resource: "../../raw/2408.15664v1.pdf"
 - 文件：`raw/2408.15664v1.pdf`
 - 标题：Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts
 - 团队 / 日期：Lean Wang, Huazuo Gao, Chenggang Zhao, Xu Sun, Damai Dai（DeepSeek-AI + 北大）；arXiv:2408.15664v1，2024-08
-- 定位：**方法论文，非模型报告**——MoE 负载均衡问题本身。提出 Loss-Free Balancing（偏置门控），是 DeepSeek-V3 / V3.2 / V4、Kimi K2 系、MiniMax-M2、MiMo-V2-Flash、Ling-2.6 等一线 MoE 生产模型共同采用（或混合采用）的负载均衡标准的**一手出处**。
+- 定位：**方法论文，非模型报告**——MoE 负载均衡问题本身。提出 Loss-Free Balancing（偏置门控），是 DeepSeek-V3 / V3.2 / V4、Kimi K2 系、MiMo-V2-Flash、Ling-2.6 等一线 MoE 生产模型共同采用（或混合采用）的负载均衡标准的**一手出处**。
 
 ## 核心结论
 
 1. **问题重述：负载均衡 vs 模型性能的两难**。无控制的路由会 routing collapse（少数专家被反复选中，其余训练不足）或加剧 expert-parallel 计算瓶颈；主流解法是 auxiliary loss（Switch/GShard 式 $L_{\text{Balance}} = \alpha \sum_i f_i P_i$），但 $\alpha$ 小→失衡，$\alpha$ 大→干扰梯度损害语言建模目标。论文用 Figure 2 实证这个 dilemma：$\alpha \in \{10^{-2}, 10^{-3}, 10^{-4}, 0\}$ 扫描下，没有哪个 $\alpha$ 同时给出好平衡和好性能（§2.2）。
-2. **Loss-Free Balancing：top-K 前加 expert-wise bias，训练后按负载更新**。$g_{i,t}$ 的选择改为 $s_{i,t} + b_i \in \text{Topk}(\{s_{j,t} + b_j\}, K)$；每个 batch 结束后统计 $c_i$（expert $i$ 分到的 token 数），$e_i = c_i - \bar{c}$，更新 $b_i \leftarrow b_i + u \cdot \text{sign}(e_i)$（Algorithm 1）。**bias 只影响 top-K 选择，不进入加权输出 $g_{i,t}$**（即不改 mixture weights、不给 router 引入额外梯度），梯度完全来自语言建模损失（§3、Eq. 3）。
+2. **Loss-Free Balancing：top-K 前加 expert-wise bias，训练后按负载更新**。$g_{i,t}$ 的选择改为 $s_{i,t} + b_i \in \text{Topk}(\{s_{j,t} + b_j\}, K)$；每个 batch 结束后统计 $c_i$（expert $i$ 分到的 token 数），$e_i = \bar{c} - c_i$，更新 $b_i \leftarrow b_i + u \cdot \text{sign}(e_i)$（Algorithm 1）。**bias 只影响 top-K 选择，不进入加权输出 $g_{i,t}$**（即不改 mixture weights、不给 router 引入额外梯度），梯度完全来自语言建模损失（§3、Eq. 3）。
 3. **head-to-head 双赢**：1B（100B tokens）/ 3B（200B tokens）从零训练，vs $\alpha = 10^{-3}$ 的 aux-loss 基线，Loss-Free 同时拿到更低 validation perplexity（1B: 9.50 vs 9.56；3B: 7.92 vs 7.97）和数量级更好的全局负载（MaxVio_global 0.04 vs 0.72 / 0.52）（Table 2）。
 4. **对 EC（Expert Choice）的致命一击：future token leakage**。EC 让专家挑 token，未来 token 的 gating score 会影响当前 token 的 expert 分配——每层可泄漏 $K \log_2 \frac{1-R}{R}$ bits/token（$R = K/N$ 为稀疏度）。9 层 MoE、16 experts、K=2 时超 50 bits，足以让每个 token 确定其后继身份。实验把 top-K chunk 从 8192 缩到 512 tokens，观察到 ~10% 异常 loss 下降；shuffle 后异常消失——泄漏被实锤（§5.2、附录 D、Figure 9）。
 5. **与 expert parallelism 天然兼容**：computation batch 越大，Loss-Free 的 batch 级负载越接近全局负载（aux-loss 方法趋于常数）；EP 放大 computation batch 的倍数恰好放大这个优势（§5.1、Figure 5）。
@@ -32,9 +32,11 @@ resource: "../../raw/2408.15664v1.pdf"
    对 B 中每个 batch {(x_k, y_k)}:
 2.   用式(3)的门控分数（s_{i,t} + b_i 决定 top-K）训练 θ
 3.   统计每个 expert 分到的 token 数 c_i 及平均 \bar{c}
-4.   计算负载违例 e_i = c_i - \bar{c}
+4.   计算负载违例 e_i = \bar{c} - c_i
 4'.  更新 b_i ← b_i + u·sign(e_i)
 ```
+
+**更新方向已据原图核对（`supported`）**：Algorithm 1 的误差是平均负载减实际负载；过载时 $e_i<0$，bias 下调，欠载时上调。不能把误差写成实际负载减平均负载、同时仍使用加号更新，否则方向反了。
 
 三个设计细节（原文 §3 + §4.3 消融）：
 
@@ -110,17 +112,18 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 - **DeepSeek 系（采用起点）**：本论文的直系下游——同团队（Lean Wang / Damai Dai 都在 DeepSeek-AI），V3 起全系把 auxiliary-loss-free bias 路由写入生产。**[DeepSeek-V4](../sources/deepseek-v4.md) 原文直接引用**："For load balancing, we also employ the auxiliary-loss-free strategy (DeepSeek-AI, 2024; **Wang et al., 2024a**)"，并披露 bias update speed = 0.001（正是本论文 Figure 4 的甜点值）；V4 还叠加一个 weight 1e-4 的 sequence-wise balance loss 防**单序列内**极端失衡——单序列粒度是原论文 MaxVio_global/batch 两口径都没覆盖的盲区，生产配置实际是"纯 bias + 轻微序列级 loss"的混合。
 - **[Kimi K2/K2.5](../sources/kimi-k2.5.md)**：常规 aux-loss-free bias（384 routed / 8 active 规模下够用）。
 - **[Kimi K3](../sources/kimi-k3.md)**：显式指出本方法（K3 报告引 [30]）的固定步长 sign 更新在 ~10³ experts 失效，用 [Quantile Balancing](../concepts/stable-latentmoe.md) 升级为 balanced assignment 对偶 LP 的 exact coordinate minimizer（SignSGD 一步即原版 sign 更新，QB 直接跳到同一对偶目标的精确解）。**谱系：本论文 → sign update → K3 QB**。
-- **[MiniMax-M2](../sources/minimax-m2-series.md)**："Routing is implemented using sigmoid gating with learnable expert-specific bias terms, which improves load balancing while greatly reducing reliance on auxiliary losses (**Wang et al., 2024a**)"——把 bias 做成可学习参数并显式引用本论文。
-- **[MiMo-V2-Flash](../sources/mimo-v2-flash.md)**：混合路线——expert bias update factor 0.001（Stage 1/2）**加上** MoE sequence auxiliary loss 1e-5；与 V4 的"纯 bias + 轻序列级 loss"同型，但 MiMo 的序列级 loss 明显更重。
+- **[MiniMax-M2](minimax-m2-series.md#专家偏置的联合优化与证据边界)（引用但更新规则不同）**：§2.2.1 明说 expert bias 与模型参数联合优化，以大幅降低 auxiliary loss；不能把它列为已确证采用本页“历史负载 sign 更新、bias 不进输出权重”的同一实现。具体梯度路径及剩余辅助损失系数未披露。
+- **[MiMo-V2-Flash](../sources/mimo-v2-flash.md)**：混合路线——expert bias update factor 0.001（Stage 1/2）**加上** MoE sequence auxiliary loss 1e-5；与 V4 的"纯 bias + 轻序列级 loss"同型，所列 MiMo 系数 1e-5 比 V4 的 1e-4 小一个数量级；但损失归一化及训练条件不同，不能只凭系数判断实际梯度影响。
 - **[Ling-2.6](../sources/ling-2.6.md)**：auxiliary-loss-free load balancing（bias-update rate γ=0.001 → 0.0001，训练后期衰减），Inclusion AI 侧的独立采用证据。
 - **[Qwen3](../sources/qwen3.md)（对照，非采用）**：Qwen3 用的是 global-batch load balancing **loss**（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*）——aux-loss-based 阵营在生产模型里仍是主流选项之一；[Laguna XS.2](../sources/laguna-m1-xs2.md) 同路线（同一 Qiu 文 aux loss，只在非 padding token 上算）。**注意：本 wiki 此前在 Stable LatentMoE 页写"aux-loss-free sign update（K2/Qwen3 用）"是错的——Qwen3 走的是 loss 路线，已修正。**
 
-**谱系总表**（详见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）：auxiliary loss（Switch/GShard → V2 三重 loss → Qwen3 global-batch / Laguna）↔ auxiliary-loss-free bias（**本论文** → V3/V4 + 序列级 loss、K2 系、MiniMax-M2 可学习 bias、MiMo 混合、Ling-2.6）→ QB（K3，896-expert 规模的 exact 解）。
+**谱系总表**（详见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）：auxiliary loss（Switch/GShard → V2 三重 loss → Qwen3 global-batch / Laguna）↔ auxiliary-loss-free bias（**本论文** → V3/V4 + 序列级 loss、K2 系、MiMo 混合、Ling-2.6）→ QB（K3，896-expert 规模的 exact 解）。
+
+MiniMax-M2 的联合优化 bias 单独列为相关变体，不能并入已确证的梯度外 sign-update 分支。
 
 ## 待追问
 
-- **现有材料待核**：**GLM-5 / GLM-5V-Turbo 的负载均衡策略**：GLM-5 报告只在架构节提到 256 experts / 80 层为减 EP 通信开销，未搜到负载均衡方法表述。是 loss 路线、bias 路线还是混合？需回报告细读或等更细披露。
-- **现有材料待核**：**MiniMax-M2 "learnable expert-specific bias" 的确切机制**：bias 是纯统计量（本论文式）还是真的进梯度可学（bias 有了梯度就不再是 loss-free）？引文表述含糊，需回 M2 报告 §2.2.1 细读。
+- **需实验或作者披露**：**GLM-5 / GLM-5V-Turbo 的专家负载均衡策略**：已重读两篇现有报告，未找到 expert bias 更新或 expert auxiliary-loss 配方。GLM-5 的 DP/PP 工作负载均衡、DP-aware rollout 路由，以及 GLM-5V-Turbo 的视觉分片均衡均不是该问题的答案。需要官方训练配方、训练实现或作者澄清；不能把报告未说明写成模型未采用。核查范围见 [GLM-5](glm-5.md#专家负载均衡的披露边界) 与 [GLM-5V-Turbo](glm-5v-turbo.md#负载均衡的层次区别)。
 - **需实验或作者披露**：**sequence-wise balance loss 的必要性**：V4 和 MiMo 都在 bias 之外加了序列级 loss，但两者权重差一个数量级（1e-4 vs 1e-5）。什么场景下单序列失衡会伤到？原论文只测了 global/batch 两口径，没测序列口径——生产模型补这个 loss 暗示原论文口径有盲区，但没有公开对照实验。
 - **需实验或作者披露**：**sigmoid gate 结论的稳健性**：附录 C 在 1B 上得出"sigmoid 优于 softmax"，V4 换 Sqrt(Softplus) 但保留 bias 路线。gate 函数与 bias 调平策略的耦合（归一化 vs 独立分数）值得一份跨 gate 的系统消融。
 - **需实验或作者披露**：**EC 泄漏批判的适用边界**：批判成立的前提是自回归训练（未来 token 不可见）。EC 在 BERT 式双向模型或非 LM 场景（如 VLA 的分块训练）是否仍是可行选项？wiki 内 [InternVLA-A1.5](../sources/internvla-a1.5.md) 等未涉及 MoE，暂无对照案例。
@@ -129,7 +132,7 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 ## 相关页面
 
 - 概念页：[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（本论文为中心的完整谱系表）
-- 下游采用：[DeepSeek-V4](../sources/deepseek-v32.md)、[Kimi K3](../sources/kimi-k3.md)（QB 升级）、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
+- 下游采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3](../sources/kimi-k3.md)（QB 升级）、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
 - 对照路线：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)（aux loss 阵营）
 - 相关机制：[Stable LatentMoE](../concepts/stable-latentmoe.md)（Quantile Balancing 是本方法的直接升级）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 

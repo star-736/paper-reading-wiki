@@ -1530,3 +1530,7 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 ## [2026-09-17] verify | MLA 投影形状与 MHA 配对对照
 
 重读 V2 §2.1、§3.1.2、附录 B.1/C/D.2 与 Table 9，补 8 个投影矩阵形状、576 元素每层缓存及两组 MoE 对照。`supported`：所测配置总体质量改善且缓存更小；`refuted`：所有单项均领先（小模型 C-Eval −0.7 pp）、缓存必小于 MQA、以 Lite 配置证明 query 压缩不影响能力。矩阵形状还暴露旧 341-token 推导遗漏 query/output 成本，撤回该阈值及其 V3.2 因果解释；重读 V3.2 §2.3 / Figure 7，限定短 prefill 与 V3.1-Terminus 的证据范围。关闭 2 条追问，现余 637（38 / 81 / 518）；纯文本表重排 Markdown，既有机制图保留。`raw/` 未改。
+
+## [2026-09-17] verify | M2 bias 与 GLM 专家负载均衡披露范围
+
+重读 M2 §2.2.1、Loss-Free Balancing §3 / Algorithm 1，以及 GLM-5 / GLM-5V-Turbo 的架构与系统段。`supported`：M2 bias 与模型参数联合优化；`refuted`：据引用关系认定 M2 原样使用梯度外 sign 更新。GLM 的系统负载均衡不能补出专家均衡配方，主追问转为需作者披露。同步校准谱系，并据 Algorithm 1 原图将负载误差纠正为平均减实际；修正 MiMo 辅助损失系数“更重”的倒置表述。关闭 1 条、转类 1 条，现余 636（36 / 81 / 519）。纯文本证据补为正文，既有机制图保留，`raw/` 未改。

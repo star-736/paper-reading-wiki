@@ -22,7 +22,7 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 
 ## 跨报告信号：生产配置地图
 
-各模型实际用的负载均衡（均据对应 raw/ PDF 核实）：
+下表区分报告明文、引用关系和未披露项；引用 Loss-Free Balancing 不等于原样采用其 bias 更新规则。
 
 | 模型 | 阵营 | 具体配置 | 出处 |
 |---|---|---|---|
@@ -30,12 +30,13 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 | **DeepSeek-V3.2 / V4** | **bias（标准配置）** | auxiliary-loss-free strategy，bias update speed 0.001；V4 叠加 weight 1e-4 sequence-wise balance loss | [V4 报告](../sources/deepseek-v4.md) §2 + §训练设置 |
 | Kimi K2 / K2.5 | bias | 常规 aux-loss-free bias（384 routed / 8 active） | [K2.5 报告](../sources/kimi-k2.5.md) |
 | Kimi K3 | **QB（exact 解）** | Quantile Balancing，分位数推 bias，无学习率；896 routed / 16 active | [K3 报告](../sources/kimi-k3.md) §2.3.3 |
-| MiniMax-M2 | bias（变体） | sigmoid gating + learnable expert-specific bias，"greatly reducing reliance on auxiliary losses"，显式引 Wang et al. 2024a | [M2 报告](../sources/minimax-m2-series.md) §2 |
+| MiniMax-M2 | 联合优化 bias；辅助损失减弱 | §2.2.1 明说 bias 与模型参数联合优化；梯度路径与剩余 auxiliary loss 系数未披露，不能归为已确证的梯度外 sign 更新 | [M2 核验](../sources/minimax-m2-series.md#专家偏置的联合优化与证据边界) |
 | MiMo-V2-Flash | 混合 | expert bias update factor 0.001 + MoE sequence aux loss 1e-5 | [MiMo 报告](../sources/mimo-v2-flash.md) |
 | Ling-2.6 / Ring-2.6 | bias | aux-loss-free，bias-update rate γ=0.001→0.0001（后期衰减） | [Ling-2.6 报告](../sources/ling-2.6.md) |
 | Qwen3 | aux loss（演进） | global-batch load balancing loss（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*），非 micro-batch 口径 | [Qwen3 报告](../sources/qwen3.md) |
 | Laguna XS.2 | aux loss | [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）aux loss（只在非 padding token 上算） | [Laguna 报告](../sources/laguna-m1-xs2.md) |
-| GLM-5 | 未披露 | 报告只提 256 experts / 80 层为减 EP 通信开销，未写负载均衡方法 | [GLM-5 报告](../sources/glm-5.md) |
+| GLM-5 | 现有报告未说明专家均衡配方 | §2.1 给专家规模；DP/PP 均衡和 rollout 路由不能代替 expert-level 配方 | [GLM-5 核验](../sources/glm-5.md#专家负载均衡的披露边界) |
+| GLM-5V-Turbo | 现有报告未说明专家均衡配方 | §2.4 的 load balancing 针对视觉输入分片、DP 组与 micro-batch，不是专家路由均衡 | [GLM-5V-Turbo 核验](../sources/glm-5v-turbo.md#负载均衡的层次区别) |
 
 读法：**bias 路线是 DeepSeek 系及 Kimi 系的家族传统**（同源于本论文，作者重叠），aux loss 路线在 Qwen 系仍有强生命力（global-batch 口径是它对"鼓励专家专业化"的回答），两家并未收敛到单一答案。MiMo/V4 的混合配置（bias + 轻序列级 loss）暗示纯 bias 在**单序列粒度**上有盲区——原论文只测了 global/batch 口径。[Engram](../sources/engram.md) 的 27B/40B 研究模型同样写 Loss-Free（Appendix A），不是生产部署，只说明 DeepSeek 方法论文继续沿用这条配方。
 
@@ -47,12 +48,12 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 | 因果安全 | 是 | 是（用历史 batch 负载） | 是（下一 step 生效） | **否（未来 token 泄漏）** |
 | 超参 | α（两难调） | 更新率 u（1B 上调一次即可） | 无学习率超参 | 容量参数 |
 | 大 expert pool | 可用 | ~10²-10³ experts 下 u 两难（慢 vs 振荡） | 几步收敛到 exact 解 | 可用但泄漏更严重 |
-| 生产采用 | Qwen3 / Laguna / V2 | V3/V4 / K2 系 / M2 / MiMo / Ling | K3 | 无（自回归 LM） |
+| 生产采用 | Qwen3 / Laguna / V2 | V3/V4 / K2 系 / MiMo / Ling | K3 | 无（自回归 LM） |
 
 ## 为什么重要
 
-- **它是 MoE 训练配方里少有的"已收敛"问题**：2017-2024 间的开放争论（loss vs bias vs EC）在 2024 后基本收口——aux-loss-free bias 成 DeepSeek/Kimi/MiniMax/MiMo/Ling 共识，EC 因泄漏出局，aux loss 退守 Qwen 系。检索本 wiki 的 MoE 相关问题时，负载均衡方法不再是有悬念的设计维度。
-- **"梯度外控制"这个思路本身可迁移**：bias 不进 loss、不进梯度、只在推理图里改路由——把"优化目标"和"系统约束"解耦的工程模式。K3 QB 沿同一接口（bias）升级求解器而不动训练梯度，是这个解耦的可扩展性证明。
+- **区分路由变量与更新算法**：多家模型都使用 bias，不代表使用相同的学习规则。M2 明说联合优化，Loss-Free Balancing 则按历史负载调整；GLM 两篇报告仍缺专家级配方，不能把这条谱系概括为所有生产模型已经收敛到同一方案。
+- **"梯度外控制"这个思路本身可迁移**：bias 不进 loss、不进梯度、在前向 top-k 选择中调整路由——把"优化目标"和"系统约束"解耦的工程模式。K3 QB 沿同一接口（bias）升级求解器而不动训练梯度，是这个解耦的可扩展性证明。
 - **给"生产报告引用链"提供了校准案例**：V4 报告引用的是 "Wang et al., 2024a"（本论文）+ "DeepSeek-AI, 2024"（V3 报告）双引——引用链上每个环节的原文都在 wiki 的 raw/ 里，可以逐环核实而不是靠二手转述。
 
 ## 待追问
@@ -61,13 +62,14 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 
 ## 相关追问
 
-主记录：[GLM 负载均衡策略](../sources/loss-free-balancing.md#待追问)；[MiniMax-M2 bias 是否参与梯度](../sources/loss-free-balancing.md#待追问)；[序列级均衡损失的必要性](../sources/loss-free-balancing.md#待追问)。
+主记录：[GLM 负载均衡策略](../sources/loss-free-balancing.md#待追问)；[M2 联合优化 bias（报告措辞已核实）](../sources/minimax-m2-series.md#专家偏置的联合优化与证据边界)；[序列级均衡损失的必要性](../sources/loss-free-balancing.md#待追问)。
 
 ## 相关页面
 
 - 一手出处：[Loss-Free Balancing](../sources/loss-free-balancing.md)（arXiv:2408.15664）
 - QB 升级：[Stable LatentMoE](stable-latentmoe.md)、[Kimi K3](../sources/kimi-k3.md)
 - aux loss 阵营：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)、[DeepSeek-V2](../sources/deepseek-v2.md)（旧世三重 loss）
-- bias 阵营采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
+- bias 阵营采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
+- 相关变体：[MiniMax-M2 Series](../sources/minimax-m2-series.md#专家偏置的联合优化与证据边界)（联合优化 bias，未确证为同一 sign-update 实现）。
 - 上位概念：[MoE 前沿模型扩展](moe-frontier-model-scaling.md)
 - 研究模型沿用：[Engram](../sources/engram.md)

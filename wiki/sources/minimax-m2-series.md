@@ -27,7 +27,14 @@ MiniMax-M2 Series 的主张是“低激活参数也能释放真实世界智能�
 
 M2 采用 full attention，而不是沿用 MiniMax-Text-01 中的 hybrid attention。报告中的消融显示，SWA 在部分短任务上可行，但在长上下文 agent、复杂检索和多跳任务上会损失明显，因此 M2 在前沿规模上保留 full attention。
 
-路由用 sigmoid gating + learnable expert-specific bias terms，显式引用 Loss-Free Balancing（Wang et al., 2024a）以"大幅降低对 auxiliary losses 的依赖"——谱系定位见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)；bias 是否真的进梯度可学待核（见 [Loss-Free Balancing 来源页待追问](loss-free-balancing.md)）。
+### 专家偏置的联合优化与证据边界
+
+**已据原文核实（`supported`）**：§2.1 与 §2.2.1 “Expert Bias” 使用 sigmoid gating，并把 expert-specific bias 作为各专家 routing score 的偏移。关键句是 “These biases are optimized jointly with model parameters”；下一页接着说明，这使辅助负载均衡损失可以大幅降低。因此报告描述的是**与模型参数联合优化的可学习偏置**，不只是一个未定义的 learnable 标签。
+
+**不能等同于 Loss-Free Balancing 的 Algorithm 1**（`refuted`，针对“原样采用该更新规则”的归属）：[Loss-Free Balancing](loss-free-balancing.md) 的 bias 按历史 token 负载更新，只影响 top-k 选择，不进入专家输出权重；M2 引用这篇论文，却没有声明复用该 sign 更新。引用关系不等于实现完全相同，见 [负载均衡谱系](../concepts/moe-load-balancing.md)。
+
+**仍有实现边界**：联合优化是报告明文，但本报告未给 bias 的梯度路径、是否进入选中专家的输出权重、优化器参数组或独立学习率，也未给剩余 auxiliary loss 的系数。“大幅降低”不能写成“完全移除”；本页不把论文文字冒充训练代码核验。Table 1 消融的是 MTP / fine-grained experts，并非 bias 更新规则的独立对照。
+
 
 M2 还使用 [多 token 预测](../concepts/multi-token-prediction.md)。预训练阶段先训练单个 MTP module，继续预训练衰减阶段通过权重复制扩展到 3 个 MTP modules，并在推理中作为 speculative decoding draft path。
 

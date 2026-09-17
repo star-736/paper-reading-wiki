@@ -29,6 +29,12 @@ GLM-5 使用 DeepSeek Sparse Attention（DSA）实现 [高效长上下文注意�
 
 报告还引入 Muon Split 来改善 MLA 训练，并使用带参数共享的 multi-token prediction（MTP）。在私有 prompt 集上，相同 4 个 speculative steps 下，GLM-5 的接受长度为 2.76，DeepSeek-V3.2 为 2.55。
 
+### 专家负载均衡的披露边界
+
+已重读本报告 §2.1 架构、§2.4 基础设施及 §4.1 的 DP-aware routing，并检索全文相关表述。**本报告未说明**专家路由使用 auxiliary loss、统计 bias 还是二者混合，也未给 bias 更新规则或 expert-level 辅助损失系数。这只限定该 PDF 的披露范围，不是模型没有均衡机制的证据。
+
+**已据原文核实（`supported`）**：§2.4 讨论 pipeline 阶段内存分配、DP/PP 长序列工作负载重排；§4.1 的 DP-aware routing 用 rollout ID 保持 DP rank 亲和性、复用 KV，并在 hash 空间做动态再均衡。这些都是系统调度层面的负载问题，不能据此确定 MoE 专家分配的训练目标。专家级配方继续留在 [负载均衡主追问](loss-free-balancing.md#待追问)。
+
 ## 后训练
 
 后训练流水线包括多任务 SFT、reasoning RL、agentic RL、general RL 和 on-policy cross-stage distillation。agentic RL 系统是异步的：rollout 生成与训练引擎解耦，由 multi-task orchestrator 调度。

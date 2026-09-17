@@ -116,6 +116,12 @@ RL 阶段相比 SFT 的增益（§ 2.3 原文）：RefCOCO-avg +4.8%、PointBenc
 
 一个关键发现是：GLM-5V-Turbo 在 CC-Backend、CC-Frontend、CC-RepoExploration 上甚至超过其纯文本基座 GLM-5-Turbo，说明多模态扩展没有侵蚀文本 coding 能力。
 
+## 负载均衡的层次区别
+
+**已据原文核实（`supported`）**：§2.4 的 “Topology-aware partitioning and dynamic load balancing for visual inputs” 把 CP/TP 分片提前到数据加载阶段，按 downsample groups 对齐，跨 DP groups 均衡后用异步 all-to-all 派发；还按序列长度与 ViT token 数做联合 bin-packing。对象是视觉张量和 micro-batch 工作负载，不是 token 选择哪位 MoE 专家。
+
+重读 §2 的模型、训练和基础设施描述，并检索全文后，**本报告未说明**LLM expert router 的 bias 更新或 expert-level auxiliary loss 配方。也不能由正文称其语言基座为 GLM-5-Turbo，就补出与 GLM-5 完全相同的专家均衡策略。缺失配方继续记录于 [负载均衡主追问](loss-free-balancing.md#待追问)。
+
 ## 待追问
 
 - **需补外部来源**：报告未披露总参数量、激活参数量、训练 token 数、LLM backbone 架构细节（是否沿用 GLM-5 的 DSA + MoE），这些信息可能在 GLM-5 主报告或 HF config 中。
