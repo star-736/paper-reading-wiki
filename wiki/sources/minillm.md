@@ -108,10 +108,32 @@ resource: "../../raw/2306.08543v6.pdf"
 - **Exposure bias（`Figure 6`、`§B.5`）**：用 ExAccErr(l)（Arora et al. 2022 的口径）度量「仅由 exposure bias 造成的相对误差」——把累积 regret 拆成「oracle 上下文下的估计误差 $l\epsilon(l)$」与「低质量自生成前缀带来的误差」。三条基线随长度持续累积，MiniLLM 明显更低且在 >150 token 后停止累积。
 - **Calibration（`Table 2`）**：在 SST2 / BoolQ 零样本分类上测 ECE。KD（0.191 / 0.682）与 SeqKD（0.243 / 0.681）都比 teacher（0.025 / 0.356）差得多，MiniLLM（0.099 / 0.502）最接近 teacher。论文的解释是 forward KLD 把概率推向目标分布的 void region，造成 student 与 teacher 的分布差异。
 - **长回答子集（`Figure 7`）**：按 ground-truth 响应长度把 S-NI 分成 [0,5] / [6,10] / [11,+∞) 三个子集。短回答上各方法差别不大（论文解释：输出空间小、student 能覆盖 teacher 多数 mode，此时 reverse 与 forward KLD 表现相近）；≥6 token 的子集上 MiniLLM 优势显现。UnNI 上同结论（`Figure 15`）。
-- **多样性（`Table 3`）**：LLaMA 族上 MiniLLM 的 distinct 4-gram 比例（DollyEval 99.0、SelfInst 98.6）与语言建模 loss 与 SFT / teacher 基本持平，论文据此认为「mode-seeking 并没有换来决定性的输出」。
+- **多样性（`Table 3`、`§B.4`）**：LLaMA 族上 MiniLLM 的 distinct 4-gram 比例与测试集语言建模 loss 接近 SFT / teacher；这是词汇多样性和数据覆盖的指标，不能等同于训练期 token entropy 或同题答案的语义多样性。详见下节。
 - **Teacher 规模的 scaling（`Figure 5`、`Figure 14`）**：固定 student、放大 teacher（GPT-2 族与 OPT 族各一组），MiniLLM 恒优于 SeqKD，且 student 表现与 teacher 规模正相关。
 
 消融（`Table 4`、`Figure 8`，GPT-2-125M 从 GPT-2-1.5B 蒸馏）：去掉 length normalization 后验证集 R-L 从 27.4 掉到 17.4、测试集 Dolly 从 24.6 掉到 14.7；去掉 teacher-mixed sampling 掉到 22.3 / 20.4；去掉 single-step decomposition 只掉到 27.0 / 23.7。论文的读法是前两者负责**稳定化**（否则出现重复、短、无意义但 teacher 高概率的字符串，即 reward hacking），single-step 主要**降方差**。
+
+## 熵与多样性的证据边界
+
+本节已重读本地 v6 原文的 `§2.1–2.3`、`§3.1/3.3/3.4`、`Table 3/4` 与 `§B.4`。核验对象是引用归属，不能把“原文没有这个对照”写成“相反结论已被证明”。
+
+| 待核主张 | 判定 | 依据与限制 |
+| --- | --- | --- |
+| MiniLLM 实验证明 OPD 比 RL 熵坍缩更剧烈 | `refuted`（引用归属） | `§3.1` 的基线是 SFT、KD、SeqKD，没有独立 reward-driven RL 的熵曲线对照；`Figure 8` 画的是 reverse KLD 消融曲线，不是熵。 |
+| MiniLLM 讨论 reverse KLD 的 mode-seeking 与丢失模式风险 | `supported` | `§2.1` 的目标解释、`Figure 2` 的连续高斯 toy，以及 `§3.3` 的多样性讨论；它们不构成 OPD 与 RL 的普遍强弱排序。 |
+| 论文配方下两项多样性指标接近基线 | `supported` | `Table 3` 与 `§B.4`；仅限该 LLaMA 设置、两个测试集与所报指标。 |
+
+`Table 3` 的数值如下；Dist-4 按原表显示为百分数，Loss 为测试集负对数似然。原文 `§B.4` 定义 Dist-4 为生成文本中不同 4-gram 数占全部 4-gram 数的比例，跨 5 个随机种子取平均。
+
+| 方法 | DollyEval Dist-4 | DollyEval Loss | SelfInst Dist-4 | SelfInst Loss |
+| --- | ---: | ---: | ---: | ---: |
+| Teacher | 99.3 | 3.55 | 99.1 | 4.44 |
+| SFT | 99.5 | 3.89 | 99.0 | 5.28 |
+| MiniLLM | 99.0 | 3.95 | 98.6 | 5.33 |
+
+**本页综合**：这些结果支持“在所测指标上保持接近的多样性”，不能证明同一问题仍有同样多的不同解法，也不能替代熵随训练变化的测量。论文完整配方还包含 teacher-mixed sampling、length normalization 和预训练语言建模损失；`§3.4` 报告去掉前两项会出现重复、短或无意义输出。因此也不能由 Table 3 推出未经稳定化的 reverse-KL 蒸馏不会退化。
+
+OPD 与 RL 的 reward / entropy 对照实际出现在 [nrehiew 博客](nrehiew-sft-rl-opd.md#熵曲线的出处与适用范围)，属于博客的特定训练观察；用 mode collapse 解释 student 超越 teacher 是作者明确标为推测的解释，不是 MiniLLM 的实验结论。
 
 ## 与 GKD、近代 OPD 的关系
 
@@ -131,7 +153,6 @@ resource: "../../raw/2306.08543v6.pdf"
 - **需实验或作者披露**：**teacher-mixed sampling 与「on-policy 纯度」的张力**：α=0.2 意味着采样分布不是纯 student 分布，论文用 importance weight 修正后**近似**成单步比值 $w_t \approx q_\theta/\tilde p$（`Eq 5`），这个近似带来的偏差在大规模设置下没有被评估；而 2026 各家 OPD 都是纯 student 采样，没有对应项。是这一项在规模上不重要，还是被 α 的鲁棒性掩盖了？
 - **需实验或作者披露**：**短回答子集上 forward 与 reverse KLD 表现相近**（`§3.3`、`Figure 7`）与「reverse KLD 普遍更优」的流行表述存在张力，论文自己给的情境化解释（输出空间小 → student 能覆盖 teacher 多数 mode）没有被单独消融验证。
 - **需实验或作者披露**：**「student 反超 teacher 是 exposure bias 所致」是作者解释而非实验结论**：论文以 teacher 也是 teacher-forcing 微调为由推断，没有做 teacher 的 on-policy 重训对照。
-- **现有材料待核**：**wiki 概念页把「OPD 的 entropy collapse 比 RL 更剧烈」记在 Gu et al. 2023 名下**，但 MiniLLM 原文没有做 OPD vs RL 的熵曲线对照——它做的是 mode-seeking 论证与 `Table 3` 的多样性持平检验。这条归属需要降级或另找出处。
 
 ## 相关页面
 

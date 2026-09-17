@@ -98,7 +98,17 @@ style / math 的 KL 失衡（`wait` / `alright` 远高于 `exponent`）是原文
 1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议。student 的错误不一定是 teacher 的错误；如果只训 teacher 生成的轨迹，student 可能在自己很少访问的分布区域收到监督。OPD 让 teacher 针对 student 的实际状态给建议。
 2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
 
-**熵坍缩**：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 的预期行为，博客指向 [MiniLLM](minillm.md)）。RL 的 reward 缓慢上升；OPD 的 reward 上升更突然，伴随熵的急剧坍缩。这部分是推测性的；**注意 MiniLLM 原文并未做 OPD vs RL 的熵曲线对照**，该归属已在 [MOPD 概念页](../concepts/multi-teacher-on-policy-distillation.md) 降级。
+#### 熵曲线的出处与适用范围
+
+**博客观察（外部来源，非 MiniLLM 论文确证）**：作者在 “Why Can the Student Outperform the Teacher?” 段展示了 RL Teacher、OPD w/ RL Teacher、OPD w/ SFT Teacher 的 reward / entropy 曲线，并描述 OPD 的熵下降更突然。这个观察出自博客自己的对照图；同段的 Gu et al. 引用指向 reverse-KL 的 mode-seeking 与潜在多样性风险，不能当作 MiniLLM 做过 OPD–RL 熵对照的证据。（来源：[博客原页](https://nrehiew.github.io/blog/sft_rl_opd/)，本地文字快照见本页来源。）
+
+![nrehiew 博客的 reward 与 entropy 训练曲线：橙色为 RL Teacher，绿色为使用 RL teacher 的 OPD，黄色为使用 SFT teacher 的 OPD。图中两条 OPD 曲线更早陡降到低熵区域，RL 后来也降到低熵区域；横轴仅标 TIMESTEP，没有数值刻度。](../assets/nrehiew-sft-rl-opd/reward-entropy-curves.png)
+
+> 图注译述：作者把 RL 的逐步 reward 改善，与 OPD 较突然的 reward 改善及熵下降并列展示。原图位置为博客 “Why Can the Student Outperform the Teacher?” 段；[原始 SVG](https://nrehiew.github.io/blog/sft_rl_opd/images/reward_entropy_plots.svg)。
+
+**证据边界**：图中可见下降时序不同，但三条曲线后段均接近低熵，不能据此断言 OPD 的最终熵总是更低。该图未给横轴数值刻度、误差区间，也未在这段定义 entropy 的估计与聚合口径。正文实验背景是 Minimal Code Editing，不能直接外推到全部 OPD/RL 配方。
+
+**作者推测**：把这段现象解释为“围绕新能力发生 mode collapse”，进而解释 student 超越 teacher，作者明确标为 speculative。reverse KL 的 mode-seeking 解释并不单独给出相对 RL 的熵下降速度或幅度定理。[MiniLLM 原文核验](minillm.md#熵与多样性的证据边界) 支持模式风险讨论与特定指标上的多样性保持，不支持把这张曲线归给 MiniLLM。
 
 ### 6. 为什么 RL 和 OPD 泛化更好
 
@@ -128,7 +138,7 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 
 - **需实验或作者披露**：**on-policy 数据 > teacher 的结论是否只在 minimal editing 这种 niche task 上成立**？作者自己说该 task 适合测遗忘和泛化，但在更 broad 的能力域上，teacher 质量是否会重新主导？
 - **现有材料待核**：**OPSD 的 pointwise clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？原文剪的是 full-vocab 高贡献 style 词表项，不是 sampled-token reverse KL 上的 clip。 KAT 剪的是长轨迹 drift，Keye 过滤双方低概率 token；需先比较估计器、作用对象与训练阶段，再讨论是否能统一。
-- **需实验或作者披露**：**entropy collapse 的剧烈程度是否可调**？OPD 比 RL 更剧烈的熵坍缩是 reverse KL mode-seeking 的预期，但是否意味着 OPD student 的多样性损失比 RL 更严重？这与 Qwen3 Table 21 里 OPD pass@64 也涨（不只是 pass@1）的现象是否矛盾？
+- **需实验或作者披露**：**熵下降与解法多样性的关系**：博客图中的 OPD 更早陡降现象，能否在匹配训练预算、采样温度、熵估计方式与多随机种子的条件下复现？应同时测 token entropy、同题语义多样性和 pass@k，不能把它们当作同一指标，也不能先假设 OPD 普遍比 RL 丢失更多多样性。此前与 Qwen3 pass@64 改善的表面冲突，应改为同协议下的联合测量问题。
 
 ## 相关页面
 

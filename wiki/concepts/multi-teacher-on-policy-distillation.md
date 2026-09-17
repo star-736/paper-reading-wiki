@@ -205,7 +205,7 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议，而非 teacher 生成的轨迹。student 的错误不一定是 teacher 的错误--off-policy 蒸馏可能在 student 很少访问的分布区域给监督。
 2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
 
-熵行为差异：OPD 的 entropy collapse 比 RL 更剧烈（reverse KL mode-seeking 的预期行为），reward 上升更突然。这部分是推测性的——**原始归属需要降级**：这条此前挂在 [Gu et al., 2023](https://arxiv.org/abs/2306.08543) 名下，但 [MiniLLM](../sources/minillm.md) 原文并未做 OPD vs RL 的熵曲线对照，它做的是 mode-seeking 论证与多样性持平检验（`Table 3`），见该来源页待追问。
+**熵曲线需要限定出处与范围**：[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md#熵曲线的出处与适用范围) 展示的特定训练曲线中，两条 OPD 曲线比 RL 更早陡降到低熵区域；作者用 mode collapse 解释能力变化，但明确称其为推测。这不是“OPD 普遍比 RL 熵坍缩更剧烈”的定律。[MiniLLM](../sources/minillm.md#熵与多样性的证据边界) 没有做这组熵曲线对照；其 Table 3 测的是 distinct 4-gram 和测试集语言建模 loss，结果接近 SFT / teacher。**本页综合**：mode-seeking 倾向、训练期 token entropy 与答案多样性是不同层面的陈述，不能互相替代；在同协议下的关系仍见[主追问](../sources/nrehiew-sft-rl-opd.md#待追问)。
 
 ## 报告中的结果
 

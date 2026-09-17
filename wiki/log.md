@@ -1522,3 +1522,7 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 扫描 157 页、777 条待追问：87 条已有结论、证据边界或编目决定移入正文，50 条重复表述合并并保留主记录与反链；剩余 640 条分为现有材料待核 41、需补外部来源 81、需实验或作者披露 518。索引新增分流说明与优先核查入口。分类未升级原有证据等级；Qwen3.5-Omni 中把 HF config 写成 PDF 原文确证的措辞降级。计数是本轮列表项快照，复合问题和不同协议的近似问题未强行合并。`raw/` 未改。
 
 同步修复本轮页面中的 3 个旧相对链接，移除 1 个不可移植的本机路径链接，补 Mi-Memory 来源页缺失的 `type: Source`。
+
+## [2026-09-17] verify | OPD 熵曲线的引用归属与多样性边界
+
+重读 MiniLLM v6 §2–3、Table 3/4、§B.4，并核对 nrehiew 本地快照及原网页图。`refuted`：把 OPD–RL 熵曲线对照归给 MiniLLM；`supported`：MiniLLM 的 mode-seeking 风险讨论与两项多样性指标接近基线。来源页补 Table 3 文本表，博客页内嵌原 SVG 经 PyMuPDF 渲染的曲线并区分观察与作者推测；MOPD 页移除普遍化断言。关闭 1 条材料待核，保留同协议多样性实验问题；当前 639 条（40 / 81 / 518）。`raw/` 未改。
