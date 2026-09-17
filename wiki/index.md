@@ -6,6 +6,8 @@
 
 > 维护备忘：已完成动作记在 [log.md](log.md)（时间线）；未完成的工程待办记在 [TODO.md](TODO.md)。
 
+知识问题另见本页末尾的 [待追问分流](#待追问分流)；工程待办为空不表示论文追问已全部解决。
+
 ## 来源
 
 - [YOCO：You Only Cache Once](sources/yoco.md) - Microsoft Research + 清华的 decoder-decoder 架构：前半生成全局 KV、后半共享读取，精确 prefill early exit；V4.1 CED 明确引用的前作，含 1M 单针与 128K 多针的证据边界。
@@ -252,3 +254,30 @@
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
+
+## 待追问分流
+
+2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
+
+| 分类标签 | 条目数 | 下一步 |
+| --- | ---: | --- |
+| 现有材料待核 | 41 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
+| 需补外部来源 | 81 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
+| 需实验或作者披露 | 518 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此 640 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+
+### 优先回收的现有材料问题
+
+| 主题 | 核查入口 | 可完成的下一步 |
+| --- | --- | --- |
+| OPD 熵坍缩的归属 | [MiniLLM](sources/minillm.md#待追问) | 核对概念页引用与原文是否相符，先修证据归属，再讨论机制。 |
+| MLA 投影形状与对照 | [MLA](concepts/multi-head-latent-attention.md#待追问)、[DeepSeek-V2](sources/deepseek-v2.md#待追问) | 补配置维度、附录 D.2 对照与架构演进定位。 |
+| 门控的成本和实验尺度 | [Gated Attention](sources/gated-attention.md#待追问)、[GDN](sources/gated-delta-net.md#待追问)、[KDA](concepts/linear-attention-and-delta-rule.md#待追问) | 先补参数和训练规模，再把未测的端到端成本留作实验问题。 |
+| 负载均衡配置 | [Loss-Free Balancing](sources/loss-free-balancing.md#待追问) | 回 GLM 与 M2 报告核对披露范围及 learnable bias 语义。 |
+| 小激活编码模型评测 | [Qwen3-Coder-Next](sources/qwen3-coder-next.md#待追问) | 补 SWE-bench 数字、对照对象与协议。 |
+| 附录中的具体设置 | [Inner Monologue](sources/inner-monologue.md#待追问)、[SayCan](sources/saycan.md#待追问)、[RWKV](sources/rwkv.md#待追问) | 分别补描述器、启用技能数量及附录任务明细。 |
+
+### 需要新来源的明确入口
+
+可优先补 [DPO 后续方法 IPO / ORPO / SimPO](sources/dpo.md#待追问)、[RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)、[SDPO / SDFT](sources/opsd.md#待追问)。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。

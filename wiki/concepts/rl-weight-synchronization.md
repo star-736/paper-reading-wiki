@@ -47,10 +47,13 @@ colocated（trainer 与引擎同卡）时是本地 handoff，不涉及传输；�
 
 ## 待追问
 
-- P2P 的模型覆盖依赖手写的 Megatron↔SGLang weight-name 映射（当前覆盖 Qwen2 / Qwen3 dense、Qwen3-MoE、GLM4-MoE、DeepSeek-V3 / V3.2 派生）。day-0 支持一个新架构时这份映射的成本是多少，有没有自动化路径？「day-0 支持」与「day-0 能用 P2P」是不是两件事？
-- disk-delta 与 LoRA 被明确判为不兼容；adapter 的增量传输有没有更省的方案？
-- 权重同步造成的 pause 长度、staleness 上限与同步 cadence 三者如何联合调参？Miles 给出了一整套 staleness 指标但没有调参方法。
-- 权重同步的 pause 在异步运行里必然是一个全局屏障。有没有把「pause 期间继续跑旧权重轨迹」的代价显式建模进调度目标的公开工作？
+- **需实验或作者披露**：disk-delta 与 LoRA 被明确判为不兼容；adapter 的增量传输有没有更省的方案？
+- **需实验或作者披露**：权重同步造成的 pause 长度、staleness 上限与同步 cadence 三者如何联合调参？Miles 给出了一整套 staleness 指标但没有调参方法。
+- **需补外部来源**：权重同步的 pause 在异步运行里必然是一个全局屏障。有没有把「pause 期间继续跑旧权重轨迹」的代价显式建模进调度目标的公开工作？
+
+## 相关追问
+
+主记录：[新架构 P2P 权重映射成本](../sources/miles-v0-1.md#待追问)。
 
 ## 相关页面
 

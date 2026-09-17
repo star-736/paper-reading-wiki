@@ -51,10 +51,10 @@ FreeToken 把 [GLM-5.2](../models/glm-5-3.md)（文中 753B / 40B active，NVFP4
 
 ## 待追问
 
-- $q^{\star}$ 在 batch>1、投机解码或多请求交织时是否仍是闭式最优，还是只对论文的单流 agent decode 成立？
-- Semantic-anchor 集合是否绑定特定 harness 的 special token（OpenClaw / OpenCode / SWE-agent），换一套压缩策略要不要重锚？
-- 20+ 模型声称与三模型实验之间的泛化缺口：MLA+DSA、LatentMoE、7:1 Lightning 等未评架构会不会打穿 LRU 局部性假设？
-- 端侧 serving 有没有类似 SWE-bench 的任务完成率数字，还是只有 tok/s / TTFT？
+- **需实验或作者披露**：$q^{\star}$ 在 batch>1、投机解码或多请求交织时是否仍是闭式最优，还是只对论文的单流 agent decode 成立？
+- **需实验或作者披露**：Semantic-anchor 集合是否绑定特定 harness 的 special token（OpenClaw / OpenCode / SWE-agent），换一套压缩策略要不要重锚？
+- **需实验或作者披露**：20+ 模型声称与三模型实验之间的泛化缺口：MLA+DSA、LatentMoE、7:1 Lightning 等未评架构会不会打穿 LRU 局部性假设？
+- **需实验或作者披露**：端侧 serving 有没有类似 SWE-bench 的任务完成率数字，还是只有 tok/s / TTFT？
 
 ## 相关页面
 

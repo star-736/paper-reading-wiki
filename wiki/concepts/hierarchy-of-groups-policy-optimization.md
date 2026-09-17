@@ -29,13 +29,15 @@ Hierarchy-of-Groups Policy Optimization（HGPO）是 [HGPO 论文](../sources/hi
 
 ## 待追问
 
-- 实际 prompt 若含 task instruction、tool schema、action history 和摘要，$C_k$ 只匹配 state 是否会漏掉关键条件？
-- 最优深度与权重是否可从 group size、return variance 或 estimator uncertainty 自适应学习，而非手调 $K,\alpha$？
-- 当 state 只可语义近似匹配时，错误合并引入的 bias 会否大于 history-aware grouping 消除的 bias？
-- ARPO 的局部 re-rollout、GiGPO 的 state collision 和 HGPO 的 history hierarchy 在同一 token / 环境预算下如何取舍？
+- **需实验或作者披露**：实际 prompt 若含 task instruction、tool schema、action history 和摘要，$C_k$ 只匹配 state 是否会漏掉关键条件？ 最深的 $G_K^H$ 是否接近 Oracle，还取决于 system prompt、memory 实现和最近 $K$ 个 state 以外的条件。
+- **需实验或作者披露**：最优深度与权重是否可从 group size、return variance 或 estimator uncertainty 自适应学习，而非手调 $K,\alpha$？
+- **需实验或作者披露**：当 state 只可语义近似匹配时，错误合并引入的 bias 会否大于 history-aware grouping 消除的 bias？
+- **需实验或作者披露**：ARPO 的局部 re-rollout、GiGPO 的 state collision 和 HGPO 的 history hierarchy 在同一 token / 环境预算下如何取舍？
 
 ## 相关页面
 
 - 来源：[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)
 - 概念：[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)、[Agentic 模型的后训练](post-training-for-agentic-models.md)
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
+
+关联提问页：[Hierarchy-of-Groups Policy Optimization（HGPO）](../sources/hierarchy-of-groups-policy-optimization.md#相关追问)。

@@ -133,12 +133,15 @@ Appendix Table 6 还在纯生成（无 value function、USE 投影）上比了 P
 - 技能报了高 value 却失败时，系统不容易反应；作者认为可以用 prompt 纠错，但本页没做成。后作 [Inner Monologue](inner-monologue.md) 用成功检测文字做重试，厨房 120 次评估上相对本页方法从 30.8% 到 60.4%（那篇 Table 3，协议不是本页 101 条）。
 - 自然语言是不是编程机器人的对本体，原文自己列为开放问题。
 
-## 待追问
+## 证据边界与阅读提示
 
 - **已闭合**：闭环语言反馈见 [Inner Monologue](inner-monologue.md)。本页每步只通过当前 value function 看世界；那篇的 Success/Object 文字不从本 PDF 推出。厨房数字不能和本页 101 条 84%/74% 横比。
 - Code as Policies 把技能写成可执行程序，[ASPIRE](aspire.md) 再把程序库做成自进化；[EmbodiSkill](embodiskill.md) 从轨迹改技能正文。和本页「固定技能表 + value function」差在哪一层，不能用本页 84% 去填那些表。EmbodiSkill §2.2 把本页写成选已有技能、不从轨迹修订。
-- [EmbodiedSkills](embodied-skills.md) 的 proposal × runtime 先验后验，和本页 LLM × affordance 是不是同一因式分解换了实现，两边原文都没对照。
-- 551 条技能里评测实际启用了多少条，Appendix D 未在本页逐条核对。
+
+## 待追问
+
+- **需实验或作者披露**：[EmbodiedSkills](embodied-skills.md) 的 proposal × runtime 先验后验，和本页 LLM × affordance 是不是同一因式分解换了实现，两边原文都没对照。
+- **现有材料待核**：551 条技能里评测实际启用了多少条，Appendix D 未在本页逐条核对。
 
 ## 相关页面
 

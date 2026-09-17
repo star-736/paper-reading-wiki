@@ -164,14 +164,14 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 ## 待追问
 
-- 异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
-- ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
-- GiGPO 的状态匹配在 SWE / GUI 开放轨迹上是否还能维持 ALFWorld 那种高重复率？与 ARPO 同一预算对照仍然缺失。
-- HGPO 的 history hash 如何适配摘要、检索或 latent memory？固定深度权重能否用 advantage uncertainty 替换？
-- VAPO 的 value-based credit assignment 在多轮工具轨迹上是否仍稳定，还是 verifier 稀疏、环境随机性和 critic 成本会抵消 AIME 上的优势？
-- DeepSeekMath 原文的 Maj@K↑ / Pass@K≈ 在 agentic / RLVR 上是否还成立，还是可验证奖励已经改写了「RL 只校准分布」这条解释？
-- DAPO 的 recipe、GSPO 的 sequence-level ratio、SAPO 的 soft gate 能否组合成同一个训练栈，还是彼此在 loss reduction / ratio 单元 / clipping 形状上有冲突？
-- Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
-- “保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
-- Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
-- 2026 报告几乎不用 [DPO](../sources/dpo.md)：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？[KTO](../sources/kto.md) 把监督改成二元、仍是离线 HALO，同样不回答这条生产弃用因果。仓库里还没有一手来源回答。
+- **需实验或作者披露**：异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
+- **需实验或作者披露**：ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
+- **需实验或作者披露**：VAPO 的 value-based credit assignment 在多轮工具轨迹上是否仍稳定，还是 verifier 稀疏、环境随机性和 critic 成本会抵消 AIME 上的优势？
+- **需实验或作者披露**：DAPO 的 recipe、GSPO 的 sequence-level ratio、SAPO 的 soft gate 能否组合成同一个训练栈，还是彼此在 loss reduction / ratio 单元 / clipping 形状上有冲突？
+- **需实验或作者披露**：Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
+- **需实验或作者披露**：“保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
+- **需实验或作者披露**：Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
+
+## 相关追问
+
+主记录：[GiGPO 开放状态重复率与 ARPO 预算对照](../comparisons/llm-rl-policy-optimization.md#待追问)；[HGPO 的记忆表示与自适应权重](../comparisons/llm-rl-policy-optimization.md#待追问)；[RL 的 Maj@K 与 Pass@K 外推](../comparisons/llm-rl-policy-optimization.md#待追问)；[离线偏好方法的生产采用因果](../comparisons/llm-rl-policy-optimization.md#待追问)。

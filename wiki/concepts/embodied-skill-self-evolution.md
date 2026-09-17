@@ -45,10 +45,10 @@ timestamp: 2026-09-12
 
 ## 待追问
 
-- 程序库技能、技能正文、typed 合同和 AtomicVLA 的 skill-MoE 能否叠在同一运行时，还是必须四选一？[EmbodiedSkills](../sources/embodied-skills.md) 只把低层 VLA 做成可替换后端，没有程序库或 skill-MoE。[EmbodiSkill](../sources/embodiskill.md) 没有 VLA 后端。[AtomicVLA](../sources/atomicvla.md) 的库是专家权重，不是程序。
-- 失败归因差在哪一层？ASPIRE 靠 per-primitive 多模态痕迹 + debug 验证再入库；EmbodiSkill 靠反思类型（条款错 vs 没遵守），执行偏差不改正文，但没有独立验证器；EmbodiedSkills 的验证是 post-action 路由（Advance/Continue/Reobserve/Replan/Recover/Finish）。三篇原文都没互相对照。
-- 技能库 / 技能文档规模化后，检索或上下文会不会把过时条目送进新任务？ASPIRE 只把问题写进 Limitations；EmbodiSkill 没有 Limitations 节。
-- 真机要成为终身学习，缺的是成功检测 / 复位 / 安全，还是跨本体 API 对齐？ASPIRE Table 1 分不开；EmbodiSkill 没有真机。
+- **需实验或作者披露**：程序库技能、技能正文、typed 合同和 AtomicVLA 的 skill-MoE 能否叠在同一运行时，还是必须四选一？[EmbodiedSkills](../sources/embodied-skills.md) 只把低层 VLA 做成可替换后端，没有程序库或 skill-MoE。[EmbodiSkill](../sources/embodiskill.md) 没有 VLA 后端。[AtomicVLA](../sources/atomicvla.md) 的库是专家权重，不是程序。 AtomicVLA 的 LIBERO 97.8 与 EmbodiedSkills 的 97.40 协议不同，不能作为这一组合问题的成对证据。
+- **需实验或作者披露**：失败归因差在哪一层？ASPIRE 靠 per-primitive 多模态痕迹 + debug 验证再入库；EmbodiSkill 靠反思类型（条款错 vs 没遵守），执行偏差不改正文，但没有独立验证器；EmbodiedSkills 的验证是 post-action 路由（Advance/Continue/Reobserve/Replan/Recover/Finish）。三篇原文都没互相对照。
+- **需实验或作者披露**：技能库 / 技能文档规模化后，检索或上下文会不会把过时条目送进新任务？ASPIRE 只把问题写进 Limitations；EmbodiSkill 没有 Limitations 节。
+- **需实验或作者披露**：真机要成为终身学习，缺的是成功检测 / 复位 / 安全，还是跨本体 API 对齐？ASPIRE Table 1 分不开；EmbodiSkill 没有真机。
 
 ## 相关页面
 
@@ -58,3 +58,5 @@ timestamp: 2026-09-12
 - 语言反馈闭环，库仍固定，也不是本页：[Inner Monologue](../sources/inner-monologue.md)
 - VLA 对照来源：[OpenVLA](../sources/openvla.md)、[π0](../sources/pi0.md)、[π0.5](../sources/pi0.5.md)、[π0.7](../sources/pi0.7.md)（Gemma 3 + MEM，不是第四种动作头）、[AtomicVLA](../sources/atomicvla.md)（SG-MoE 路由，不是本页三条路）
 - 软件侧 skill / harness：[Prime Agent](../sources/prime-agent.md)、[Macaron-V1](../sources/macaron-v1.md)
+
+关联提问页：[EmbodiedSkills：把 VLA 技能决策当 execution proposal](../sources/embodied-skills.md#相关追问)。

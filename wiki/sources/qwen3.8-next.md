@@ -162,12 +162,12 @@ QSA 的 1M 数字是 RULER / 8-needle MRCR，不是 agent 长轨迹。效率数�
 
 ## 待追问
 
-- **生产模型的层数、hidden、expert 数、路由与负载均衡未披露。** 125B/6B 只有总量；消融用过 25B-A3B 与 156B-A7B，不能外推专家配置。
-- 摘要里的「397B-A17B predecessor」在 Table 11 写作 Qwen3.7-Plus-Base，引言又引 2026-02 的 Qwen3.5 博客。两者是否同一权重、只是发布名不同，原文没写清。
-- QSA 只在 CPT 从 dense 全局层改过来，没有 from-scratch sparse；RL 下 top-k 是否要像 GLM-5 那样冻 indexer、用 deterministic topk，完全没测。
-- GR vs Full AttnRes 在 28 层 loss 打平，生产为什么选 GR：报告给的是去掉 $H_{res}$ 的访存和门的稳定性，没有同预算的下游 head-to-head。
-- n-gram 51B 的实际命中率、主机预取延迟和多机分片，只有「可 prefetch」的设计陈述。
-- 组织段承诺的 post-trained 评测没有出现。
+- **需实验或作者披露**：**生产模型的层数、hidden、expert 数、路由与负载均衡未披露。** 125B/6B 只有总量；消融用过 25B-A3B 与 156B-A7B，不能外推专家配置。
+- **需补外部来源**：摘要里的「397B-A17B predecessor」在 Table 11 写作 Qwen3.7-Plus-Base，引言又引 2026-02 的 Qwen3.5 博客。两者是否同一权重、只是发布名不同，原文没写清。
+- **需实验或作者披露**：QSA 只在 CPT 从 dense 全局层改过来，没有 from-scratch sparse；RL 下 top-k 是否要像 GLM-5 那样冻 indexer、用 deterministic topk，完全没测。
+- **需实验或作者披露**：GR vs Full AttnRes 在 28 层 loss 打平，生产为什么选 GR：报告给的是去掉 $H_{res}$ 的访存和门的稳定性，没有同预算的下游 head-to-head。
+- **需实验或作者披露**：n-gram 51B 的实际命中率、主机预取延迟和多机分片，只有「可 prefetch」的设计陈述。
+- **需实验或作者披露**：组织段承诺的 post-trained 评测没有出现。
 
 ## 相关页面
 

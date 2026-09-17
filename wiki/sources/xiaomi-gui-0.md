@@ -193,12 +193,12 @@ top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-a
 
 ## 待追问
 
-- 报告未披露 Qwen3-VL-30B-A3B-Instruct 之外是否有视觉编码器/adapter 的修改——是否完全复用原 backbone 的视觉前端？
-- Error-driven flywheel 的 teacher 模型是什么——是否是更强版本的 Xiaomi-GUI-0 或外部闭源模型？teacher 打分的 LLM-as-judge 部分（cascade reward L3/L4）用什么模型实现？
-- 5000 异常态样本的 14 类分布如何——是否某些类别样本过少导致学习不充分？
-- Agentic RL 阶段"数千任务"的具体规模和来源——是否包含线上真实用户请求的脱敏版本？
-- Step RL 的 cascade reward 三值设计（−1.0 / −0.5 / 1.0）是否限制了 reward 信号的表达力——是否有尝试更多层级或连续 reward 的消融？
-- RealMobile 的 100 任务是否足够稳定——4 次运行均值的方差是多少？跨应用任务的评测方差是否显著高于单应用？
+- **需实验或作者披露**：报告未披露 Qwen3-VL-30B-A3B-Instruct 之外是否有视觉编码器/adapter 的修改——是否完全复用原 backbone 的视觉前端？
+- **需实验或作者披露**：Error-driven flywheel 的 teacher 模型是什么——是否是更强版本的 Xiaomi-GUI-0 或外部闭源模型？teacher 打分的 LLM-as-judge 部分（cascade reward L3/L4）用什么模型实现？
+- **需实验或作者披露**：5000 异常态样本的 14 类分布如何——是否某些类别样本过少导致学习不充分？
+- **需实验或作者披露**：Agentic RL 阶段"数千任务"的具体规模和来源——是否包含线上真实用户请求的脱敏版本？
+- **需实验或作者披露**：Step RL 的 cascade reward 三值设计（−1.0 / −0.5 / 1.0）是否限制了 reward 信号的表达力——是否有尝试更多层级或连续 reward 的消融？
+- **需实验或作者披露**：RealMobile 的 100 任务是否足够稳定——4 次运行均值的方差是多少？跨应用任务的评测方差是否显著高于单应用？
 
 ## 相关页面
 

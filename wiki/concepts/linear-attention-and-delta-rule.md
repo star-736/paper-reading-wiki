@@ -164,11 +164,11 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 
 ## 待追问
 
-- KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？**已部分厘清**（见「KDA 的硬件效率」开头）：需 cache 的状态 $S_t$ 大小不变，增量在「瞬时门值（×$d_k$，激活非持久）+ 门投影参数（低秩压住）+ DPLR 算子复杂度」三处。**仍待补的精确数字**：低秩门投影的秩与具体参数增量、相对 GDN 的端到端显存/吞吐差，需查配置表与实测。
-- 线性注意力在长 trajectory RL 上，固定状态会不会比 softmax 更易丢失关键中间信息？Kimi Linear 称 RL 阶段也追平，但机制层面的稳健性证据有限。
-- Lightning-2、Mamba-2、GLA、DeltaNet、RWKV-4 已核：Lightning-2 是标量衰减 tiling；Mamba-2 是 SSD；GLA 是 channel-wise 门、无 delta；DeltaNet 是 delta、无门；RWKV-4 是 channel-wise 1D WKV。Schlag 2021 原配方与 RWKV-7 的 generalized delta 仍待补。
-- DPLR「把 $a,b$ 绑定到 $k$」是否损失了通用 DPLR 的某些表达力？报告说「representational capacity 与通用 DPLR 对齐」，但这是 KDA 自述，外部尚无独立验证。
-- CLVR 的小幅收益能否经多 seed、长上下文 associative recall 和 KDA / GDN-2 host 复现？目前只覆盖 DeltaNet / GDN，且论文未给 inference benchmark；不要把训练 loss 的方向性外推为 serving 收益。
+- **现有材料待核**：KDA 的 channel-wise 门相比 GDN 的 head-wise 门，参数/显存增量具体多少？**已部分厘清**（见「KDA 的硬件效率」开头）：需 cache 的状态 $S_t$ 大小不变，增量在「瞬时门值（×$d_k$，激活非持久）+ 门投影参数（低秩压住）+ DPLR 算子复杂度」三处。**仍待补的精确数字**：低秩门投影的秩与具体参数增量、相对 GDN 的端到端显存/吞吐差，需查配置表与实测。
+- **需实验或作者披露**：线性注意力在长 trajectory RL 上，固定状态会不会比 softmax 更易丢失关键中间信息？Kimi Linear 称 RL 阶段也追平，但机制层面的稳健性证据有限。
+- **需补外部来源**：Lightning-2、Mamba-2、GLA、DeltaNet、RWKV-4 已核：Lightning-2 是标量衰减 tiling；Mamba-2 是 SSD；GLA 是 channel-wise 门、无 delta；DeltaNet 是 delta、无门；RWKV-4 是 channel-wise 1D WKV。Schlag 2021 原配方与 RWKV-7 的 generalized delta 仍待补。
+- **需实验或作者披露**：DPLR「把 $a,b$ 绑定到 $k$」是否损失了通用 DPLR 的某些表达力？报告说「representational capacity 与通用 DPLR 对齐」，但这是 KDA 自述，外部尚无独立验证。
+- **需实验或作者披露**：CLVR 的小幅收益能否经多 seed、长上下文 associative recall 和 KDA / GDN-2 host 复现？目前只覆盖 DeltaNet / GDN，且论文未给 inference benchmark；不要把训练 loss 的方向性外推为 serving 收益。
 
 ## 相关页面
 
@@ -179,3 +179,5 @@ Kimi Linear 的 KDA 输出门是低秩参数化（省参数）。K3 换成 input
 - [零样本 RoPE 上下文扩展](zero-shot-rope-context-extension.md)（hybrid softmax 层上的 Jet-Long 迁移）
 - [稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)（正交的另一条路线）
 - 模型：[Kimi Linear](../models/kimi-linear.md)、[Kimi K3](../models/kimi-k3.md)（3T 级 KDA 生产采用）、[MiniMax-M1](../models/minimax-m1.md)（7:1 Lightning : softmax）、[RWKV](../models/rwkv.md)（RWKV-4，Pile 169M–14B）、[InternVLA-A1.5](../models/internvla-a1.5.md)（VLA 机器人，用 Qwen3.5 backbone）
+
+关联提问页：[Kimi Linear 技术报告](../sources/kimi-linear.md#相关追问)。

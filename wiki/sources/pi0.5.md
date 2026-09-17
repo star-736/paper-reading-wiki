@@ -99,15 +99,21 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 
 高层消融（Figure 13）：不要高层（no HL）在装抽屉/洗碗上掉得最狠；web 数据对抽屉这类要认杂物的任务重要；GPT-4 当高层不如 in-domain 的 π0.5；人类 oracle 高层给上界。洗衣篮对高层选择不那么敏感。
 
-## 待追问
+## 证据边界与阅读提示
 
-- 附录写 action horizon「50，即 \(H=49\)」，与 π0 的 \(H=50\) 是否差一步，原文没有解释。
-- Figure 3 / 附录对 Gemma 写成 2B 或 2.6B，与 π0 正文「PaliGemma 3B」并列时，视觉塔是否算进「3B」需以权重卡核实。
-- VI 数据规模、HL 标注质量、100 个家庭如何抽样，都没有表。
 - [InternVLA-A1.5](internvla-a1.5.md) 真机表里的 π0.5 数字是 A1.5 论文的重测，不是本页 Figure 7 的家庭家务，不能直接当同一协议。
 - [π0.7](pi0.7.md) 已 ingest：**不再是** PaliGemma + [FAST](fast.md)→flow 两阶段。同系列连续专家，但骨干是 Gemma 3 + MEM，expert 860M，上下文加 metadata / subgoal。不要用本页家庭进度条去填那边的柱图。本库不建 π0.6 页。
-- 本页 FAST 是预训练阶段的离散动作表示，chunk \(H=50\) 在 50 Hz 上与 [FAST](fast.md) 的 1 秒设计一致；原文只写 “FAST action tokenizer [64]”，**没有对照表说明用的是数据集特化 FAST 还是发布的 FAST+ 权重**。与 OpenVLA 逐步 256-bin 不是同一种 token。
 - [AtomicVLA](atomicvla.md) 的 AtomicVLA* 建在本页基座上做 SG-MoE，不是第四种动作头；它的 LIBERO 行里 π0.5 数字接近 OpenPI 官方表，不要和 [EmbodiedSkills](embodied-skills.md) 的 97.40 互相当复现。
+
+## 待追问
+
+- **需补外部来源**：附录写 action horizon「50，即 \(H=49\)」，与 π0 的 \(H=50\) 是否差一步，原文没有解释。
+- **需补外部来源**：Figure 3 / 附录对 Gemma 写成 2B 或 2.6B，与 π0 正文「PaliGemma 3B」并列时，视觉塔是否算进「3B」需以权重卡核实。
+- **需实验或作者披露**：VI 数据规模、HL 标注质量、100 个家庭如何抽样，都没有表。
+
+## 相关追问
+
+主记录：[FAST 与 FAST+ 的词表同一性](../concepts/vision-language-action.md#待追问)。
 
 ## 相关页面
 

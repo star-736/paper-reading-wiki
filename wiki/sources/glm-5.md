@@ -41,8 +41,10 @@ GLM-5 使用 DeepSeek Sparse Attention（DSA）实现 [高效长上下文注意�
 
 报告宣称 GLM-5 在多个开放模型 ARC benchmark 上达到 SOTA。代表性结果包括 SWE-bench Verified 77.8、SWE-bench Multilingual 73.3、BrowseComp 62.0、带 context management 的 BrowseComp 75.9，以及 Vending-Bench 2 结算余额 $4,432。
 
-## 待追问
+## 证据边界与阅读提示
 
-- GLM-5 的 agentic 增益中，架构、数据、RL 环境和推理框架各自贡献多少？
 - DSA 降低成本，但 RL 稳定性依赖 deterministic top-k，这可能是复现和部署时的关键约束。
 
+## 待追问
+
+- **需实验或作者披露**：GLM-5 的 agentic 增益中，架构、数据、RL 环境和推理框架各自贡献多少？

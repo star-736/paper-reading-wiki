@@ -75,12 +75,15 @@ Kernel（Figure 6，$|I|=16$）：相对 FlashAttention-2，A100 128k 最高 7.4
 - **相对 [DSA](../concepts/deepseek-sparse-attention.md)**：DSA 有独立 lightning indexer 和 KL。InfLLM-V2 没有独立 indexer 参数、没有 KL，选择分来自 pooled key。
 - 比较页旧「InfLLM-V2 零样本无参」来自 NSA ingest 时的二手行，**已被本页推翻**：需要 5B 长微调，架构修改无参不等于训练免费。
 
+## 证据边界与阅读提示
+
+- NSA 对照是第三方 Triton，不是 DeepSeek 原文 kernel；速度与质量两边都可能吃亏。
+- 跨层是否复用 $I(i)$：每层独立，没有 IndexCache 实验。
+
 ## 待追问
 
-- MiniCPM4.1-8B 与 §4 这只 8B GQA 是否同一检查点？原文只说「based on the InfLLM-V2 framework」开源了 MiniCPM4.1。
-- NSA 对照是第三方 Triton，不是 DeepSeek 原文 kernel；速度与质量两边都可能吃亏。
-- 没有 RL / agentic 稳定性。top-k 是否非确定，本页没写。
-- 跨层是否复用 $I(i)$：每层独立，没有 IndexCache 实验。
+- **需补外部来源**：MiniCPM4.1-8B 与 §4 这只 8B GQA 是否同一检查点？原文只说「based on the InfLLM-V2 framework」开源了 MiniCPM4.1。
+- **需实验或作者披露**：没有 RL / agentic 稳定性。top-k 是否非确定，本页没写。
 
 ## 相关页面
 

@@ -1,4 +1,5 @@
 ---
+type: Source
 title: "Mi-Memory: A Lifecycle Memory Framework for Personal AI"
 description: "小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约"
 tags: [agent-memory, personal-ai, lifecycle-audit, cross-device, memory-evolution, edge-deployment]
@@ -210,13 +211,16 @@ LiteMem 保留 90.0% 的服务端改善（(90.81−65.83)/(93.59−65.83) = 90.0
 
 ## 待追问
 
-- **MemFuseBench 外部验证**：当前为内部 benchmark，无 human upper bound / inter-annotator agreement / oracle-fusion ceiling，外部验证 pending。conflict arbitration 弱于 mem0 的机制需要进一步分析。
-- **IKB ablation 缺失**：MemSense 的 IKB-first routing vs 标准 VLM/RAG 的 controlled ablation（共享 backbone）未在主文中报告，89.15% vs 82.29% 的差距不能直接归因于 IKB。
-- **端到端闭环评测**：各模块分轨评测，尚无 memory guides downstream actions 的 closed-loop personal AI benchmark（MemoryArena / WorldMemArena 等被引为方向）。
-- **在线增量演化**：E2MEND 目前仅 offline bounded automation，production 环境无 ground-truth labels 的在线演化未评测。
-- **规模扩展**：LiteMem 的 file-count scaling / latency 未在当前 transfer-feasibility setting 之外验证。
-- **procedural hooks**：design-only，无独立 benchmark。ProcedureEntry 与 agent skill memory / tool-skill library 的边界需进一步明确。
-- **与 Hermes 的结构对比**：Mi-Memory 的 lifecycle audit contract（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）与 Hermes 的 memory/fact_store/cronjob 体系有可类比之处，值得做机制层而非仅概念层的对比。D2ACCI 的「hypothesis → diagnose → patch → verify」与 systematic-debugging skill 的四阶段方法论高度同构。
+- **需实验或作者披露**：**MemFuseBench 外部验证**：当前为内部 benchmark，无 human upper bound / inter-annotator agreement / oracle-fusion ceiling，外部验证 pending。conflict arbitration 弱于 mem0 的机制需要进一步分析。
+- **需实验或作者披露**：**IKB ablation 缺失**：MemSense 的 IKB-first routing vs 标准 VLM/RAG 的 controlled ablation（共享 backbone）未在主文中报告，89.15% vs 82.29% 的差距不能直接归因于 IKB。
+- **需实验或作者披露**：**端到端闭环评测**：各模块分轨评测，尚无 memory guides downstream actions 的 closed-loop personal AI benchmark（MemoryArena / WorldMemArena 等被引为方向）。
+- **需实验或作者披露**：**在线增量演化**：E2MEND 目前仅 offline bounded automation，production 环境无 ground-truth labels 的在线演化未评测。
+- **需实验或作者披露**：**procedural hooks**：design-only，无独立 benchmark。ProcedureEntry 与 agent skill memory / tool-skill library 的边界需进一步明确。
+- **需补外部来源**：**与 Hermes 的结构对比**：Mi-Memory 的 lifecycle audit contract（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）与 Hermes 的 memory/fact_store/cronjob 体系有可类比之处，值得做机制层而非仅概念层的对比。D2ACCI 的「hypothesis → diagnose → patch → verify」与 systematic-debugging skill 的四阶段方法论高度同构。
+
+## 相关追问
+
+主记录：[LiteMem 文件规模与时延召回](../concepts/agent-memory-lifecycle.md#待追问)。
 
 ## 相关页面
 

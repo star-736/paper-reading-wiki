@@ -129,15 +129,18 @@ $w_0$ 消融（Table 5，Qwen3-4B/8B，64K/96K/128K）：$w_0=0$ 把局部窗缩
 
 32K 内四者与 FA2 相差 ±1%。4B 在 128K prefill 达 1.45×（Table 8）。FA4 无 H100 generation kernel，decode 表不含 FA4。
 
+## 证据边界与阅读提示
+
+- HELMET-RAG 在 1.7B 落后 Self-Extend 0.73 pp；CWE 全员失败、1.7B 的 MK-NIAH-3 只有 1.60。位置别名改善了不少检索，但没有解决所有 hard NIAH。
+
 ## 待追问
 
-- 实验只覆盖 Qwen3 dense 1.7B/4B/8B-Base 和 Jet-Nemotron-2B/4B，没有 32B / MoE、没有 Llama / GLM。§5 把 MLA 和稀疏注意力列为「自然扩展」，但正文没有实验。
-- HELMET-RAG 在 1.7B 落后 Self-Extend 0.73 pp；CWE 全员失败、1.7B 的 MK-NIAH-3 只有 1.60。位置别名改善了不少检索，但没有解决所有 hard NIAH。
-- 对照的 Self-Extend 固定 `group_size=8`，而 Jet-Long 在 128K 只需 $G=4$。动态 G 本身是贡献，但「固定分组超参 vs 解析式 G」有多少来自超参不公、有多少来自双焦点合并，正文没有把 Self-Extend 也改成动态 G 再比。SELF（logistic 增长的 Self-Extend）和 LaMPE / AdaGroPE 只在 related work 出现，v2 加了讨论却没进 Table 1。
-- Table 1 与 Table 2 的 PG-19 Base / DNTK / YaRN 几何平均对不上（例如 1.7B Base 16.13 vs 16.39）。DCA / Self-Extend / Jet-Long 三列一致。按长度故事以 Table 2 为准，跨方法排序以 Table 1 为准，来源未解释差额。
-- 没有 256K / 1M 数字；Table 6 已提示 128K 上频率插值开始在个别任务反超。与 [Laguna](laguna-m1-xs2.md) 的「128K 训完再 RoPE scale 翻倍到 256K」、[Qwen3-Next](qwen3-next-blog.md) 的 YaRN 到 1M、[Kimi K3](kimi-k3.md) 的 NoPE 1M 外推，目前无法同协议对比。
-- 只处理位置 OOD，不处理 softmax 扩散。与 DSA / MSA / SWA / 线性层是否可叠加，仍是推测。
-- fused CuTe kernel 的可移植性（非 Hopper、非 Qwen3 GQA、MLA 的 decoupled RoPE）未报。GitHub 仓库是否包含可复现 kernel，本页未核。
+- **需实验或作者披露**：实验只覆盖 Qwen3 dense 1.7B/4B/8B-Base 和 Jet-Nemotron-2B/4B，没有 32B / MoE、没有 Llama / GLM。§5 把 MLA 和稀疏注意力列为「自然扩展」，但正文没有实验。
+- **需实验或作者披露**：对照的 Self-Extend 固定 `group_size=8`，而 Jet-Long 在 128K 只需 $G=4$。动态 G 本身是贡献，但「固定分组超参 vs 解析式 G」有多少来自超参不公、有多少来自双焦点合并，正文没有把 Self-Extend 也改成动态 G 再比。SELF（logistic 增长的 Self-Extend）和 LaMPE / AdaGroPE 只在 related work 出现，v2 加了讨论却没进 Table 1。
+- **需实验或作者披露**：Table 1 与 Table 2 的 PG-19 Base / DNTK / YaRN 几何平均对不上（例如 1.7B Base 16.13 vs 16.39）。DCA / Self-Extend / Jet-Long 三列一致。按长度故事以 Table 2 为准，跨方法排序以 Table 1 为准，来源未解释差额。
+- **需实验或作者披露**：没有 256K / 1M 数字；Table 6 已提示 128K 上频率插值开始在个别任务反超。与 [Laguna](laguna-m1-xs2.md) 的「128K 训完再 RoPE scale 翻倍到 256K」、[Qwen3-Next](qwen3-next-blog.md) 的 YaRN 到 1M、[Kimi K3](kimi-k3.md) 的 NoPE 1M 外推，目前无法同协议对比。
+- **需实验或作者披露**：只处理位置 OOD，不处理 softmax 扩散。与 DSA / MSA / SWA / 线性层是否可叠加，仍是推测。
+- **需补外部来源**：fused CuTe kernel 的可移植性（非 Hopper、非 Qwen3 GQA、MLA 的 decoupled RoPE）未报。GitHub 仓库是否包含可复现 kernel，本页未核。
 
 ## 相关页面
 

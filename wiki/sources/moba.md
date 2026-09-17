@@ -70,13 +70,16 @@ Table 2（MoBA vs Full，同 1M 续训）：多数项打平。RULER @128K **0.78
 
 正文写 1M prefill 最高 6.5×、10M 注意力时间 16×。短序列（32K–512K）两者接近，长了才拉开。
 
+## 证据边界与阅读提示
+
+- Decode 切回 full 之后，KV 仍随长度涨；稀疏收益主要在 prefill。
+
 ## 待追问
 
-- 生产 Kimi 用的 $B$ / top-$k$ / 哪些层 full，本 PDF 没有。
-- Decode 切回 full 之后，KV 仍随长度涨；稀疏收益主要在 prefill。
-- 每 head 独立 top-k 在 GQA 上会不会变成「组内并集」、把访存又打满，原文没讨论。[NSA](nsa.md) 专门为这个做了组内加总。
-- 没有 RL。比较页把 MoBA 的 RL 稳定性列为 open problem，本页不能闭合。
-- 与 [MSA](msa.md)（独立 idx 投影 + 每 GQA group）和 [NSA](nsa.md)（压缩注意力当选块分）没有同协议对照。
+- **需实验或作者披露**：生产 Kimi 用的 $B$ / top-$k$ / 哪些层 full，本 PDF 没有。
+- **需实验或作者披露**：每 head 独立 top-k 在 GQA 上会不会变成「组内并集」、把访存又打满，原文没讨论。[NSA](nsa.md) 专门为这个做了组内加总。
+- **需实验或作者披露**：没有 RL。比较页把 MoBA 的 RL 稳定性列为 open problem，本页不能闭合。
+- **需实验或作者披露**：与 [MSA](msa.md)（独立 idx 投影 + 每 GQA group）和 [NSA](nsa.md)（压缩注意力当选块分）没有同协议对照。
 
 ## 相关页面
 

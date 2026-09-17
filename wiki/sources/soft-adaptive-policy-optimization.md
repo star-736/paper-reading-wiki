@@ -111,10 +111,10 @@ Qwen3-VL 实验评测四项：AIME25（Pass@1 with 32 samples）、LiveCodeBench
 
 ## 待追问
 
-- SAPO 说所有方法最终可能仍有 instability，只是 SAPO 稳定更久；它是否能完全避免 collapse，还是只是延迟 collapse？正文倾向后者。
-- $\tau_{pos}$ / $\tau_{neg}$ 是否能自适应，而非固定 1.0 / 1.05？论文只做三档消融。
-- SAPO 在 Qwen3-VL family 的不同尺寸/架构上都有效，但正文只展示 30B-A3B preliminary checkpoint 曲线；其它尺寸的具体收益未列表。
-- SAPO 的 soft gate 是否会降低对极端坏 token 的惩罚力度？论文强调平滑保留信号，但没有给 reward hacking / safety 侧实验。
+- **需实验或作者披露**：SAPO 说所有方法最终可能仍有 instability，只是 SAPO 稳定更久；它是否能完全避免 collapse，还是只是延迟 collapse？正文倾向后者。
+- **需实验或作者披露**：$\tau_{pos}$ / $\tau_{neg}$ 是否能自适应，而非固定 1.0 / 1.05？论文只做三档消融。
+- **需实验或作者披露**：SAPO 在 Qwen3-VL family 的不同尺寸/架构上都有效，但正文只展示 30B-A3B preliminary checkpoint 曲线；其它尺寸的具体收益未列表。
+- **需实验或作者披露**：SAPO 的 soft gate 是否会降低对极端坏 token 的惩罚力度？论文强调平滑保留信号，但没有给 reward hacking / safety 侧实验。
 
 ## 相关页面
 

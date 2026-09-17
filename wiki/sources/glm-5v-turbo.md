@@ -118,9 +118,9 @@ RL 阶段相比 SFT 的增益（§ 2.3 原文）：RefCOCO-avg +4.8%、PointBenc
 
 ## 待追问
 
-- 报告未披露总参数量、激活参数量、训练 token 数、LLM backbone 架构细节（是否沿用 GLM-5 的 DSA + MoE），这些信息可能在 GLM-5 主报告或 HF config 中。
-- CogViT 的参数量（Figure 1 显示 CogViT-L 为 403M）与 LLM backbone 的连接方式（projector 结构）未详细说明。
-- MMTP 的 `<\|image\|>` token 方案与 GLM-5 的参数共享 MTP 层如何配合？是否同样共享参数？
-- relative visual policy optimization 的具体算法形式（引用 [45] UI2Code^n）未展开。
-- RL 的 30+ 任务类别清单和各自 reward 设计未完整列出。
-- ImageMining 的 217 个测试用例是否开源？\"Visual Jump\" 的自动化检测如何实现？
+- **需补外部来源**：报告未披露总参数量、激活参数量、训练 token 数、LLM backbone 架构细节（是否沿用 GLM-5 的 DSA + MoE），这些信息可能在 GLM-5 主报告或 HF config 中。
+- **需补外部来源**：CogViT 的参数量（Figure 1 显示 CogViT-L 为 403M）与 LLM backbone 的连接方式（projector 结构）未详细说明。
+- **需补外部来源**：MMTP 的 `<\|image\|>` token 方案与 GLM-5 的参数共享 MTP 层如何配合？是否同样共享参数？
+- **需补外部来源**：relative visual policy optimization 的具体算法形式（引用 [45] UI2Code^n）未展开。
+- **需实验或作者披露**：RL 的 30+ 任务类别清单和各自 reward 设计未完整列出。
+- **需补外部来源**：ImageMining 的 217 个测试用例是否开源？\"Visual Jump\" 的自动化检测如何实现？

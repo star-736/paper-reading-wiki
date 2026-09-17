@@ -120,15 +120,18 @@ resource: "../../raw/2306.08543v6.pdf"
 - **与现代 token-level OPD 的形式关系**：MiniLLM 的 advantage 是**累积到序列尾**的 $R_t - 1$；[MiMo MOPD](../models/mimo-v2-flash.md) / [GLM-5](../models/glm-5.md) 与现代 token-level OPD 用的是**单 token** 的 $\mathrm{sg}[\log \pi_T - \log \pi_\theta]$。两者同族但并非同一估计器，本页不做等价换算（见待追问）。
 - **训练栈差异**：MiniLLM 保留了预训练语言建模损失 $\mathcal{L}_{PT}$ 以保住 canonical 任务能力（`Table 7`），并沿用 PPO clipping；近代 OPD 走 GRPO/PPO 的 advantage 折入路线，不再单独保留 $\mathcal{L}_{PT}$。
 
+## 证据边界与阅读提示
+
+- **摘要的「120M 到 13B」是口径混装**：student 最大是 LLaMA-7B（teacher 才是 13B），论文摘要把两侧规模合起来说了。引用时必须分开写。
+- **没有多 teacher 与大规模 student 的实验**：MiniLLM 全是单 teacher、student ≤ 7B，无法直接回答 MOPD 场景下的问题。
+
 ## 待追问
 
-- **$R_t$ 累积 vs 单 token 比值是否等价**：MiniLLM 的 $R_t$ 累加 $t$ 之后所有 token 的 log-ratio，现代 OPD 只用当前 token 的 $\log(\pi_T/\pi_\theta)$。两者在数学上是否只差一个 telescoping / baseline 处理，本页未在原文层面核对，引用时不要当作同一形式。
-- **teacher-mixed sampling 与「on-policy 纯度」的张力**：α=0.2 意味着采样分布不是纯 student 分布，论文用 importance weight 修正后**近似**成单步比值 $w_t \approx q_\theta/\tilde p$（`Eq 5`），这个近似带来的偏差在大规模设置下没有被评估；而 2026 各家 OPD 都是纯 student 采样，没有对应项。是这一项在规模上不重要，还是被 α 的鲁棒性掩盖了？
-- **摘要的「120M 到 13B」是口径混装**：student 最大是 LLaMA-7B（teacher 才是 13B），论文摘要把两侧规模合起来说了。引用时必须分开写。
-- **短回答子集上 forward 与 reverse KLD 表现相近**（`§3.3`、`Figure 7`）与「reverse KLD 普遍更优」的流行表述存在张力，论文自己给的情境化解释（输出空间小 → student 能覆盖 teacher 多数 mode）没有被单独消融验证。
-- **「student 反超 teacher 是 exposure bias 所致」是作者解释而非实验结论**：论文以 teacher 也是 teacher-forcing 微调为由推断，没有做 teacher 的 on-policy 重训对照。
-- **wiki 概念页把「OPD 的 entropy collapse 比 RL 更剧烈」记在 Gu et al. 2023 名下**，但 MiniLLM 原文没有做 OPD vs RL 的熵曲线对照——它做的是 mode-seeking 论证与 `Table 3` 的多样性持平检验。这条归属需要降级或另找出处。
-- **没有多 teacher 与大规模 student 的实验**：MiniLLM 全是单 teacher、student ≤ 7B，无法直接回答 MOPD 场景下的问题。
+- **现有材料待核**：**$R_t$ 累积 vs 单 token 比值是否等价**：MiniLLM 的 $R_t$ 累加 $t$ 之后所有 token 的 log-ratio，现代 OPD 只用当前 token 的 $\log(\pi_T/\pi_\theta)$。两者在数学上是否只差一个 telescoping / baseline 处理，本页未在原文层面核对，引用时不要当作同一形式。
+- **需实验或作者披露**：**teacher-mixed sampling 与「on-policy 纯度」的张力**：α=0.2 意味着采样分布不是纯 student 分布，论文用 importance weight 修正后**近似**成单步比值 $w_t \approx q_\theta/\tilde p$（`Eq 5`），这个近似带来的偏差在大规模设置下没有被评估；而 2026 各家 OPD 都是纯 student 采样，没有对应项。是这一项在规模上不重要，还是被 α 的鲁棒性掩盖了？
+- **需实验或作者披露**：**短回答子集上 forward 与 reverse KLD 表现相近**（`§3.3`、`Figure 7`）与「reverse KLD 普遍更优」的流行表述存在张力，论文自己给的情境化解释（输出空间小 → student 能覆盖 teacher 多数 mode）没有被单独消融验证。
+- **需实验或作者披露**：**「student 反超 teacher 是 exposure bias 所致」是作者解释而非实验结论**：论文以 teacher 也是 teacher-forcing 微调为由推断，没有做 teacher 的 on-policy 重训对照。
+- **现有材料待核**：**wiki 概念页把「OPD 的 entropy collapse 比 RL 更剧烈」记在 Gu et al. 2023 名下**，但 MiniLLM 原文没有做 OPD vs RL 的熵曲线对照——它做的是 mode-seeking 论证与 `Table 3` 的多样性持平检验。这条归属需要降级或另找出处。
 
 ## 相关页面
 

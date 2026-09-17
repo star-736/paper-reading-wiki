@@ -81,11 +81,11 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 ## 待追问
 
-- **PLT + 稀疏注意力 / 线性注意力**：如果 PLT 的每次 loop 内部用 DSA 或 GDN 替代 full attention，Ω(r) 会改变吗？loop-count 饱和点会移动吗？
-- **PLT + MTP 叠加**：latent loop 和 MTP 都是 test-time compute scaling 路径，两者是否如 latent loop + explicit CoT 一样互补？
-- **CLP offset 自适应**：当前 Ω(r) 恒定是 CLP 固定右移 1 位的结果。如果 offset 量随 loop 自适应减小（如 learnable shift amount），能否推迟饱和点？
-- **跨参数量 scaling**：7B 上 R=2 最优，更大模型上 gain–cost 交叉点是否会不同？Schwethelm 的 r^0.46 scaling law 是否暗示更大模型也需要更多 loop 才能饱和？
-- **World-model 循环是否也饱和**：LoopWM 主张复杂转移（碰撞、接触）多分迭代、简单转移早停，但没有给出平均 $T$、退出分布，也没有固定 $T=1/2/3$ 的配对。若环境隐状态也有 LoopCoder-v2 那种收益递减，自适应深度的节省幅度会远小于 §3.4 的 100 层思想实验。
+- **需实验或作者披露**：**PLT + 稀疏注意力 / 线性注意力**：如果 PLT 的每次 loop 内部用 DSA 或 GDN 替代 full attention，Ω(r) 会改变吗？loop-count 饱和点会移动吗？
+- **需实验或作者披露**：**PLT + MTP 叠加**：latent loop 和 MTP 都是 test-time compute scaling 路径，两者是否如 latent loop + explicit CoT 一样互补？
+- **需实验或作者披露**：**CLP offset 自适应**：当前 Ω(r) 恒定是 CLP 固定右移 1 位的结果。如果 offset 量随 loop 自适应减小（如 learnable shift amount），能否推迟饱和点？
+- **需实验或作者披露**：**跨参数量 scaling**：7B 上 R=2 最优，更大模型上 gain–cost 交叉点是否会不同？Schwethelm 的 r^0.46 scaling law 是否暗示更大模型也需要更多 loop 才能饱和？
+- **需实验或作者披露**：**World-model 循环是否也饱和**：LoopWM 主张复杂转移（碰撞、接触）多分迭代、简单转移早停，但没有给出平均 $T$、退出分布，也没有固定 $T=1/2/3$ 的配对。若环境隐状态也有 LoopCoder-v2 那种收益递减，自适应深度的节省幅度会远小于 §3.4 的 100 层思想实验。
 
 ## 相关页面
 
@@ -102,3 +102,5 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 - [高效长上下文注意力](efficient-long-context-attention.md) — 正交路线：单次前向传播内的长序列效率
 - [多 token 预测](multi-token-prediction.md) — 正交路线：单次前向传播内的多 token 摊销
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md) — LoopCoder-v2 在 SWE-bench / Terminal-Bench 上的数据点
+
+关联提问页：[LoopCoder-v2: Only Loop Once for Efficient Test-Time Computation Scaling](../sources/loopcoder-v2.md#相关追问)。

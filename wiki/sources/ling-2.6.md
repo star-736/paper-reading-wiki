@@ -193,11 +193,11 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 
 ## 待追问
 
-- Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：机制页见 [Lightning Attention-2](lightning-attention-2.md)（标量衰减外积累加，不是 delta rule）。本报告仅说"following Ring-flash-linear-2.0"，未核对本族生产算子是否逐行等同 Lightning-2。
-- 7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。[MiniMax-M1](minimax-m1.md) 更早用过 7 Lightning : 1 softmax，不要把 7:1 写成 Ling-2.6 独有，也不要把 M1 的全局 softmax 写成 MLA。
-- KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
-- 异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？
-- MLA 转换中的 QK Norm absorption 公式基于 RMSNorm 性质——这是否意味着 Ling-2.0 原本的 QK Norm 是 RMSNorm 类型？与 Qwen3 的 QK-Norm（LayerNorm 类型）有何差异？
+- **需补外部来源**：Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：机制页见 [Lightning Attention-2](lightning-attention-2.md)（标量衰减外积累加，不是 delta rule）。本报告仅说"following Ring-flash-linear-2.0"，未核对本族生产算子是否逐行等同 Lightning-2。
+- **需实验或作者披露**：7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。[MiniMax-M1](minimax-m1.md) 更早用过 7 Lightning : 1 softmax，不要把 7:1 写成 Ling-2.6 独有，也不要把 M1 的全局 softmax 写成 MLA。
+- **需实验或作者披露**：KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
+- **需实验或作者披露**：异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？
+- **现有材料待核**：MLA 转换中的 QK Norm absorption 公式基于 RMSNorm 性质——这是否意味着 Ling-2.0 原本的 QK Norm 是 RMSNorm 类型？与 Qwen3 的 QK-Norm（LayerNorm 类型）有何差异？
 
 ## 相关页面
 

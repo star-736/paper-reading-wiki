@@ -101,14 +101,20 @@ resource: "raw/2604.15483v2.pdf"
 
 局限（§X）：分布内成功常 >90%，未见任务或未见任务–本体组合大约 60–80%。作者自己写，数据太大时很难断言什么是真正「没见过」。
 
+## 证据边界与阅读提示
+
+- **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页；架构以那些原文为准，不能用本页柱状图反推。
+- 不要和 [AtomicVLA](atomicvla.md) 的 LIBERO 表、[EmbodiedSkills](embodied-skills.md) 的 97.40 横比。
+
 ## 待追问
 
-- Gemma 3 的视觉塔到底算「Gemma3 自带 400M」还是 Figure 2 的 SigLIP 400M 初始化？原文两处并列，没有权重卡。
-- [FAST](fast.md) 在 KI 里具体词表、chunk 长度、与 π0.5 预训练 FAST 是否同一份 BPE 权重，§III 只给了引用 [104]。FAST 原文把方法钉成 1 秒 chunk 上 DCT+BPE，并区分数据集特化 FAST 与发布的 FAST+；本页没有对照表。三种用法不要互填：π0.5 是 FAST→flow 两阶段，InternVLA Stage 1 是离散预训练，本页是 KI-only。
-- 总训练步数、混合物比例、自有数据小时数，正文没有表。
-- **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页；架构以那些原文为准，不能用本页柱状图反推。
-- 世界模型 14B 与 5B VLA 的系统账（延迟、失败时是否回退）只有附录 D 的 1.25 s / 异步，没有失败率。
-- 不要和 [AtomicVLA](atomicvla.md) 的 LIBERO 表、[EmbodiedSkills](embodied-skills.md) 的 97.40 横比。
+- **需补外部来源**：Gemma 3 的视觉塔到底算「Gemma3 自带 400M」还是 Figure 2 的 SigLIP 400M 初始化？原文两处并列，没有权重卡。
+- **需实验或作者披露**：总训练步数、混合物比例、自有数据小时数，正文没有表。
+- **需实验或作者披露**：世界模型 14B 与 5B VLA 的系统账（延迟、失败时是否回退）只有附录 D 的 1.25 s / 异步，没有失败率。
+
+## 相关追问
+
+主记录：[FAST 与 FAST+ 的词表同一性](../concepts/vision-language-action.md#待追问)。
 
 ## 相关页面
 

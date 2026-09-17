@@ -49,9 +49,9 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 
 ## 待追问
 
-- 开放工具、GUI、仓库编辑里状态几乎不精确重复时，相似度 grouping 会不会把不同决策情境错误对齐？
-- 与 ARPO 同一 rollout 预算下的对照仍然缺失。
-- $\omega$ 与 $\gamma$ 在主实验未扫；折扣回报在终局二元奖励下，等价于「越晚成功的正确动作 advantage 越大」，这是否会惩罚必要的早期探索？
+- **需实验或作者披露**：开放工具、GUI、仓库编辑里状态几乎不精确重复时，相似度 grouping 会不会把不同决策情境错误对齐？
+- **需实验或作者披露**：GiGPO 与 ARPO 同一 rollout / 环境预算下的对照仍然缺失：把探索预算花在高熵分叉，还是同状态对照，哪种更划算？
+- **需实验或作者披露**：$\omega$ 与 $\gamma$ 在主实验未扫；折扣回报在终局二元奖励下，等价于「越晚成功的正确动作 advantage 越大」，这是否会惩罚必要的早期探索？
 
 ## 相关页面
 
@@ -62,3 +62,5 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)
+
+关联提问页：[Group-in-Group Policy Optimization（GiGPO）](../sources/gigpo.md#相关追问)。

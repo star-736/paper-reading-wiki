@@ -226,16 +226,19 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本报告把后训练的**系统**当成一等对象——同一套 rollout + trainer + 权重路径同时服务 RL / LoRA RL / OPD / SFT / diffusion，且把每条路径的证据等级显式标出。
 - [多 token 预测](../concepts/multi-token-prediction.md)：§9 里 MTP 以「每个引擎挂一个小 draft model，一次前向提多个 token」的常规形态出现，用于 FP8 服务侧的推理加速。
 
+## 证据边界与阅读提示
+
+- §9 是单次 100 step、单一任务分布，reward 曲线上升与「系统能不能稳定训下去」是两件事；Miles 自己也没把 0.438 → 0.556 读成能力提升。
+
 ## 待追问
 
-- GLM-5.3 博客说的「$10^{-7}$ 量级 log-prob 差异」与 Miles §9 的 train–inference KL 均值 0.0369 是不是同一个量？口径（绝对差 vs KL 均值）与精度配置（全对齐 vs BF16 训练 + FP8 服务）都可能不同，仓库里没有能对齐两者的第三方来源。
-- R3 在异步 RL 下「效果可能有限」是作者的定性判断，没有开 / 关 R3 的异步对照表；60 MB/轨迹是本报告的估算，[R3 原文](r3.md)只报 <3% rollout 延迟，两边都没有 1M 上下文成本曲线。
-- §9 是单次 100 step、单一任务分布，reward 曲线上升与「系统能不能稳定训下去」是两件事；Miles 自己也没把 0.438 → 0.556 读成能力提升。
-- true-on-policy alignment 只在 dense Qwen3 0.6B/4B 上有 profile，MoE、长上下文、异步场景下「恰好为 0」是否成立未知；报告也没说这套确定性 kernel 相对默认 kernel 慢多少。
-- 低精度契约的验证是比较两边的 log-prob；没有给出「量化后相对 BF16 基线的 reward 曲线差多少」的量化数字，也没有 NVFP4 / MXFP8 的加速倍数。
-- P2P 的模型覆盖靠手写 weight-name 映射；day-0 支持一个新架构时这份映射的成本、有没有自动化路径，报告未说。
-- session server 不支持图像 / 视频输入，所以多模态 RL 目前拿不到 TITO 级的 token 精确性——这是已收录的多模态与 GUI agent 报告（[Kimi K3](kimi-k3.md)、[Xiaomi-GUI-0](xiaomi-gui-0.md) 等）都绕不开的问题。
-- 报告没有与其它后训练系统（`slime` 之外的 verl / NeMo-RL 等）的横向对照，所有数字都是自报单一配置；「production-ready」是设计目标而非第三方验证的结论。
+- **需实验或作者披露**：GLM-5.3 博客说的「$10^{-7}$ 量级 log-prob 差异」与 Miles §9 的 train–inference KL 均值 0.0369 是不是同一个量？口径（绝对差 vs KL 均值）与精度配置（全对齐 vs BF16 训练 + FP8 服务）都可能不同，仓库里没有能对齐两者的第三方来源。
+- **需实验或作者披露**：R3 在异步 RL 下「效果可能有限」是作者的定性判断，没有开 / 关 R3 的异步对照表；60 MB/轨迹是本报告的估算，[R3 原文](r3.md)只报 <3% rollout 延迟，两边都没有 1M 上下文成本曲线。
+- **需实验或作者披露**：true-on-policy alignment 只在 dense Qwen3 0.6B/4B 上有 profile，MoE、长上下文、异步场景下「恰好为 0」是否成立未知；报告也没说这套确定性 kernel 相对默认 kernel 慢多少。
+- **需实验或作者披露**：低精度契约的验证是比较两边的 log-prob；没有给出「量化后相对 BF16 基线的 reward 曲线差多少」的量化数字，也没有 NVFP4 / MXFP8 的加速倍数。
+- **需实验或作者披露**：P2P 的模型覆盖靠手写 weight-name 映射；day-0 支持一个新架构时这份映射的成本、有没有自动化路径，报告未说。 报告列出的覆盖包括 Qwen2 / Qwen3 dense、Qwen3-MoE、GLM4-MoE、DeepSeek-V3 / V3.2 派生；「day-0 支持」是否也意味着可用 P2P，不能从模型支持列表直接推出。
+- **需实验或作者披露**：session server 不支持图像 / 视频输入，所以多模态 RL 目前拿不到 TITO 级的 token 精确性——这是已收录的多模态与 GUI agent 报告（[Kimi K3](kimi-k3.md)、[Xiaomi-GUI-0](xiaomi-gui-0.md) 等）都绕不开的问题。
+- **需实验或作者披露**：报告没有与其它后训练系统（`slime` 之外的 verl / NeMo-RL 等）的横向对照，所有数字都是自报单一配置；「production-ready」是设计目标而非第三方验证的结论。
 
 ## 相关页面
 
@@ -243,3 +246,5 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 - 比较：[OPD 跨报告对比](../comparisons/on-policy-distillation.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻来源：[R3](r3.md)（`--use-rollout-routing-replay` 的算法定义）、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）
 - 模型：[GLM-5](../models/glm-5.md)（案例研究对象）、[Kimi K2.5](../models/kimi-k2.5.md) 与 [Qwen3.5](../models/qwen3.5.md)（LoRA recipe 覆盖）
+
+关联提问页：[RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md#相关追问)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md#相关追问)。

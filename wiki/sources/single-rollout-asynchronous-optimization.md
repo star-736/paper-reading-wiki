@@ -142,13 +142,16 @@ OpenHands、最多 300 交互、128k。Qwen3-30B-A3B 23.0 → GRPO (w/ DIS) 27.0
 - 与 [GLM-5.3](../models/glm-5-3.md) 的关系：发布博客称 5.3 延续 5.2 的 SAO with compaction。本页只能证实 5.2 pipeline 用了 SAO；不能把 Table 1/2 的 30B 数字读成 GLM-5.2/5.3 的评测。
 - 参数口径：本文写 GLM-5.2 为 750B-A40B；[FreeToken](freetoken.md) 写 753B-A40B；[GLM-5](../models/glm-5.md) 技术报告是 744B-A40B。不要划等号。
 
+## 证据边界与阅读提示
+
+- SWE-Bench Verified 29.8 是 Qwen3-30B-A3B + OpenHands 的算法对照，不是 GLM-5.2 的生产分。
+
 ## 待追问
 
-- Frozen-attention critic 依赖「不稳定来自 Full Attention、MoE 投影可训」；dense 模型或非 MoE 上这条还成不成立？
-- Value 预训练「显著加大」没有规模数字，无法判断 critic 冷启动的真实成本。
-- SWE-Bench Verified 29.8 是 Qwen3-30B-A3B + OpenHands 的算法对照，不是 GLM-5.2 的生产分。
-- 与 GSPO / SAPO / CISPO 的 ratio 形状没有组合实验；DIS 的硬 mask 和 SAPO 的 soft gate 是否可叠加？
-- compaction 只出现在 GLM-5.3 博客，本 PDF 未定义。
+- **需实验或作者披露**：Frozen-attention critic 依赖「不稳定来自 Full Attention、MoE 投影可训」；dense 模型或非 MoE 上这条还成不成立？
+- **需实验或作者披露**：Value 预训练「显著加大」没有规模数字，无法判断 critic 冷启动的真实成本。
+- **需实验或作者披露**：与 GSPO / SAPO / CISPO 的 ratio 形状没有组合实验；DIS 的硬 mask 和 SAPO 的 soft gate 是否可叠加？
+- **需实验或作者披露**：compaction 只出现在 GLM-5.3 博客，本 PDF 未定义。
 
 ## 相关页面
 
@@ -156,3 +159,5 @@ OpenHands、最多 300 交互、128k。Qwen3-30B-A3B 23.0 → GRPO (w/ DIS) 27.0
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻算法：[VAPO](vapo.md)、[DAPO](dapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
 - 模型 / 发布：[GLM-5](../models/glm-5.md)、[GLM-5.3](../models/glm-5-3.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)
+
+关联提问页：[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md#相关追问)。

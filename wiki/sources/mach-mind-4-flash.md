@@ -137,11 +137,11 @@ HMPO（§4.9，引 [66]）在 GRPO 上只改 reward 设计，三组件：
 
 ## 待追问
 
-- 统一 RL/OPD loss 中 `α`/`β` 的调度策略是什么？联合模式（α>0, β>0）下两条路径的梯度是否会互相干扰？
-- EnvScaling 的 190+ stateful domain 覆盖哪些领域？model-simulated environment 的 LLM/world-model simulator 如何保证 reward 可靠性？
-- Claw Agent 的 token-level credit assignment 按"结构角色"reweight，具体权重如何设定？与 [ARPO](../concepts/agentic-reinforced-policy-optimization.md) 的 entropy-based step-level credit assignment 是什么关系？
-- HMPO 的跨域泛化机制是"学到了通用 conciseness policy"还是"math-specific shortcut 恰好在 code/IF 上也有效"？是否有失败域？
-- MOPD 融合中 SWE-bench 保留率最低（−2.7pp），报告归因于"scaffold-specific behaviors 被蒸馏平滑"--是否有具体的 scaffold 行为被损失的案例分析？
+- **需实验或作者披露**：统一 RL/OPD loss 中 `α`/`β` 的调度策略是什么？联合模式（α>0, β>0）下两条路径的梯度是否会互相干扰？
+- **需实验或作者披露**：EnvScaling 的 190+ stateful domain 覆盖哪些领域？model-simulated environment 的 LLM/world-model simulator 如何保证 reward 可靠性？
+- **需实验或作者披露**：Claw Agent 的 token-level credit assignment 按"结构角色"reweight，具体权重如何设定？与 [ARPO](../concepts/agentic-reinforced-policy-optimization.md) 的 entropy-based step-level credit assignment 是什么关系？
+- **需实验或作者披露**：HMPO 的跨域泛化机制是"学到了通用 conciseness policy"还是"math-specific shortcut 恰好在 code/IF 上也有效"？是否有失败域？
+- **需实验或作者披露**：MOPD 融合中 SWE-bench 保留率最低（−2.7pp），报告归因于"scaffold-specific behaviors 被蒸馏平滑"--是否有具体的 scaffold 行为被损失的案例分析？
 
 ## 相关页面
 

@@ -92,10 +92,10 @@ Table 1 的 progressive ablation：
 
 ## 待追问
 
-- DAPO 的四个技巧里，哪些是 long-CoT 数学任务特有，哪些能直接迁移到 coding / search / multimodal agent RL？
-- Dynamic Sampling 过滤全错 prompt 会不会拖慢「从完全不会到会一点」的 early learning？论文强调有效梯度，但没有系统讨论 curriculum 边界。
-- Token-level loss 让长 response 权重大，配合 overlong shaping 才稳定；如果 reward 不可靠，会不会反过来放大长垃圾序列的梯度？
-- DAPO-Math-17K 的整数化改题是否改变了原题分布，尤其对可解释答案/证明型题目的泛化如何？
+- **需实验或作者披露**：DAPO 的四个技巧里，哪些是 long-CoT 数学任务特有，哪些能直接迁移到 coding / search / multimodal agent RL？
+- **需实验或作者披露**：Dynamic Sampling 过滤全错 prompt 会不会拖慢「从完全不会到会一点」的 early learning？论文强调有效梯度，但没有系统讨论 curriculum 边界。
+- **需实验或作者披露**：Token-level loss 让长 response 权重大，配合 overlong shaping 才稳定；如果 reward 不可靠，会不会反过来放大长垃圾序列的梯度？
+- **需实验或作者披露**：DAPO-Math-17K 的整数化改题是否改变了原题分布，尤其对可解释答案/证明型题目的泛化如何？
 
 ## 相关页面
 

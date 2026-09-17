@@ -66,7 +66,7 @@ Top-k token 组成稀疏索引集 $\Omega_t$（top-k = 2048，§ Inference Optim
 1. **Dense warm-up**：冻结 indexer 以外参数（主模型 dense attention），用 KL loss 让 indexer 对齐 GQA 各 group 的 dense attention 分布。使用约 2B multimodal tokens。
 2. **Sparse adaptation**：全部参数解冻，切换到 sparse 模式。KL loss 只在 top-k 选中 token 集上计算。indexer 输入从计算图 detach 以减少梯度干扰。最终 loss = $\mathcal{L}_{NTP} + \lambda \mathcal{L}^{sparse}_{I}$。
 
-> 这条「dense warm-up + sparse adaptation」范式由 [DeepSeek-V3.2](deepseek-sparse-attention.md) 引入，GLM-5 也沿用。Keye-VL-2.0 是第三个公开使用此范式的模型，但它是首个在 GQA（而非 MLA）上实现的，见 [DSA 概念页](../concepts/deepseek-sparse-attention.md)。
+> 这条「dense warm-up + sparse adaptation」范式由 [DeepSeek-V3.2](deepseek-v32.md) 引入，GLM-5 也沿用。Keye-VL-2.0 是第三个公开使用此范式的模型，但它是首个在 GQA（而非 MLA）上实现的，见 [DSA 概念页](../concepts/deepseek-sparse-attention.md)。
 
 ### 预训练四阶段
 
@@ -186,11 +186,11 @@ TimeLens 三子集 mIoU 全部最优，验证 scene-wise dense caption + diverse
 
 ## 待追问
 
-- Keye-VL-2.0 的 DSA indexer 在 RL 阶段是否冻结？报告说用 deterministic `flashinfer.topk` 但没提冻结 indexer 参数，与 GLM-5 的策略是否真有差异？
-- GQA Sparse Aggregation 中各 group 的 attention 分布归一化是独立做的，这是否意味着不同 group 可能关注不同的 top-k 子集？还是共享同一个 indexer 选出的 top-k？
-- 13 个 domain teacher 的具体配置（参数量、训练数据量）未披露。teacher 路由是静态规则还是 learned router？
-- Top-k overlap estimator 中 $\Omega_{i,t}$ 为空时 $A_{i,t} = 0$，这种零 advantage token 的比例有多高？是否影响训练效率？
-- Pre-training Stage 3 的 500B tokens 中长视频占比多少？256K 上下文的 sample 占比多少？
+- **需补外部来源**：Keye-VL-2.0 的 DSA indexer 在 RL 阶段是否冻结？报告说用 deterministic `flashinfer.topk` 但没提冻结 indexer 参数，与 GLM-5 的策略是否真有差异？
+- **现有材料待核**：GQA Sparse Aggregation 中各 group 的 attention 分布归一化是独立做的，这是否意味着不同 group 可能关注不同的 top-k 子集？还是共享同一个 indexer 选出的 top-k？
+- **需实验或作者披露**：13 个 domain teacher 的具体配置（参数量、训练数据量）未披露。teacher 路由是静态规则还是 learned router？
+- **需实验或作者披露**：Top-k overlap estimator 中 $\Omega_{i,t}$ 为空时 $A_{i,t} = 0$，这种零 advantage token 的比例有多高？是否影响训练效率？
+- **需实验或作者披露**：Pre-training Stage 3 的 500B tokens 中长视频占比多少？256K 上下文的 sample 占比多少？
 
 ## 相关页面
 

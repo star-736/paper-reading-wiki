@@ -90,10 +90,10 @@ GSPO 的核心 insight 是：MoE 即使单 token activated experts 有波动，�
 
 ## 待追问
 
-- GSPO clip range 量级（3e-4/4e-4）与 GRPO（0.2/0.27）差异很大；不同模型规模/任务是否需要重新标定？
-- sequence-level ratio 在超长 response 上是否会掩盖局部坏 token 的 off-policy 问题？SAPO 正是沿这个方向批评并改造 GSPO。
-- GSPO-token 在真正 multi-turn tool-use RL 里的 advantage 设计如何做？论文只说明形式可能，未给 agent 实验。
-- 「GSPO contributed to latest Qwen3 models」具体对应 Qwen3 哪个版本/哪次后训练，论文没有细化。
+- **需实验或作者披露**：GSPO clip range 量级（3e-4/4e-4）与 GRPO（0.2/0.27）差异很大；不同模型规模/任务是否需要重新标定？
+- **需实验或作者披露**：sequence-level ratio 在超长 response 上是否会掩盖局部坏 token 的 off-policy 问题？SAPO 正是沿这个方向批评并改造 GSPO。
+- **需实验或作者披露**：GSPO-token 在真正 multi-turn tool-use RL 里的 advantage 设计如何做？论文只说明形式可能，未给 agent 实验。
+- **需补外部来源**：「GSPO contributed to latest Qwen3 models」具体对应 Qwen3 哪个版本/哪次后训练，论文没有细化。
 
 ## 相关页面
 

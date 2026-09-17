@@ -82,11 +82,11 @@ LoRA RL 的 policy 写为 $\pi_\phi(a_t \mid o_{\leq t}; \theta, c)$，其中 sp
 
 ## 待追问
 
-- 多代 RSI 在固定外部 test 上是否有持续增益、保留率和 transfer，而非只显示一次 harness search 的 coverage？
-- 不同团队/用户训练的 adapter 在同一 base 上组合时，兼容性、provenance、tool visibility 与隐私隔离如何验证？
-- L0 路由在独立任务、multi-intent turn 与更开放 specialist registry 上的准确率、延迟和 failure recovery 如何？
-- ChatBench / LivingBench 所用私有 judge 与产品数据的脱敏、同意、保留和 re-identification audit 何时公开？
-- LongStraw、R3、DSA alignment 各自对真实 agent quality 与训练稳定性的独立贡献是什么？
+- **需实验或作者披露**：多代 RSI 在固定外部 test 上是否有持续增益、保留率和 transfer，而非只显示一次 harness search 的 coverage？
+- **需实验或作者披露**：不同团队/用户训练的 adapter 在同一 base 上组合时，兼容性、provenance、tool visibility 与隐私隔离如何验证？
+- **需实验或作者披露**：L0 路由在独立任务、multi-intent turn 与更开放 specialist registry 上的准确率、延迟和 failure recovery 如何？
+- **需实验或作者披露**：ChatBench / LivingBench 所用私有 judge 与产品数据的脱敏、同意、保留和 re-identification audit 何时公开？
+- **需实验或作者披露**：LongStraw、R3、DSA alignment 各自对真实 agent quality 与训练稳定性的独立贡献是什么？
 
 ## 相关页面
 

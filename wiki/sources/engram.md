@@ -138,13 +138,15 @@ Figure 6 是训练–推理不一致的 post-hoc 消融（推理时压掉稀疏�
 
 ## 待追问
 
-- **摘要 MMLU +3.4 与 Table 1 的 +3.0 不一致**。MMLU-Redux 恰好是 +3.4（60.6→64.0）；未说明摘要用的是哪一列。
-- **U 形分配 vs Qwen Table 8**：同是「拿 MoE 换 n-gram」，Engram 报下游全面领先，Qwen 报下游没有清楚超过纯 MoE。差在 tokenizer compression / 多头哈希 / 门控 / 双层插入 / mHC，还是评测与 backbone，两边都没有交叉复现。
-- **「等效加深」没有因果干预**：CKA/LogitLens 是相关；没有把 MoE 加层到 CKA 对齐深度再比下游。推理增益也可能来自更好的局部统计，而不是腾出的深度。
-- **Engram-40B 项项不占优 + 262B tokens 相对 27B 稀疏表偏短**。无限内存曲线是 100B tokens 的 3B backbone，不能外推到生产 token 预算。
-- **Table 4 用 dense 4B/8B + 单层 100B Engram，不是 MoE-27B**。避开了 Expert Parallel，也没有测 MoE+Engram 同时通信。HBM 热缓存、NVMe 冷层、多机切表都只是设计陈述。
-- **没有 instruct / RL / agent 评测**。确定性预取在 tool 交错、变长 rollout 下会不会被打乱，原文没测。
-- **与 [Intern-S2-Mobius](intern-s2-mobius.md) 的「知识 Memory」不是同一接口**：Mobius 共享的是 FFN 参数库、Reasoner 用计算去读；Engram 是 hash 到静态 embedding。两边都没做对方的对照。
+- **需实验或作者披露**：**摘要 MMLU +3.4 与 Table 1 的 +3.0 不一致**。MMLU-Redux 恰好是 +3.4（60.6→64.0）；未说明摘要用的是哪一列。
+- **需实验或作者披露**：**「等效加深」没有因果干预**：CKA/LogitLens 是相关；没有把 MoE 加层到 CKA 对齐深度再比下游。推理增益也可能来自更好的局部统计，而不是腾出的深度。
+- **需实验或作者披露**：**Engram-40B 项项不占优 + 262B tokens 相对 27B 稀疏表偏短**。无限内存曲线是 100B tokens 的 3B backbone，不能外推到生产 token 预算。
+- **需实验或作者披露**：**Table 4 用 dense 4B/8B + 单层 100B Engram，不是 MoE-27B**。避开了 Expert Parallel，也没有测 MoE+Engram 同时通信。HBM 热缓存、NVMe 冷层、多机切表都只是设计陈述。
+- **需实验或作者披露**：**与 [Intern-S2-Mobius](intern-s2-mobius.md) 的「知识 Memory」不是同一接口**：Mobius 共享的是 FFN 参数库、Reasoner 用计算去读；Engram 是 hash 到静态 embedding。两边都没做对方的对照。
+
+## 相关追问
+
+主记录：[Engram 与 Qwen 的等参分配分歧](../concepts/conditional-memory.md#待追问)；[工具交错下的 n-gram 预取](../concepts/conditional-memory.md#待追问)。
 
 ## 相关页面
 

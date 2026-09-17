@@ -93,17 +93,19 @@ timestamp: 2026-09-12
 
 ## 待追问
 
-- Pi 的「模型已经会用四工具」和 Prime Agent 的「需要更强原语才能 elicit」哪一句在同模型成对实验里成立？Databricks 只说明极小膜在他们的 PR 任务上成本更低、质量多数档接近，没有测 REPL/`rlm()`。V4.1-Flash 上 DeepSeek Harness Minimal 高于 Standard，方向与 Pi 一致，但是自家模型 + 自家 Minimal，不是跨训练分布的交叉。
-- SoL-Pi 的 94% 能力保留有多少是四个机制叠加后的地板泄漏，有多少是 EdgeBench 本身的噪声？博客没有单机制消融。
-- 表达性膜的收益有多少来自「模型本来就会用代码」，有多少必须靠围着 `rlm` / typed state 做后训练才会出现？Prime Agent §5 把后者标为预期，没有实验。
-- 多 harness 训练会不会训出「在每张膜上都平庸」的策略，从而抹掉 Prime Agent 这类高表达接口的优势？
-- 如何把 harness 失败（丢状态、记错成本、过早停）从 leaderboard 里单独审计出来，而不是混进模型能力？
-- Continual Harness 与 HCP 能否共用一套可审计契约（typed state + provenance + rollback），还是评测膜和产品契约会继续分叉？
-- DemoCUA 的 variant-demo 迁移是否必须围着「部分匹配的示范」做后训练，还是 self-demo SFT 已经够用？UI-Mate §10 只有 10 题试点。
-- Qwen-UI-Agent 的 proactive harness 有多少增益来自 affair 记忆和跨设备 planner，有多少其实是 27B 策略自己已经会的 GUI+CLI？报告只有定性轨迹。
+- **需实验或作者披露**：Pi 的「模型已经会用四工具」和 Prime Agent 的「需要更强原语才能 elicit」哪一句在同模型成对实验里成立？Databricks 只说明极小膜在他们的 PR 任务上成本更低、质量多数档接近，没有测 REPL/`rlm()`。V4.1-Flash 上 DeepSeek Harness Minimal 高于 Standard，方向与 Pi 一致，但是自家模型 + 自家 Minimal，不是跨训练分布的交叉。
+- **需实验或作者披露**：SoL-Pi 的 94% 能力保留有多少是四个机制叠加后的地板泄漏，有多少是 EdgeBench 本身的噪声？博客没有单机制消融。 45–49% token 下降里 ObservationPack、Compact 等机制各占多少，也需逐项拆分。
+- **需实验或作者披露**：表达性膜的收益有多少来自「模型本来就会用代码」，有多少必须靠围着 `rlm` / typed state 做后训练才会出现？Prime Agent §5 把后者标为预期，没有实验。
+- **需实验或作者披露**：多 harness 训练会不会训出「在每张膜上都平庸」的策略，从而抹掉 Prime Agent 这类高表达接口的优势？
+- **需实验或作者披露**：如何把 harness 失败（丢状态、记错成本、过早停）从 leaderboard 里单独审计出来，而不是混进模型能力？
+- **需实验或作者披露**：Continual Harness 与 HCP 能否共用一套可审计契约（typed state + provenance + rollback），还是评测膜和产品契约会继续分叉？
+- **需实验或作者披露**：DemoCUA 的 variant-demo 迁移是否必须围着「部分匹配的示范」做后训练，还是 self-demo SFT 已经够用？UI-Mate §10 只有 10 题试点。
+- **需实验或作者披露**：Qwen-UI-Agent 的 proactive harness 有多少增益来自 affair 记忆和跨设备 planner，有多少其实是 27B 策略自己已经会的 GUI+CLI？报告只有定性轨迹。
 
 ## 相关页面
 
 - 来源：[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
+
+关联提问页：[SoL-Pi 官方博客](../sources/sol-pi.md#相关追问)。

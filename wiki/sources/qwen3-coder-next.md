@@ -39,8 +39,8 @@ Qwen3-Coder-Next 是一个 **80B 总参 / 3B 激活** 的开源编码模型，�
 
 ## 待追问
 
-- 80B-A3B 在 SWE-Bench 上的确切分数与对照模型，可作为「小激活 + 强 agentic 训练」主张的证据补充。
-- 它和主线 [Kimi K2.5](kimi-k2.5.md)、GLM-5 等更大 agentic 模型在编码 benchmark 上的可比性，需要统一口径才能对比。
+- **现有材料待核**：80B-A3B 在 SWE-Bench 上的确切分数与对照模型，可作为「小激活 + 强 agentic 训练」主张的证据补充。
+- **现有材料待核**：它和主线 [Kimi K2.5](kimi-k2.5.md)、GLM-5 等更大 agentic 模型在编码 benchmark 上的可比性，需要统一口径才能对比。
 
 ## 相关页面
 

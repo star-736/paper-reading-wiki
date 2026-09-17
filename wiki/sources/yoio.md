@@ -199,15 +199,18 @@ Table 9 的 CLSA top-k 是把一次性路由除以 **32 层** 后的摊销值（
 
 **本页综合**：YOCO 贡献「记忆只生成一次」；IndexCache 贡献「在逐层稀疏栈上复用 indexer」；CLSA 贡献「记忆已经共享时，路由应绑在记忆上」。V4.1 的 Reuse 更接近 IndexCache 的分层模式，而不是 CLSA 这种单 indexer。不同模型规模和硬件上的倍数不能串乘。
 
+## 证据边界与阅读提示
+
+- Figure 5 的 DSA / IndexCache / HySparse 是 4B 延迟对照，不是原论文的质量或端到端 serving 对照。
+
 ## 待追问
 
-- $d_{\mathrm{idx}}$、indexer 是否因果 mask、是否有独立位置编码，原文未写。
-- $k=2048$ 在 128K 是 1:64；更长上下文要不要提高 $k$，没有曲线。
-- 128K 只有 vLLM 延迟，没有 RULER / 多针 / 长推理质量。
-- Figure 5 的 DSA / IndexCache / HySparse 是 4B 延迟对照，不是原论文的质量或端到端 serving 对照。
-- self-decoder 从 YOCO-3B 的 gRet 换成 SWA，CLSA 增益有多少来自这个替换，没有消融。
-- 没有 RL：top-k 非确定性在 agentic 训练里是否会像 DSA 那样爆，未知。
-- 权重与 vLLM 补丁除 `https://aka.ms/GeneralAI` 外没有可核的公开路径。
+- **需补外部来源**：$d_{\mathrm{idx}}$、indexer 是否因果 mask、是否有独立位置编码，原文未写。
+- **需实验或作者披露**：$k=2048$ 在 128K 是 1:64；更长上下文要不要提高 $k$，没有曲线。
+- **需实验或作者披露**：128K 只有 vLLM 延迟，没有 RULER / 多针 / 长推理质量。
+- **需实验或作者披露**：self-decoder 从 YOCO-3B 的 gRet 换成 SWA，CLSA 增益有多少来自这个替换，没有消融。
+- **需实验或作者披露**：没有 RL：top-k 非确定性在 agentic 训练里是否会像 DSA 那样爆，未知。
+- **需补外部来源**：权重与 vLLM 补丁除 `https://aka.ms/GeneralAI` 外没有可核的公开路径。
 
 ## 相关页面
 

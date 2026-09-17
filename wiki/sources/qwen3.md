@@ -153,10 +153,10 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 ## 待追问
 
-- **QK-Norm 具体加在哪**（softmax 之前对 Q 和 K 各做 RMSNorm？head-wise 还是整张矩阵？）——报告只引用 Dehghani et al., 2023，未给实现细节。
-- **Global-batch load balancing loss 公式**：[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）是同期 Qwen 团队论文，本报告未自带推导，若要复用需回那篇核。
-- **Thinking Budget 截断指令为何由系统插入而非显式训练**——论文称是 "emerges naturally"，但模型靠什么信号识别 "</think>\n\n" 后切换到 response？是 chat template + non-thinking 训练数据里的空 think 块带的隐式 grammar，还是另有机制？正文未展开。
-- **从 Qwen3 到 Qwen3-Next 的架构换代动机**：本报告全 GQA 标准栈，Qwen3-Next 引入 3:1 GDN+gated-attention 是另一篇博客的事。两条路线为何能并存（Qwen3.5 走 hybrid、Qwen3-VL 走标准 GQA Qwen3 backbone），待[Qwen3-VL 来源页](qwen3-vl.md) / Qwen3-Next 博客横向对比。
+- **需补外部来源**：**QK-Norm 具体加在哪**（softmax 之前对 Q 和 K 各做 RMSNorm？head-wise 还是整张矩阵？）——报告只引用 Dehghani et al., 2023，未给实现细节。
+- **需补外部来源**：**Global-batch load balancing loss 公式**：[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）是同期 Qwen 团队论文，本报告未自带推导，若要复用需回那篇核。
+- **需实验或作者披露**：**Thinking Budget 截断指令为何由系统插入而非显式训练**——论文称是 "emerges naturally"，但模型靠什么信号识别 "</think>\n\n" 后切换到 response？是 chat template + non-thinking 训练数据里的空 think 块带的隐式 grammar，还是另有机制？正文未展开。
+- **现有材料待核**：**从 Qwen3 到 Qwen3-Next 的架构换代动机**：本报告全 GQA 标准栈，Qwen3-Next 引入 3:1 GDN+gated-attention 是另一篇博客的事。两条路线为何能并存（Qwen3.5 走 hybrid、Qwen3-VL 走标准 GQA Qwen3 backbone），待[Qwen3-VL 来源页](qwen3-vl.md) / Qwen3-Next 博客横向对比。
 
 ## 相关页面
 

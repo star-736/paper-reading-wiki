@@ -131,15 +131,18 @@ Table 5 是相对 gemini-3-flash-preview-thinking 的 ScienceWorld 全任务平�
 
 图内数字：次日留存相对 Qwen +122.0%、月留存 +232.4%；人工四维约 91 / 93 / 90 / 86 vs baseline 56 / 72 / 81 / 65。没有样本量、标注协议、Baseline VLM 身份。caption 的 Qwen3.7-max 与图轴 Qwen3.6-max 不一致。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **同族基线**：正文贡献句写 competitive or superior to existing world model architectures，但结果表只有通用 LLM。LoopWM vs 固定深度 Transformer vs RSSM / Dreamer，在同一 ScienceWorld 协议上差多少？
-- **未披露配方**：约 1B 之外，$L_\mathcal{P}/L_\mathcal{R}/L_\mathcal{C}$、隐维、词表、$\mu_{\mathrm{rec}}$、训练数据、优化器、步数均未给。§6 写「intentionally selective in disclosure scope」。
-- **谱约束的经验后果**：$\rho(\bar A)<1$ 是构造事实；非线性残差是否仍会炸、长程误差是否真低于固定深度，正文没有曲线。
-- **延迟解码的因果**：Tables 5–44 相对 Gemini，不隔离「去掉中间解码」这一项。
 - **模态**：架构图画了像素观测；公开表是文本环境；§6 的 continuous visual environments 只有「loss 可下降」。
 - **弹幕图与主文脱节**：Figure 2–3 的任务、对照模型名、LWM 缩写都与 §4 主表不一致，目前只能当未与主实验对齐的额外材料。
-- **与 Qwen-AgentWorld 的边界**：两者都叫 world model。Qwen-AgentWorld 是 7 域 native language world model，评 AgentWorldBench / Sim RL；LoopWM 是 Dreamer 式 latent dynamics + 循环核，评五步文本 next-state。还没有同一协议上的对照。
+
+## 待追问
+
+- **需实验或作者披露**：**同族基线**：正文贡献句写 competitive or superior to existing world model architectures，但结果表只有通用 LLM。LoopWM vs 固定深度 Transformer vs RSSM / Dreamer，在同一 ScienceWorld 协议上差多少？
+- **需实验或作者披露**：**未披露配方**：约 1B 之外，$L_\mathcal{P}/L_\mathcal{R}/L_\mathcal{C}$、隐维、词表、$\mu_{\mathrm{rec}}$、训练数据、优化器、步数均未给。§6 写「intentionally selective in disclosure scope」。
+- **需实验或作者披露**：**谱约束的经验后果**：$\rho(\bar A)<1$ 是构造事实；非线性残差是否仍会炸、长程误差是否真低于固定深度，正文没有曲线。
+- **需实验或作者披露**：**延迟解码的因果**：Tables 5–44 相对 Gemini，不隔离「去掉中间解码」这一项。
+- **需实验或作者披露**：**与 Qwen-AgentWorld 的边界**：两者都叫 world model。Qwen-AgentWorld 是 7 域 native language world model，评 AgentWorldBench / Sim RL；LoopWM 是 Dreamer 式 latent dynamics + 循环核，评五步文本 next-state。还没有同一协议上的对照。
 
 ## 相关页面
 

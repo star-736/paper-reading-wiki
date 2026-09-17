@@ -103,12 +103,14 @@ $$
 
 ## 待追问
 
-- Proposition 2 (ii) 的 per-token ratio 独立假设与真实序列不符（同一 response 内 log-ratio 强相关）；Figure 1 的 $\hat\sigma\sqrt t$ 拟合是经验支持，但 $\hat\sigma$ 从 step 50 的 0.0335 漂到 step 150 的 0.0393，$\sqrt t$ 律在长训练里是否仍成立没有更长程的曲线。
-- 无 MoE 实验。GSPO 的核心动机是 expert routing volatility 让 token ratio 失真；累积连乘对 routing 抖动是更敏感还是更钝，本文没有回答，而 Table 1 的「GSPO 有偏」论断与 GSPO 的 MoE 稳定性论断并不在同一评测面上。
-- TIR 轨迹含环境返回的代码执行输出。这些非策略生成 token 是否计入 $\rho^{\mathrm{cum}}$ 的连乘、clip 是否作用其上，正文与附录都未说明；5 轮交互下 prefix 跨 turn 累积的语义需要看代码实现确认。
-- advantage 仍是 outcome-level 标量广播到全 token；Proposition 1 的无偏是「给定任意 token-level advantage 函数时 ratio 无偏」，不是 credit assignment 无偏。与 [GiGPO](gigpo.md) / [HGPO](hierarchy-of-groups-policy-optimization.md) 的 step-level advantage 是否可组合，没有实验。
-- 只有 Qwen3-4B / 14B 两个 dense 规模、单一 TIR 任务、未报训练 seed 数与方差；avg@32 是评测采样口径。14B 的 BRUMO / HMMT 单项不占优说明平均增益的稳健性边界仍窄。
-- position-adaptive clipping 的 $p$ 与 $\varepsilon$ 基值只在 TIR 上标定为 $p=0.5$、$(0.025,0.05)$；$p\ne0.5$ 的敏感性没有消融。
+- **需实验或作者披露**：Proposition 2 (ii) 的 per-token ratio 独立假设与真实序列不符（同一 response 内 log-ratio 强相关）；Figure 1 的 $\hat\sigma\sqrt t$ 拟合是经验支持，但 $\hat\sigma$ 从 step 50 的 0.0335 漂到 step 150 的 0.0393，$\sqrt t$ 律在长训练里是否仍成立没有更长程的曲线。
+- **需实验或作者披露**：advantage 仍是 outcome-level 标量广播到全 token；Proposition 1 的无偏是「给定任意 token-level advantage 函数时 ratio 无偏」，不是 credit assignment 无偏。与 [GiGPO](gigpo.md) / [HGPO](hierarchy-of-groups-policy-optimization.md) 的 step-level advantage 是否可组合，没有实验。
+- **需实验或作者披露**：只有 Qwen3-4B / 14B 两个 dense 规模、单一 TIR 任务、未报训练 seed 数与方差；avg@32 是评测采样口径。14B 的 BRUMO / HMMT 单项不占优说明平均增益的稳健性边界仍窄。
+- **需实验或作者披露**：position-adaptive clipping 的 $p$ 与 $\varepsilon$ 基值只在 TIR 上标定为 $p=0.5$、$(0.025,0.05)$；$p\ne0.5$ 的敏感性没有消融。
+
+## 相关追问
+
+主记录：[CTPO 与 MoE routing volatility](../comparisons/llm-rl-policy-optimization.md#待追问)；[CTPO 的环境 token 与跨 turn 连乘](../comparisons/llm-rl-policy-optimization.md#待追问)。
 
 ## 相关页面
 

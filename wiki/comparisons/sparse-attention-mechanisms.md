@@ -99,7 +99,7 @@ timestamp: 2026-09-13
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
 - 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[MoBA](../sources/moba.md)、[InfLLM-V2](../sources/infllm-v2.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
 
-## 待追问
+## 证据边界与阅读提示
 
 - InfLLM-V2 已据 [原文](../sources/infllm-v2.md) 核实：可训练、5B 长微调、无新 KV 投影，不是零样本。2024 InfLLM（Xiao et al.）仍是 training-free 基线，不要两名混用。
 - InfLLM-V2 的 NSA 对照是同一 8B 短检查点 + 开源 Triton；NSA 原文 27B 从头稀疏的数字不能和这张表横比。

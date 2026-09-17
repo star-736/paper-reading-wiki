@@ -98,10 +98,10 @@ Table 3 以 ITT ×4 的 PPL 10.25 为基准：去掉 RTC 为 11.02，去掉 ATR 
 
 ## 待追问
 
-- ATR 的序列级 Top-K 在自回归训练／解码中如何保持因果一致？只处理选中 token 时，其 attention 能访问哪些未选中 token 的 KV？Algorithm 1 的 KV 参数不足以确定缓存实现。
-- 层内循环的 router、选择／散射和缓存读写开销会不会抵消 FLOPs 优势？需要真实 prefill／decode 时延、吞吐与 KV 内存测量。
-- 正式版摘要、Table 8、消融表和 benchmark 数量的冲突，是否有勘误或可复现实验代码？在解决前不采用更大模型的强宣传结论。
-- 固定 Top-K 预算与真正 learned halting 的收益如何区分？能否在相同总 FLOPs 下比较统一循环、ATR 和逐 token 停机？
+- **需补外部来源**：ATR 的序列级 Top-K 在自回归训练／解码中如何保持因果一致？只处理选中 token 时，其 attention 能访问哪些未选中 token 的 KV？Algorithm 1 的 KV 参数不足以确定缓存实现。
+- **需实验或作者披露**：层内循环的 router、选择／散射和缓存读写开销会不会抵消 FLOPs 优势？需要真实 prefill／decode 时延、吞吐与 KV 内存测量。
+- **需补外部来源**：正式版摘要、Table 8、消融表和 benchmark 数量的冲突，是否有勘误或可复现实验代码？在解决前不采用更大模型的强宣传结论。
+- **需实验或作者披露**：固定 Top-K 预算与真正 learned halting 的收益如何区分？能否在相同总 FLOPs 下比较统一循环、ATR 和逐 token 停机？
 
 ## 相关页面
 

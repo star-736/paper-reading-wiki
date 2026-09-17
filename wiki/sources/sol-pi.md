@@ -96,14 +96,20 @@ SoL-Pi 在这条短台上少解 3 题，单题成本略低。这和 EdgeBench「
 
 Swarm 试点（Anthropic original performance take-home，单次、非随机）：GPT-5.6 Sol coordinator + 20 个 Luna worker。SoL-Pi worker 到 1,127 cycles / $60.11；stock Pi swarm 1,366 / $82.12；单 agent Sol 最便宜（$39.20）但 1,333 cycles。作者明确：SoL-Pi 那次中途修了三次网/授权、对照从修好后的配置开始、**不能当因果估计**（原文确证，§ Efficient Agent Swarm）。
 
-## 待追问
+## 证据边界与阅读提示
 
-- 94% 能力保留是平均分；Terminal-Bench 4 上少解 3 题，损失集中在哪类任务？
-- 四个机制各自的消融数字博客没有；拼装后的 45–49% token 下降有多少来自 ObservationPack vs Compact？
 - Compact 的 20k tail 是对 Pi 默认的硬编码估计。用户若改了 Pi 的 compaction 设置，经济判断会偏。
-- SoL-Pi 钉在 Pi 0.84.2 的旧 `ExtensionAPI`。Pi 的 durable `AgentHarness` 一旦成为 CLI 默认，`agent_settled` / `compact()` abort 语义还在不在？
 - 评测主台是 [EdgeBench](edgebench.md) 的 51 公开题；官方 EdgeBench 榜用 Codex/Claude Code，不能和 SoL-Pi 数字横比。
 - 「harness scaling law」和 closed-loop 环境自合成都标为早期 / 愿景，没有曲线。
+
+## 待追问
+
+- **需实验或作者披露**：94% 能力保留是平均分；Terminal-Bench 4 上少解 3 题，损失集中在哪类任务？
+- **需补外部来源**：SoL-Pi 钉在 Pi 0.84.2 的旧 `ExtensionAPI`。Pi 的 durable `AgentHarness` 一旦成为 CLI 默认，`agent_settled` / `compact()` abort 语义还在不在？
+
+## 相关追问
+
+主记录：[SoL-Pi 四机制的独立消融](../concepts/agent-harness.md#待追问)。
 
 ## 相关页面
 

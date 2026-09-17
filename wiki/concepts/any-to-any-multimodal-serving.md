@@ -86,10 +86,10 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 待追问
 
-- Any-to-any serving 的统一 benchmark 应该只看 JCT / RTF，还是也要纳入流式 TTFT、tail latency、输出质量、跨 stage backpressure？
-- 当 stage graph 很深或有分支时，scheduler 是否需要类似数据流系统的全局优化，而不仅是每 stage 独立 batching？
-- Qwen3.5-Omni 的 ARIA / streaming speech generation 与 vLLM-Omni 的 streaming stage output 能否一一对应，哪些是模型设计、哪些是 serving 设计？
-- DiT stage 的质量是否完全不受 serving engine 优化影响？如果开启缓存 / graph compilation / parallelism，是否会改变 deterministic / stochastic sampling 行为？
+- **需实验或作者披露**：Any-to-any serving 的统一 benchmark 应该只看 JCT / RTF，还是也要纳入流式 TTFT、tail latency、输出质量、跨 stage backpressure？
+- **需实验或作者披露**：当 stage graph 很深或有分支时，scheduler 是否需要类似数据流系统的全局优化，而不仅是每 stage 独立 batching？
+- **现有材料待核**：Qwen3.5-Omni 的 ARIA / streaming speech generation 与 vLLM-Omni 的 streaming stage output 能否一一对应，哪些是模型设计、哪些是 serving 设计？
+- **需实验或作者披露**：DiT stage 的质量是否完全不受 serving engine 优化影响？如果开启缓存 / graph compilation / parallelism，是否会改变 deterministic / stochastic sampling 行为？
 
 ## 相关页面
 

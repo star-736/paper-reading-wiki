@@ -130,10 +130,13 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 
 ## 待追问
 
-- Foresight tokens 数量 $M=50$ 的选择依据未给消融；是否存在质量/成本的 sweet spot。
-- WAN2.2-5B 的预训练覆盖 embodied 场景的程度如何（论文 limitation 承认 priors 受限于视频模型预训练覆盖面）。
-- Stage 1 到 Stage 2 过渡时 VLM 是否继续训练（论文说 Stage 2 保留 $\mathcal{L}_{\text{stage1}}$，但没明确 VLM 权重是否更新）。
-- Stage 1 的 [FAST](fast.md) 是数据集特化 BPE 还是发布的 FAST+ 权重，原文只给了名字；与 [π0.5](pi0.5.md) 预训练、[π0.7](pi0.7.md) KI 是否同一词表，三篇都没有对照表。
+- **需实验或作者披露**：Foresight tokens 数量 $M=50$ 的选择依据未给消融；是否存在质量/成本的 sweet spot。
+- **需实验或作者披露**：WAN2.2-5B 的预训练覆盖 embodied 场景的程度如何（论文 limitation 承认 priors 受限于视频模型预训练覆盖面）。
+- **需补外部来源**：Stage 1 到 Stage 2 过渡时 VLM 是否继续训练（论文说 Stage 2 保留 $\mathcal{L}_{\text{stage1}}$，但没明确 VLM 权重是否更新）。
+
+## 相关追问
+
+主记录：[FAST 与 FAST+ 的词表同一性](../concepts/vision-language-action.md#待追问)。
 
 ## 相关页面
 

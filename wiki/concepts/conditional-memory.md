@@ -69,10 +69,10 @@ Qwen 来源页未引用 Engram（本页检索 `wiki/sources/qwen3.8-next.md` 无
 
 ## 待追问
 
-- **重分配 vs 外加表**：同一 iso-param 问题，Engram 与 Qwen Table 8 结论相反。需要在同一 backbone、同一模块件上复现，才能判断是 Engram 的 tokenizer compression / 门控 / 双层插入把 U 形托起来，还是评测噪声。
-- **生产集成的独立收益有多大。** [V4.1](../sources/deepseek-v41-flash.md) 已确认 196B Engram，但尚需固定 backbone / 数据 / 后训练的增量消融。
-- **RL / tool 交错下预取还成不成。** index 依赖完整 input ID；生成中途插入工具观察后，后续 $N$-gram 的预取窗口如何切，两边报告都没测。
-- **事实知识是否真的「存在表里」。** Figure 6 的 post-hoc 消融有 train–test mismatch；没有定位到具体槽→具体事实的编辑实验（对比 ROME/MEMIT 那条 FFN 知识文献）。
+- **需实验或作者披露**：**重分配 vs 外加表**：同一 iso-param 问题，Engram 与 Qwen Table 8 结论相反。需要在同一 backbone、同一模块件上复现，才能判断是 Engram 的 tokenizer compression / 门控 / 双层插入把 U 形托起来，还是评测噪声。 对照还需控制多头哈希、mHC 与评测协议。
+- **需实验或作者披露**：**生产集成的独立收益有多大。** [V4.1](../sources/deepseek-v41-flash.md) 已确认 196B Engram，但尚需固定 backbone / 数据 / 后训练的增量消融。
+- **需实验或作者披露**：**RL / tool 交错下预取还成不成。** index 依赖完整 input ID；生成中途插入工具观察后，后续 $N$-gram 的预取窗口如何切，两边报告都没测。
+- **需实验或作者披露**：**事实知识是否真的「存在表里」。** Figure 6 的 post-hoc 消融有 train–test mismatch；没有定位到具体槽→具体事实的编辑实验（对比 ROME/MEMIT 那条 FFN 知识文献）。
 
 ## 相关页面
 
@@ -82,3 +82,5 @@ Qwen 来源页未引用 Engram（本页检索 `wiki/sources/qwen3.8-next.md` 无
 - 稀疏会计：[MoE 前沿模型扩展](moe-frontier-model-scaling.md)、[端侧 MoE serving](edge-native-moe-serving.md)
 - 正交的长上下文：[高效长上下文注意力](efficient-long-context-attention.md)
 - 门控家族（不同对象）：[注意力门控](attention-gating.md)（SDPA 输出门，不是 memory fusion 门）
+
+关联提问页：[Engram：Conditional Memory via Scalable Lookup](../sources/engram.md#相关追问)。

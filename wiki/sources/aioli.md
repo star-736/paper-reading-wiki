@@ -126,11 +126,11 @@ Table 25（§F.4）原文确证：1.4B 上 mixing law 仍高保真（log-linear 
 
 ## 待追问
 
-- 实验仅到 1.4B + 160M，未在 frontier-scale 验证；与 AutoMixer（frontier-scale MoE）的 per-capability 回归路线无直接对比
-- perplexity 与 downstream 负相关（$r = 0.529$），AIOLI 优化 perplexity 是否反而损害 downstream？论文自己承认这是开放问题
-- LEARNPARAMS 的 $\delta$ 在 $m=7$ 时仅 0.007（极小），$A^t$ 估计质量是否足够？超参 sensitivity 分析仅到 $m=3$
-- linear dynamic mixing law 在 instruction-tuning 上 $R^2$ 仅 0.419（§C.1.2），AIOLI 在 SFT 阶段是否仍有效？
-- $A^{t\star}$ 随时间变方向的机制未深入分析--是训练动力学（loss landscape 变化）还是数据组间的 curriculum 效应？
+- **需实验或作者披露**：实验仅到 1.4B + 160M，未在 frontier-scale 验证；与 AutoMixer（frontier-scale MoE）的 per-capability 回归路线无直接对比
+- **需实验或作者披露**：perplexity 与 downstream 负相关（$r = 0.529$），AIOLI 优化 perplexity 是否反而损害 downstream？论文自己承认这是开放问题
+- **需实验或作者披露**：LEARNPARAMS 的 $\delta$ 在 $m=7$ 时仅 0.007（极小），$A^t$ 估计质量是否足够？超参 sensitivity 分析仅到 $m=3$
+- **需实验或作者披露**：linear dynamic mixing law 在 instruction-tuning 上 $R^2$ 仅 0.419（§C.1.2），AIOLI 在 SFT 阶段是否仍有效？
+- **需实验或作者披露**：$A^{t\star}$ 随时间变方向的机制未深入分析--是训练动力学（loss landscape 变化）还是数据组间的 curriculum 效应？
 
 ## 相关页面
 

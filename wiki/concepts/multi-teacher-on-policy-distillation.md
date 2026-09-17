@@ -293,11 +293,10 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 ## 待追问
 
-- MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
-- Teacher 数量增加时，student 容量是否足够保留所有能力？
-- **MOPD 与异步 agent RL 的循环**：[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 已跑两轮。还没回答的是哪些域需要第二轮（GDPVal 在 MOPD2 持平）、以及统一 SFT 能否救回 HLE 那类「teacher 靠 off-policy 新数据」的缺口。
-- KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
-- **on-policy 数据 > teacher 的结论是否只在 niche task 上成立**？nrehiew 的实验用 minimal editing（适合测遗忘/泛化），在更 broad 的能力域上 teacher 质量是否会重新主导？
-- **OPSD 的 pointwise clipping 与 KAT-V2.5 drift-aware truncation / Keye-VL-2.0 top-k overlap 是否在解同一个问题**？OPSD 原文剪的是 full-vocab 里高贡献的 style 词表项，KAT 剪长轨迹 drift，Keye 过滤双方低概率 token。统一框架仍没有。
-- **OPD 比 RL 更剧烈的 entropy collapse 是否意味着多样性损失更严重**？这与 Qwen3 Table 21 里 OPD pass@64 也涨是否矛盾？
+- **需实验或作者披露**：MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
+- **需实验或作者披露**：Teacher 数量增加时，student 容量是否足够保留所有能力？
+- **需实验或作者披露**：KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
 
+## 相关追问
+
+主记录：[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#待追问)；[on-policy 优势的任务边界](../sources/nrehiew-sft-rl-opd.md#待追问)；[三类 OPD 稳定化机制对比](../sources/nrehiew-sft-rl-opd.md#待追问)；[OPD 熵下降与多样性](../sources/nrehiew-sft-rl-opd.md#待追问)。

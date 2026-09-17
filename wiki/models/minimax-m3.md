@@ -79,14 +79,17 @@ MSA 论文（2024）对 MiniMax-M3 的实验版本（约 109B 总参 / 6B 激活
 
 另一点要注意的是 MSA-PT 在多个数学、视觉、视频和长上下文项上略高于 full-attention baseline。论文倾向于解释为"原生稀疏让模型表征更适配稀疏注意力模式"，但也可能是 3T 预算下 full attention baseline 还未充分训练。这是判断 M3 成色时要单独跟踪的不确定性。
 
+## 证据边界与阅读提示
+
+- NeMo AutoModel 当前 context parallel 只支持到 **128K**，与 M3 号称的 1M context 之间存在工具链差距，1M 推理需要走 SGLang / vLLM 路径。
+
 ## 待追问
 
-- 已确认发布版 MiniMax-M3 是 **428B / 22B-active** 的更大规模版本（NVIDIA blog 规格表），不是 MSA 论文里的 109B 实验版。但 MiniMax 是从 109B 实验配置直接放大的、还是中间又改了 routing / attention 设计？目前没有公开的 release-grade technical report 给出端到端训练流程。
-- HF/GitHub README 给的 "~23B activated" 与 NVIDIA blog 给的 "22B + 600M visual" 差 1B，按四舍五入对得上，但**激活专家数**方面 NVIDIA 写的是 "4 experts active"、MSA 论文 109B 实验版是 "top-4 routed + 1 shared"——发布版到底有没有 shared expert，没有第三方来源能 cross-check。
-- M3 是否有对应的 instruct / RL 版本？NeMo RL 的 minimax-m3 分支说明 RL fine-tune 已开通，但 MiniMax 自己有没有发布 RL 后训练版本（类似 M2.7 之于 M2），没有公开数据。
-- M3 与 M2 是否会合流？两条路线在 MiniMax 内部资源上的优先级目前不清楚。
-- 公开 [MSA kernel](https://github.com/MiniMax-AI/MSA) 已经针对 NVIDIA Blackwell（SM100）重写并支持 FP8 / NVFP4 / FP4；NVIDIA blog 也确认部署精度是 **BF16 / MXFP8**，但 H800 上的部署精度和性能数字仍未公开。
-- NeMo AutoModel 当前 context parallel 只支持到 **128K**，与 M3 号称的 1M context 之间存在工具链差距，1M 推理需要走 SGLang / vLLM 路径。
+- **需实验或作者披露**：已确认发布版 MiniMax-M3 是 **428B / 22B-active** 的更大规模版本（NVIDIA blog 规格表），不是 MSA 论文里的 109B 实验版。但 MiniMax 是从 109B 实验配置直接放大的、还是中间又改了 routing / attention 设计？目前没有公开的 release-grade technical report 给出端到端训练流程。
+- **需补外部来源**：HF/GitHub README 给的 "~23B activated" 与 NVIDIA blog 给的 "22B + 600M visual" 差 1B，按四舍五入对得上，但**激活专家数**方面 NVIDIA 写的是 "4 experts active"、MSA 论文 109B 实验版是 "top-4 routed + 1 shared"——发布版到底有没有 shared expert，没有第三方来源能 cross-check。
+- **需补外部来源**：M3 是否有对应的 instruct / RL 版本？NeMo RL 的 minimax-m3 分支说明 RL fine-tune 已开通，但 MiniMax 自己有没有发布 RL 后训练版本（类似 M2.7 之于 M2），没有公开数据。
+- **需实验或作者披露**：M3 与 M2 是否会合流？两条路线在 MiniMax 内部资源上的优先级目前不清楚。
+- **需实验或作者披露**：公开 [MSA kernel](https://github.com/MiniMax-AI/MSA) 已经针对 NVIDIA Blackwell（SM100）重写并支持 FP8 / NVFP4 / FP4；NVIDIA blog 也确认部署精度是 **BF16 / MXFP8**，但 H800 上的部署精度和性能数字仍未公开。
 
 ## 相关页面
 

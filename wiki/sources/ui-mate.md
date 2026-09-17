@@ -144,15 +144,18 @@ OSWorkerBench 指令-only（原文确证，Table 2；200 步预算）：
 
 OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：无示范时常提前 `finished`（原文确证，§7.3.4、Table 16）。OSWorld-Subset 的选取标准是「UI-Mate-27B 无示范失败、但更强参考 agent 能解」——增益因此带选择偏差，应读成「示范能否补上已证明可执行的程序」，不是随机 30 题的无偏 ATE（原文确证，§7.3.1）。四个负迁移例子说明示范与当前界面冲突时可能有害。
 
+## 证据边界与阅读提示
+
+- **找论文也答不了 / 已闭合**：不建独立 Qwen3.6 模型页。27B 的 hybrid/dense 细节不能从本报告升级为已核实架构；本库也不臆造 Qwen3.6 技术报告。
+- OSWorld-Subset 按「本模型失败」筛选，self-demo 又来自更强 agent，不能外推到任意任务或真人示范。
+
 ## 待追问
 
-- 项目页提供 macOS 应用，但报告未给出 Hugging Face 权重、许可证和 9B/27B 的视觉编码器是否改过 Qwen 基座。
-- **找论文也答不了 / 已闭合**：不建独立 Qwen3.6 模型页。27B 的 hybrid/dense 细节不能从本报告升级为已核实架构；本库也不臆造 Qwen3.6 技术报告。
-- 45-task variant-demo 只有 10 题试点：把示范段复制到目标实体数后净正向，但作者认为不够稳，未进主表（§10）。
-- OSWorld-Subset 按「本模型失败」筛选，self-demo 又来自更强 agent，不能外推到任意任务或真人示范。
-- Historical reasoning 与 RL 探索的冲突只有定性熵塌缩描述，没有给出可复现的熵曲线或替代算法。
-- IcePop + SeqClip 的过滤比例、以及 PCM 开启时的具体 `b / wmax` 未披露。
-- Workflow 钉在上下文开头导致 KV-cache 无法复用，作者标为 future work，没有给出改到末尾后的速度数字。
+- **需补外部来源**：项目页提供 macOS 应用，但报告未给出 Hugging Face 权重、许可证和 9B/27B 的视觉编码器是否改过 Qwen 基座。
+- **需实验或作者披露**：45-task variant-demo 只有 10 题试点：把示范段复制到目标实体数后净正向，但作者认为不够稳，未进主表（§10）。
+- **需实验或作者披露**：Historical reasoning 与 RL 探索的冲突只有定性熵塌缩描述，没有给出可复现的熵曲线或替代算法。
+- **需实验或作者披露**：IcePop + SeqClip 的过滤比例、以及 PCM 开启时的具体 `b / wmax` 未披露。
+- **需实验或作者披露**：Workflow 钉在上下文开头导致 KV-cache 无法复用，作者标为 future work，没有给出改到末尾后的速度数字。
 
 ## 相关页面
 

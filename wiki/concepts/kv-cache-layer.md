@@ -71,10 +71,10 @@ GLM-5 的 DP-aware routing（同一 rollout 钉在同一 DP rank，避免工具�
 
 ## 待追问
 
-- Connector 对 MLA / DSA / CSA-HCA / GDN 等非标准 KV 的适配是「改翻译」还是要改 chunk 对齐？本 wiki 的长上下文模型几乎都不是纯 GQA paged KV。
-- Load vs prefill 的带宽–长度 crossover 有没有在线策略，还是只是评测观察？
-- 压缩 API 存在但无评测：lossy KV 压缩进这一层之后，和模型侧 CSA/HCA 压缩是替代还是叠加？
-- 多租户下 pin 住热文档会不会把 CPU / 远程容量钉死，驱逐策略如何与 vLLM 自己的 prefix cache 协同？
+- **需实验或作者披露**：Connector 对 MLA / DSA / CSA-HCA / GDN 等非标准 KV 的适配是「改翻译」还是要改 chunk 对齐？本 wiki 的长上下文模型几乎都不是纯 GQA paged KV。
+- **需实验或作者披露**：Load vs prefill 的带宽–长度 crossover 有没有在线策略，还是只是评测观察？
+- **需实验或作者披露**：压缩 API 存在但无评测：lossy KV 压缩进这一层之后，和模型侧 CSA/HCA 压缩是替代还是叠加？
+- **需实验或作者披露**：多租户下 pin 住热文档会不会把 CPU / 远程容量钉死，驱逐策略如何与 vLLM 自己的 prefix cache 协同？
 
 ## 相关页面
 

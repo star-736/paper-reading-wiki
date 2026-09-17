@@ -126,14 +126,17 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 - **[MiniLLM](minillm.md)**（同期另一支源头）：本篇 `§Related Work` 给了对 concurrent work MiniLLM 的定位——MiniLLM 同样把蒸馏当 RL，在序列级优化 reverse KL 并用 policy gradient；论文主张 GKD 更简单稳定（不对采样过程反传），并指出 MiniLLM 依赖一系列针对高方差、reward hacking、生成长度偏置的稳定化技巧。MiniLLM 侧的对称表述在其 `§4`（把 GKD 列为 concurrent work）。这是两篇源头论文之间唯一的原文级对照。
 - **[AKL](akl.md)**：把本页 Figure A.16 的连续 toy 刻画降级到「容量失配 + 连续单峰 \(q\)」；离散词表逐步 softmax 上 FKL/RKL 同驻点 \(q=p\)。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **`§4.4` 的 student 规模与 Figure 10 caption 口径不一致**：正文写「把我们蒸馏后的 FLAN T5-**Base** student 在两个 held-out 套件上评测」，而 Figure 10 的三张子图标题是 `FLAN T5-XL → Base`，caption 里的 student 数字（MMLU 35.6% / BBH 31.25%）却标为 T5-**large**。两处不可换算、不可相减，需回原文或原作者代码确认后才能引用具体分数。
 - **「+2% / +1%」的对比基线未指名**：`§1` 只写「held-out BBH 与 MMLU 上的绝对准确率提升」，没有说明是相对 supervised KD、ImitKD 还是原始 student，引用时应保留这一不确定性。
-- **λ 轴在 2026 的 OPD 实现里没有等价物**：GKD 明确说 GSM8K 上 on-policy 数据低于 25% 时增益不稳定（`Figure 8`），而 MiMo / GLM-5 / V4 的 token-level OPD 事实上都取 λ=1，且都没有做混合比例的消融。是这一维在大模型场景下不再重要，还是被工程默认值掩盖了？
-- **forward KL 的 mode-covering 刻画能推多远**：[AKL](akl.md) 已收原文。连续 toy（本篇 Figure A.16）上的 mean/mode-seeking 在逐步 softmax 下不成立；驻点相同，有限 epoch 差在 head vs tail。本篇指令微调上 reverse KL 大胜，应读成没训到收敛时的路径差。AKL 的理论覆盖不到 sampled-token reverse-KL PG，和 2026 生产 OPD 的估计器仍有一层缝。
 - **论文没有 teacher 数 > 1 的实验**：GKD 的 λ 混合是「固定数据集 vs student 自生成」，不含多 teacher 路由；它在多大程度上是 [MOPD](../concepts/multi-teacher-on-policy-distillation.md) 的前身，属于本页综合而非原文结论。
 - **`§1`「7000× smaller」的口径**：540B / 77M ≈ 7000，指向 T5-small；论文未在正文点明是哪个 student，需谨慎引用。
+
+## 待追问
+
+- **现有材料待核**：**`§4.4` 的 student 规模与 Figure 10 caption 口径不一致**：正文写「把我们蒸馏后的 FLAN T5-**Base** student 在两个 held-out 套件上评测」，而 Figure 10 的三张子图标题是 `FLAN T5-XL → Base`，caption 里的 student 数字（MMLU 35.6% / BBH 31.25%）却标为 T5-**large**。两处不可换算、不可相减，需回原文或原作者代码确认后才能引用具体分数。
+- **需实验或作者披露**：**λ 轴在 2026 的 OPD 实现里没有等价物**：GKD 明确说 GSM8K 上 on-policy 数据低于 25% 时增益不稳定（`Figure 8`），而 MiMo / GLM-5 / V4 的 token-level OPD 事实上都取 λ=1，且都没有做混合比例的消融。是这一维在大模型场景下不再重要，还是被工程默认值掩盖了？
+- **需实验或作者披露**：**forward KL 的 mode-covering 刻画能推多远**：[AKL](akl.md) 已收原文。连续 toy（本篇 Figure A.16）上的 mean/mode-seeking 在逐步 softmax 下不成立；驻点相同，有限 epoch 差在 head vs tail。本篇指令微调上 reverse KL 大胜，应读成没训到收敛时的路径差。AKL 的理论覆盖不到 sampled-token reverse-KL PG，和 2026 生产 OPD 的估计器仍有一层缝。
 
 ## 相关页面
 

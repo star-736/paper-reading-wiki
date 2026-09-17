@@ -103,10 +103,13 @@ Table 1（原文确证）。val100 / ITD / TBLite 为 8 次 pass@1；TB2 为 5 �
 
 ## 待追问
 
-- OT-SFT 在 TB2 上 ECHO≈GRPO：是 strategy prior 真的补不回来，还是 TB2 + Terminus 2 方差（附录 SE ~1.5 pp）吃掉了 0.23 分？
-- \(\lambda\) 与 clip-higher / void-trajectory filter 的交互只写「正交可组合」，没有 2×2 消融。
-- Verifier-free 在 TBLite 失败，是否说明辅助 CE 依赖「观测与下一动作强对齐」的环境，迁不到 GUI / 搜索？
-- 与 [Qwen-AgentWorld](qwen-agent-world.md) 的 LWM warm-up **能否相加**，ECHO 没做；AgentWorld 原文把这条列为 future work。本页只能确认两条路机制不同，不能确认 compounding。
+- **需实验或作者披露**：OT-SFT 在 TB2 上 ECHO≈GRPO：是 strategy prior 真的补不回来，还是 TB2 + Terminus 2 方差（附录 SE ~1.5 pp）吃掉了 0.23 分？
+- **需实验或作者披露**：\(\lambda\) 与 clip-higher / void-trajectory filter 的交互只写「正交可组合」，没有 2×2 消融。
+- **需实验或作者披露**：Verifier-free 在 TBLite 失败，是否说明辅助 CE 依赖「观测与下一动作强对齐」的环境，迁不到 GUI / 搜索？
+
+## 相关追问
+
+主记录：[ECHO 与 LWM warm-up 能否叠加](qwen-agent-world.md#待追问)。
 
 ## 相关页面
 

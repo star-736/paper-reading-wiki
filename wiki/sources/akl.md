@@ -95,13 +95,16 @@ GPT-4 打分（Figure 5，满分 10，TinyLLaMA）：AKL 多样性 5.51、质量
 - **2026 生产 OPD**（MiMo / GLM-5 / Nemotron）默认 sampled-token reverse KL。本篇**不能**用来证明那条估计器与 full-vocab FKL 等价；它只打掉「离散 LLM 上 reverse KL = mode-seeking」这条从连续 toy 外推的话。
 - DistiLLM 的 SKL/SRKL 是 Table 1 基线，不是本页主线。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **理论覆盖不到 sampled-token PG。** 公式 5–8 的驻点论证停在 token-wise softmax。Thinking Machines / MiniLLM 的 reverse-KL advantage 是否仍与 FKL 同驻点，原文没做。
 - **实验不是 on-policy。** 若 AKL 只在 teacher-forced 前缀上算 KL，它和 OPD 的数据轴是正交的。
 - 最大 student 1.1B，作者 Limitation 自己写没做 70B。
-- \(\mu=0.5\)、\(\epsilon=|p-q|\) 几乎没扫；附录 Table 6 有若干 \(\mu\)，正文当默认。
 - 「50+ epoch 才收敛」来自直接优化离散 \(q\) 的 toy，不能换算成 LLM 的 optimizer step。
+
+## 待追问
+
+- **需实验或作者披露**：**理论覆盖不到 sampled-token PG。** 公式 5–8 的驻点论证停在 token-wise softmax。Thinking Machines / MiniLLM 的 reverse-KL advantage 是否仍与 FKL 同驻点，原文没做。
+- **需实验或作者披露**：\(\mu=0.5\)、\(\epsilon=|p-q|\) 几乎没扫；附录 Table 6 有若干 \(\mu\)，正文当默认。
 
 ## 相关页面
 

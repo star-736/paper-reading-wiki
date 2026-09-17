@@ -135,14 +135,17 @@ resource: "https://arxiv.org/abs/2506.20670"
 
 > 论文 Figure 5 原文标题：\"(a). Performance Gains over Base Model from SFT and RL across five VQA datasets. (b). Training dynamics of reward and search ratio for different strategies.\"（§4.2）
 
+## 证据边界与阅读提示
+
+- 论文声称"首个端到端 RL 多模态搜索"，但 DeepResearcher / Search-R1 等纯文本工作早于此——"首个"的限定是"多模态"维度。
+
 ## 待追问
 
-- 图像搜索只允许在第 1 轮使用，且只能搜原图——后续 DeepMMSearch-R1 解决了裁剪搜索问题，但 MMSearch-R1 本身的局限是什么？
-- search penalty 因子 0.1 是如何选定的？是否有 sensitivity analysis？
-- 论文声称"首个端到端 RL 多模态搜索"，但 DeepResearcher / Search-R1 等纯文本工作早于此——"首个"的限定是"多模态"维度。
-- FVQA 数据集的 MetaCLIP Metadata 采样策略是否引入了偏差（偏向常见视觉概念）？
-- 搜索工具的稳定性问题（image search 0.2% 失败率，text search 1% 失败率）对训练的影响有多大？
-- 通用 VQA 的"无退化"结论是否在更大模型上也成立？
+- **需实验或作者披露**：图像搜索只允许在第 1 轮使用，且只能搜原图——后续 DeepMMSearch-R1 解决了裁剪搜索问题，但 MMSearch-R1 本身的局限是什么？
+- **现有材料待核**：search penalty 因子 0.1 是如何选定的？是否有 sensitivity analysis？
+- **需实验或作者披露**：FVQA 数据集的 MetaCLIP Metadata 采样策略是否引入了偏差（偏向常见视觉概念）？
+- **需实验或作者披露**：搜索工具的稳定性问题（image search 0.2% 失败率，text search 1% 失败率）对训练的影响有多大？
+- **需实验或作者披露**：通用 VQA 的"无退化"结论是否在更大模型上也成立？
 
 ## 相关页面
 

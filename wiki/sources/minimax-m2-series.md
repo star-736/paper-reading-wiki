@@ -45,6 +45,6 @@ Forge 把 agent RL 建模为：LLM completion 是 action，工具、context mana
 
 ## 待追问
 
-- M2.7 的提升中，数据管线、Forge RL、interleaved thinking 和 self-evolution 各自贡献多少？
-- full attention 在 192K context 下成本很高；低激活 MoE 是否足以抵消长上下文 attention 的部署压力？
-- black-box agent 支持是否会成为不同 agent 框架迁移 RL 的通用接口？
+- **需实验或作者披露**：M2.7 的提升中，数据管线、Forge RL、interleaved thinking 和 self-evolution 各自贡献多少？
+- **需实验或作者披露**：full attention 在 192K context 下成本很高；低激活 MoE 是否足以抵消长上下文 attention 的部署压力？
+- **需实验或作者披露**：black-box agent 支持是否会成为不同 agent 框架迁移 RL 的通用接口？

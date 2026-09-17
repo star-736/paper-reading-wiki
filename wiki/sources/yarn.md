@@ -109,13 +109,16 @@ Llama 2 128K 模型的 passkey：7B / 13B 的 $s=32$ 在测到的窗内平均准
 
 > Figure 8（原文截图，Appendix B.7）："The comparison between RoPE, Dynamic-PI and Dynamic-YaRN using Llama 2 on a long GovReport sample. This model has not been finetuned for long context."
 
+## 证据边界与阅读提示
+
+- ReRoPE、LM-Infinite 因改 attention、当时不兼容 FA2，没进对照（§2.3）。
+
 ## 待追问
 
-- $\alpha=1$、$\beta=32$ 和 $\sqrt{1/t}=0.1\ln(s)+1$ 是在 LLaMA / Llama 2 上拟合的。 [Qwen3](qwen3.md) 训练期 ABF（base $10^4\to 10^6$）再推理期 YaRN factor=4，报告没写 $\alpha/\beta/t$，也没写固定 $s$ 还是 Dynamic Scaling。HuggingFace `rope_type=yarn` 是否逐条实现 Definition 2，本页未核源码。
-- 原文主结果是微调；生产（[Qwen3](qwen3.md) 32K→128K 是 YaRN + [Dual Chunk Attention](dual-chunk-attention.md) 再 4×、[Qwen3-Next](qwen3-next-blog.md) 256K→1M、[Laguna](laguna-m1-xs2.md) 只在 GA 层加 YaRN）把 YaRN 当推理或中段训练旋钮。三种用法（微调 / Dynamic 零样本 / 固定 factor 推理）没有同模型对照。DCA 改的是注意力位置索引，与本页的频率切分正交。
-- ReRoPE、LM-Infinite 因改 attention、当时不兼容 FA2，没进对照（§2.3）。
-- 没有 256K / 1M 数字。Qwen3-Next 的 1M YaRN 远超本页 128K 证据。
-- Dynamic Scaling 要求 cache 施加 RoPE 之前的 KV；vLLM / SGLang 等生产栈实际 cache 的是哪一层，本页未核。
+- **需补外部来源**：$\alpha=1$、$\beta=32$ 和 $\sqrt{1/t}=0.1\ln(s)+1$ 是在 LLaMA / Llama 2 上拟合的。 [Qwen3](qwen3.md) 训练期 ABF（base $10^4\to 10^6$）再推理期 YaRN factor=4，报告没写 $\alpha/\beta/t$，也没写固定 $s$ 还是 Dynamic Scaling。HuggingFace `rope_type=yarn` 是否逐条实现 Definition 2，本页未核源码。
+- **需实验或作者披露**：原文主结果是微调；生产（[Qwen3](qwen3.md) 32K→128K 是 YaRN + [Dual Chunk Attention](dual-chunk-attention.md) 再 4×、[Qwen3-Next](qwen3-next-blog.md) 256K→1M、[Laguna](laguna-m1-xs2.md) 只在 GA 层加 YaRN）把 YaRN 当推理或中段训练旋钮。三种用法（微调 / Dynamic 零样本 / 固定 factor 推理）没有同模型对照。DCA 改的是注意力位置索引，与本页的频率切分正交。
+- **需实验或作者披露**：没有 256K / 1M 数字。Qwen3-Next 的 1M YaRN 远超本页 128K 证据。
+- **需补外部来源**：Dynamic Scaling 要求 cache 施加 RoPE 之前的 KV；vLLM / SGLang 等生产栈实际 cache 的是哪一层，本页未核。
 
 ## 相关页面
 

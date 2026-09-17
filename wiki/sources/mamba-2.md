@@ -104,10 +104,10 @@ Proposition 7.2：Mamba 的 S6 就是 $P=1$ 的 multi-value attention——$B,C$
 
 ## 待追问
 
-- 对角 $A_t$（Mamba-1 S6）的 SSD 算法作者只给了猜想（§10.1），本页未核后续是否做成。
-- MQAR 的增益有多少来自 $N$、多少来自并行 block / MVA，原文未拆。
-- 与 [Gated DeltaNet](gated-delta-net.md) 的同协议对照在 GDN 原文，不在本 PDF。
-- Nemotron 3 Ultra 的 Mamba-2 层是否逐项等同本页默认（$P$、分组、$A$ 参数化、Norm 位置），见该报告，不能从本页外推。
+- **需实验或作者披露**：对角 $A_t$（Mamba-1 S6）的 SSD 算法作者只给了猜想（§10.1），本页未核后续是否做成。
+- **需实验或作者披露**：MQAR 的增益有多少来自 $N$、多少来自并行 block / MVA，原文未拆。
+- **现有材料待核**：与 [Gated DeltaNet](gated-delta-net.md) 的同协议对照在 GDN 原文，不在本 PDF。
+- **现有材料待核**：Nemotron 3 Ultra 的 Mamba-2 层是否逐项等同本页默认（$P$、分组、$A$ 参数化、Norm 位置），见该报告，不能从本页外推。
 
 ## 相关页面
 

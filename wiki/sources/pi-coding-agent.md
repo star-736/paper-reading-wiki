@@ -91,12 +91,15 @@ CET-only 第二次 run 当时未完成；博客里的中途截图是第 6 名 **
 - **仓库里的 harness v2 官方名是 `AgentHarness`，不是「Pi AgentRuntime V2」。** `@earendil-works/pi-agent-core` 0.84.0（2026-08-06）把实验入口里的 v2 session 与 `AgentHarness` 升成默认导出，并用 v4 lane-based `Session` / `SessionRepo` 替换旧 JSONL repository API（来源：[v0.84.0 changelog](https://github.com/earendil-works/pi/releases/tag/v0.84.0)、[harness.md](https://github.com/earendil-works/pi/blob/main/packages/agent/docs/harness.md)）。它要解决的是 **crash 后可恢复的 durable session**：一个 session 上多条 lane、operation 只有 run / compaction / navigation。**lane ≠ sub-agent**（lane 是同一棵 entry tree 上的并行对话路径；sub-agent 仍是隔离 child session，走 extension 或 bash 再拉起 `pi`）。coding-agent CLI 到 0.85.1 主路径仍是旧的 `AgentSessionRuntime`；Mario 自己说「this is still all old pi」（来源：[X, 2026-08-15](https://x.com/badlogicgames/status/2088547848342110247)）。这条活规范**没有推翻**「dedicated sub-agent 工具不进核心」。
 - **OpenClaw 以 Pi 为底盘。** Armin 写明 OpenClaw 底层是 Pi，扩展可把 custom messages 写入 session、热加载、session 是可分支的树（来源：[Pi: The Minimal Agent Within OpenClaw](https://lucumr.pocoo.org/2026/1/31/pi/)）。这解释了 [UniClawBench](uniclawbench.md) 里 OpenClaw 那一行：测的是产品框架，底盘是这篇博客里的极小 harness。
 
-## 待追问
+## 证据边界与阅读提示
 
 - Terminal-Bench 2.0 的 49.8% 是 mixed-model 榜。同模型换膜的外部数字见 [Databricks 内部评测](databricks-coding-agents.md)：质量接近时 Pi 任务成本可低到 2× 以上，但 max-effort Opus 通过率掉了 7 分。
-- 「<1000 token 系统提示」在 skills / AGENTS.md / 文档路径注入之后还剩多少，本文没有重测。Databricks 的「每轮 3× 更少 context」是端到端重放总量，不是系统提示长度。
-- 0.84.0 的 lane-based Session 对「一条 JSONL 树」用户心理模型改了多少？changelog 只给 API 契约，没有用户向机制文。
-- YOLO 默认在 2026 的真实供应链攻击面上是否仍然站得住，本文只给 2025-11 的论证。
+
+## 待追问
+
+- **需实验或作者披露**：「<1000 token 系统提示」在 skills / AGENTS.md / 文档路径注入之后还剩多少，本文没有重测。Databricks 的「每轮 3× 更少 context」是端到端重放总量，不是系统提示长度。
+- **需补外部来源**：0.84.0 的 lane-based Session 对「一条 JSONL 树」用户心理模型改了多少？changelog 只给 API 契约，没有用户向机制文。
+- **需补外部来源**：YOLO 默认在 2026 的真实供应链攻击面上是否仍然站得住，本文只给 2025-11 的论证。
 
 ## 相关页面
 

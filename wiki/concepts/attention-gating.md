@@ -61,11 +61,9 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
 - **它给「attention sink 是不是必要的」一个反例**。registers/StreamingLLM 一派把 sink 当成「有用的注意力垃圾桶」；这里证明 query-dependent 稀疏门可以直接消掉 sink 而质量更好，长度外推还更强。
 - **它和线性注意力的门是同一思想的两次独立印证**。两条路线（softmax / 线性 RNN）都发现「在输出端加数据相关的门」有用，提示门控可能是比具体注意力形式更底层的有效组件。
 
-## 待追问
+## 相关追问
 
-- G1 elementwise head-specific 门在大模型上的真实参数/推理增量有多少？论文主打「简单」，但需核对配置表。
-- 消除 attention sink 后，原本依赖 sink 做「注意力缓冲」的机制如何补偿？报告是经验观测，机制论证可深挖。
-- 论文消融止于 15B；更大尺度上「去 sink → 长度外推增益」是否成立，Qwen3-Next/Qwen3.5（397B 级）与 Qwen3.8-Flash-Next 已采用该门作为间接证据，但这些报告**继承而非重新验证**该收益，仍缺一个大尺度上专门复测「去 sink」效应的公开数据。Qwen3.8 把门的新证据放在稳定性（GatedNorm / GR），不是 sink 统计。
+主记录：[门控的参数与推理开销](../sources/gated-attention.md#待追问)；[attention sink 消失后的机制解释](../sources/gated-attention.md#待追问)；[大尺度去 sink 效应](../sources/gated-attention.md#待追问)。
 
 ## 相关页面
 

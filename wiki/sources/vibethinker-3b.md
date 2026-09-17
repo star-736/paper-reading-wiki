@@ -153,11 +153,11 @@ VibeThinker-3B 在小/中模型对比中全面领先（3B 超过 4B–14B reason
 
 ## 待追问
 
-- MGPO 的 $D_{ME}$ 具体形式未给出（论文只说"measures how far $p(q)$ deviates from maximum-entropy point 0.5"），猜测是某种 entropy 或 KL 变体，但需查 VibeThinker-1.5B 原文确认。
-- Diversity-Exploring Distillation 的参数级 merge 具体方法未说明（是 simple average / weighted average / 还是更复杂的 merge 策略？）。
-- Long2Short RL 的 $\lambda=0.2$ 是如何选定的？是否有 ablation？
-- CLR 的"decision-relevant claim"提取过程依赖模型自身，是否对 claim 提取质量敏感？论文未给 ablation。
-- VibeThinker-1.5B 的渐进式 context window 在 3B 上失效的发现很有价值——这是否意味着 context window 策略与 SFT 数据质量强耦合？高 SFT 质量下 warm-up 截断有害，低 SFT 质量下有益？
+- **需补外部来源**：MGPO 的 $D_{ME}$ 具体形式未给出（论文只说"measures how far $p(q)$ deviates from maximum-entropy point 0.5"），猜测是某种 entropy 或 KL 变体，但需查 VibeThinker-1.5B 原文确认。
+- **需补外部来源**：Diversity-Exploring Distillation 的参数级 merge 具体方法未说明（是 simple average / weighted average / 还是更复杂的 merge 策略？）。
+- **需实验或作者披露**：Long2Short RL 的 $\lambda=0.2$ 是如何选定的？是否有 ablation？
+- **需实验或作者披露**：CLR 的"decision-relevant claim"提取过程依赖模型自身，是否对 claim 提取质量敏感？论文未给 ablation。
+- **需实验或作者披露**：VibeThinker-1.5B 的渐进式 context window 在 3B 上失效的发现很有价值——这是否意味着 context window 策略与 SFT 数据质量强耦合？高 SFT 质量下 warm-up 截断有害，低 SFT 质量下有益？
 
 ## 相关页面
 

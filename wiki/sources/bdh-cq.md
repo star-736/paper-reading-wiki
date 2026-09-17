@@ -72,12 +72,15 @@ $S_t$ 用来把当前任务从示例中绑定出来，$H_r$ 则承载该查询�
 
 HIGH / MEDIUM / LOW effort 的 pass@2 分别为 29.5% / 27% / 21%，相对 HIGH 的成本降幅为 0% / 11% / 22%（原文确证，§7、Table 5）。这支持 latent iteration 可以提供可调计算预算；但论文只给出三档 aggregate 点，未公开 $R$、每档 exact compute 或模型内部的 halt / adaptive-depth rule，不能据此推出连续的 scaling law。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **可复现性**：权重、完整训练配方、recurrent update 及推理 implementation 都未公开；独立 black-box audit 复现的是部署服务得分，而非从训练到部署的可复现性（原文确证，§5）。
 - **跨领域性**：所有直接结果都是 ARC / ConceptARC 或 ARC-like 网格任务。语言、数学、工具使用和 ARC-AGI-2 只是作者的 future work，不是现有能力证据（原文确证，§9.1）。
 - **成本可比性**：$0.00070 是 H200 计时乘固定价格的 computed cost；图中的竞争项混合了 API 价格与硬件 estimates，且 leaderboard 快照和 API 定价都会变化（原文确证，§5、Figure 2 notes）。
-- **memory 的作用分离**：$S_t$（示例适配）与 $H_r$（查询求解）的接口是清晰的系统抽象，但没有 hidden-state intervention 或公开 update rule 可直接证实两者的因果分工。
+
+## 待追问
+
+- **需实验或作者披露**：**可复现性**：权重、完整训练配方、recurrent update 及推理 implementation 都未公开；独立 black-box audit 复现的是部署服务得分，而非从训练到部署的可复现性（原文确证，§5）。
+- **需实验或作者披露**：**memory 的作用分离**：$S_t$（示例适配）与 $H_r$（查询求解）的接口是清晰的系统抽象，但没有 hidden-state intervention 或公开 update rule 可直接证实两者的因果分工。
 
 ## 相关页面
 

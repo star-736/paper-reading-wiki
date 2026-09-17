@@ -123,13 +123,19 @@ Instruct / RL（Table 5，无工具 Top1）：
 
 Limitations（§6）：几何与定理证明弱于闭源；7B few-shot 几乎不比 zero-shot 涨——和 GPT-4 能吃 few-shot 不同。作者归因为数据选择偏差与模型规模。
 
+## 证据边界与阅读提示
+
+- Reward model 仍是神经网络 RM，不是后来通行的 rule-based verifier。GRPO 算法与「可验证奖励」不是同一件事。
+
 ## 待追问
 
-- 原文 GRPO 的 loss 是 **sample-level 再 token 平均**（$1/G\sum_i 1/|o_i|\sum_t$）。[DAPO](dapo.md) 后来把这改成全局 token 池平均。DeepSeekMath 自己没有这条消融。
-- Outcome 把同一 $\tilde r_i$ 广播到整条序列：这正是后来 GSPO「reward 是 sequence 级、ratio 却 token 级」批评的起点。本页没有 sequence-level ratio 实验。
-- RL 主结果用的是 outcome 还是 process、是否走完 iterative？§4.2 没写死；过程监督优势只在 1.3B 的 Figure 5。
-- Figure 7 的「不抬 Pass@K」是否在更大模型 / 可验证环境 RLVR 上仍成立？2026 的 agentic RL 报告几乎不复现这条曲线。
-- Reward model 仍是神经网络 RM，不是后来通行的 rule-based verifier。GRPO 算法与「可验证奖励」不是同一件事。
+- **需实验或作者披露**：原文 GRPO 的 loss 是 **sample-level 再 token 平均**（$1/G\sum_i 1/|o_i|\sum_t$）。[DAPO](dapo.md) 后来把这改成全局 token 池平均。DeepSeekMath 自己没有这条消融。
+- **需实验或作者披露**：Outcome 把同一 $\tilde r_i$ 广播到整条序列：这正是后来 GSPO「reward 是 sequence 级、ratio 却 token 级」批评的起点。本页没有 sequence-level ratio 实验。
+- **需实验或作者披露**：RL 主结果用的是 outcome 还是 process、是否走完 iterative？§4.2 没写死；过程监督优势只在 1.3B 的 Figure 5。
+
+## 相关追问
+
+主记录：[RL 的 Maj@K 与 Pass@K 外推](../comparisons/llm-rl-policy-optimization.md#待追问)。
 
 ## 相关页面
 

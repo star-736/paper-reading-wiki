@@ -119,12 +119,12 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 
 ## 待追问
 
-1. **GLM-5 / GLM-5V-Turbo 的负载均衡策略**：GLM-5 报告只在架构节提到 256 experts / 80 层为减 EP 通信开销，未搜到负载均衡方法表述。是 loss 路线、bias 路线还是混合？需回报告细读或等更细披露。
-2. **MiniMax-M2 "learnable expert-specific bias" 的确切机制**：bias 是纯统计量（本论文式）还是真的进梯度可学（bias 有了梯度就不再是 loss-free）？引文表述含糊，需回 M2 报告 §2.2.1 细读。
-3. **sequence-wise balance loss 的必要性**：V4 和 MiMo 都在 bias 之外加了序列级 loss，但两者权重差一个数量级（1e-4 vs 1e-5）。什么场景下单序列失衡会伤到？原论文只测了 global/batch 两口径，没测序列口径——生产模型补这个 loss 暗示原论文口径有盲区，但没有公开对照实验。
-4. **sigmoid gate 结论的稳健性**：附录 C 在 1B 上得出"sigmoid 优于 softmax"，V4 换 Sqrt(Softplus) 但保留 bias 路线。gate 函数与 bias 调平策略的耦合（归一化 vs 独立分数）值得一份跨 gate 的系统消融。
-5. **EC 泄漏批判的适用边界**：批判成立的前提是自回归训练（未来 token 不可见）。EC 在 BERT 式双向模型或非 LM 场景（如 VLA 的分块训练）是否仍是可行选项？wiki 内 [InternVLA-A1.5](../sources/internvla-a1.5.md) 等未涉及 MoE，暂无对照案例。
-6. **MaxVio 0.04 的系统意义**：论文没给"MaxVio 降到多少才够"的阈值分析。K3 QB 用 exact 解追完美平衡，但 0.04 vs 0.00 在真实 EP 训练吞吐上差多少？E/R bound（MoonEP）视角的量化缺失。
+- **现有材料待核**：**GLM-5 / GLM-5V-Turbo 的负载均衡策略**：GLM-5 报告只在架构节提到 256 experts / 80 层为减 EP 通信开销，未搜到负载均衡方法表述。是 loss 路线、bias 路线还是混合？需回报告细读或等更细披露。
+- **现有材料待核**：**MiniMax-M2 "learnable expert-specific bias" 的确切机制**：bias 是纯统计量（本论文式）还是真的进梯度可学（bias 有了梯度就不再是 loss-free）？引文表述含糊，需回 M2 报告 §2.2.1 细读。
+- **需实验或作者披露**：**sequence-wise balance loss 的必要性**：V4 和 MiMo 都在 bias 之外加了序列级 loss，但两者权重差一个数量级（1e-4 vs 1e-5）。什么场景下单序列失衡会伤到？原论文只测了 global/batch 两口径，没测序列口径——生产模型补这个 loss 暗示原论文口径有盲区，但没有公开对照实验。
+- **需实验或作者披露**：**sigmoid gate 结论的稳健性**：附录 C 在 1B 上得出"sigmoid 优于 softmax"，V4 换 Sqrt(Softplus) 但保留 bias 路线。gate 函数与 bias 调平策略的耦合（归一化 vs 独立分数）值得一份跨 gate 的系统消融。
+- **需实验或作者披露**：**EC 泄漏批判的适用边界**：批判成立的前提是自回归训练（未来 token 不可见）。EC 在 BERT 式双向模型或非 LM 场景（如 VLA 的分块训练）是否仍是可行选项？wiki 内 [InternVLA-A1.5](../sources/internvla-a1.5.md) 等未涉及 MoE，暂无对照案例。
+- **需实验或作者披露**：**MaxVio 0.04 的系统意义**：论文没给"MaxVio 降到多少才够"的阈值分析。K3 QB 用 exact 解追完美平衡，但 0.04 vs 0.00 在真实 EP 训练吞吐上差多少？E/R bound（MoonEP）视角的量化缺失。
 
 ## 相关页面
 
@@ -132,3 +132,5 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 - 下游采用：[DeepSeek-V4](../sources/deepseek-v32.md)、[Kimi K3](../sources/kimi-k3.md)（QB 升级）、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
 - 对照路线：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)（aux loss 阵营）
 - 相关机制：[Stable LatentMoE](../concepts/stable-latentmoe.md)（Quantile Balancing 是本方法的直接升级）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
+
+关联提问页：[MoE 负载均衡谱系](../concepts/moe-load-balancing.md#相关追问)。

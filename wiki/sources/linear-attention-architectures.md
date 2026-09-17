@@ -76,6 +76,6 @@ $$\epsilon_{l,t}=P_l s_{l,t},\qquad h_{l,t}\leftarrow h_{l,t}+\epsilon_{l,t},\qq
 
 ## 待追问
 
-- CLVR 是否在 KDA 与 GDN-2 上有效？论文未报告这两个 host 的 routing 实验，尤其 GDN-2 的 erase / write 已解耦，什么内部量值得路由仍是开放问题。
-- 增益为何随 token budget / 规模缩小？它可能反映小模型尚未自行吸收的信息，也可能只是 single-run 噪声；需要多 seed、更大模型和长上下文 retrieval 任务验证。
-- CLVR 是否保有真正的 decode 吞吐、显存优势？当前只有训练 iteration-time 数据，不能据它判定 serving 价值。
+- **需实验或作者披露**：CLVR 是否在 KDA 与 GDN-2 上有效？论文未报告这两个 host 的 routing 实验，尤其 GDN-2 的 erase / write 已解耦，什么内部量值得路由仍是开放问题。
+- **需实验或作者披露**：增益为何随 token budget / 规模缩小？它可能反映小模型尚未自行吸收的信息，也可能只是 single-run 噪声；需要多 seed、更大模型和长上下文 retrieval 任务验证。
+- **需实验或作者披露**：CLVR 是否保有真正的 decode 吞吐、显存优势？当前只有训练 iteration-time 数据，不能据它判定 serving 价值。

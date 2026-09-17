@@ -137,10 +137,10 @@ training_client.forward_backward(trajectories, loss_fn="importance_sampling")
 
 ## 待追问
 
-- **discount factor 之争**：博客选 0（实践不提升），但有些 OPD 工作走 > 0；在什么场景 > 0 才有意义？长 horizon agentic task 是否例外？
-- **teacher 选择**：博客发现 Qwen3-8B 当 teacher 蒸 8B 自己比 Qwen3-32B 当 teacher 在 personalization 上更好（"sampling from Qwen3-8B is better than Qwen3-32B for preserving chat capabilities"）。这违反"teacher 越强越好"直觉——什么时候同尺寸或更弱的 teacher 反而更适合？是否只在 self-distillation / continual learning 场景成立？
-- **多 teacher 路由**：博客的实验全是**单 teacher**——MiMo 多 teacher、V4 >10 个 teacher 在 reverse-KL 框架里的相互覆盖如何？博客在 §Distillation for personalization 末段把 V3.2 specialist distillation 提了一句但没深入。
-- **forking tokens 与 entropy bonus 的关系**：博客观察 teacher 主要罚分叉 token；这与 RL 中 entropy regularization、high-entropy token 主导论的理论联系是什么？是否说明在 forking token 上加权 KL 能进一步提效？
+- **需实验或作者披露**：**discount factor 之争**：博客选 0（实践不提升），但有些 OPD 工作走 > 0；在什么场景 > 0 才有意义？长 horizon agentic task 是否例外？
+- **需实验或作者披露**：**teacher 选择**：博客发现 Qwen3-8B 当 teacher 蒸 8B 自己比 Qwen3-32B 当 teacher 在 personalization 上更好（"sampling from Qwen3-8B is better than Qwen3-32B for preserving chat capabilities"）。这违反"teacher 越强越好"直觉——什么时候同尺寸或更弱的 teacher 反而更适合？是否只在 self-distillation / continual learning 场景成立？
+- **需实验或作者披露**：**多 teacher 路由**：博客的实验全是**单 teacher**——MiMo 多 teacher、V4 >10 个 teacher 在 reverse-KL 框架里的相互覆盖如何？博客在 §Distillation for personalization 末段把 V3.2 specialist distillation 提了一句但没深入。
+- **需实验或作者披露**：**forking tokens 与 entropy bonus 的关系**：博客观察 teacher 主要罚分叉 token；这与 RL 中 entropy regularization、high-entropy token 主导论的理论联系是什么？是否说明在 forking token 上加权 KL 能进一步提效？
 
 ## 相关页面
 

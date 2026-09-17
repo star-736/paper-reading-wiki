@@ -175,10 +175,10 @@ E2B/E4B 在 FLEURS ASR 和 CoVoST 翻译上均优于 Gemma 3n 对应尺寸，尽
 
 ## 待追问
 
-- 预训练数据规模（token 数）和训练步数未公开。
-- Thinking mode 的训练数据构成和 RL 策略未详述（仅提及"similar to Gemma 3"）。
-- p-RoPE 的 p=0.25 选择依据和消融结果未给出。
-- Encoder-free 12B 在音频任务上与有编码器的 E2B/E4B 仍有差距（Table 8 vs Table 7），差距来源是编码器本身还是训练数据量？
+- **需实验或作者披露**：预训练数据规模（token 数）和训练步数未公开。
+- **需实验或作者披露**：Thinking mode 的训练数据构成和 RL 策略未详述（仅提及"similar to Gemma 3"）。
+- **需实验或作者披露**：p-RoPE 的 p=0.25 选择依据和消融结果未给出。
+- **需实验或作者披露**：Encoder-free 12B 在音频任务上与有编码器的 E2B/E4B 仍有差距（Table 8 vs Table 7），差距来源是编码器本身还是训练数据量？
 
 ## 相关页面
 

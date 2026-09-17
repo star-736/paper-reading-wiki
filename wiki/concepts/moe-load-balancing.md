@@ -57,10 +57,11 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 
 ## 待追问
 
-- **GLM-5 / GLM-5V-Turbo 的负载均衡策略未披露**（见来源页待追问 1）。
-- **MiniMax-M2 的 learnable bias 语义**：bias 若进梯度就不再严格 loss-free，需回 M2 §2.2.1 确认（见来源页待追问 2）。
-- **QB 会不会成为下一个标准？** K3 之后尚未见其他家族跟进；QB 的对偶 LP 视角是否只在 896-expert 级极端稀疏下才有必要（256-384 expert 下 sign 更新够用），还是也会下沉到中等规模？
-- **sequence-wise balance loss 的机理**：V4（1e-4）与 MiMo（1e-5）都在 bias 之外补序列级 loss，但权重差一个量级，且都没有公开消融——单序列失衡到底伤什么？
+- **需实验或作者披露**：**QB 会不会成为下一个标准？** K3 之后尚未见其他家族跟进；QB 的对偶 LP 视角是否只在 896-expert 级极端稀疏下才有必要（256-384 expert 下 sign 更新够用），还是也会下沉到中等规模？
+
+## 相关追问
+
+主记录：[GLM 负载均衡策略](../sources/loss-free-balancing.md#待追问)；[MiniMax-M2 bias 是否参与梯度](../sources/loss-free-balancing.md#待追问)；[序列级均衡损失的必要性](../sources/loss-free-balancing.md#待追问)。
 
 ## 相关页面
 

@@ -55,10 +55,10 @@ RoPE 越出训练窗有两个独立失败模式（[Jet-Long](../sources/jet-long
 
 ## 待追问
 
-- Jet-Long 与 DSA / MLA decoupled RoPE / SWA 全局层能否直接叠加，目前没有实验。MLA 的 RoPE 只作用在 decoupled 分支上，correction rotation 是否仍可加，需要核 [DeepSeek-V2](../sources/deepseek-v2.md) 的 Decoupled RoPE 再设计。
-- 官方「训到 128K/256K 再 YaRN」与「32K 权重 + Jet-Long」谁在真实仓库级 / agent 轨迹上更好，知识库里还没有同模型对照。
-- Softmax 扩散这一条失败模式，零样本位置映射覆盖不了。长窗质量的上限可能仍在注意力架构，而不在 $G$。
-- 128K 以上频率插值开始在个别 RULER 任务反超位置别名（Jet-Long Table 6）。1M 级该用纯别名、纯 YaRN，还是 hybrid 映射，开放。
+- **需实验或作者披露**：Jet-Long 与 DSA / MLA decoupled RoPE / SWA 全局层能否直接叠加，目前没有实验。MLA 的 RoPE 只作用在 decoupled 分支上，correction rotation 是否仍可加，需要核 [DeepSeek-V2](../sources/deepseek-v2.md) 的 Decoupled RoPE 再设计。
+- **需实验或作者披露**：官方「训到 128K/256K 再 YaRN」与「32K 权重 + Jet-Long」谁在真实仓库级 / agent 轨迹上更好，知识库里还没有同模型对照。
+- **需实验或作者披露**：Softmax 扩散这一条失败模式，零样本位置映射覆盖不了。长窗质量的上限可能仍在注意力架构，而不在 $G$。
+- **需实验或作者披露**：128K 以上频率插值开始在个别 RULER 任务反超位置别名（Jet-Long Table 6）。1M 级该用纯别名、纯 YaRN，还是 hybrid 映射，开放。
 
 ## 相关页面
 

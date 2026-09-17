@@ -114,11 +114,11 @@ Table 11：vLLM on RTX 4090，BF16 下 Qwen3-Omni-30B-A3B OOM，MiniCPM-o 4.5 15
 
 ## 待追问
 
-- Omni-Flow 的 chunk size 1.0s 对延迟敏感场景是否足够？论文承认长时动态流式交互的鲁棒性仍需提升（Limitations）。
-- 全双工语音生成在 TAIL 模式下英文 WER（3.93）反而高于固定交错（2.38），流式对齐与语音质量的 trade-off 如何进一步优化？
-- 主动行为（提醒/评论）目前"相对简单"（Limitations 自述），更丰富的 context-aware planning 留给未来工作——主动行为的训练数据和奖励设计具体如何构造？
-- 语音生成在流式模式下偶尔不稳定（误发音、中英无意混用），与 LLM backbone 只生成 text token 的设计选择是否有关？
-- MiniCPM-V 4.5 是 VL 基座，其视觉编码器细节（SigLIP 参数量、LLaVA-UHD 分区策略参数）在本报告中未完整给出——需追溯 MiniCPM-V 4.5 报告。
+- **需实验或作者披露**：Omni-Flow 的 chunk size 1.0s 对延迟敏感场景是否足够？论文承认长时动态流式交互的鲁棒性仍需提升（Limitations）。
+- **需实验或作者披露**：全双工语音生成在 TAIL 模式下英文 WER（3.93）反而高于固定交错（2.38），流式对齐与语音质量的 trade-off 如何进一步优化？
+- **需实验或作者披露**：主动行为（提醒/评论）目前"相对简单"（Limitations 自述），更丰富的 context-aware planning 留给未来工作——主动行为的训练数据和奖励设计具体如何构造？
+- **需实验或作者披露**：语音生成在流式模式下偶尔不稳定（误发音、中英无意混用），与 LLM backbone 只生成 text token 的设计选择是否有关？
+- **需补外部来源**：MiniCPM-V 4.5 是 VL 基座，其视觉编码器细节（SigLIP 参数量、LLaVA-UHD 分区策略参数）在本报告中未完整给出——需追溯 MiniCPM-V 4.5 报告。
 
 ## 相关页面
 

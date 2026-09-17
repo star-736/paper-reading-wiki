@@ -91,10 +91,10 @@ XRoPE 的 64 个 RoPE frequency pairs 按 `(t,h,w)=(24,20,20)` 分配。这里�
 
 ## 待追问
 
-- **L5 的可复现定量评测怎样设计？** 论文明确说现有公开基准只到 L2--L4；“生成中被新证据推翻后正确修订/截断”的 counterfactual 轨迹、延迟阈值和判分协议仍缺失。
-- **门控 cross-attention 的视觉遗忘如何受控？** 报告说明持续追加 KV，但未披露在接近 262K context 或超长 live stream 下的视觉 cache 管理、淘汰与精度曲线。
-- **Realtime-SFT 与 RL 是否互补？** 作者公开路线图提到后续 RL；但如何在避免 false alarm 的同时维持主动发言频率、以及会否破坏离线能力，尚无消融。
-- **离线强项和实时机制之间的因果关系？** temporal-reasoning 离线优势发生在不含实时语料的 Instruct checkpoint，但报告没有隔离视觉 cross-attention、时间数据与训练规模各自的贡献。
+- **需实验或作者披露**：**L5 的可复现定量评测怎样设计？** 论文明确说现有公开基准只到 L2--L4；“生成中被新证据推翻后正确修订/截断”的 counterfactual 轨迹、延迟阈值和判分协议仍缺失。
+- **需实验或作者披露**：**门控 cross-attention 的视觉遗忘如何受控？** 报告说明持续追加 KV，但未披露在接近 262K context 或超长 live stream 下的视觉 cache 管理、淘汰与精度曲线。
+- **需实验或作者披露**：**Realtime-SFT 与 RL 是否互补？** 作者公开路线图提到后续 RL；但如何在避免 false alarm 的同时维持主动发言频率、以及会否破坏离线能力，尚无消融。
+- **需实验或作者披露**：**离线强项和实时机制之间的因果关系？** temporal-reasoning 离线优势发生在不含实时语料的 Instruct checkpoint，但报告没有隔离视觉 cross-attention、时间数据与训练规模各自的贡献。
 
 ## 相关页面
 

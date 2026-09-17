@@ -86,10 +86,10 @@ MATH 上标准 DPO 相对基座是掉点的（12.4 / 10.5 vs 12.5）。作者把
 
 ## 待追问
 
-- $\alpha=1$ 的 NLL 会不会在非 reasoning、开放式偏好上把模型拉回 SFT 分布、削弱 DPO 的 KL 约束？论文只在三个有 gold 答案的任务上扫过 $\alpha$。
-- 中间错误但最终答案对的 CoT 会进 winner 集；ARC 四选一噪声更大。没有 CoT 级 verifier 消融。
-- TRL `rpo_alpha` 默认不迭代。单轮 DPO+NLL 相对完整四轮的增益，除 GSM8K Table 1 外没有跨任务拆开。
-- 与 [DAPO](dapo.md) / GRPO 的 RLVR 栈如何衔接，原文没有讨论。
+- **需实验或作者披露**：$\alpha=1$ 的 NLL 会不会在非 reasoning、开放式偏好上把模型拉回 SFT 分布、削弱 DPO 的 KL 约束？论文只在三个有 gold 答案的任务上扫过 $\alpha$。
+- **需实验或作者披露**：中间错误但最终答案对的 CoT 会进 winner 集；ARC 四选一噪声更大。没有 CoT 级 verifier 消融。
+- **需实验或作者披露**：TRL `rpo_alpha` 默认不迭代。单轮 DPO+NLL 相对完整四轮的增益，除 GSM8K Table 1 外没有跨任务拆开。
+- **需实验或作者披露**：与 [DAPO](dapo.md) / GRPO 的 RLVR 栈如何衔接，原文没有讨论。
 
 ## 相关页面
 

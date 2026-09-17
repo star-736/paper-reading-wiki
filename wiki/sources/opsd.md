@@ -120,11 +120,11 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 
 ## 待追问
 
-- **冻结初始 teacher vs 跟着更新的 teacher**：正文只说冻结更稳，没有量化「当前策略当 teacher」会怎么崩。
-- **\(\tau\) 未调**：附录自己写更大模型可能还能再涨。clipping 是机制还是这个 \(\tau\) 碰巧够用？
-- **1.7B 大涨、8B 几乎贴着 GRPO**：是小模型更吃 dense 信号，还是 OpenThoughts 对 8B 已经接近饱和？
-- **竞赛数学以外有没有证据**：无代码、无 agent、无多 teacher。privileged \(y^\star\) 在没有参考解答的任务上怎么构造？
-- concurrent SDPO（环境反馈当 privileged info，arXiv:2601.20802）与 SDFT（持续学习，arXiv:2601.19897）未收原文。
+- **需实验或作者披露**：**冻结初始 teacher vs 跟着更新的 teacher**：正文只说冻结更稳，没有量化「当前策略当 teacher」会怎么崩。
+- **需实验或作者披露**：**\(\tau\) 未调**：附录自己写更大模型可能还能再涨。clipping 是机制还是这个 \(\tau\) 碰巧够用？
+- **需实验或作者披露**：**1.7B 大涨、8B 几乎贴着 GRPO**：是小模型更吃 dense 信号，还是 OpenThoughts 对 8B 已经接近饱和？
+- **需实验或作者披露**：**竞赛数学以外有没有证据**：无代码、无 agent、无多 teacher。privileged \(y^\star\) 在没有参考解答的任务上怎么构造？
+- **需补外部来源**：concurrent SDPO（环境反馈当 privileged info，arXiv:2601.20802）与 SDFT（持续学习，arXiv:2601.19897）未收原文。
 
 ## 相关页面
 

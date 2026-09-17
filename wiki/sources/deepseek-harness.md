@@ -90,10 +90,10 @@ resource: "../../raw/deepseek-harness-readme.md"
 
 ## 待追问
 
-- 「没有特权核心」在实践里还剩什么不可卸载？`agent-loop` 仍是「唯一的具体循环插件」，换 loop 有没有官方第二实现？
-- Minimal 的高分有多少来自和 V4.1 后训练同一分布，而不是膜本身？Table 4 没有训练–评测 harness 交叉。
-- PTC 把多步收到 `run_code` 里，和 SoL-Pi 的 Action Fusion（一次 edit 带 then_run）是不是同一类「少一轮模型往返」？两边都没有交叉实验。
-- Cordis 的 revertible effects 是否真的覆盖 bash / 文件系统副作用，还是只覆盖进程内注册表？论文是 PL 演算，本页不能代答。
+- **需补外部来源**：「没有特权核心」在实践里还剩什么不可卸载？`agent-loop` 仍是「唯一的具体循环插件」，换 loop 有没有官方第二实现？
+- **需实验或作者披露**：Minimal 的高分有多少来自和 V4.1 后训练同一分布，而不是膜本身？Table 4 没有训练–评测 harness 交叉。
+- **需实验或作者披露**：PTC 把多步收到 `run_code` 里，和 SoL-Pi 的 Action Fusion（一次 edit 带 then_run）是不是同一类「少一轮模型往返」？两边都没有交叉实验。
+- **需补外部来源**：Cordis 的 revertible effects 是否真的覆盖 bash / 文件系统副作用，还是只覆盖进程内注册表？论文是 PL 演算，本页不能代答。
 
 ## 相关页面
 

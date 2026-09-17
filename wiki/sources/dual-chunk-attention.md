@@ -122,13 +122,16 @@ Passkey（Appendix A.1）：Llama2 13B + DCA 在 18k 内各深度 100%（Figure 
 - **[Qwen3](qwen3.md)**：S3 训到 32K（RoPE base $10^4\to10^6$，按 YaRN 原文是 NTK-aware / ABF），推理再叠 YaRN + Dual Chunk Attention 4×。4B/8B 模型卡 128K 来自这套部署，不是再训到 128K。
 - **[高效长上下文注意力](../concepts/efficient-long-context-attention.md)**：正交轴。DCA 仍做 dense softmax，只改位置角是否还在训练网格上。
 
+## 证据边界与阅读提示
+
+- 70B 的「>100k」是摘要口径；严格 +0.56 PPL 只写到 96k。实用 QA / 摘要评测截在 16k。
+
 ## 待追问
 
-- Eq. 6 左端写成 $P_q^{\mathrm{Intra}}$ 却等于 $c-1-P_k[j]$。分段公式与 $P_q^{\mathrm{Inter}}$ 定义一致，但没有勘误。
-- Qwen3 没有写 DCA 的 $s$、$w$、是否仍按 $\tfrac{3}{4}$ 训练窗切块，也没有写 YaRN 的频率表和 DCA 的位置索引谁先谁后。
-- Algorithm 1 用各支路 `map.sum` 做归一化；全局 softmax 的严格合并应走 LSE。[Jet-Long](jet-long.md) 后来用 inclusion–exclusion + LSE，并批评过对数域减法。DCA 这套 FA 合并的数值误差没有报。
-- 70B 的「>100k」是摘要口径；严格 +0.56 PPL 只写到 96k。实用 QA / 摘要评测截在 16k。
-- 没有 MLA / GQA 以外架构、没有 256K / 1M、没有与 DSA 叠加的实验。
+- **需实验或作者披露**：Eq. 6 左端写成 $P_q^{\mathrm{Intra}}$ 却等于 $c-1-P_k[j]$。分段公式与 $P_q^{\mathrm{Inter}}$ 定义一致，但没有勘误。
+- **需补外部来源**：Qwen3 没有写 DCA 的 $s$、$w$、是否仍按 $\tfrac{3}{4}$ 训练窗切块，也没有写 YaRN 的频率表和 DCA 的位置索引谁先谁后。
+- **需实验或作者披露**：Algorithm 1 用各支路 `map.sum` 做归一化；全局 softmax 的严格合并应走 LSE。[Jet-Long](jet-long.md) 后来用 inclusion–exclusion + LSE，并批评过对数域减法。DCA 这套 FA 合并的数值误差没有报。
+- **需实验或作者披露**：没有 MLA / GQA 以外架构、没有 256K / 1M、没有与 DSA 叠加的实验。
 
 ## 相关页面
 

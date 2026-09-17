@@ -52,9 +52,9 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 
 ## 待追问
 
-- 哪些 benchmark 最能预测真实 coding agent 生产力？
-- Thinking preservation 在部署中应该暴露到什么程度？
-- 更长上下文会减少 context management 的必要性，还是让 context management 更重要？
+- **需实验或作者披露**：哪些 benchmark 最能预测真实 coding agent 生产力？
+- **需实验或作者披露**：Thinking preservation 在部署中应该暴露到什么程度？
+- **需实验或作者披露**：更长上下文会减少 context management 的必要性，还是让 context management 更重要？
 
 ## 相关页面
 

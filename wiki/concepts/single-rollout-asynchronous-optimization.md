@@ -47,9 +47,11 @@ SAO 的可执行假设是：**异步的效率来自「完成即训」，所以�
 
 ## 待追问
 
-- Frozen-attention critic 在 dense 模型上是否还成立？
-- 与 ARPO / GiGPO 同一异步预算下，放弃 group 是否总是值得？
-- GLM-5.3 的 compaction 具体做什么，算法论文没有说。
+- **需实验或作者披露**：与 ARPO / GiGPO 同一异步预算下，放弃 group 是否总是值得？
+
+## 相关追问
+
+主记录：[frozen-attention critic 向 dense 迁移](../sources/single-rollout-asynchronous-optimization.md#待追问)；[GLM-5.3 compaction 定义](../sources/single-rollout-asynchronous-optimization.md#待追问)。
 
 ## 相关页面
 

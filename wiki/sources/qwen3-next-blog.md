@@ -44,7 +44,7 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 
 ## 待追问
 
-- 博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字。**部分补上**：[Qwen3.8-Next 架构报告](qwen3.8-next.md) Table 1 在 25B-A3B（400B@4K + 80B@32K）上 GDN hybrid 平均 53.81 vs SWA hybrid 51.15 vs full attention 49.87；作者写明这只能 motivate hybrid，不能拆开每一项增益。Mamba2 对照仍缺。该表是 3.8 的消融，不是 2025-09 的 Qwen3-Next 原实验。
+- **需实验或作者披露**：博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字。**部分补上**：[Qwen3.8-Next 架构报告](qwen3.8-next.md) Table 1 在 25B-A3B（400B@4K + 80B@32K）上 GDN hybrid 平均 53.81 vs SWA hybrid 51.15 vs full attention 49.87；作者写明这只能 motivate hybrid，不能拆开每一项增益。Mamba2 对照仍缺。该表是 3.8 的消融，不是 2025-09 的 Qwen3-Next 原实验。
 
 ## 相关页面
 

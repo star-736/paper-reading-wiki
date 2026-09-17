@@ -66,10 +66,10 @@ Ouro-2.6B 在完整 NESTful 上的 SFT Win Rate 为 0.371，较其 base 的 0.19
 
 ## 待追问
 
-- **真实交互是否成立**：论文只跑静态、single-turn 的 BFCL non-live 和离线 NESTful / API-Bank；多轮执行失败后的恢复、工具观测噪声和 live API 漂移尚未测量（原文确证，§7）。
-- **原生训练还是后置循环更关键**：retrofit 能改善部分组合任务，但在深层 NESTful 工作流上明显弱于原生 Ouro；需要同预训练配方的 recurrent / non-recurrent pair 才能量化这一差距。
-- **退出 gate 的可靠性**：adaptive frontier 的证据仅来自 Ouro 已有 gate。retrofit 模型没有 learned halting，尚不知更通用的退出准则能否在工具调用中复现节省。
-- **与 PLT 的关系**：本文使用 Ouro / retrofitted recurrence，不使用 LoopCoder-v2 的 CLP + shared-KV PLT；工具调用的最优 loop depth 能否迁移到低延迟 PLT，仍未回答。
+- **需实验或作者披露**：**真实交互是否成立**：论文只跑静态、single-turn 的 BFCL non-live 和离线 NESTful / API-Bank；多轮执行失败后的恢复、工具观测噪声和 live API 漂移尚未测量（原文确证，§7）。
+- **需实验或作者披露**：**原生训练还是后置循环更关键**：retrofit 能改善部分组合任务，但在深层 NESTful 工作流上明显弱于原生 Ouro；需要同预训练配方的 recurrent / non-recurrent pair 才能量化这一差距。
+- **需实验或作者披露**：**退出 gate 的可靠性**：adaptive frontier 的证据仅来自 Ouro 已有 gate。retrofit 模型没有 learned halting，尚不知更通用的退出准则能否在工具调用中复现节省。
+- **需实验或作者披露**：**与 PLT 的关系**：本文使用 Ouro / retrofitted recurrence，不使用 LoopCoder-v2 的 CLP + shared-KV PLT；工具调用的最优 loop depth 能否迁移到低延迟 PLT，仍未回答。
 
 ## 相关页面
 

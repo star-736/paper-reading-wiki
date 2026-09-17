@@ -51,9 +51,11 @@ V4 OPD 选择**full-vocabulary logit distillation**而非 token-level KL estimat
 
 报告称 DeepSeek-V4-Flash-Base 在更少总参数和激活参数下，超过 DeepSeek-V3.2-Base 的多数 benchmark。DeepSeek-V4-Pro-Base 被定位为 DeepSeek 系列最强 foundation model，在知识、推理、代码和长上下文任务上全面提升。DeepSeek-V4-Pro-Max 被定位为开放模型中的 SOTA reasoning 模式，并具备较强 agentic 能力。
 
-## 待追问
+## 证据边界与阅读提示
 
-- 架构能力强但复杂；报告本身也把架构简化列为未来方向。
-- 当前来源不是 arXiv，后续如果出现 arXiv 版本或新 revision，需要更新来源页和日志。
 - **生产 serving 的 speculative decoding 已被 DSpark 替换**：报告原文写 MTP depth=1，但 V4 preview 上线两周后 [DSpark](dspark.md)（semi-AR drafter + confidence-scheduled verification，PKU + DeepSeek-AI 后续论文）整体取代了 MTP-1，V4-Flash per-user 速度 +60–85%、V4-Pro +57–78%。当前 deepseek.com 服务背后跑的就是 DSpark，不是 V4 本报告里的 MTP-1。
 
+## 待追问
+
+- **需实验或作者披露**：架构能力强但复杂；报告本身也把架构简化列为未来方向。
+- **需补外部来源**：当前来源不是 arXiv，后续如果出现 arXiv 版本或新 revision，需要更新来源页和日志。

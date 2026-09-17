@@ -55,6 +55,6 @@ Forge 更像训练和系统基础设施；[Agent Swarm](agent-swarm.md) 更像�
 
 ## 待追问
 
-- Black-box agent 只观察外部请求流时，能否充分学习隐藏 context management 策略？
-- completion-time reward 是否会鼓励过度并行，导致工具成本或错误率上升？
-- Windowed FIFO 的窗口大小是否需要随任务难度和 reward 稀疏度自适应？
+- **需实验或作者披露**：Black-box agent 只观察外部请求流时，能否充分学习隐藏 context management 策略？
+- **需实验或作者披露**：completion-time reward 是否会鼓励过度并行，导致工具成本或错误率上升？
+- **需实验或作者披露**：Windowed FIFO 的窗口大小是否需要随任务难度和 reward 稀疏度自适应？

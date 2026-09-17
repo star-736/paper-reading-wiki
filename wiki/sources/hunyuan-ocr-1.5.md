@@ -119,10 +119,10 @@ OmniDocBench v1.6（端到端文档解析）总分 94.74，是 1B 级模型 SOTA
 
 ## 待追问
 
-- DFlash 的 draft model（90.7M / 5 层）在高并发下是否有 DSpark 论文指出的静态多 token drafter 吞吐反噬问题？报告只给了 c=1 到 c=32 的数据，c=32 时加速比已从 2.14× 降到 1.80×。
-- Agentic Data Flow 的 agent 具体用什么模型驱动？报告提到 Qwen3.5 参与标注，但 agent 本身的 backbone 未明确。
-- IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？IcePop 一手出处（[Ring-1T](ring-1t.md) Appendix A.1）写它不依赖 sequence-level 优化、可与 GSPO 并进，但本报告没有组合实验。
-- **HunyuanOCR 1.0 三套 OmniDocBench 分数**：[1.0 原文](hunyuan-ocr-1.0.md) Table 4 = **94.10**（Ouyang 2024 协议，附录写成 v1.5）；本报告自报 1.0 的 v1.6 = **92.03**；[MinerU2.5-Pro](mineru-2-5-pro.md) 统一重测 v1.6 Full = **89.87**。v1.5→v1.6 自报已对上版本；**92.03 vs 89.87 仍未归因**。1.5 自身 94.74 尚无统一重测。
+- **需实验或作者披露**：DFlash 的 draft model（90.7M / 5 层）在高并发下是否有 DSpark 论文指出的静态多 token drafter 吞吐反噬问题？报告只给了 c=1 到 c=32 的数据，c=32 时加速比已从 2.14× 降到 1.80×。
+- **需实验或作者披露**：Agentic Data Flow 的 agent 具体用什么模型驱动？报告提到 Qwen3.5 参与标注，但 agent 本身的 backbone 未明确。
+- **需实验或作者披露**：IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？IcePop 一手出处（[Ring-1T](ring-1t.md) Appendix A.1）写它不依赖 sequence-level 优化、可与 GSPO 并进，但本报告没有组合实验。
+- **需实验或作者披露**：**HunyuanOCR 1.0 三套 OmniDocBench 分数**：[1.0 原文](hunyuan-ocr-1.0.md) Table 4 = **94.10**（Ouyang 2024 协议，附录写成 v1.5）；本报告自报 1.0 的 v1.6 = **92.03**；[MinerU2.5-Pro](mineru-2-5-pro.md) 统一重测 v1.6 Full = **89.87**。v1.5→v1.6 自报已对上版本；**92.03 vs 89.87 仍未归因**。1.5 自身 94.74 尚无统一重测。
 
 ## 相关页面
 

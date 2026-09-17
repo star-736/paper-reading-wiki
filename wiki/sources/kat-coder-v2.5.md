@@ -134,11 +134,11 @@ V2.5 的 MOPD 与 V2 的 OPD 在算法骨架上一致（reverse-KL + on-policy�
 
 ## 待追问
 
-- V2.5 的 backbone 架构和参数量未公开（与 V2 一样）。是否沿用 V1 的同一 base model？
-- Asymmetric PPO 的 Critic 网络规模与 Actor 的比例？hindsight context $c_t$ 的具体维度和编码方式？
-- V2 的 MCLA + IcePop 在 V2.5 中是否仍使用？报告只说训练基础设施与 V2 相似，但 RL 算法从 GRPO 变体换成了 PPO。
-- GRM（model-based judge）的训练数据量和 RL 配置？与策略模型的训练是否同步迭代？
-- Cold start 阶段用的专家轨迹是哪些专家的？Cold start 持续多少步后才切到 on-policy MOPD？
+- **需实验或作者披露**：V2.5 的 backbone 架构和参数量未公开（与 V2 一样）。是否沿用 V1 的同一 base model？
+- **需实验或作者披露**：Asymmetric PPO 的 Critic 网络规模与 Actor 的比例？hindsight context $c_t$ 的具体维度和编码方式？
+- **需实验或作者披露**：V2 的 MCLA + IcePop 在 V2.5 中是否仍使用？报告只说训练基础设施与 V2 相似，但 RL 算法从 GRPO 变体换成了 PPO。
+- **需实验或作者披露**：GRM（model-based judge）的训练数据量和 RL 配置？与策略模型的训练是否同步迭代？
+- **需实验或作者披露**：Cold start 阶段用的专家轨迹是哪些专家的？Cold start 持续多少步后才切到 on-policy MOPD？
 
 ## 相关页面
 

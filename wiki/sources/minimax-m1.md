@@ -127,13 +127,16 @@ Table 2 摘录（MiniMax-M1-80k）：
 
 作者读法：数学 / 竞赛编程落后最新 R1-0528，软件工程、工具使用、长上下文更强；80K 多数项高于 40K（§6.1）。
 
+## 证据边界与阅读提示
+
+- 后续 [MiniMax-M2 Series](minimax-m2-series.md) 在前沿规模改回 full attention。那是后作判断，不是本页对 hybrid 的否定。
+
 ## 待追问
 
-- 原文只说 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$，**没写具体数字**。[Laguna](laguna-m1-xs2.md) 的 $(c_{low},c_{high})=(1,4)$ 不能回写成 M1 配方。
-- 80K 阶段改成 sample-level + token-level 混用，等于部分收回 CISPO 主文的纯 token-level 设定。两套 loss 各用在哪一段、权重多少，原文没给。
-- Figure 2 的 2× 是 Qwen2.5-32B dense softmax 上的对照，不是 456B hybrid 上相对 DAPO 的墙钟。生产 run 有没有再比 GRPO/DAPO，没写。
-- 16 轮 off-policy / generation 是 CISPO 成立的关键工况；同步、少步更新时「不丢 token」还值多少，没有消融。
-- 后续 [MiniMax-M2 Series](minimax-m2-series.md) 在前沿规模改回 full attention。那是后作判断，不是本页对 hybrid 的否定。
+- **需实验或作者披露**：原文只说 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$，**没写具体数字**。[Laguna](laguna-m1-xs2.md) 的 $(c_{low},c_{high})=(1,4)$ 不能回写成 M1 配方。
+- **需实验或作者披露**：80K 阶段改成 sample-level + token-level 混用，等于部分收回 CISPO 主文的纯 token-level 设定。两套 loss 各用在哪一段、权重多少，原文没给。
+- **需实验或作者披露**：Figure 2 的 2× 是 Qwen2.5-32B dense softmax 上的对照，不是 456B hybrid 上相对 DAPO 的墙钟。生产 run 有没有再比 GRPO/DAPO，没写。
+- **需实验或作者披露**：16 轮 off-policy / generation 是 CISPO 成立的关键工况；同步、少步更新时「不丢 token」还值多少，没有消融。
 
 ## 相关页面
 

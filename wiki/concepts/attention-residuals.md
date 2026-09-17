@@ -78,11 +78,11 @@ AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，�
 
 ## 待追问
 
-- **N=8 / S=12 在 93 层 2.8T 规模下是否最优？** 报告引 [57] 说"N≈8 recovers most of the benefit across model scales"，但 [57] 原始实验尺度未在 K3 报告展开。层数从 [57] 实验尺度到 93 层，最优 N 是否该 scale？需查 [57] 原文。
-- **AttnRes 的 ablation 增益**。K3 报告把 AttnRes 作为架构组成部分描述，但未给"有 AttnRes vs 无 AttnRes"的 head-to-head ablation 数字（validation loss / downstream benchmark）。2.5× scaling efficiency 是综合改进的合计，AttnRes 贡献占比未拆解。
-- **Full vs Block AttnRes 的质量差距**。报告说 Block 是为降开销，N=8 recover most benefit，但"most"是定性。Full AttnRes 在 K3 规模下能多带来多少增益？
-- **pseudo-query `q_l = w_l` 的作用**。每层一个可学习向量作 query，它学到的模式是什么？是否某些层倾向 attend 近层、某些 attend 远层（含 embedding）？可解释性分析缺。
-- **与 DenseFormer / Feathers 等跨层连接工作的关系**。AttnRes 不是唯一做跨层信息流的工作，DenseFormer（dense connection）等走的是加法而非 attention。这些机制在 K3 规模下的对比缺。
+- **需补外部来源**：**N=8 / S=12 在 93 层 2.8T 规模下是否最优？** 报告引 [57] 说"N≈8 recovers most of the benefit across model scales"，但 [57] 原始实验尺度未在 K3 报告展开。层数从 [57] 实验尺度到 93 层，最优 N 是否该 scale？需查 [57] 原文。
+- **需实验或作者披露**：**AttnRes 的 ablation 增益**。K3 报告把 AttnRes 作为架构组成部分描述，但未给"有 AttnRes vs 无 AttnRes"的 head-to-head ablation 数字（validation loss / downstream benchmark）。2.5× scaling efficiency 是综合改进的合计，AttnRes 贡献占比未拆解。
+- **需实验或作者披露**：**Full vs Block AttnRes 的质量差距**。报告说 Block 是为降开销，N=8 recover most benefit，但"most"是定性。Full AttnRes 在 K3 规模下能多带来多少增益？
+- **需实验或作者披露**：**pseudo-query `q_l = w_l` 的作用**。每层一个可学习向量作 query，它学到的模式是什么？是否某些层倾向 attend 近层、某些 attend 远层（含 embedding）？可解释性分析缺。
+- **需实验或作者披露**：**与 DenseFormer / Feathers 等跨层连接工作的关系**。AttnRes 不是唯一做跨层信息流的工作，DenseFormer（dense connection）等走的是加法而非 attention。这些机制在 K3 规模下的对比缺。
 
 ## 相关页面
 
@@ -94,3 +94,5 @@ AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，�
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（K3 序列维机制，与 AttnRes 正交）
 - [Multi-Head Latent Attention](multi-head-latent-attention.md)（K3 全局层底座）
 - [Intern-S2-Mobius 技术报告](../sources/intern-s2-mobius.md)（共享 FFN Memory 的 BRC，与 AttnRes 的接口边界）
+
+关联提问页：[Kimi K3 技术报告](../sources/kimi-k3.md#相关追问)。

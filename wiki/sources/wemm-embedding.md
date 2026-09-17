@@ -146,13 +146,13 @@ Stage-2 2B 累积（Table 6）：
 
 ## 待追问
 
-- **基座 checkpoint 细节**：原文只写「corresponding natively multimodal Qwen3.5 backbones」，未写 Instruct / Base / thinking、是否冻视觉编码器、是否改 GDN:full-attention 混合比。
-- **训练配方空白**：optimizer、学习率、步数、硬件、global batch、$\tau$、$\tau_{\mathrm{dup}}$、$\alpha_d$、$\lambda_{\mathrm{Emb}}$、各档 $D_{\mathrm{MRL}}$、Stage 2 视觉分辨率和帧采样数均未给。
-- **数据不可复现**：几百兆对的来源配比、内部数据占比、Semantic-ID 码本大小、reranker 启用任务列表都没有。
-- **9B merge**：引了 TIES-Merging，但没写变体数、互补混合是什么、merge 算法超参；无法判断 80.6 有多少来自 merge 而不是容量。
-- **榜与生产口径**：MMEB-v2「官方第一」是 2026-08-24 快照；内部 26 任务和 14 组 A/B 无分项定义、无误差条，无法对外复现。
-- **音频缺口**：同组 WAVE（ICLR 2026，部分作者重叠）做了 audio-visual embedding，WeMM 明确不支持音频、V3 音频记 0。结论里写未来做 omni-modal，但本报告没有衔接 WAVE 的机制说明。这是作者名单与引用上的推断，不是原文陈述。
-- **moment retrieval 几乎不随尺寸涨**（2B 58.4 / 4B 58.6 / 9B 58.5）：是数据不够、目标不匹配，还是 Qwen3.5 时间建模上限，原文未分析。
+- **需补外部来源**：**基座 checkpoint 细节**：原文只写「corresponding natively multimodal Qwen3.5 backbones」，未写 Instruct / Base / thinking、是否冻视觉编码器、是否改 GDN:full-attention 混合比。
+- **需实验或作者披露**：**训练配方空白**：optimizer、学习率、步数、硬件、global batch、$\tau$、$\tau_{\mathrm{dup}}$、$\alpha_d$、$\lambda_{\mathrm{Emb}}$、各档 $D_{\mathrm{MRL}}$、Stage 2 视觉分辨率和帧采样数均未给。
+- **需实验或作者披露**：**数据不可复现**：几百兆对的来源配比、内部数据占比、Semantic-ID 码本大小、reranker 启用任务列表都没有。
+- **需实验或作者披露**：**9B merge**：引了 TIES-Merging，但没写变体数、互补混合是什么、merge 算法超参；无法判断 80.6 有多少来自 merge 而不是容量。
+- **需实验或作者披露**：**榜与生产口径**：MMEB-v2「官方第一」是 2026-08-24 快照；内部 26 任务和 14 组 A/B 无分项定义、无误差条，无法对外复现。
+- **需补外部来源**：**音频缺口**：同组 WAVE（ICLR 2026，部分作者重叠）做了 audio-visual embedding，WeMM 明确不支持音频、V3 音频记 0。结论里写未来做 omni-modal，但本报告没有衔接 WAVE 的机制说明。这是作者名单与引用上的推断，不是原文陈述。
+- **需实验或作者披露**：**moment retrieval 几乎不随尺寸涨**（2B 58.4 / 4B 58.6 / 9B 58.5）：是数据不够、目标不匹配，还是 Qwen3.5 时间建模上限，原文未分析。
 
 ## 相关页面
 

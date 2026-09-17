@@ -77,10 +77,10 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 
 ## 待追问
 
-- $\lambda$ 在 TransNormerLLM 里是固定超参还是可学，正文没给生产配置。
-- 与 GDN 的 chunkwise parallel form 同属「块内密集、块间传状态」，但状态方程不同。本页没有和 GDN/KDA 的同协议对照。
-- 15B 只报了训练中段；完整 1.3T 结果不在本 PDF。
-- FLA 仓库后来加了哪些算子、和本页 Triton kernel 是否逐行等价，本页未核源码。
+- **需补外部来源**：$\lambda$ 在 TransNormerLLM 里是固定超参还是可学，正文没给生产配置。
+- **需实验或作者披露**：与 GDN 的 chunkwise parallel form 同属「块内密集、块间传状态」，但状态方程不同。本页没有和 GDN/KDA 的同协议对照。
+- **需补外部来源**：15B 只报了训练中段；完整 1.3T 结果不在本 PDF。
+- **需补外部来源**：FLA 仓库后来加了哪些算子、和本页 Triton kernel 是否逐行等价，本页未核源码。
 
 ## 相关页面
 

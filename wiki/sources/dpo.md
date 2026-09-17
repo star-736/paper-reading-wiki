@@ -101,10 +101,13 @@ OOD：把 TL;DR 上训好的 DPO / PPO 直接评 CNN/DailyMail 新闻摘要（Ta
 
 ## 待追问
 
-- 论文只做到 6B、单轮文本。DPO 在 2025–2026 的 agentic / RLVR 栈里几乎不出现，是因为静态偏好对覆盖不了可验证环境，还是后续文献里的 length bias、likelihood displacement 已经把它挤出生产？本仓库目前没有一手来源回答这个问题。
-- 无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$，对公开偏好集（HH、TL;DR）的分布偏移有多大？论文没有量化。
-- Figure 3 右图后期 win rate 轻微回落，论文问这是不是 reward over-optimization 在 DPO 里的对应物，没有下结论。
-- 后续偏好方法与 Eq. 7 的关系，原文没有讨论；不能写成 DPO 的推论。[Iterative RPO](iterative-rpo.md) 已核（DPO+NLL）。[KTO](kto.md) 已核（二元 desirable/undesirable 的前景理论 HALO，不是 Eq. 7 的变体，也不解释 2026 为何弃用 DPO）。**找论文可解**（尚未 ingest）：IPO（Azar et al., [arXiv:2310.12036](https://arxiv.org/abs/2310.12036)）、ORPO（Hong et al., [arXiv:2403.07691](https://arxiv.org/abs/2403.07691)）、SimPO（Meng et al., [arXiv:2405.14734](https://arxiv.org/abs/2405.14734)）。**找论文也答不了**：2026 agentic / RLVR 栈为何几乎不用 DPO，这些偏好论文不会给出生产弃用的因果。
+- **需实验或作者披露**：无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$，对公开偏好集（HH、TL;DR）的分布偏移有多大？论文没有量化。
+- **需实验或作者披露**：Figure 3 右图后期 win rate 轻微回落，论文问这是不是 reward over-optimization 在 DPO 里的对应物，没有下结论。
+- **需补外部来源**：后续偏好方法与 Eq. 7 的关系，原文没有讨论；不能写成 DPO 的推论。[Iterative RPO](iterative-rpo.md) 已核（DPO+NLL）。[KTO](kto.md) 已核（二元 desirable/undesirable 的前景理论 HALO，不是 Eq. 7 的变体，也不解释 2026 为何弃用 DPO）。**找论文可解**（尚未 ingest）：IPO（Azar et al., [arXiv:2310.12036](https://arxiv.org/abs/2310.12036)）、ORPO（Hong et al., [arXiv:2403.07691](https://arxiv.org/abs/2403.07691)）、SimPO（Meng et al., [arXiv:2405.14734](https://arxiv.org/abs/2405.14734)）。**找论文也答不了**：2026 agentic / RLVR 栈为何几乎不用 DPO，这些偏好论文不会给出生产弃用的因果。
+
+## 相关追问
+
+主记录：[离线偏好方法的生产采用因果](../comparisons/llm-rl-policy-optimization.md#待追问)。
 
 ## 相关页面
 

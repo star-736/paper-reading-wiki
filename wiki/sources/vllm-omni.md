@@ -110,10 +110,10 @@ vLLM-Omni 还覆盖三类非 Qwen-Omni 模型：
 
 ## 待追问
 
-- 论文评测是 offline inference / JCT / RTF 为主；在线多用户 serving 下，stage graph scheduler 的 admission control、backpressure 与 tail latency 如何表现仍需更多数据。
-- Qwen3-Omni 结果很强，但 Qwen3-Omni 本身尚未在本 wiki 作为模型页沉淀；后续若收 Qwen3-Omni 原报告，应把 Figure 4 的 stage graph 与模型结构一一对齐。
-- 论文把 DiT engine 纳入 stage graph，但不同 diffusion 模型的质量 / latency trade-off 是否受 engine 优化影响，当前只看 JCT，不看生成质量变化。
-- Unified connector 的 Table 1 显示 overhead 小，但跨机 RDMA / Mooncake 在更大 batch、更长音视频 tensor、更多 stage 的情况下是否仍是小项，需要系统实验。
+- **需实验或作者披露**：论文评测是 offline inference / JCT / RTF 为主；在线多用户 serving 下，stage graph scheduler 的 admission control、backpressure 与 tail latency 如何表现仍需更多数据。
+- **需补外部来源**：Qwen3-Omni 结果很强，但 Qwen3-Omni 本身尚未在本 wiki 作为模型页沉淀；后续若收 Qwen3-Omni 原报告，应把 Figure 4 的 stage graph 与模型结构一一对齐。
+- **需实验或作者披露**：论文把 DiT engine 纳入 stage graph，但不同 diffusion 模型的质量 / latency trade-off 是否受 engine 优化影响，当前只看 JCT，不看生成质量变化。
+- **需实验或作者披露**：Unified connector 的 Table 1 显示 overhead 小，但跨机 RDMA / Mooncake 在更大 batch、更长音视频 tensor、更多 stage 的情况下是否仍是小项，需要系统实验。
 
 ## 相关页面
 

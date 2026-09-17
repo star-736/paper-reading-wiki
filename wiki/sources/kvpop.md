@@ -189,12 +189,15 @@ DMS（Dynamic Memory Sparsification，Łańcucki et al. 2025）是最接近的 b
 
 DSA/MSA 是 sparse retrieval 方法，不丢弃 token，全量 KV cache 仍在内存中。KVpop 是 eviction 方法，强制固定 cache。两者解决不同问题：sparse retrieval 减少 attention compute 但不 bound memory；eviction 直接 bound memory。论文明确将 sparse retrieval 方法排除在对比之外。
 
-## 待追问
+## 证据边界与阅读提示
 
 - **Abstract / contributions / conclusion 之间的数字不一致**（已据原文核实 p1/p2/p11）：Abstract 说 Qwen3-4B 在 75%/88% 下保留 98%/97%（与 Table 1 的 Rel 一致）；但 contributions（§1, p2）和 conclusion（§5, p11）均说 95%/94%（4B）和 95%/99%（8B），与 Table 1 的 8B=1.00/1.00 也不符。疑为 v1->v2 修订时 Abstract 更新但 contributions/conclusion 未同步。三处原文已核实，不再需要查 v1。
-- KVpop 目前是 post-training retrofit，论文未探索 from-scratch native sparse training。是否能与 DSA 式预训练阶段 sparse 训练结合？
-- 论文仅在 Qwen3 上验证，未覆盖 MLA 架构（DeepSeek 系）或 GDN 混合架构（Qwen3-Next 系）。scorer 对不同 attention 架构的迁移性如何？
-- paged KV-cache manager（vLLM / SGLang）下的优势是否能保持？论文承认这是 future work。
+
+## 待追问
+
+- **需实验或作者披露**：KVpop 目前是 post-training retrofit，论文未探索 from-scratch native sparse training。是否能与 DSA 式预训练阶段 sparse 训练结合？
+- **需实验或作者披露**：论文仅在 Qwen3 上验证，未覆盖 MLA 架构（DeepSeek 系）或 GDN 混合架构（Qwen3-Next 系）。scorer 对不同 attention 架构的迁移性如何？
+- **需实验或作者披露**：paged KV-cache manager（vLLM / SGLang）下的优势是否能保持？论文承认这是 future work。
 
 ## 相关页面
 

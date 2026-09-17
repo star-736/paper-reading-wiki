@@ -152,17 +152,20 @@ Table 3。Gemini 行未再写 No skill，该列只依赖执行器。Qwen3.5-27B 
 
 执行器 Qwen3.5-27B、进化模型 GPT-5.2。作者把 skill-unaware 的波动写成「不归因就改技能会更不稳」（§4.3）。
 
-## 待追问
+## 证据边界与阅读提示
 
 - 摘要 31.58% / 25.01% / 19.04% 是相对涨幅；Table 3 的 +14.92 才是百分点。和 [ASPIRE](aspire.md) 正文把「77 points」写成百分点的口径相反，横比前先换算。
-- 技能正文的具体格式、初始技能从哪来、\(B\) 的数值，正文只给了 \(K=1\) 和 10 个 stage。附录是否公开完整技能快照，本页未逐条核。
-- 进化模型是 GPT-5.2 / Gemini-3-flash，执行器是开源 Qwen。更小进化模型能不能做同一套受限编辑，原文没验证。
 - 没有真机，也没有 VLA 后端。ALFWorld 是文本交互家务，EmbodiedBench 是视觉仿真。不要把它写成 [π0](pi0.md) / [π0.5](pi0.5.md) 的低层替换。
-- 8B Navigation Long 仍是 0。长程视觉导航缺的是技能条款、观察、还是执行器本身，表分不开。
-- Qwen3.5-27B + Gemini 的 skill-aware 边际只有 +1.49 pp。是 Gemini 已经把粗更新做得够稳，还是反思类型在这个组合上失效？
-- 原文没有独立 Limitations 节。技能文档膨胀、过时条款、附录噪音，都没有机制消融。
 - 近邻不要混名（**已闭合**）：[ASPIRE](aspire.md) 写/改程序并扩张库；[EmbodiedSkills](embodied-skills.md) 固定 typed 合同 + AgentLoop；本页冻结 LLM 改技能正文。[AtomicVLA](atomicvla.md) 技能是 SG-MoE 路由，低层仍是 π0 连续专家，ALFWorld 93.28% 不能填它的 LIBERO 表。[SayCan](saycan.md) 是固定技能表 × value function。
 - **已闭合**：[Inner Monologue](inner-monologue.md) 是 SayCan 的语言反馈闭环，技能库仍固定，只把成功/场景写成文字给 LLM。不能从本页推出，也不要把本页的技能正文改写写成那篇的闭环。
+
+## 待追问
+
+- **现有材料待核**：技能正文的具体格式、初始技能从哪来、\(B\) 的数值，正文只给了 \(K=1\) 和 10 个 stage。附录是否公开完整技能快照，本页未逐条核。
+- **需实验或作者披露**：进化模型是 GPT-5.2 / Gemini-3-flash，执行器是开源 Qwen。更小进化模型能不能做同一套受限编辑，原文没验证。
+- **需实验或作者披露**：8B Navigation Long 仍是 0。长程视觉导航缺的是技能条款、观察、还是执行器本身，表分不开。
+- **需实验或作者披露**：Qwen3.5-27B + Gemini 的 skill-aware 边际只有 +1.49 pp。是 Gemini 已经把粗更新做得够稳，还是反思类型在这个组合上失效？
+- **需实验或作者披露**：原文没有独立 Limitations 节。技能文档膨胀、过时条款、附录噪音，都没有机制消融。
 
 ## 相关页面
 

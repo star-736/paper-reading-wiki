@@ -87,11 +87,14 @@ Table 2（零样本；末列是准确率类任务平均）：
 - **[Mamba-2](mamba-2.md) 在 Table 1 是标量门档。** 本页讨论的 Mamba 主要是 Mamba-1（满秩 $G_t$、SRAM 物化、状态不能太大）；Mamba-2 的标量恒等 $A$ 是后作对照。
 - **[RWKV](rwkv.md) 在本页是 MQAR 弱基线（RWKV-4）和 Table 1 的 RWKV-6 参数化。** RWKV-4 不是矩阵状态线性注意力。
 
+## 证据边界与阅读提示
+
+- Table 1 把 RWKV-6 写成与 GLA 同结构的 $\alpha_t^\top\mathbf{1}$。RWKV-4 原文的 WKV 不是这块；RWKV-7 的 generalized delta 更不在本页。
+
 ## 待追问
 
-- 低秩门投影秩固定 16、$\tau=16$，有没有随宽度放大的规则？原文没给 7B+ 配置。
-- Table 1 把 RWKV-6 写成与 GLA 同结构的 $\alpha_t^\top\mathbf{1}$。RWKV-4 原文的 WKV 不是这块；RWKV-7 的 generalized delta 更不在本页。
-- 本页 FlashLinearAttention 的 Triton kernel 与 Lightning-2 的 kernel 是否在无门、标量衰减设定下数值等价，两边都没有对照。
+- **需实验或作者披露**：低秩门投影秩固定 16、$\tau=16$，有没有随宽度放大的规则？原文没给 7B+ 配置。
+- **需实验或作者披露**：本页 FlashLinearAttention 的 Triton kernel 与 Lightning-2 的 kernel 是否在无门、标量衰减设定下数值等价，两边都没有对照。
 
 ## 相关页面
 

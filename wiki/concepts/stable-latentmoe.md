@@ -124,12 +124,12 @@ margins `s_{i,j} - α_i^{(t)}` 减掉 biased cutoff，旧 bias 只通过 cutoff 
 
 ## 待追问
 
-- **Normalized LatentMoE 的 ablation 数字**。报告说"consistently improves validation loss and downstream benchmarks"但未给具体数字。RMSNorm 带来多少 loss 改善、哪些 benchmark 涨？
-- **SiTU-GLU 的 β1=4 / β2=25 选择依据**。报告给值但未给选择方法。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 MXFP4 dynamic range 的关系？SwiGLU（β→∞）作为 ablation 基线的 loss 差距？
-- **QB vs sign update 的收敛速度对比**。报告说 QB "equilibrates within a few update steps even for nearly 10³ experts"，但未给 sign update 在 896 expert 下的失败模式量化（振荡幅度、dying expert 比例）。这个对比是 QB 必要性的核心证据。
-- **QB 的 train-inference consistency 细节**。推理时 bias 冻结，但训练时 bias 每 step 更新——bias 在训练后期的稳定性如何？是否会因最后几个 step 的 batch distribution 摆动影响最终 bias？报告说"final bias is frozen at inference"但未说从哪个 step 冻结。
-- **LatentMoE 的表达力损失**。routed expert 在 ℓ=d/2 空间操作，相对全宽 expert 牺牲多少表达力？K3 靠 2 个全宽 shared expert 补，但 shared 占比（2 / (2+16) = 11%）是否够？与 DeepSeek 系全宽 routed expert 的 head-to-head 质量对比缺（不同模型规模、不同训练数据，不可直接比）。
-- **MoonEP 的 E/R bound 与 QB 的关系**。MoonEP 保证 EP rank 间负载平衡（每 rank 恰收 S×K token），QB 保证 expert 间负载平衡（每 expert 收 mk/n token）。两者作用层级不同（EP rank vs expert），但都追求"完美平衡"。它们是否耦合——QB 的 balanced routing 是否让 MoonEP 的 redundant expert planning 更容易？
+- **需实验或作者披露**：**Normalized LatentMoE 的 ablation 数字**。报告说"consistently improves validation loss and downstream benchmarks"但未给具体数字。RMSNorm 带来多少 loss 改善、哪些 benchmark 涨？
+- **需实验或作者披露**：**SiTU-GLU 的 β1=4 / β2=25 选择依据**。报告给值但未给选择方法。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 MXFP4 dynamic range 的关系？SwiGLU（β→∞）作为 ablation 基线的 loss 差距？
+- **需实验或作者披露**：**QB vs sign update 的收敛速度对比**。报告说 QB "equilibrates within a few update steps even for nearly 10³ experts"，但未给 sign update 在 896 expert 下的失败模式量化（振荡幅度、dying expert 比例）。这个对比是 QB 必要性的核心证据。
+- **需实验或作者披露**：**QB 的 train-inference consistency 细节**。推理时 bias 冻结，但训练时 bias 每 step 更新——bias 在训练后期的稳定性如何？是否会因最后几个 step 的 batch distribution 摆动影响最终 bias？报告说"final bias is frozen at inference"但未说从哪个 step 冻结。
+- **需实验或作者披露**：**LatentMoE 的表达力损失**。routed expert 在 ℓ=d/2 空间操作，相对全宽 expert 牺牲多少表达力？K3 靠 2 个全宽 shared expert 补，但 shared 占比（2 / (2+16) = 11%）是否够？与 DeepSeek 系全宽 routed expert 的 head-to-head 质量对比缺（不同模型规模、不同训练数据，不可直接比）。
+- **需实验或作者披露**：**MoonEP 的 E/R bound 与 QB 的关系**。MoonEP 保证 EP rank 间负载平衡（每 rank 恰收 S×K token），QB 保证 expert 间负载平衡（每 expert 收 mk/n token）。两者作用层级不同（EP rank vs expert），但都追求"完美平衡"。它们是否耦合——QB 的 balanced routing 是否让 MoonEP 的 redundant expert planning 更容易？
 
 ## 相关页面
 

@@ -184,12 +184,12 @@ Qwen3-8B / 14B backbone 在 GRPO 下 reward 稳步上升；entropy 随时间相�
 
 ## 待追问
 
-- **MCP-Mark 绝对分偏低**：Agent-World-14B 在 MCP-Mark Avg 仅 13.3%，远低于 Gemini-3 Pro 50.8% / GPT-5.2 53.1%。报告把 MCP-Mark 列为主战场之一却差距明显，是否因 MCP-Mark 子域（File/Github/Notion/Play./Post.）对真实 MCP server 覆盖不足？需看分项分布。
-- **GPT-OSS-120B 的双重角色**：它既是环境挖掘/任务合成/诊断的策略模型，又被列为被比较的基础模型（MCP-Mark 仅 4.7%）。用它造的训练数据是否存在能力上限天花板？换更强策略模型（如 Doubao-Seed-2.0）能否进一步提升环境/任务质量？
-- **5K RL 样本 + 40K SFT 的规模**：相对环境生态（1978 环境 / 19822 工具）显得偏小，是否靠多环境 rollout 与自演化循环弥补了数据量？更大 RL 样本量的 scaling 未见分析。
-- **自演化轮数的上限**：仅测了 2 轮且边际递减，更多轮是否会出现环境多样性枯竭或过拟合 arena 评测分布？
-- **DB complexification 的轮数 `N`** 与 arena `K=5` 的取值依据未给消融；环境分类体系依赖 GPT-OSS-120B 摘要 + 3 标注者，标注偏差如何控制？
-- **与 MCP-Atlas 的关系**：报告引用 MCP-Atlas [6] 但评测用的是 MCP-Mark [106] 与 MCP-Universe，三者关系未澄清。
+- **现有材料待核**：**MCP-Mark 绝对分偏低**：Agent-World-14B 在 MCP-Mark Avg 仅 13.3%，远低于 Gemini-3 Pro 50.8% / GPT-5.2 53.1%。报告把 MCP-Mark 列为主战场之一却差距明显，是否因 MCP-Mark 子域（File/Github/Notion/Play./Post.）对真实 MCP server 覆盖不足？需看分项分布。
+- **需实验或作者披露**：**GPT-OSS-120B 的双重角色**：它既是环境挖掘/任务合成/诊断的策略模型，又被列为被比较的基础模型（MCP-Mark 仅 4.7%）。用它造的训练数据是否存在能力上限天花板？换更强策略模型（如 Doubao-Seed-2.0）能否进一步提升环境/任务质量？
+- **需实验或作者披露**：**5K RL 样本 + 40K SFT 的规模**：相对环境生态（1978 环境 / 19822 工具）显得偏小，是否靠多环境 rollout 与自演化循环弥补了数据量？更大 RL 样本量的 scaling 未见分析。
+- **需实验或作者披露**：**自演化轮数的上限**：仅测了 2 轮且边际递减，更多轮是否会出现环境多样性枯竭或过拟合 arena 评测分布？
+- **需实验或作者披露**：**DB complexification 的轮数 `N`** 与 arena `K=5` 的取值依据未给消融；环境分类体系依赖 GPT-OSS-120B 摘要 + 3 标注者，标注偏差如何控制？
+- **现有材料待核**：**与 MCP-Atlas 的关系**：报告引用 MCP-Atlas [6] 但评测用的是 MCP-Mark [106] 与 MCP-Universe，三者关系未澄清。
 
 ## 相关页面
 

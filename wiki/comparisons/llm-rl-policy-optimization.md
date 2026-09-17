@@ -200,20 +200,20 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 
 ## 待追问
 
-- VAPO 的 Length-Adaptive GAE 能否迁移到 code / agent 长轨迹？其 $\lambda(l)$ 实现是否需要下界 clipping，论文没有说明。
-- VAPO 相对 DAPO 的 10.4 分与更少 update steps，扣除 value model 的额外显存、FLOPs 和预训练 50 steps 后，wall-clock / total-token 效率是否仍占优？
-- DAPO 的 token-level loss 与 GSPO 的 sequence-level ratio 是否冲突？一个在 loss reduction 上按 token 平均，一个在 importance ratio 上按 sequence 加权；二者能否组合，需要实验。
-- SAPO 是否会成为 GSPO 的严格替代，还是只在 outlier token 多 / hard clipping 脆的阶段更好？论文承认所有方法最终仍可能 instability。
-- ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
-- GiGPO 的状态匹配在开放工具 / GUI / 仓库编辑里是否还能维持 ALFWorld 那种 >65% 重复率？与 ARPO 同一预算对照仍然缺失。
-- HGPO 的 $k$-state history 能否代表真实 memory prompt？summary / retrieval memory 的层次相似度、deep-group covariance 与 uncertainty-weighted aggregation 仍无实验。
-- SAO 的 frozen-attention critic 在 dense 模型上是否还成立？DIS 硬 mask 与 SAPO soft gate、CISPO detached clip 能否组合？
-- MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
-- DeepSeekMath Figure 7 的「RL 抬 Maj@K、不抬 Pass@K」是否在更大模型或可验证环境 RLVR 上仍成立？后续报告几乎不复现这条曲线。
-- MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
-- 2026 的 agentic / RLVR 栈几乎不用 DPO：是静态偏好对覆盖不了可验证环境，还是 length bias 等后续问题已经把它挤出生产？[KTO](../sources/kto.md) 把监督改成二元，仍不回答生产弃用因果。本页没有一手来源回答。
-- CTPO 的 prefix 连乘在 MoE expert routing volatility 下是更敏感还是更钝？GSPO 的稳定性论据与 CTPO 的无偏论据没有同一评测面的对照，dense-only 实验无法回答。
-- CTPO 在 TIR 多轮轨迹里如何对待环境返回的非策略生成 token（是否计入 $\rho^{\mathrm{cum}}$ 连乘、clip 是否作用其上）？正文与附录未说明，需看其 VERL 实现确认。
+- **需实验或作者披露**：VAPO 的 Length-Adaptive GAE 能否迁移到 code / agent 长轨迹？其 $\lambda(l)$ 实现是否需要下界 clipping，论文没有说明。
+- **需实验或作者披露**：VAPO 相对 DAPO 的 10.4 分与更少 update steps，扣除 value model 的额外显存、FLOPs 和预训练 50 steps 后，wall-clock / total-token 效率是否仍占优？
+- **需实验或作者披露**：DAPO 的 token-level loss 与 GSPO 的 sequence-level ratio 是否冲突？一个在 loss reduction 上按 token 平均，一个在 importance ratio 上按 sequence 加权；二者能否组合，需要实验。
+- **需实验或作者披露**：SAPO 是否会成为 GSPO 的严格替代，还是只在 outlier token 多 / hard clipping 脆的阶段更好？论文承认所有方法最终仍可能 instability。
+- **需实验或作者披露**：ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
+- **需实验或作者披露**：GiGPO 的状态匹配在开放工具 / GUI / 仓库编辑里是否还能维持 ALFWorld 那种 >65% 重复率？与 ARPO 同一预算对照仍然缺失。 状态不精确重复时的相似度分组与折扣权重风险，另见 [GiGPO 概念页](../concepts/group-in-group-policy-optimization.md#待追问)。
+- **需实验或作者披露**：HGPO 的 $k$-state history 能否代表真实 memory prompt？summary / retrieval memory 的层次相似度、deep-group covariance 与 uncertainty-weighted aggregation 仍无实验。 固定 history hash 如何适配摘要、检索或 latent memory，固定深度权重能否用 advantage uncertainty 替换，也属于这一组实验。
+- **需实验或作者披露**：SAO 的 frozen-attention critic 在 dense 模型上是否还成立？DIS 硬 mask 与 SAPO soft gate、CISPO detached clip 能否组合？
+- **需实验或作者披露**：MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
+- **需实验或作者披露**：DeepSeekMath Figure 7 的「RL 抬 Maj@K、不抬 Pass@K」是否在更大模型或可验证环境 RLVR 上仍成立？后续报告几乎不复现这条曲线。
+- **需实验或作者披露**：MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
+- **需实验或作者披露**：现有库中收录的 2026 agentic / RLVR 报告较少采用 DPO；这一观察不能直接推广为整个产业弃用。是静态偏好对难以覆盖可验证环境，还是 length bias / likelihood displacement 等问题影响采用？[KTO](../sources/kto.md) 的二元 HALO 与 [DPO](../sources/dpo.md) 后续偏好论文不能单独证明生产选择的因果，仍需采用方披露或受控对照。
+- **需实验或作者披露**：CTPO 的 prefix 连乘在 MoE expert routing volatility 下是更敏感还是更钝？GSPO 的稳定性论据与 CTPO 的无偏论据没有同一评测面的对照，dense-only 实验无法回答。
+- **需补外部来源**：CTPO 在 TIR 多轮轨迹里如何对待环境返回的非策略生成 token（是否计入 $\rho^{\mathrm{cum}}$ 连乘、clip 是否作用其上）？正文与附录未说明，需看其 VERL 实现确认。 还需确认五轮 TIR 中 prefix 是否跨 turn 累积。
 
 ## 相关页面
 
@@ -221,3 +221,5 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 系统侧来源：[R3](../sources/r3.md)（MoE 路由重放，与本页 ratio 方法正交）、[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[DeepSeekMath](../models/deepseekmath.md)（GRPO 发布检查点）、[MiniMax-M1](../models/minimax-m1.md)（CISPO 发布检查点）、[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)
+
+关联提问页：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md#相关追问)、[Cumulative Token Policy Optimization（CTPO）](../sources/cumulative-token-policy-optimization.md#相关追问)、[DeepSeekMath](../sources/deepseekmath.md#相关追问)、[DPO：Direct Preference Optimization](../sources/dpo.md#相关追问)、[KTO：Model Alignment as Prospect Theoretic Optimization](../sources/kto.md#相关追问)。

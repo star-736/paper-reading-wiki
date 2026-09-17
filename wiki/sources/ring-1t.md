@@ -165,15 +165,18 @@ Table 1 摘录（原文确证；蓝字 = 开源第一，粗体 = 全局第一，
 
 IMO-2025（§3.3、Appendix E）：接入 [AWorld](https://github.com/inclusionAI/AWorld)，纯自然语言、不用代码或符号求解器。第一次提交解出 1、3、4、5，作者对应银牌；第三次尝试给 Problem 2 近乎完整的几何证明；Problem 6 收敛到错误答案 4048（与 Gemini 2.5 Pro 相同，正确答案 2112）。
 
+## 证据边界与阅读提示
+
+- Limitations 把 MoBA 与「advanced linear attention」列为未来推理效率方向；本报告的 Ring-1T 仍是 GQA，不要和 Ring-2.6 的 Lightning Attention retrofit 混成同一代架构。
+
 ## 待追问
 
-- IcePop 的 $M(k)=k$ 是重要性采样校正，还是只是把 mask 写成乘子？Eq. 3 把 $M(\pi_{\mathrm{train}}/\pi_{\mathrm{infer}})$ 直接乘在 $\nabla\log\pi_{\mathrm{train}}$ 上，但没有消融「只做 0/1 mask、不乘 $k$」。
-- Reasoning RL 用 IcePop，General RL 改回 GRPO：是对齐阶段不再怕 mismatch，还是 IcePop 在 RLHF 数据上没有试？报告没写。
-- Figure 6 的 +IcePop 从约 300 step 才出现：是中途切入，还是两条 run 的对齐方式不同？
-- AState 同步延迟：§2.5 写万亿参数 <10 s，§2.5.1 写 sub-second。哪一个是 Ring-1T 实测？
-- SFT 域比例正文 46/26/20/8 与 Figure 14 饼图（Math 43%、Code 18%、Physics 13% …）对不齐。
-- IcePop 与 [GSPO](group-sequence-policy-optimization.md) / [SAPO](soft-adaptive-policy-optimization.md) / [DIS](single-rollout-asynchronous-optimization.md) 的可组合性只有 Appendix 定性句，没有实验。
-- Limitations 把 MoBA 与「advanced linear attention」列为未来推理效率方向；本报告的 Ring-1T 仍是 GQA，不要和 Ring-2.6 的 Lightning Attention retrofit 混成同一代架构。
+- **需实验或作者披露**：IcePop 的 $M(k)=k$ 是重要性采样校正，还是只是把 mask 写成乘子？Eq. 3 把 $M(\pi_{\mathrm{train}}/\pi_{\mathrm{infer}})$ 直接乘在 $\nabla\log\pi_{\mathrm{train}}$ 上，但没有消融「只做 0/1 mask、不乘 $k$」。
+- **需实验或作者披露**：Reasoning RL 用 IcePop，General RL 改回 GRPO：是对齐阶段不再怕 mismatch，还是 IcePop 在 RLHF 数据上没有试？报告没写。
+- **需实验或作者披露**：Figure 6 的 +IcePop 从约 300 step 才出现：是中途切入，还是两条 run 的对齐方式不同？
+- **需实验或作者披露**：AState 同步延迟：§2.5 写万亿参数 <10 s，§2.5.1 写 sub-second。哪一个是 Ring-1T 实测？
+- **需实验或作者披露**：SFT 域比例正文 46/26/20/8 与 Figure 14 饼图（Math 43%、Code 18%、Physics 13% …）对不齐。
+- **需实验或作者披露**：IcePop 与 [GSPO](group-sequence-policy-optimization.md) / [SAPO](soft-adaptive-policy-optimization.md) / [DIS](single-rollout-asynchronous-optimization.md) 的可组合性只有 Appendix 定性句，没有实验。
 
 ## 相关页面
 

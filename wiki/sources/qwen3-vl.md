@@ -153,10 +153,10 @@ RL 用 3 个互补 reward：
 
 ## 待追问
 
-- **DeepStack 选 ViT 哪 3 层？** 论文只说 "three distinct levels"，未指定层号；HF 实现 / config 可能给具体数。
-- **Interleaved MRoPE 的具体 dim 分配方案**：论文称沿 Huang et al., 2025，但未给本作具体每多少维度切 t/h/w 周期。
-- **Square-root reweighting 公式**：摘要 + 引言点到，正文未给完整 loss 形式。
-- **与 Qwen3.5-Omni 的分工**：Omni 走 Qwen3-Next/3.5 hybrid backbone + 文本+图像+视频+音频；VL 走 Qwen3 标准 backbone + 文本+图像+视频。两条线**LLM backbone 不同**--为何不统一？是否暗示 hybrid stack 在视觉任务上有劣势？正文未触及。
+- **需补外部来源**：**DeepStack 选 ViT 哪 3 层？** 论文只说 "three distinct levels"，未指定层号；HF 实现 / config 可能给具体数。
+- **需补外部来源**：**Interleaved MRoPE 的具体 dim 分配方案**：论文称沿 Huang et al., 2025，但未给本作具体每多少维度切 t/h/w 周期。
+- **需补外部来源**：**Square-root reweighting 公式**：摘要 + 引言点到，正文未给完整 loss 形式。
+- **需实验或作者披露**：**与 Qwen3.5-Omni 的分工**：Omni 走 Qwen3-Next/3.5 hybrid backbone + 文本+图像+视频+音频；VL 走 Qwen3 标准 backbone + 文本+图像+视频。两条线**LLM backbone 不同**--为何不统一？是否暗示 hybrid stack 在视觉任务上有劣势？正文未触及。
 
 ## 相关页面
 

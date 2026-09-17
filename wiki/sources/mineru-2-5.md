@@ -104,11 +104,11 @@ OmniDocBench（1,355 页，平均 >1100 token/页）上 SOTA，超通用和专�
 
 ## 待追问
 
-- **IMIC 的随机性来源**：多次推理的随机性来自采样温度还是 dropout？论文未明确。不同随机源对 hard case 识别稳定性影响几何？
-- **IMIC 阈值的依据**：PageIoU 0.8/0.9、CDM 0.3/0.7、TEDS 0.6/0.9 的阈值如何确定？是否按任务难度校准？MinerU2.5-Pro 的 CMCV 沿用任务特定指标但改三档划分，未沿用这些阈值。
-- **Stage 0 模态对齐的数据规模**：Stage 0 是 MinerU2.5-Pro 的初始化点，但本报告对 Stage 0 数据描述较少，是否就是 MinerU2-VLM 的对齐数据？
-- **OTSL 与 GLM-OCR 的 MTP 是否兼容**：OTSL 把表格结构 token 从 28+ 压到 5，序列缩短 50%——这与 [GLM-OCR](glm-ocr.md) MTP 多 token 预测是否可叠加？OTSL 的极简 token 集可能让 MTP 接受率更高。
-- **Data Engine 三阶段独立运作的具体表现**：MinerU2.5-Pro 批评「采样不被难度告知、标注精修不分难度、IMIC 挖的 hard case 标注仍不可靠」——本报告是否承认这些局限？§4 描述偏工程流水线，缺对三阶段协同不足的自评。
+- **需补外部来源**：**IMIC 的随机性来源**：多次推理的随机性来自采样温度还是 dropout？论文未明确。不同随机源对 hard case 识别稳定性影响几何？
+- **需实验或作者披露**：**IMIC 阈值的依据**：PageIoU 0.8/0.9、CDM 0.3/0.7、TEDS 0.6/0.9 的阈值如何确定？是否按任务难度校准？MinerU2.5-Pro 的 CMCV 沿用任务特定指标但改三档划分，未沿用这些阈值。
+- **需补外部来源**：**Stage 0 模态对齐的数据规模**：Stage 0 是 MinerU2.5-Pro 的初始化点，但本报告对 Stage 0 数据描述较少，是否就是 MinerU2-VLM 的对齐数据？
+- **需实验或作者披露**：**OTSL 与 GLM-OCR 的 MTP 是否兼容**：OTSL 把表格结构 token 从 28+ 压到 5，序列缩短 50%——这与 [GLM-OCR](glm-ocr.md) MTP 多 token 预测是否可叠加？OTSL 的极简 token 集可能让 MTP 接受率更高。
+- **现有材料待核**：**Data Engine 三阶段独立运作的具体表现**：MinerU2.5-Pro 批评「采样不被难度告知、标注精修不分难度、IMIC 挖的 hard case 标注仍不可靠」——本报告是否承认这些局限？§4 描述偏工程流水线，缺对三阶段协同不足的自评。
 
 ## 相关页面
 

@@ -150,11 +150,11 @@ PMPP-Hard 是固定墙钟预算下的 GPU kernel 循环。组内排序会反转�
 
 ## 待追问
 
-- ARC-AGI-3 的 95.5% vs 30.2% 在同协议、同预算、官方 harness 可复现复跑下还剩多少？作者已承认自己的 native 复跑低于官方分。
-- Table 1 无区间、无多重比较校正；哪些行在重复种子下会翻转？
-- nanoGPT 上「行为变了、record 没变」是否说明 REPL 主要改变探索形态，而 verifier 可及的最优仍由模型与任务噪声决定？
-- Continual Harness 的 refinement 如何默认阻止把 specification exploit 写成 skill，而不是事后靠 least-privilege？
-- 结论中的 model–harness co-learning 需要哪些可训练接口（`rlm`、typed state、A2A）才会真的被梯度用到，而不是继续被冻结模型低度使用？
+- **需实验或作者披露**：ARC-AGI-3 的 95.5% vs 30.2% 在同协议、同预算、官方 harness 可复现复跑下还剩多少？作者已承认自己的 native 复跑低于官方分。
+- **需实验或作者披露**：Table 1 无区间、无多重比较校正；哪些行在重复种子下会翻转？
+- **需实验或作者披露**：nanoGPT 上「行为变了、record 没变」是否说明 REPL 主要改变探索形态，而 verifier 可及的最优仍由模型与任务噪声决定？
+- **需实验或作者披露**：Continual Harness 的 refinement 如何默认阻止把 specification exploit 写成 skill，而不是事后靠 least-privilege？
+- **需实验或作者披露**：结论中的 model–harness co-learning 需要哪些可训练接口（`rlm`、typed state、A2A）才会真的被梯度用到，而不是继续被冻结模型低度使用？
 
 ## 相关页面
 

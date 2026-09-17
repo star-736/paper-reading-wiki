@@ -85,10 +85,13 @@ Proposition 4.1 假定：历史越一致，单层 estimator bias 单调下降；
 
 ## 待追问
 
-- 论文用 raw、可分解的历史 state 建 $C_k$；若 memory 是摘要、检索片段或隐状态，什么才是“历史一致”？作者仅在结论提出 embedding similarity 作为未来方向。
-- $G_K^H$ 被视为最接近 Oracle 的组，但相同最近 $K$ 个 state 是否已足以让 action prompt 相同，取决于 task description、action history、system prompt 与 memory 实现。
-- Proposition 4.1 的零 covariance、bias 单调和 variance 单调假设没有在实验中逐项检验；学得的 uncertainty weight 能否优于固定 $\alpha$ 仍是开放问题。
-- 仅在 ALFWorld / WebShop 与 Qwen2.5-1.5B/7B 验证。开放浏览、GUI、SWE 和随机工具环境里，state equality / state canonicalization 的成本与错误配对风险仍未知。
+- **需实验或作者披露**：论文用 raw、可分解的历史 state 建 $C_k$；若 memory 是摘要、检索片段或隐状态，什么才是“历史一致”？作者仅在结论提出 embedding similarity 作为未来方向。
+- **需实验或作者披露**：Proposition 4.1 的零 covariance、bias 单调和 variance 单调假设没有在实验中逐项检验；学得的 uncertainty weight 能否优于固定 $\alpha$ 仍是开放问题。
+- **需实验或作者披露**：仅在 ALFWorld / WebShop 与 Qwen2.5-1.5B/7B 验证。开放浏览、GUI、SWE 和随机工具环境里，state equality / state canonicalization 的成本与错误配对风险仍未知。
+
+## 相关追问
+
+主记录：[HGPO 的 state 匹配是否覆盖完整 prompt](../concepts/hierarchy-of-groups-policy-optimization.md#待追问)。
 
 ## 相关页面
 

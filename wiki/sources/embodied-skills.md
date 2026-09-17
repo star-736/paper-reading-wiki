@@ -160,14 +160,17 @@ Stack Blocks Three 是极端例子：Full 92，w/o Verify / w/o Subtask / 1 chun
 
 ## 待追问
 
-- Headline 的 +3.46 / +0.55 能否从「任务特化 fine-tune」里拆出 AgentLoop 的贡献？Table 2 对照的是 LingBot-VA 的 π0.5 参考，不是同一 checkpoint 开关六相环。
-- LIBERO 的「VLA policy instantiation」是每 suite 一份 specialist，还是一份模型打四套？原文只对 RoboTwin 写了「a separate π0.5 policy for each of the 50 tasks」（§5.1）。
-- 高层 Qwen3-VL 用了哪个尺寸、Instruct 还是 Thinking、scheduler 与 planner/verifier 是否共享 adapters？原文只写 "Qwen3-VL-based agent components"（§1、§4.1）。
-- 可选 GRPO 有没有实际跑出过数字？§4.3 把它标成 optional refinement，§5 没有 online 结果。
-- 合同只能挡住 schema 非法，挡不住「语义上像样但物理上错」的 grounding / subgoal；遮挡和视觉歧义时验证同样失效（§6）。校准缺口有多大，没有定量。
-- 50 个 specialist 的训练 / 存储 / 部署成本相对 generalist 的账，原文只定性写进 Limitations，没有表。
-- 没有真机实验。延迟来自额外 VLM 调用和动作后重观察（§6），也没有 latency 表。
-- 与 [ASPIRE](aspire.md) 的程序库、[EmbodiSkill](embodiskill.md) 的技能正文、[AtomicVLA](atomicvla.md) 的 SG-MoE 能否叠在同一 runtime？本页只把低层 VLA 换成可替换后端，没有程序技能、不改技能正文、也没有 skill-MoE。AtomicVLA 的 LIBERO 97.8 与本页 97.40 协议不同，不要互填。
+- **需实验或作者披露**：Headline 的 +3.46 / +0.55 能否从「任务特化 fine-tune」里拆出 AgentLoop 的贡献？Table 2 对照的是 LingBot-VA 的 π0.5 参考，不是同一 checkpoint 开关六相环。
+- **需实验或作者披露**：LIBERO 的「VLA policy instantiation」是每 suite 一份 specialist，还是一份模型打四套？原文只对 RoboTwin 写了「a separate π0.5 policy for each of the 50 tasks」（§5.1）。
+- **需实验或作者披露**：高层 Qwen3-VL 用了哪个尺寸、Instruct 还是 Thinking、scheduler 与 planner/verifier 是否共享 adapters？原文只写 "Qwen3-VL-based agent components"（§1、§4.1）。
+- **需实验或作者披露**：可选 GRPO 有没有实际跑出过数字？§4.3 把它标成 optional refinement，§5 没有 online 结果。
+- **需实验或作者披露**：合同只能挡住 schema 非法，挡不住「语义上像样但物理上错」的 grounding / subgoal；遮挡和视觉歧义时验证同样失效（§6）。校准缺口有多大，没有定量。
+- **需实验或作者披露**：50 个 specialist 的训练 / 存储 / 部署成本相对 generalist 的账，原文只定性写进 Limitations，没有表。
+- **需实验或作者披露**：没有真机实验。延迟来自额外 VLM 调用和动作后重观察（§6），也没有 latency 表。
+
+## 相关追问
+
+主记录：[四类具身技能机制的组合](../concepts/embodied-skill-self-evolution.md#待追问)。
 
 ## 相关页面
 

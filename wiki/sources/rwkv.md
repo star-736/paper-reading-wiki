@@ -70,9 +70,9 @@ NLP：与 Pythia / OPT / BLOOM 做 FLOP 对齐，不和 Chinchilla-optimal 或 L
 
 ## 待追问
 
-- Eq. 16 能否改写成 GLA 那种 $S_t=\mathrm{Diag}(\alpha)S_{t-1}+k^\top v$？作者没给这条等价。不要把 channel-wise 衰减升级成矩阵门。
-- 14B 与同代 14B Transformer 的单任务表在附录；主文 Figure 1 是十二项平均。
-- prompt 重排让 F1 从 44.2% 到 74.8%（Appendix L）是哪一项任务、多少样本，主文没展开。
+- **现有材料待核**：Eq. 16 能否改写成 GLA 那种 $S_t=\mathrm{Diag}(\alpha)S_{t-1}+k^\top v$？作者没给这条等价。不要把 channel-wise 衰减升级成矩阵门。
+- **现有材料待核**：14B 与同代 14B Transformer 的单任务表在附录；主文 Figure 1 是十二项平均。
+- **现有材料待核**：prompt 重排让 F1 从 44.2% 到 74.8%（Appendix L）是哪一项任务、多少样本，主文没展开。
 
 ## 相关页面
 

@@ -65,12 +65,17 @@ SFT + GRPO 强化学习（DeepSeek 自家 RL 算法），对齐到对话与人�
 
 ## 待追问
 
-- 附录 D.2「MLA vs MHA」的具体数字未沉淀，可作为「MLA 真的 > MHA」这一主张的证据补充。
-- DeepSeek-V2 → V3 → V3.2（DSA）→ V4（CSA）这条 MLA 演进链的每一步「在 MLA 上加了什么」，可在 [MLA 概念页](../concepts/multi-head-latent-attention.md) 做一张演进表。
-- **负载均衡**：V2 报告 §2.2.3 用的是三重 auxiliary loss（expert 级 $L_{\text{ExpBal}}$ + device 级 + …）配 device-limited routing 与 token-dropping——这是 aux-loss 旧世配置；V3 起才切换到 auxiliary-loss-free bias（[Loss-Free Balancing](loss-free-balancing.md)），谱系对照见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。本页架构段尚未沉淀 V2 的三重 loss 细节。
+- **现有材料待核**：附录 D.2「MLA vs MHA」的具体数字未沉淀，可作为「MLA 真的 > MHA」这一主张的证据补充。
+- **现有材料待核**：**负载均衡**：V2 报告 §2.2.3 用的是三重 auxiliary loss（expert 级 $L_{\text{ExpBal}}$ + device 级 + …）配 device-limited routing 与 token-dropping——这是 aux-loss 旧世配置；V3 起才切换到 auxiliary-loss-free bias（[Loss-Free Balancing](loss-free-balancing.md)），谱系对照见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。本页架构段尚未沉淀 V2 的三重 loss 细节。
+
+## 相关追问
+
+主记录：[MLA 架构演进表](../concepts/multi-head-latent-attention.md#待追问)。
 
 ## 相关页面
 
 - 概念：[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - 后续来源：[DeepSeek-V3.2](deepseek-v32.md)、[DeepSeek-V4](deepseek-v4.md)
 - 比较：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
+
+关联提问页：[Multi-Head Latent Attention (MLA)](../concepts/multi-head-latent-attention.md#相关追问)。

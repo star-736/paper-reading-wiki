@@ -119,12 +119,12 @@ SFT+RL 训练后，OCRBench / MMVet / AI2D / MathVista / MMBench / DocVQA / Info
 
 ## 待追问
 
-- 论文用 in-house web/image search API，未公开具体实现；复现时需替换为公开搜索 API。
-- Grounding DINO 作为 grounding 工具是固定组件还是可替换的？其他 grounding 模型（如 OWLv2）效果如何？
-- 奖励模型用 `gpt-5-chat-latest`，这是 black-box judge；改用 rule-based reward 是否可行？
-- 训练数据只有 10K SFT + FVQA，规模较小；扩展数据量是否能进一步提升？
-- 通用 VQA 的"无退化"结论是否在更大模型（32B）上也成立？
-- 与 Search-R1 / R1-Searcher 等纯文本 search RL 方法的直接对比缺失（论文称它们不是 true baselines 因为只支持文本搜索）。
+- **需实验或作者披露**：论文用 in-house web/image search API，未公开具体实现；复现时需替换为公开搜索 API。
+- **需实验或作者披露**：Grounding DINO 作为 grounding 工具是固定组件还是可替换的？其他 grounding 模型（如 OWLv2）效果如何？
+- **需实验或作者披露**：奖励模型用 `gpt-5-chat-latest`，这是 black-box judge；改用 rule-based reward 是否可行？
+- **需实验或作者披露**：训练数据只有 10K SFT + FVQA，规模较小；扩展数据量是否能进一步提升？
+- **需实验或作者披露**：通用 VQA 的"无退化"结论是否在更大模型（32B）上也成立？
+- **需实验或作者披露**：与 Search-R1 / R1-Searcher 等纯文本 search RL 方法的直接对比缺失（论文称它们不是 true baselines 因为只支持文本搜索）。
 
 ## 相关页面
 

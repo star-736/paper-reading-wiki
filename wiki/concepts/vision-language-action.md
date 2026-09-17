@@ -54,12 +54,15 @@ VLA 不是「多模态聊天 + 另外写个脚本控机器人」：动作在同�
 
 对检索：问「VLA 是什么 / 谁造的这个词 / 离散 vs flow」走本页；问 LLM 只选技能、低层另训走 [SayCan](../sources/saycan.md)；问规划器如何读成功/场景文字走 [Inner Monologue](../sources/inner-monologue.md)；问封闭 55B 原版走 [RT-2](../models/rt-2.md)；问开源 256-bin 走 [OpenVLA](../sources/openvla.md)；问离散 chunk 分词走 [FAST](../sources/fast.md)；问 50 Hz 动作块走 [π0](../models/pi0.md)；问新房子家务走 [π0.5](../models/pi0.5.md)；问 Gemma 3 + MEM + 更大 flow / 可steer 上下文走 [π0.7](../models/pi0.7.md)；问 GDN / latent foresight 走 [InternVLA-A1.5](../models/internvla-a1.5.md)；问原子技能专家路由走 [AtomicVLA](../models/atomicvla.md)；问程序技能库或技能正文自进化走 [具身 skill 自进化](embodied-skill-self-evolution.md)；问「条款错了还是没遵守」走 [EmbodiSkill](../sources/embodiskill.md)；问 VLA 上层如何先验后验走 [EmbodiedSkills](../sources/embodied-skills.md) 和 [Agent harness](agent-harness.md)。
 
+## 证据边界与阅读提示
+
+- 后续 skill 论文若把「技能」也写成 token：它们是叠在 OpenVLA 的 7D bin 之上，还是替换成 π0/π0.5 的连续专家，或另做原子动作库？[AtomicVLA](../sources/atomicvla.md) 的答案是：**技能是 SG-MoE 路由，低层仍是 π0 连续专家**，不是第四种动作头。[EmbodiedSkills](../sources/embodied-skills.md) 的低层是 π0.5 连续专家，技能本身是 runtime 合同不是 token。[EmbodiSkill](../sources/embodiskill.md) 的技能是自然语言正文，执行器不是 VLA。[ASPIRE](../sources/aspire.md) 走的是程序库。
+- **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页。架构以那些原文为准；不能用 [π0.7](../sources/pi0.7.md) 的柱图反推。
+
 ## 待追问
 
-- 离散 bin 的量化误差在高频、双臂、接触丰富任务上有多大？RT-2 报 55B 1–3 Hz、均匀 bin；OpenVLA §6 只点了推理频率和 action chunking；π0 的对照是把 OpenVLA 重训到 π 混合物，不是 RT-2 / OpenVLA 自己的协议。[FAST](../sources/fast.md) 把失败写成「逐步 token 边际信息趋零」，并用 DCT+BPE 换分词；那是 FAST 协议，不要回填 OpenVLA 的 Bridge 表。
-- 后续 skill 论文若把「技能」也写成 token：它们是叠在 OpenVLA 的 7D bin 之上，还是替换成 π0/π0.5 的连续专家，或另做原子动作库？[AtomicVLA](../sources/atomicvla.md) 的答案是：**技能是 SG-MoE 路由，低层仍是 π0 连续专家**，不是第四种动作头。[EmbodiedSkills](../sources/embodied-skills.md) 的低层是 π0.5 连续专家，技能本身是 runtime 合同不是 token。[EmbodiSkill](../sources/embodiskill.md) 的技能是自然语言正文，执行器不是 VLA。[ASPIRE](../sources/aspire.md) 走的是程序库。
-- **分词方法 vs 词表权重（部分可答）。** [OpenVLA](../sources/openvla.md) 的逐步 256-bin **不是** [FAST](../sources/fast.md)。FAST 原文是 **1 秒 action chunk** 上 DCT + 量化 + BPE（§V-B、Fig. 4），不是逐步 bin。[π0.5](../sources/pi0.5.md) 预训练、[InternVLA-A1.5](../sources/internvla-a1.5.md) Stage 1、[π0.7](../sources/pi0.7.md) Knowledge Insulation 都引用这篇当 FAST tokenizer；π0.5 的 \(H=50\) 在 50 Hz 上与 1 秒设计一致，InternVLA 也是 chunk 50 但没写控制频率。三种**用法**不同：π0.5 是 FAST→flow 两阶段，InternVLA 是 Stage 1 离散 / Stage 2 flow，π0.7 只拿 FAST 当 VLM 的 KI 训练信号。**不能从对照表确认它们是否共用发布的 FAST+ 权重**，还是各自重训了 BPE。
-- **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页。架构以那些原文为准；不能用 [π0.7](../sources/pi0.7.md) 的柱图反推。
+- **需实验或作者披露**：离散 bin 的量化误差在高频、双臂、接触丰富任务上有多大？RT-2 报 55B 1–3 Hz、均匀 bin；OpenVLA §6 只点了推理频率和 action chunking；π0 的对照是把 OpenVLA 重训到 π 混合物，不是 RT-2 / OpenVLA 自己的协议。[FAST](../sources/fast.md) 把失败写成「逐步 token 边际信息趋零」，并用 DCT+BPE 换分词；那是 FAST 协议，不要回填 OpenVLA 的 Bridge 表。
+- **需补外部来源**：**分词方法 vs 词表权重（部分可答）。** [OpenVLA](../sources/openvla.md) 的逐步 256-bin **不是** [FAST](../sources/fast.md)。FAST 原文是 **1 秒 action chunk** 上 DCT + 量化 + BPE（§V-B、Fig. 4），不是逐步 bin。[π0.5](../sources/pi0.5.md) 预训练、[InternVLA-A1.5](../sources/internvla-a1.5.md) Stage 1、[π0.7](../sources/pi0.7.md) Knowledge Insulation 都引用这篇当 FAST tokenizer；π0.5 的 \(H=50\) 在 50 Hz 上与 1 秒设计一致，InternVLA 也是 chunk 50 但没写控制频率。三种**用法**不同：π0.5 是 FAST→flow 两阶段，InternVLA 是 Stage 1 离散 / Stage 2 flow，π0.7 只拿 FAST 当 VLM 的 KI 训练信号。**不能从对照表确认它们是否共用发布的 FAST+ 权重**，还是各自重训了 BPE。 π0.7 的 KI 具体 chunk 长度也未披露；这些配置需逐个核对权重或实现，不能互填。
 
 ## 相关页面
 
@@ -76,3 +79,5 @@ VLA 不是「多模态聊天 + 另外写个脚本控机器人」：动作在同�
 - 程序库 / 技能正文，不是动作头：[ASPIRE](../sources/aspire.md) · [EmbodiSkill](../sources/embodiskill.md) · [具身 skill 自进化](embodied-skill-self-evolution.md)
 - VLA 上层 AgentLoop，也不是动作头：[EmbodiedSkills](../sources/embodied-skills.md) · [Agent harness](agent-harness.md)
 - InternVLA 的注意力栈（与 OpenVLA 的 Llama-2 full attention、π0 的 Gemma/PaliGemma 都不同）：[线性注意力与 delta rule](linear-attention-and-delta-rule.md)、[注意力门控](attention-gating.md)
+
+关联提问页：[FAST: Efficient Action Tokenization for Vision-Language-Action Models](../sources/fast.md#相关追问)、[InternVLA-A1.5 技术报告](../sources/internvla-a1.5.md#相关追问)、[π0.5: a Vision-Language-Action Model with Open-World Generalization](../sources/pi0.5.md#相关追问)、[π0.7: a Steerable Generalist Robotic Foundation Model with Emergent Capabilities](../sources/pi0.7.md#相关追问)。

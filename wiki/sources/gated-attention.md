@@ -60,6 +60,8 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 
 ## 待追问
 
-- G1 elementwise 门额外参数量与推理开销具体多少？论文主打「简单」，但 head-specific elementwise 门在大模型上的真实增量值得核对配置表。
-- attention sink 消除后，原本被认为「sink 是有用的注意力垃圾桶」的那派观点（registers/StreamingLLM）在这个框架下如何解释？论文给的是经验观测，机制论证可再深挖。
-- 该门已进 Qwen3-Next 系（含 Qwen3-Coder-Next、Qwen3.5-Omni）和 Trinity Large，但论文消融只到 15B 尺度；更大尺度上「去 sink → 长度外推增益」是否同样成立，这些采用方的报告**继承而非重新验证**该收益，仍缺大尺度的专门复测数据。
+- **现有材料待核**：G1 elementwise 门额外参数量与推理开销具体多少？论文主打「简单」，但 head-specific elementwise 门在大模型上的真实增量值得核对配置表。
+- **需实验或作者披露**：attention sink 消除后，原本被认为「sink 是有用的注意力垃圾桶」的那派观点（registers/StreamingLLM）在这个框架下如何解释？论文给的是经验观测，机制论证可再深挖。
+- **需实验或作者披露**：该门已进 Qwen3-Next 系（含 Qwen3-Coder-Next、Qwen3.5-Omni）和 Trinity Large，但论文消融只到 15B 尺度；更大尺度上「去 sink → 长度外推增益」是否同样成立，这些采用方的报告**继承而非重新验证**该收益，仍缺大尺度的专门复测数据。Qwen3.5 已到 397B 级；Qwen3.8-Flash-Next 的新增门控证据集中在稳定性（GatedNorm / GR），不是重新统计 attention sink。
+
+关联提问页：[注意力门控](../concepts/attention-gating.md#相关追问)。

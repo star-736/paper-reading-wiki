@@ -59,10 +59,10 @@ Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2
 
 ## 待追问
 
-- GLM-5.2 base model 的参数、注意力架构与 GLM-5 的关系尚未由本页披露；不能因同属 GLM-5 家族而直接等同。
-- 环境生成的真实任务来源、人工介入比例、去重方式和 verifier 的 false-positive / false-negative 率未公开。
-- Z.ai Code Bench 是私有基准；其任务、checklist、污染控制与统计不确定性未开放，不能作为公开 benchmark 的替代。
-- 训练—rollout 的 $10^{-7}$ log-prob 对齐、2.3 倍吞吐和网络安全发现统计均缺少独立复现或方法细节。
+- **需实验或作者披露**：GLM-5.2 base model 的参数、注意力架构与 GLM-5 的关系尚未由本页披露；不能因同属 GLM-5 家族而直接等同。
+- **需实验或作者披露**：环境生成的真实任务来源、人工介入比例、去重方式和 verifier 的 false-positive / false-negative 率未公开。
+- **需实验或作者披露**：Z.ai Code Bench 是私有基准；其任务、checklist、污染控制与统计不确定性未开放，不能作为公开 benchmark 的替代。
+- **需实验或作者披露**：训练—rollout 的 $10^{-7}$ log-prob 对齐、2.3 倍吞吐和网络安全发现统计均缺少独立复现或方法细节。
 
 ## 相关页面
 

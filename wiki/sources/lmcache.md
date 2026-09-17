@@ -143,15 +143,18 @@ B200 上测 prefill vs 加载。**32 Gbps** 时，只有输入超过 **256K toke
 - 对 [端侧 MoE serving](../concepts/edge-native-moe-serving.md) / [FreeToken](freetoken.md)：FreeToken offload 的是 **expert 权重**，LMCache offload 的是 **KV**。端侧 semantic-anchor checkpoint 与本文「不要截断 prefix」是同一条 prefix-reuse 约束的两端：一边怕 harness 改历史，一边怕滑动窗口。
 - 对 [JoyAI-VL-Interaction](joyai-vl-interaction.md)：记忆系统故意把非短期层存成文本，好让每 chunk 形成稳定 prefix 给 vLLM 复用——这是应用侧在为 LMCache 这类层创造可命中的 key。
 
+## 证据边界与阅读提示
+
+- 两家商业 API 匿名且黑盒，机制归因是作者推测。
+
 ## 待追问
 
-- 摘要 15× 与 § 8.2 的 2.3–14×（同 TTFT 吞吐）差 1 个百分点量级；15× 的具体模型 / QPS 点未单独标出。
-- `compress` API 在 Table 3 存在，正文没有压缩算法、压缩比或质量评测。
-- Load vs prefill 的 crossover（32 Gbps / 256K）只给了敏感性曲线，没有写成在线自适应策略。
-- Dynamic offloading 的 stall vs 复制比没有定量消融。
-- Connector 是否覆盖 MLA / DSA / CSA-HCA / GDN 这类非标准 KV layout，论文只举例 Sliding Window Attention 与 Multi-Head Latent Attention「会改 engine 内部管理」，没有实测这些 layout。
-- 真实 trace 被时间压缩到一小时，burst 结构是否被抹平未知。
-- 两家商业 API 匿名且黑盒，机制归因是作者推测。
+- **需实验或作者披露**：摘要 15× 与 § 8.2 的 2.3–14×（同 TTFT 吞吐）差 1 个百分点量级；15× 的具体模型 / QPS 点未单独标出。
+- **需实验或作者披露**：`compress` API 在 Table 3 存在，正文没有压缩算法、压缩比或质量评测。
+- **需实验或作者披露**：Load vs prefill 的 crossover（32 Gbps / 256K）只给了敏感性曲线，没有写成在线自适应策略。
+- **需实验或作者披露**：Dynamic offloading 的 stall vs 复制比没有定量消融。
+- **需实验或作者披露**：Connector 是否覆盖 MLA / DSA / CSA-HCA / GDN 这类非标准 KV layout，论文只举例 Sliding Window Attention 与 Multi-Head Latent Attention「会改 engine 内部管理」，没有实测这些 layout。
+- **需实验或作者披露**：真实 trace 被时间压缩到一小时，burst 结构是否被抹平未知。
 
 ## 相关页面
 

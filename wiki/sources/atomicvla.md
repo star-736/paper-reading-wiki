@@ -133,15 +133,18 @@ LIBERO-LONG：π0 85.2；+ token-level MoE 88.6；+ 按 denoising timestep 路�
 
 > Figure 3（原文截图，§3.4）："Inference Example of AtomicVLA. We visualize two tasks from LIBERO-LONG. For each task, the top row shows the task progression, and the bottom row shows AtomicVLA’s inferred outputs. Gray blocks denote Thinking, while colored blocks indicate Acting, with colors corresponding to the activated skill experts."
 
-## 待追问
+## 证据边界与阅读提示
 
-- 共享专家和技能专家分别叠在 π0 的 VLM 层还是 300M action expert 上？附录只写技能专家「follows the Gemma architecture」且 FFN 独立，width=2048 / depth=18 更像骨干而不是 width=1024 的 action expert。原文没有一张层对层对照图。
 - 作者没有重写 flow matching 公式。低层「仍是 π0 连续专家」是 §3.3 的基座 + 共享专家表述，不是另给的动作头定义。
-- LIBERO 上 AtomicVLA（π0 基座）平均仍低于表内 π0.5。SG-MoE 的增益主要在 Long，还是基座世代差？
-- 真机每任务 20 次。18.3 / 21 没有置信区间。
 - 新技能仍要演示 IL（附录 A.2）。路由正确依赖 VLM 把 \(\sigma\) 写对。
 - 不要和 [EmbodiSkill](embodiskill.md) / [ASPIRE](aspire.md) / [EmbodiedSkills](embodied-skills.md) 混名：这边既不改技能正文、也不写程序、也不做 typed runtime 合同。
 - π\*0.6 只出现在附录未来工作，本库不建页。
+
+## 待追问
+
+- **需实验或作者披露**：共享专家和技能专家分别叠在 π0 的 VLM 层还是 300M action expert 上？附录只写技能专家「follows the Gemma architecture」且 FFN 独立，width=2048 / depth=18 更像骨干而不是 width=1024 的 action expert。原文没有一张层对层对照图。
+- **需实验或作者披露**：LIBERO 上 AtomicVLA（π0 基座）平均仍低于表内 π0.5。SG-MoE 的增益主要在 Long，还是基座世代差？
+- **需实验或作者披露**：真机每任务 20 次。18.3 / 21 没有置信区间。
 
 ## 相关页面
 

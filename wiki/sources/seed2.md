@@ -144,11 +144,11 @@ Seed2.0 Pro 在五场 ICPC 官方赛事（2025 World Finals + 西安 / 成都 / 
 
 ## 待追问
 
-- Seed2.0 的架构是什么？参数量？是否 MoE？训练数据规模？--Model Card 完全未披露，需等待技术报告或开源。
-- Seed2.0 是否有 HuggingFace 开源版本（如 Seed-OSS）？--报告提到前代 Seed-OSS 是开源的，但 Seed2.0 未说明开源计划。
-- 前代 Seed1.6/1.8 的技术细节是否已公开？--Seed-1.8 Model Card 被引用为 [1]，但未在 raw/ 中。
-- 定价仅为 Pro/Lite/Mini 各一个代表价，是否有按 context tier 分阶定价？--Gemini 有分阶，Seed2.0 只给单一价格。
-- 视频理解使用 VideoCut 工具的具体机制是什么？--Table 10 提到 VideoCut 工具提升长视频理解，但未描述工具设计。
+- **需实验或作者披露**：Seed2.0 的架构是什么？参数量？是否 MoE？训练数据规模？--Model Card 完全未披露，需等待技术报告或开源。
+- **需补外部来源**：Seed2.0 是否有 HuggingFace 开源版本（如 Seed-OSS）？--报告提到前代 Seed-OSS 是开源的，但 Seed2.0 未说明开源计划。
+- **需补外部来源**：前代 Seed1.6/1.8 的技术细节是否已公开？--Seed-1.8 Model Card 被引用为 [1]，但未在 raw/ 中。
+- **需补外部来源**：定价仅为 Pro/Lite/Mini 各一个代表价，是否有按 context tier 分阶定价？--Gemini 有分阶，Seed2.0 只给单一价格。
+- **需补外部来源**：视频理解使用 VideoCut 工具的具体机制是什么？--Table 10 提到 VideoCut 工具提升长视频理解，但未描述工具设计。
 
 ## 相关页面
 

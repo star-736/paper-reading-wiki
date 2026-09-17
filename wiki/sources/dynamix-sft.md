@@ -142,10 +142,13 @@ Algorithm 1 的主循环：每步按公式 3 的 $p$ 采样数据集 → 从该�
 
 ## 待追问
 
-- **reward 计算是否真做了梯度更新？——论文内部矛盾**：§4.2 与 Algorithm 1 第 14 行明确写 reward 来自「virtual one-step update」后的 $L_{\text{pre}}-L_{\text{post}}$，即要对每个数据集做一次临时梯度更新（必然含反向传播 + 参数更新）；但 §8 Efficiency 又称 reward「relies solely on forward passes and requires no additional backward computation」，且开销推导 $19/50\times 1/3\approx 12.7\%$ 也假设只用前向（前向约占一步训练 1/3）。若真做梯度更新，开销应接近一个完整训练步而非 1/3。这是 tier-3 推断的矛盾，需作者澄清实现究竟用了 forward-only 近似还是真做了 virtual gradient step（若是后者，12.7% 开销推导就站不住）。
-- **跨阶段泛化**：方法在 SFT 阶段验证，能否迁移到预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM 场景）？SFT 数据集异构性强（LIMA vs FLAN 尺度差 50×），预训练 domain 尺度差更温和，prior-scaling 的锚定收益可能不同。
-- **与 proxy-model 谱系的关系**：DoReMi/RegMix 用小 proxy model 预测大模型最优权重，DynamixSFT 直接在目标模型上在线优化、无需 proxy。这是「轻量自演化」对「proxy 放大」的范式分叉——但缺少在 frontier-scale 模型（如 AutoMixer 的 33B MoE）上的对比，无法判断哪种范式在极大尺度下更优。
-- **instance-level 扩展**：作者在 Limitations 自陈 mixture policy 是 dataset-level，instance-level 是 open direction。这与 [Qwen3](qwen3.md) 已落地的 instance-level 标注混合形成对照，但二者无公开直接对比。
+- **需实验或作者披露**：**reward 计算是否真做了梯度更新？——论文内部矛盾**：§4.2 与 Algorithm 1 第 14 行明确写 reward 来自「virtual one-step update」后的 $L_{\text{pre}}-L_{\text{post}}$，即要对每个数据集做一次临时梯度更新（必然含反向传播 + 参数更新）；但 §8 Efficiency 又称 reward「relies solely on forward passes and requires no additional backward computation」，且开销推导 $19/50\times 1/3\approx 12.7\%$ 也假设只用前向（前向约占一步训练 1/3）。若真做梯度更新，开销应接近一个完整训练步而非 1/3。这是 tier-3 推断的矛盾，需作者澄清实现究竟用了 forward-only 近似还是真做了 virtual gradient step（若是后者，12.7% 开销推导就站不住）。
+- **需实验或作者披露**：**跨阶段泛化**：方法在 SFT 阶段验证，能否迁移到预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM 场景）？SFT 数据集异构性强（LIMA vs FLAN 尺度差 50×），预训练 domain 尺度差更温和，prior-scaling 的锚定收益可能不同。
+- **需实验或作者披露**：**instance-level 扩展**：作者在 Limitations 自陈 mixture policy 是 dataset-level，instance-level 是 open direction。这与 [Qwen3](qwen3.md) 已落地的 instance-level 标注混合形成对照，但二者无公开直接对比。
+
+## 相关追问
+
+主记录：[在线混合与 proxy 路线的规模对照](../concepts/data-mixture-optimization.md#待追问)。
 
 ## 相关页面
 

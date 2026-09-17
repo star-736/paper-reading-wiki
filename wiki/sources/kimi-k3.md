@@ -264,16 +264,19 @@ Anthropic/OpenAI 拒绝 cyber 任务，故仅对比 GLM-5.2。
 
 ## 待追问
 
-1. **KDA scaled sigmoid 的 `g_min = -5` 怎么选的？** 报告只说"fixed"，未给消融。e^-5 ≈ 6.7e-3 是否是最优 retention 下界？更小（如 -7）会给更长 retention 但可能溢出 BF16；更大（如 -3）更安全但 retention 短。需 ablation。
-2. **Block AttnRes 的 N=8 / S=12 是否跨模型尺度最优？** 报告引 [57] 说"N≈8 recovers most of the benefit across model scales"，但 K3 是 93 层、2.8T，远超 [57] 原始实验尺度。N 是否该随层数 scale？
-3. **MoonViT-V2 from-scratch 追平 SigLIP-init 的结论是否 robust？** Figure 6 只给 gradient norm 对比，未给下游视觉 benchmark 的 head-to-head 数字。"matches the SigLIP-initialized baseline across vision evaluations"是定性陈述，缺量化表。是否所有视觉能力都追平，还是部分子任务（如 fine-grained OCR、长视频）仍有差距？
-4. **MOPD 的 9 teacher 如何混合采样？** 报告给 OPD reward 形式但未给采样策略——每步按 domain × effort 均匀采？还是按某 curriculum？9 teacher 的 mixing ratio 对 student 收敛的影响未展开。
-5. **MoonEP 的 E/R bound "essentially tight" 的下界例子？** 附录 E 给上界证明，但 tightness 的具体构造（哪些 routing pattern 让 E/R 冗余不够）未在正文展开，需查附录 E。
-6. **KDA-aware prefix cache 的 hit rate 实测？** 报告描述机制详尽但未给生产 hit rate / miss cost 分布。1M coding 流量下 512-token hash block 的实际命中率、KDA checkpoint sparse 存储的存储开销，需生产数据。
-7. **Cosine vs WSD 的"独立超参搜索"细节？** 报告说 cosine 在各自最优超参下赢 WSD，但未给 WSD 的最优超参是什么、搜索空间多大。这是对 MiniMax 等报告 WSD 更优结论的直接反驳，需更多细节坐实。
-8. **Per-Head Muon 的改善幅度量化？** 报告说"improves training stability at larger scales"但未给 loss curve 或 spike frequency 对比。相对 full-matrix Muon 的稳定性增益需 ablation 数字。
-9. **SiTU-GLU 的 β1=4 / β2=25 怎么选的？** 报告给值但未给选择依据。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 FP8 dynamic range 的关系？
-10. **Cyber Tier 2 的 14 个解是否可复现？** 报告说"every task verified solvable by human experts"但未公开任务集。GLM-5.2 8/36 的对比是否在同一 harness、同一 prompt？
+- **需实验或作者披露**：**KDA scaled sigmoid 的 `g_min = -5` 怎么选的？** 报告只说"fixed"，未给消融。e^-5 ≈ 6.7e-3 是否是最优 retention 下界？更小（如 -7）会给更长 retention 但可能溢出 BF16；更大（如 -3）更安全但 retention 短。需 ablation。
+- **需实验或作者披露**：**MoonViT-V2 from-scratch 追平 SigLIP-init 的结论是否 robust？** Figure 6 只给 gradient norm 对比，未给下游视觉 benchmark 的 head-to-head 数字。"matches the SigLIP-initialized baseline across vision evaluations"是定性陈述，缺量化表。是否所有视觉能力都追平，还是部分子任务（如 fine-grained OCR、长视频）仍有差距？
+- **需实验或作者披露**：**MOPD 的 9 teacher 如何混合采样？** 报告给 OPD reward 形式但未给采样策略——每步按 domain × effort 均匀采？还是按某 curriculum？9 teacher 的 mixing ratio 对 student 收敛的影响未展开。
+- **现有材料待核**：**MoonEP 的 E/R bound "essentially tight" 的下界例子？** 附录 E 给上界证明，但 tightness 的具体构造（哪些 routing pattern 让 E/R 冗余不够）未在正文展开，需查附录 E。
+- **需实验或作者披露**：**KDA-aware prefix cache 的 hit rate 实测？** 报告描述机制详尽但未给生产 hit rate / miss cost 分布。1M coding 流量下 512-token hash block 的实际命中率、KDA checkpoint sparse 存储的存储开销，需生产数据。
+- **需实验或作者披露**：**Cosine vs WSD 的"独立超参搜索"细节？** 报告说 cosine 在各自最优超参下赢 WSD，但未给 WSD 的最优超参是什么、搜索空间多大。这是对 MiniMax 等报告 WSD 更优结论的直接反驳，需更多细节坐实。
+- **需实验或作者披露**：**Per-Head Muon 的改善幅度量化？** 报告说"improves training stability at larger scales"但未给 loss curve 或 spike frequency 对比。相对 full-matrix Muon 的稳定性增益需 ablation 数字。
+- **需实验或作者披露**：**SiTU-GLU 的 β1=4 / β2=25 怎么选的？** 报告给值但未给选择依据。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 FP8 dynamic range 的关系？
+- **需实验或作者披露**：**Cyber Tier 2 的 14 个解是否可复现？** 报告说"every task verified solvable by human experts"但未公开任务集。GLM-5.2 8/36 的对比是否在同一 harness、同一 prompt？
+
+## 相关追问
+
+主记录：[K3 的 AttnRes 分块数与尺度](../concepts/attention-residuals.md#待追问)。
 
 ## 相关页面
 

@@ -130,12 +130,15 @@ TPS（tokens/s，512 并发，"Base" DeepEncoder 模式）随输出长度的变�
 
 256 token 时两者持平；6144 token 时 DeepSeek OCR 降至 5823，Unlimited OCR 保持 7848，**差距达 35%**。OmniDocBench 短文档上 Unlimited OCR 5580 TPS vs DeepSeek OCR 4951 TPS（+12.7%）。
 
+## 证据边界与阅读提示
+
+- 论文提到未来计划建 prefill pool 让模型学习自动获取 prefill KV chunk（模拟人类翻页），但当前 32K 上下文仍是 prefill 瓶颈--页数越多 prefill 越长，"unlimited" 实际受限于 prefill 长度而非 decode。
+- 子类别对比中 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) 在 v1.6 得 94.74（1B 模型），Unlimited-OCR 得 93.92（3B-A0.5B）--两者走不同技术路线（DFlash 推测解码 + Agentic Data Flow vs 恒定 KV cache attention），横向对比时需注意参数量和评测条件差异。
+
 ## 待追问
 
-- R-SWA 的 $n$=128 是如何选定的？论文未给出 $n$ 的消融实验。窗口太小可能丢失跨页上下文（如表格续页），太大则削弱 cache 恒定优势。
-- 论文提到未来计划建 prefill pool 让模型学习自动获取 prefill KV chunk（模拟人类翻页），但当前 32K 上下文仍是 prefill 瓶颈--页数越多 prefill 越长，"unlimited" 实际受限于 prefill 长度而非 decode。
-- R-SWA 对跨页引用（如第 20 页引用第 1 页的图表编号）如何处理？128-token 窗口显然不够覆盖，除非信息通过 reference token 间接传递。论文未讨论这类远距离依赖场景。
-- 子类别对比中 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) 在 v1.6 得 94.74（1B 模型），Unlimited-OCR 得 93.92（3B-A0.5B）--两者走不同技术路线（DFlash 推测解码 + Agentic Data Flow vs 恒定 KV cache attention），横向对比时需注意参数量和评测条件差异。
+- **需实验或作者披露**：R-SWA 的 $n$=128 是如何选定的？论文未给出 $n$ 的消融实验。窗口太小可能丢失跨页上下文（如表格续页），太大则削弱 cache 恒定优势。
+- **需实验或作者披露**：R-SWA 对跨页引用（如第 20 页引用第 1 页的图表编号）如何处理？128-token 窗口显然不够覆盖，除非信息通过 reference token 间接传递。论文未讨论这类远距离依赖场景。
 
 ## 相关页面
 

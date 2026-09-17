@@ -103,15 +103,18 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 - **Expert locality**：同等缓存容量下回放四条工作负载的路由 trace。5090 服务容量（Qwen3.6 expert 池的 37%、DSV4-Flash 的 11%）时，FreeToken 全局 LRU 的 decode-time miss 为 16% 与 39%，对照 KTransformers 的 prefill-updated placement 41%/59%、llama.cpp 的 routing-blind static split 62%/89%。
 - **跨硬件**：W2 上相对最强基线 1.3×（3090/4090）到 2.1×（5090 desktop）。两列 5090 同硅不同主机：从多通道服务器换到双通道消费桌面，FreeToken 只掉 4% decode，llama.cpp 只保住 80%（CPU-resident experts 在两条 DDR5 上饿死）。KTransformers 在 PRO 6000 上无法服务 GLM-5.2：其方法需要 753 GB–1.5 TB host-resident experts，而该箱只有 512 GiB，且 CPU kernel 不读 GLM-5.2 的 NVFP4 layout。
 
-## 待追问
+## 证据边界与阅读提示
 
-- 正文说支持 20+ MoE，实验只报 Qwen3.6-35B-A3B、DeepSeek-V4-Flash、GLM-5.2；其余模型列表、量化格式和是否走过 CUDA-graph 快路径需查 GitHub / flashml.ai。
 - GLM-5.2 在本文是 753B / 40B active、NVFP4 433 GB checkpoint。本 wiki 的 [GLM-5](../models/glm-5.md) 技术报告是 744B / 40B，[GLM-5.3](../models/glm-5-3.md) 称沿用 GLM-5.2 base 但未披露参数。753B 与 744B 不要画等号。
 - Figure 1 caption：Kimi-K3 开源但超出消费级内存（594 GB）。本 wiki 的 [Kimi K3](../models/kimi-k3.md) 是 2.78T / 104B，未在本文实验。
 - **找论文也答不了 / 已闭合**：Qwen3.6-35B-A3B 是评测骨干，不为此臆造 Qwen3.6 独立架构页；wiki 只有 [Qwen3.5](../models/qwen3.5.md) 家族页。
 - 3090/4090/5090 的端侧数字来自「双路服务器 + 6 线程 cap」的仿真，桌面/笔记本两台才是真实消费级；跨档读数要带这个口径。
-- 最差 TTFT < 44 s 是原文概括；Figure 3 只画 mean TTFT，tail 分布未给表。
 - 论文明确不比较跨引擎 wall-clock（轨迹分叉）。「交互式」指 decode tok/s 与 TTFT，不是端到端任务完成时间。
+
+## 待追问
+
+- **需补外部来源**：正文说支持 20+ MoE，实验只报 Qwen3.6-35B-A3B、DeepSeek-V4-Flash、GLM-5.2；其余模型列表、量化格式和是否走过 CUDA-graph 快路径需查 GitHub / flashml.ai。
+- **需实验或作者披露**：最差 TTFT < 44 s 是原文概括；Figure 3 只画 mean TTFT，tail 分布未给表。
 
 ## 相关页面
 

@@ -116,10 +116,13 @@ DSpark-5（$\gamma=5$，Markov head，parallel backbone = 3 层 MoE + mHC + slid
 - **异步 scheduler 与 ZOS / CUDA graph 调和**：Zero-Overhead Scheduling 要求下一步 batch size 在当前步结束前就已知，同步 scheduling 会 stall pipeline。论文的解法是**用 2 步之前的 confidence 输出估当前的截断长度 $K$**，而**当前要排序的 prefix 仍用最新累计 confidence**——选择是 rank-preserving 的，被截掉的总是排名靠后的。一个意外副效果是它**顺便让全局贪心可以放开 early stop**（早停本来防止未来 token 信息泄漏破坏 lossless）：因为截断长度只依赖 2 步前的历史预测，跟当前 $x_{r,k}$ 物理上独立，构成天然 causal barrier——可以在 jagged SPS 曲线上跨"硬件悬崖"找全局最优而不破坏 lossless 保证。
 - **变长 verification 与稀疏 kernel**：在 DeepSeek-V4 架构下，**只需要改 index-attention 和 compress kernel**——这两个原本就是 DSA / CSA 的稀疏 kernel——就能支撑跨请求变长的 verification batch；其他 decode kernel 都按 flatten token 看。
 
+## 证据边界与阅读提示
+
+- **与 V4 报告里"MTP-1"措辞的对照**：[DeepSeek-V4 技术报告](deepseek-v4.md) 自身在架构与训练里写的是 "MTP depth 1"（即 V3 风格 single-step MTP），并未提及会被 DSpark 替换；这是**两份报告时间差**导致的——V4 preview 报告先发，DSpark 报告两周后跟上并替换。这是 V4 模型页"production 服务速度"主张的真正出处。
+
 ## 待追问
 
-- **DeepSpec / DSpark checkpoints 的开源状态**：论文称发布 V4-Flash / V4-Pro preview 对应的 DSpark checkpoint 与 DeepSpec 训练库（含 Eagle3、DFlash、DSpark），但报告未给具体仓库链接；需要后续从 [github.com/deepseek-ai](https://github.com/deepseek-ai) 或 HuggingFace 上跟进。
-- **与 V4 报告里"MTP-1"措辞的对照**：[DeepSeek-V4 技术报告](deepseek-v4.md) 自身在架构与训练里写的是 "MTP depth 1"（即 V3 风格 single-step MTP），并未提及会被 DSpark 替换；这是**两份报告时间差**导致的——V4 preview 报告先发，DSpark 报告两周后跟上并替换。这是 V4 模型页"production 服务速度"主张的真正出处。
-- **难样本 unrecoverable draft cost**（§ 5.4 Limitations）：confidence scheduler 只能省 target 端验证，**draft 端 γ-token block 的 parallel backbone 是固定开销**。对于接受率天然极低的复杂请求，这一档算力无法回收；论文留作 future work（difficulty-aware early exit in draft model）。
-- **Sequential head 与 [Gated DeltaNet / KDA](gated-delta-net.md) 这类 token-mixer 选择是否正交**：Markov head 走的是 low-rank transition bias，不是 attention 也不是 SSM；与混合线性注意力（KDA / GDN）一类的 backbone 选择应是**正交**的，但论文未做对比。
-- **与 Multi-Teacher OPD 训练栈的关系**：DSpark 训练里 target 模型 100% 冻结、走的是 hidden-state caching + full-vocab supervision 思路，跟 [DeepSeek-V4 用的 full-vocab OPD](deepseek-v4.md#后训练opd-替代-mixed-rl)（也是 hidden-state caching + FP4 inference + TileLang KL kernel）共享同一套 HAI-LLM 工程地基；后续如果要写"DeepSeek-V4 的 distillation-as-infrastructure"主题，DSpark 是同一栈在 inference 端的延伸。
+- **需补外部来源**：**DeepSpec / DSpark checkpoints 的开源状态**：论文称发布 V4-Flash / V4-Pro preview 对应的 DSpark checkpoint 与 DeepSpec 训练库（含 Eagle3、DFlash、DSpark），但报告未给具体仓库链接；需要后续从 [github.com/deepseek-ai](https://github.com/deepseek-ai) 或 HuggingFace 上跟进。
+- **需实验或作者披露**：**难样本 unrecoverable draft cost**（§ 5.4 Limitations）：confidence scheduler 只能省 target 端验证，**draft 端 γ-token block 的 parallel backbone 是固定开销**。对于接受率天然极低的复杂请求，这一档算力无法回收；论文留作 future work（difficulty-aware early exit in draft model）。
+- **需实验或作者披露**：**Sequential head 与 [Gated DeltaNet / KDA](gated-delta-net.md) 这类 token-mixer 选择是否正交**：Markov head 走的是 low-rank transition bias，不是 attention 也不是 SSM；与混合线性注意力（KDA / GDN）一类的 backbone 选择应是**正交**的，但论文未做对比。
+- **现有材料待核**：**与 Multi-Teacher OPD 训练栈的关系**：DSpark 训练里 target 模型 100% 冻结、走的是 hidden-state caching + full-vocab supervision 思路，跟 [DeepSeek-V4 用的 full-vocab OPD](deepseek-v4.md#后训练opd-替代-mixed-rl)（也是 hidden-state caching + FP4 inference + TileLang KL kernel）共享同一套 HAI-LLM 工程地基；后续如果要写"DeepSeek-V4 的 distillation-as-infrastructure"主题，DSpark 是同一栈在 inference 端的延伸。

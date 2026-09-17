@@ -75,7 +75,7 @@ M.1 用高精度管线 + 人工混合，暴露两个瓶颈：(1) 高价值子集
 
 ### AutoMixer：自动化数据混合优化
 
-这是和现有 [数据混合优化](data-mixture-optimization.md) 概念页（DoReMi / DoGE / RegMix / TANDEM）的直接交叉点。AutoMixer 训了一群 **~60 个 ~0.5B MoE proxy**，每个在不同混合上训 ~60B tokens，覆盖 50+ 异构数据集组。学一个 surrogate 映射 $\mathcal{M}: x\to y$（$x$ 是 $d$ 组上的混合向量，$y$ 是 $k$ 个能力组的下游指标）。候选混合按 $x\sim\text{Dirichlet}(\alpha x_0)$ 采样并约束 $\|x-x_0\|_1<\epsilon$，每个能力组训独立回归器 $f_j(x)\approx y_j$（实践用非线性）。优化：
+这是和现有 [数据混合优化](../concepts/data-mixture-optimization.md) 概念页（DoReMi / DoGE / RegMix / TANDEM）的直接交叉点。AutoMixer 训了一群 **~60 个 ~0.5B MoE proxy**，每个在不同混合上训 ~60B tokens，覆盖 50+ 异构数据集组。学一个 surrogate 映射 $\mathcal{M}: x\to y$（$x$ 是 $d$ 组上的混合向量，$y$ 是 $k$ 个能力组的下游指标）。候选混合按 $x\sim\text{Dirichlet}(\alpha x_0)$ 采样并约束 $\|x-x_0\|_1<\epsilon$，每个能力组训独立回归器 $f_j(x)\approx y_j$（实践用非线性）。优化：
 
 $$\max_x \sum_j w_j f_j(x) \quad\text{s.t.}\quad \sum_i x_i=1,\ x_i\ge 0,\ \|x-x_0\|_1<\epsilon$$
 
@@ -119,7 +119,7 @@ $N$ 激活参数、$D$ 总 token（含 cooldown）。换 batch $B$ 按 $\sqrt{B/
 
 mid-training → SFT → agentic RL。M.1 与 XS.2 recipe 相同，仅超参/小数据修复差异。由于 M.1 先就绪，XS.2 的初始 imitation learning 阶段由核心后训练团队之外的人 self-service 跑完（Model Factory 的「research is self-service」实证）。
 
-**Special tokens 与模板**：XML 式 `<assistant>/<think>/<tool_call>`，embedding 随机初始化、预训练不动直到 mid-training。XS.2 随机初始化 OK；**M.1 因特殊/常规 token embedding 不匹配导致 gradient spike + dead expert**，解法是 **subtoken averaging** 初始化（如 `<think>` = mean(`<th, ink, >`)）+ 100 步 warmup（冻结除 input embedding 与 LM head 外全网络）。reasoning 用 `<think>/</think>` + `enable_thinking` flag，persistent thinking history（前序 reasoning block 留在 context）。tool call XML 式兼容 GLM 系列 [102]=[GLM-5](glm-5.md)。他们给 vLLM upstream 了改进的 reasoning/tool parser（修 streaming 多 token delta 跨 block 边界被吞的问题）。**TITO** API 用于 RL actors（保 token ID 跨多轮稳定，与 [GLM-5 异步 Agent RL](asynchronous-agent-rl.md) 同一动机），并用 `render_assistant_messages_raw` flag 在 RL 渲染器与生产 chat template 间做逐生成步字符串精确匹配断言，消除部署 mismatch。
+**Special tokens 与模板**：XML 式 `<assistant>/<think>/<tool_call>`，embedding 随机初始化、预训练不动直到 mid-training。XS.2 随机初始化 OK；**M.1 因特殊/常规 token embedding 不匹配导致 gradient spike + dead expert**，解法是 **subtoken averaging** 初始化（如 `<think>` = mean(`<th, ink, >`)）+ 100 步 warmup（冻结除 input embedding 与 LM head 外全网络）。reasoning 用 `<think>/</think>` + `enable_thinking` flag，persistent thinking history（前序 reasoning block 留在 context）。tool call XML 式兼容 GLM 系列 [102]=[GLM-5](glm-5.md)。他们给 vLLM upstream 了改进的 reasoning/tool parser（修 streaming 多 token delta 跨 block 边界被吞的问题）。**TITO** API 用于 RL actors（保 token ID 跨多轮稳定，与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 同一动机），并用 `render_assistant_messages_raw` flag 在 RL 渲染器与生产 chat template 间做逐生成步字符串精确匹配断言，消除部署 mismatch。
 
 **Mid-training**：~60B tokens，batch 128，seq 131072，cosine peak 1×10⁻⁵ → 2×10⁻⁷，1 epoch。混合 40% logic+reasoning / 30% coding-and-agent / 30% general chat。关键是调 tool call 数量/种类、reasoning 比例、reasoning 长度与难度、turn 数与 token/turn。
 
@@ -183,13 +183,13 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 
 ## 待追问
 
-- WSD 缩放律式 (1) 在 LAuna 自己的 4 尺寸拟合外，外部交叉验证只有 Kimi K2 一个点且偏差 ~1.75×——是否能在更多外部 MoE 上验证？$N$ 用激活参数而非总参是否对低激活 MoE（如 MiniMax-M2 9.8B 激活）合理？
-- softplus-based per-head gating [67] 与 [Gated Attention 报告](gated-attention.md) 的 head-specific sigmoid 门——报告写「softplus」而非「sigmoid」，是同一机制的不同激活选择，还是变体？需核对 [67] 原文是否同时给 softplus 选项。
-- AutoMixer 的 ~60 个 0.5B proxy 训 ~60B tokens 的总成本未披露；KL 正则 $\lambda$ 的取值与 sensitivity 未给。
-- CISPO：Laguna 的 $(1,4)$ **不是** [MiniMax-M1](minimax-m1.md) 原文数字——M1 只写 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调上界，没有给具体 $\varepsilon_{\mathrm{high}}$。两边没有对照表。Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
-- 合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2505.04034) 等的规模可比性未对照。
-- Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？
-- 256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。这条末端零样本缩放与 [Jet-Long](jet-long.md) 的动态分组是同一轴上的不同旋钮，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)；Laguna 没有同协议对照。
+- **需实验或作者披露**：WSD 缩放律式 (1) 在 LAuna 自己的 4 尺寸拟合外，外部交叉验证只有 Kimi K2 一个点且偏差 ~1.75×——是否能在更多外部 MoE 上验证？$N$ 用激活参数而非总参是否对低激活 MoE（如 MiniMax-M2 9.8B 激活）合理？
+- **现有材料待核**：softplus-based per-head gating [67] 与 [Gated Attention 报告](gated-attention.md) 的 head-specific sigmoid 门——报告写「softplus」而非「sigmoid」，是同一机制的不同激活选择，还是变体？需核对 [67] 原文是否同时给 softplus 选项。
+- **需实验或作者披露**：AutoMixer 的 ~60 个 0.5B proxy 训 ~60B tokens 的总成本未披露；KL 正则 $\lambda$ 的取值与 sensitivity 未给。
+- **需实验或作者披露**：CISPO：Laguna 的 $(1,4)$ **不是** [MiniMax-M1](minimax-m1.md) 原文数字——M1 只写 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调上界，没有给具体 $\varepsilon_{\mathrm{high}}$。两边没有对照表。Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
+- **需补外部来源**：合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2505.04034) 等的规模可比性未对照。
+- **需补外部来源**：Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？
+- **需实验或作者披露**：256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。这条末端零样本缩放与 [Jet-Long](jet-long.md) 的动态分组是同一轴上的不同旋钮，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)；Laguna 没有同协议对照。
 
 ## 相关页面
 

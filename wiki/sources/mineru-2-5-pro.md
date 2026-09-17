@@ -185,14 +185,17 @@ Stage 1（大规模 SFT）单阶段贡献最大（+1.31），说明 Data Engine 
 
 v1.5→v1.6 自报掉 2.07，已对上版本。同属 v1.6 的 92.03 vs 89.87 再差 2.16，两篇报告都没归因（可能是评测代码或 test 子集）。MGAM 通常提分，这里统一重测更低，不像单纯粒度修正。这仍是「评测匹配偏差使跨系统比较不可靠」的活案例——**读 OmniDocBench 须同时钉版本和是否统一重测**。
 
+## 证据边界与阅读提示
+
+- **「200× 参数」对比口径**：Figure 1 / 摘要称超过 200× 参数模型，主表最大通用 VLM 是 Qwen3-VL-235B（~196×），口径基本成立但 GPT-5.2 / Gemini 3 Pro 参数未公开，「200×」是约数。
+
 ## 待追问
 
-- **HunyuanOCR 1.0 的 92.03 vs 89.87 仍未归因**：[1.0 原文](hunyuan-ocr-1.0.md) 的 94.10 已核对为 v1.5 协议，与 92.03 的版本差已闭合。剩下的同属 v1.6 的 2.16 分需要同一 checkpoint 在两套评测流程下复现。MGAM 一般会提分，统一重测反而更低，不像单纯粒度修正。
-- **CMCV 三模型池的选择偏差**：MinerU2.5、PaddleOCR-VL、Qwen3-VL-30B 三者能力接近时，Medium（外部一致、MinerU 不同）的判定是否稳定？若换外部模型池，Easy/Medium/Hard 划分会否显著变？
-- **Judge-and-Refine 的 Qwen3-VL-235B 与 CMCV 池中 Qwen3-VL-30B 同源**：虽论文称 235B「独立于 CMCV 模型池」，但同族模型可能有共享盲点，render-then-verify 是否对同族盲点有效？
-- **192K 专家标注 Hard 样本的子任务分布**：Table 1 给 Stage 2 总 3.9M（含 192K 人工），但 192K 在 layout/text/formula/table/image 间如何分配未明确，Hard:Replay 混比差异（文字 1:50 vs 布局 6:1）暗示分布极不均。
-- **GRPO Stage 3 的 mid-reward 过滤阈值**：论文称剔除过高/过低 reward 保留中段，但阈值区间未给，是否因子任务而异未说明。
-- **「200× 参数」对比口径**：Figure 1 / 摘要称超过 200× 参数模型，主表最大通用 VLM 是 Qwen3-VL-235B（~196×），口径基本成立但 GPT-5.2 / Gemini 3 Pro 参数未公开，「200×」是约数。
+- **需实验或作者披露**：**HunyuanOCR 1.0 的 92.03 vs 89.87 仍未归因**：[1.0 原文](hunyuan-ocr-1.0.md) 的 94.10 已核对为 v1.5 协议，与 92.03 的版本差已闭合。剩下的同属 v1.6 的 2.16 分需要同一 checkpoint 在两套评测流程下复现。MGAM 一般会提分，统一重测反而更低，不像单纯粒度修正。
+- **需实验或作者披露**：**CMCV 三模型池的选择偏差**：MinerU2.5、PaddleOCR-VL、Qwen3-VL-30B 三者能力接近时，Medium（外部一致、MinerU 不同）的判定是否稳定？若换外部模型池，Easy/Medium/Hard 划分会否显著变？
+- **需实验或作者披露**：**Judge-and-Refine 的 Qwen3-VL-235B 与 CMCV 池中 Qwen3-VL-30B 同源**：虽论文称 235B「独立于 CMCV 模型池」，但同族模型可能有共享盲点，render-then-verify 是否对同族盲点有效？
+- **需实验或作者披露**：**192K 专家标注 Hard 样本的子任务分布**：Table 1 给 Stage 2 总 3.9M（含 192K 人工），但 192K 在 layout/text/formula/table/image 间如何分配未明确，Hard:Replay 混比差异（文字 1:50 vs 布局 6:1）暗示分布极不均。
+- **需实验或作者披露**：**GRPO Stage 3 的 mid-reward 过滤阈值**：论文称剔除过高/过低 reward 保留中段，但阈值区间未给，是否因子任务而异未说明。
 
 ## 相关页面
 
@@ -205,3 +208,5 @@ v1.5→v1.6 自报掉 2.07，已对上版本。同属 v1.6 的 92.03 vs 89.87 �
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) - Stage 3 GRPO + DAPO recipe 的非 agentic（文档解析格式对齐）应用
 - [DAPO](dapo.md) - Stage 3 沿用 clip-higher + dynamic sampling
 - [数据混合优化](../concepts/data-mixture-optimization.md) - Data Engine 是 data-centric AI 的另一分支（难度感知采样 + 标注精修），区别于 domain reweighting
+
+关联提问页：[HunyuanOCR 1.0](hunyuan-ocr-1.0.md#相关追问)。

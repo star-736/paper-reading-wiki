@@ -167,12 +167,12 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 
 ## 待追问
 
-- **AdaCodec 的 predictive-cost reset 阈值如何设定？** 论文引用了 AdaCodec 原文 [9]（arXiv:2606.02569），但未在本报告展开。
-- **RL 的 answer-centered window sampling 的具体窗口大小？** 论文只说"压缩到个位数 turn"，未给确切窗口长度。
-- **三段式记忆的 $T_s$ / $M$ / $L$ 具体取值？** 论文给出结构但未公开参数。
-- **2 小时上下文的延迟实测数据？** 论文声称 sub-second latency 但未给系统级延迟 breakdown。
-- **与 TML interaction model 的直接定量对比？** 论文只做定性对比（vision-first vs audio-video），未在同一 benchmark 上对打。
-- **委托的 background-agnostic protocol 的完整格式？** Appendix 给了 delegation 训练数据示例（Listing 3），但系统侧 protocol 规范需查 repo。
+- **需补外部来源**：**AdaCodec 的 predictive-cost reset 阈值如何设定？** 论文引用了 AdaCodec 原文 [9]（arXiv:2606.02569），但未在本报告展开。
+- **需实验或作者披露**：**RL 的 answer-centered window sampling 的具体窗口大小？** 论文只说"压缩到个位数 turn"，未给确切窗口长度。
+- **需实验或作者披露**：**三段式记忆的 $T_s$ / $M$ / $L$ 具体取值？** 论文给出结构但未公开参数。
+- **需实验或作者披露**：**2 小时上下文的延迟实测数据？** 论文声称 sub-second latency 但未给系统级延迟 breakdown。
+- **需实验或作者披露**：**与 TML interaction model 的直接定量对比？** 论文只做定性对比（vision-first vs audio-video），未在同一 benchmark 上对打。
+- **需补外部来源**：**委托的 background-agnostic protocol 的完整格式？** Appendix 给了 delegation 训练数据示例（Listing 3），但系统侧 protocol 规范需查 repo。
 
 ## 相关页面
 

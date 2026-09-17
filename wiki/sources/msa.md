@@ -77,7 +77,7 @@ MSA 是构建在 Grouped Query Attention（GQA）之上的 blockwise 稀疏注�
 
 ## 待追问
 
-- MSA 的 group-shared block-level top-k 与 DSA 的 head-shared token-level top-k，哪一边在 RL 阶段更稳定？GLM-5 报告提到 DSA 因 top-k 非确定性会让 RL entropy 崩塌；MSA 论文 Outlook 节亲口说「extending the same selector-only design to settings beyond pretraining, including reinforcement-learning post-training and agentic deployment」是待做工作，主体报告只覆盖 pretraining。这是明确的 open problem，不是「论文未表态」。
-- MSA-PT 在多数 benchmark 上小胜 full baseline，是稀疏作为正则的副作用，还是 3T 预算下 full attention 还没充分训练？需要更长 horizon 或匹配的更大 baseline 才能判断。
-- 报告强调 MSA 可以从 GQA 直接转换，但其核心仍是新加 idx 投影；与 DSA 那种 indexer 不变、只换 top-k 范式的"零参数改动"路线相比，部署门槛差多少。
-- 论文 14.2× prefill / 7.6× decode 是在 H800 上测的，但公开 kernel 已经针对 SM100 / Blackwell 重写。在 Blackwell 上这两个数字会变成什么？没有官方数据。
+- **需实验或作者披露**：MSA 的 group-shared block-level top-k 与 DSA 的 head-shared token-level top-k，哪一边在 RL 阶段更稳定？GLM-5 报告提到 DSA 因 top-k 非确定性会让 RL entropy 崩塌；MSA 论文 Outlook 节亲口说「extending the same selector-only design to settings beyond pretraining, including reinforcement-learning post-training and agentic deployment」是待做工作，主体报告只覆盖 pretraining。这是明确的 open problem，不是「论文未表态」。
+- **需实验或作者披露**：MSA-PT 在多数 benchmark 上小胜 full baseline，是稀疏作为正则的副作用，还是 3T 预算下 full attention 还没充分训练？需要更长 horizon 或匹配的更大 baseline 才能判断。
+- **需实验或作者披露**：报告强调 MSA 可以从 GQA 直接转换，但其核心仍是新加 idx 投影；与 DSA 那种 indexer 不变、只换 top-k 范式的"零参数改动"路线相比，部署门槛差多少。
+- **需实验或作者披露**：论文 14.2× prefill / 7.6× decode 是在 H800 上测的，但公开 kernel 已经针对 SM100 / Blackwell 重写。在 Blackwell 上这两个数字会变成什么？没有官方数据。

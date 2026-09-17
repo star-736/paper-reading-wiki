@@ -45,6 +45,6 @@ Kimi K2.5 在 SWE-Bench Verified 为 76.8，SWE-Bench Pro public 为 50.7，SWE-
 
 ## 待追问
 
-- zero-vision SFT 的成立条件是什么？是否必须先有足够强的 joint pretraining？
-- Agent Swarm 的提升有多少来自并行搜索，有多少来自 context sharding？
-- 冻结 sub-agent 能稳定训练，但是否限制了长期协作策略的上限？
+- **需实验或作者披露**：zero-vision SFT 的成立条件是什么？是否必须先有足够强的 joint pretraining？
+- **需实验或作者披露**：Agent Swarm 的提升有多少来自并行搜索，有多少来自 context sharding？
+- **需实验或作者披露**：冻结 sub-agent 能稳定训练，但是否限制了长期协作策略的上限？

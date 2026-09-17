@@ -126,10 +126,13 @@ DROID 训练细节（Appendix D）：成功 episode 75k、滤全零空闲步、2
 
 ## 待追问
 
-- [π0.5](pi0.5.md) / [InternVLA-A1.5](internvla-a1.5.md) / [π0.7](pi0.7.md) 用的是数据集特化 FAST，还是发布的 FAST+ 权重？三篇都只给了引用，本页无法从对照表确认词表同一性。时间尺度可以答：本页是 1 秒 chunk；π0.5 的 \(H=50\) 在 50 Hz 上同是 1 秒；InternVLA 也是 chunk 50，但没写控制频率。都不是 OpenVLA 的逐步 bin。
-- 自回归推理 750 ms 能否用投机解码 / 量化拉到 diffusion 的 100 ms 量级，原文没做（§VI-E、§VII）。
-- FAST+ 在人形、灵巧手、导航上的**策略**成绩，本页只有压缩比（Fig. 8）。
-- DCT+BPE 接到非自回归（diffusion / flow）解码会怎样，§VII 只列为方向。
+- **需实验或作者披露**：自回归推理 750 ms 能否用投机解码 / 量化拉到 diffusion 的 100 ms 量级，原文没做（§VI-E、§VII）。
+- **需实验或作者披露**：FAST+ 在人形、灵巧手、导航上的**策略**成绩，本页只有压缩比（Fig. 8）。
+- **需实验或作者披露**：DCT+BPE 接到非自回归（diffusion / flow）解码会怎样，§VII 只列为方向。
+
+## 相关追问
+
+主记录：[FAST 与 FAST+ 的词表同一性](../concepts/vision-language-action.md#待追问)。
 
 ## 相关页面
 

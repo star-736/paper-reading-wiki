@@ -48,10 +48,12 @@ ARPO 把 agentic RL 的问题拆得更细：trajectory-level RL 假设「完整�
 
 ## 待追问
 
-- ARPO 的 entropy spike 目前主要来自 search / browser / Python interpreter；coding agent 的编辑-测试-修复 loop 是否同样适用？
-- 论文的 deep search 结果依赖 Bing、browser agent 和 LLM-as-judge；换工具栈后相对 GRPO 的收益是否稳定？
-- entropy-based branching 与推理期 tree search / self-consistency / Agent Swarm 的运行时并行探索如何结合？
-- soft advantage estimation 是实测更稳，但共享前缀 credit assignment 在更长轨迹中是否会被 group normalization 稀释？
+- **需实验或作者披露**：entropy-based branching 与推理期 tree search / self-consistency / Agent Swarm 的运行时并行探索如何结合？
+- **需实验或作者披露**：soft advantage estimation 是实测更稳，但共享前缀 credit assignment 在更长轨迹中是否会被 group normalization 稀释？
+
+## 相关追问
+
+主记录：[ARPO 在 coding / terminal 的适用性](../sources/agentic-reinforced-policy-optimization.md#待追问)；[ARPO 更换工具栈后的稳健性](../sources/agentic-reinforced-policy-optimization.md#待追问)。
 
 ## 相关页面
 

@@ -147,10 +147,11 @@ R=2 的 7B 模型在 SWE-bench Verified 上达到 64.4%，超过 Kimi-Dev-72B（
 
 ## 待追问
 
-- **CLP offset 能否自适应**：论文在 Conclusion 提及 adaptive offset mechanisms 和 dynamic loop allocation 作为未来方向，但未展开。如果 Ω(r) 能随 loop 递减（而非恒定），gain–cost 交叉点可能推迟到更高 R。
-- **与 MTP 的关系**：Looped Transformer 的 latent depth recurrence 和 MTP（multi-token prediction）都是 test-time compute scaling 的路径，但论文未讨论两者关系。PLT 的 loop 是在表征空间迭代精炼，MTP 是在 token 空间并行预测——两者是否也互补（如同 explicit CoT + latent loop）？
-- **18T tokens 1:1 text:code 的代表性**：代码占比 50% 远高于一般 LLM 预训练，loop-count 最优值是否依赖数据组成？纯文本训练的 PLT 是否也饱和在 R=2？
-- **scaling law 跨参数量**：论文只在 7B 上实验。Schwethelm et al. 估算一次 loop 等效 r^0.46 个独立参数层——更大模型上 gain–cost 交叉点是否会移动？
+- **需实验或作者披露**：**18T tokens 1:1 text:code 的代表性**：代码占比 50% 远高于一般 LLM 预训练，loop-count 最优值是否依赖数据组成？纯文本训练的 PLT 是否也饱和在 R=2？
+
+## 相关追问
+
+主记录：[PLT 自适应 CLP offset](../concepts/looped-transformers.md#待追问)；[PLT 与 MTP 的互补性](../concepts/looped-transformers.md#待追问)；[PLT 最优循环数跨规模迁移](../concepts/looped-transformers.md#待追问)。
 
 ## 相关页面
 

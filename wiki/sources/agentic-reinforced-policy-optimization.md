@@ -120,10 +120,10 @@ Figure 8 的 scaling 分析给出三个实用结论：
 
 ## 待追问
 
-- ARPO 的 entropy spike 观察是否在 coding agent / terminal agent 中同样成立？论文工具主要是 search、browser、Python interpreter，和 SWE-bench 式仓库编辑还有距离。
-- partial rollout 的 branching 会不会和真实部署时的 tree search / self-consistency 解码重复？训练期探索收益与推理期采样收益如何分摊，正文没有展开。
-- deep search 实验依赖 Bing 搜索、browser agent、LLM-as-judge 和 token-level F1；如果换搜索 API / browser 模型 / judge，ARPO 相对 GRPO 的优势是否稳定？
-- GPG theorem 支撑 macro action policy gradient，但 entropy 阈值、$\alpha/\beta/\tau$ 的选择仍是经验超参；是否存在更原则化的 uncertainty criterion？
+- **需实验或作者披露**：ARPO 的 entropy spike 观察是否在 coding agent / terminal agent 中同样成立？论文工具主要是 search、browser、Python interpreter，和 SWE-bench 式仓库编辑还有距离。
+- **需实验或作者披露**：partial rollout 的 branching 会不会和真实部署时的 tree search / self-consistency 解码重复？训练期探索收益与推理期采样收益如何分摊，正文没有展开。
+- **需实验或作者披露**：deep search 实验依赖 Bing 搜索、browser agent、LLM-as-judge 和 token-level F1；如果换搜索 API / browser 模型 / judge，ARPO 相对 GRPO 的优势是否稳定？
+- **需实验或作者披露**：GPG theorem 支撑 macro action policy gradient，但 entropy 阈值、$\alpha/\beta/\tau$ 的选择仍是经验超参；是否存在更原则化的 uncertainty criterion？
 
 ## 相关页面
 
@@ -131,3 +131,5 @@ Figure 8 的 scaling 分析给出三个实用结论：
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - 相邻算法：[GiGPO](gigpo.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)
+
+关联提问页：[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md#相关追问)。

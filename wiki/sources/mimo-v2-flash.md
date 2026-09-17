@@ -49,8 +49,8 @@ RL / MOPD 基建用 SGLang + Megatron。§4.6.1 采用 [R3](r3.md)（Ma et al., 
 
 ## 待追问
 
-- 混合 SWA/GA 设计简单高效，但在更强对抗性的长上下文推理中是否稳定？
-- MOPD 的收益高度依赖 teacher 质量和任务覆盖；后续应与 GLM-5 的 cross-stage distillation 对照。
+- **需实验或作者披露**：混合 SWA/GA 设计简单高效，但在更强对抗性的长上下文推理中是否稳定？
+- **现有材料待核**：MOPD 的收益高度依赖 teacher 质量和任务覆盖；后续应与 GLM-5 的 cross-stage distillation 对照。
 
 ## 相关页面
 
@@ -58,4 +58,3 @@ RL / MOPD 基建用 SGLang + Megatron。§4.6.1 采用 [R3](r3.md)（Ma et al., 
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [训练—rollout 一致性](../concepts/train-rollout-consistency.md)
 - 模型：[MiMo-V2-Flash](../models/mimo-v2-flash.md)
-

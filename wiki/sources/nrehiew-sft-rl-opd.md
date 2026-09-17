@@ -120,12 +120,15 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：概念页的七层数学依据是 Thinking Machines 博客的结构化整理；本博客的 on-policy 承重墙实验和分布视角三轴框架是该概念页的补充视角。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：对比页列了 5 家 OPD 用法；本博客的 MiMo Table 7 分析（RL domain vs self-distill domain）和 GLM-5/DSV4 最终 checkpoint 不经 RL 的趋势观察是对比页的补充。
 
+## 证据边界与阅读提示
+
+- **「暴力 SFT 过训练 expert → OPD 蒸馏」是否已在产业报告中出现**？作者提出这是 hopeful result，但 MiMo/V4 的 teacher 都是 RL 训出来的。[Nemotron 3 Ultra](nemotron-3-ultra.md) 的 STEM teacher 在 student 之上又做了大规模 SFT+RL（DeepSeek-V4-Pro 生成的推理混合），再 OPD 回去，HLE 恢复率只有 16.9%——作者归因于 student 采样不到 teacher 新学的推理路径。这是「额外 SFT teacher → OPD」的生产反例，限定在自包含推理，不否定 agentic 域的高恢复率。
+
 ## 待追问
 
-- **on-policy 数据 > teacher 的结论是否只在 minimal editing 这种 niche task 上成立**？作者自己说该 task 适合测遗忘和泛化，但在更 broad 的能力域上，teacher 质量是否会重新主导？
-- **OPSD 的 pointwise clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？原文剪的是 full-vocab 高贡献 style 词表项，不是 sampled-token reverse KL 上的 clip。
-- **entropy collapse 的剧烈程度是否可调**？OPD 比 RL 更剧烈的熵坍缩是 reverse KL mode-seeking 的预期，但是否意味着 OPD student 的多样性损失比 RL 更严重？这与 Qwen3 Table 21 里 OPD pass@64 也涨（不只是 pass@1）的现象是否矛盾？
-- **「暴力 SFT 过训练 expert → OPD 蒸馏」是否已在产业报告中出现**？作者提出这是 hopeful result，但 MiMo/V4 的 teacher 都是 RL 训出来的。[Nemotron 3 Ultra](nemotron-3-ultra.md) 的 STEM teacher 在 student 之上又做了大规模 SFT+RL（DeepSeek-V4-Pro 生成的推理混合），再 OPD 回去，HLE 恢复率只有 16.9%——作者归因于 student 采样不到 teacher 新学的推理路径。这是「额外 SFT teacher → OPD」的生产反例，限定在自包含推理，不否定 agentic 域的高恢复率。
+- **需实验或作者披露**：**on-policy 数据 > teacher 的结论是否只在 minimal editing 这种 niche task 上成立**？作者自己说该 task 适合测遗忘和泛化，但在更 broad 的能力域上，teacher 质量是否会重新主导？
+- **现有材料待核**：**OPSD 的 pointwise clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？原文剪的是 full-vocab 高贡献 style 词表项，不是 sampled-token reverse KL 上的 clip。 KAT 剪的是长轨迹 drift，Keye 过滤双方低概率 token；需先比较估计器、作用对象与训练阶段，再讨论是否能统一。
+- **需实验或作者披露**：**entropy collapse 的剧烈程度是否可调**？OPD 比 RL 更剧烈的熵坍缩是 reverse KL mode-seeking 的预期，但是否意味着 OPD student 的多样性损失比 RL 更严重？这与 Qwen3 Table 21 里 OPD pass@64 也涨（不只是 pass@1）的现象是否矛盾？
 
 ## 相关页面
 
@@ -136,3 +139,5 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 - [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：两轮 MOPD；HLE 16.9% 恢复率是「额外 SFT teacher → OPD」的生产反例。
 - [DPO](dpo.md)：离线偏好闭式解，不在本博客的 SFT / RL / OPD 三轴里（off-policy 成对比较，不是 teacher 分布蒸馏）。
 - [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Qwen3 技术报告](qwen3.md) / [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：本博客引用的 pipeline 趋势来源；Ultra 是后续生产对照。
+
+关联提问页：[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md#相关追问)。

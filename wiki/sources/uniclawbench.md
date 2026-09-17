@@ -111,11 +111,11 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 
 ## 待追问
 
-- 400 个任务的中英分配比例未在正文明确（需查附录或 GitHub repo）。
-- 三角色闭环的 user simulator 和 supervisor 用的具体模型未在正文说明（推测也是 LLM，但未指明型号）。
-- 任务执行环境的 Docker 镜像和 tool/skill 列表是否随 repo 公开，需查 GitHub。
-- Cross-Platform 任务的"多平台"具体指哪些平台组合（browser + GUI app? 跨 OS?），正文仅举例未枚举。
-- 论文引用了 Hermes Agent [27] 和 OpenClaw [39] 作为 proactive agent 平台代表，但未在实验中评测它们作为 executor backbone 的差异。
+- **现有材料待核**：400 个任务的中英分配比例未在正文明确（需查附录或 GitHub repo）。
+- **需补外部来源**：三角色闭环的 user simulator 和 supervisor 用的具体模型未在正文说明（推测也是 LLM，但未指明型号）。
+- **需补外部来源**：任务执行环境的 Docker 镜像和 tool/skill 列表是否随 repo 公开，需查 GitHub。
+- **现有材料待核**：Cross-Platform 任务的"多平台"具体指哪些平台组合（browser + GUI app? 跨 OS?），正文仅举例未枚举。
+- **需实验或作者披露**：论文引用了 Hermes Agent [27] 和 OpenClaw [39] 作为 proactive agent 平台代表，但未在实验中评测它们作为 executor backbone 的差异。
 
 ## 相关页面
 

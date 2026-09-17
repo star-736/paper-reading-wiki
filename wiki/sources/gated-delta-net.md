@@ -54,9 +54,9 @@ GDN 把两者合成 **gated delta rule**，一个规则同时拥有「快速清�
 
 ## 待追问
 
-- GDN 的标量门是 head-wise；KDA 改成 channel-wise，细门原文是 [GLA](gated-linear-attention.md)。本报告有没有讨论过为何不直接用 GLA 的对角门、仍选标量？需读 § 方法与消融。
-- 论文做的混合是 GDN + SWA / Mamba2；与后来 Kimi Linear 选 GDN-style + MLA、Qwen3-Next 选 GDN + gated full attention 相比，混合「另一支」用什么差异有多大？
-- GDN 的具体实验规模（参数量、训练 token）与 Kimi Linear/Qwen3-Next 生产尺度差距，决定了「小尺度结论能否外推」，需补主表数字。
+- **现有材料待核**：GDN 的标量门是 head-wise；KDA 改成 channel-wise，细门原文是 [GLA](gated-linear-attention.md)。本报告有没有讨论过为何不直接用 GLA 的对角门、仍选标量？需读 § 方法与消融。
+- **需实验或作者披露**：论文做的混合是 GDN + SWA / Mamba2；与后来 Kimi Linear 选 GDN-style + MLA、Qwen3-Next 选 GDN + gated full attention 相比，混合「另一支」用什么差异有多大？
+- **现有材料待核**：GDN 的具体实验规模（参数量、训练 token）与 Kimi Linear/Qwen3-Next 生产尺度差距，决定了「小尺度结论能否外推」，需补主表数字。
 
 ## 相关页面
 

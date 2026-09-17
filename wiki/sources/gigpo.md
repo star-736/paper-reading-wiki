@@ -139,14 +139,20 @@ verl-agent 宣称的能力包括：step-wise 多轮（不拼接全历史）、�
 - 与 [SAO](single-rollout-asynchronous-optimization.md) 的关系：GiGPO 依赖同一初始状态的一组轨迹；SAO 认为异步下这组轨迹不该等齐。一个要组，一个拆组。
 - 与 [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 的关系：GiGPO 应放在 **advantage 的构造单元** 轴——episode 组 + 同状态 step 组——而不是 ratio / clipping / 采样位置轴。
 
-## 待追问
+## 证据边界与阅读提示
 
-- Anchor 依赖状态匹配。网页 DOM、终端 transcript、代码仓库状态几乎不会精确相等；相似度阈值 0.9 只在 search QA 上试过。换 embedding 或结构等价后，$A^S$ 还稳不稳？
-- 论文自己的下界是「无重复则退回 GRPO」。真实 SWE / GUI 长轨迹里重复率是否仍有 Figure 5 那种 >65%？
-- $\omega=1$ 未对主表调参；WebShop 扫参峰值在 0.8。主结果对 $\omega$ 的敏感度只有这一张 1.5B 表。
 - Figure 6 的秒数与正文「< 0.002%」数量级不一致；应把开销读成「相对 rollout 可忽略」，不要引用 0.002% 这个精确值。
 - 没有 coding agent / 真实浏览器 / 生产 harness 实验；ALFWorld 与 WebShop 的 admissible action 集合比开放工具集干净得多。
-- 与 ARPO 的关系未做对照：同一预算下，把探索花在高熵分叉上，还是花在同状态对照上，哪一个更划算？
+
+## 待追问
+
+- **需实验或作者披露**：Anchor 依赖状态匹配。网页 DOM、终端 transcript、代码仓库状态几乎不会精确相等；相似度阈值 0.9 只在 search QA 上试过。换 embedding 或结构等价后，$A^S$ 还稳不稳？
+- **需实验或作者披露**：论文自己的下界是「无重复则退回 GRPO」。真实 SWE / GUI 长轨迹里重复率是否仍有 Figure 5 那种 >65%？
+- **需实验或作者披露**：$\omega=1$ 未对主表调参；WebShop 扫参峰值在 0.8。主结果对 $\omega$ 的敏感度只有这一张 1.5B 表。
+
+## 相关追问
+
+主记录：[GiGPO 与 ARPO 的同预算对照](../concepts/group-in-group-policy-optimization.md#待追问)。
 
 ## 相关页面
 

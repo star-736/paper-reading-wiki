@@ -93,11 +93,11 @@ Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AI
 
 ## 待追问
 
-- $\lambda_{policy}=1-1/(\alpha l)$ 在短 response 上可能取到很小甚至负值；实现是否做了 clipping、最小长度或 padding-based $l$ 定义，论文未说明。
-- Positive-example LM loss 会强化当前 policy 已经偶然找到的模式；在 verifier 有误判或答案风格单一时，是否会放大 reward hacking / mode collapse？
-- VAPO 的 value model 增加了参数、显存与训练 FLOPs；论文比较 gradient update steps，没有报告端到端 wall-clock、token throughput 或总计算成本，因而“更高 sample / step efficiency”不能直接等价为更低算力成本。
-- 代码任务迁移、多领域 reasoning、MoE backbone 与多轮 agent trajectory 上是否仍优于 value-model-free 方法，当前没有实证。
-- Value-Pretraining / Decoupled-GAE / Length-Adaptive GAE 三项强耦合；需要 factorial ablation 才能区分各自增益和交互效应。
+- **需实验或作者披露**：$\lambda_{policy}=1-1/(\alpha l)$ 在短 response 上可能取到很小甚至负值；实现是否做了 clipping、最小长度或 padding-based $l$ 定义，论文未说明。
+- **需实验或作者披露**：Positive-example LM loss 会强化当前 policy 已经偶然找到的模式；在 verifier 有误判或答案风格单一时，是否会放大 reward hacking / mode collapse？
+- **需实验或作者披露**：VAPO 的 value model 增加了参数、显存与训练 FLOPs；论文比较 gradient update steps，没有报告端到端 wall-clock、token throughput 或总计算成本，因而“更高 sample / step efficiency”不能直接等价为更低算力成本。
+- **需实验或作者披露**：代码任务迁移、多领域 reasoning、MoE backbone 与多轮 agent trajectory 上是否仍优于 value-model-free 方法，当前没有实证。
+- **需实验或作者披露**：Value-Pretraining / Decoupled-GAE / Length-Adaptive GAE 三项强耦合；需要 factorial ablation 才能区分各自增益和交互效应。
 
 ## 相关页面
 

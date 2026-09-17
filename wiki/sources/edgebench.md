@@ -85,10 +85,10 @@ $$S(t)=\frac{S_{\max}}{1+(t_{\mathrm{mid}}/t)^{\beta}}$$
 
 ## 待追问
 
-- 官方榜的 Codex / Claude Code 混用，有多少「模型代际翻倍」其实是 harness × context window？
-- SoL-Pi 用的 51 公开题子集，和这篇 134 题平均曲线是否同分布？博客没给 51 vs 134 的对照表。
-- \(S_{\max}\) 是拟合天花板，12h 实分仍低于它（Opus \(S_{\max}=0.55\)，曲线 12h 约 51）。外推到 72h 的 \(S_{\max}\) 是否稳定，作者只在子集上试过。
-- work–judge 隔离能挡住 git-history 作弊一类攻击，但 SoL-Pi 的 reducer 把日志交给另一个模型，评测语义是否仍等价于这篇的 outer loop？
+- **需实验或作者披露**：官方榜的 Codex / Claude Code 混用，有多少「模型代际翻倍」其实是 harness × context window？
+- **需实验或作者披露**：SoL-Pi 用的 51 公开题子集，和这篇 134 题平均曲线是否同分布？博客没给 51 vs 134 的对照表。
+- **需实验或作者披露**：\(S_{\max}\) 是拟合天花板，12h 实分仍低于它（Opus \(S_{\max}=0.55\)，曲线 12h 约 51）。外推到 72h 的 \(S_{\max}\) 是否稳定，作者只在子集上试过。
+- **需实验或作者披露**：work–judge 隔离能挡住 git-history 作弊一类攻击，但 SoL-Pi 的 reducer 把日志交给另一个模型，评测语义是否仍等价于这篇的 outer loop？
 
 ## 相关页面
 

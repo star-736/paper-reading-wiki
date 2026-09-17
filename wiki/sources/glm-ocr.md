@@ -148,12 +148,12 @@ v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)�
 
 ## 待追问
 
-- **MTP 的 k 值与共享参数细节**：训练预测 10 tokens/step，推理平均 5.2 tokens/step——推理时 k 是多少？10 个头全用还是子集？共享参数方案具体如何实现（引用 GLM-5 [35] 但未展开）？与 [DSpark](dspark.md) 独立 drafter、[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash block-diffusion 的接受率/内存 trade-off 缺乏直接对比。
-- **MTP 在高并发下是否有 DSpark 指出的静态多 token drafter 吞吐反噬**：报告只给单副本单并发吞吐，c>1 时加速比是否衰减？[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash 在 c=32 时加速比已从 2.14× 降到 1.80×。
-- **Stage 4 RL 的 GRPO 配置**：论文称用 GRPO + 难度分层 + task-aware reward，但 clip / dynamic sampling / 是否沿用 DAPO recipe 未明确，无法与 MinerU2.5-Pro Stage 3 / HunyuanOCR IcePop 直接对比。
-- **CogViT 与 GLM-5V-Turbo 的 CogViT 是否同源同权重**：两者都用 CogViT 视觉编码器，但 GLM-OCR 的 CogViT ~400M 是否就是 [GLM-5V-Turbo](glm-5v-turbo.md) 的同款？是否从 GLM-5V-Turbo 初始化？
-- **PP-DocLayout-V3 的错误传播**：Limitations §6.1 承认两阶段 pipeline 有错误传播（布局检测不准则下游降级），但未给布局错误对最终分数的定量影响。
-- **v1.5→v1.6 的 0.53 分提升是否全归 MGAM**：MinerU2.5-Pro 统一重测环境除 MGAM 外是否还有其他变更（test 子集、评测代码）？
+- **需补外部来源**：**MTP 的 k 值与共享参数细节**：训练预测 10 tokens/step，推理平均 5.2 tokens/step——推理时 k 是多少？10 个头全用还是子集？共享参数方案具体如何实现（引用 GLM-5 [35] 但未展开）？与 [DSpark](dspark.md) 独立 drafter、[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash block-diffusion 的接受率/内存 trade-off 缺乏直接对比。
+- **需实验或作者披露**：**MTP 在高并发下是否有 DSpark 指出的静态多 token drafter 吞吐反噬**：报告只给单副本单并发吞吐，c>1 时加速比是否衰减？[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash 在 c=32 时加速比已从 2.14× 降到 1.80×。
+- **需实验或作者披露**：**Stage 4 RL 的 GRPO 配置**：论文称用 GRPO + 难度分层 + task-aware reward，但 clip / dynamic sampling / 是否沿用 DAPO recipe 未明确，无法与 MinerU2.5-Pro Stage 3 / HunyuanOCR IcePop 直接对比。
+- **需补外部来源**：**CogViT 与 GLM-5V-Turbo 的 CogViT 是否同源同权重**：两者都用 CogViT 视觉编码器，但 GLM-OCR 的 CogViT ~400M 是否就是 [GLM-5V-Turbo](glm-5v-turbo.md) 的同款？是否从 GLM-5V-Turbo 初始化？
+- **需实验或作者披露**：**PP-DocLayout-V3 的错误传播**：Limitations §6.1 承认两阶段 pipeline 有错误传播（布局检测不准则下游降级），但未给布局错误对最终分数的定量影响。
+- **需补外部来源**：**v1.5→v1.6 的 0.53 分提升是否全归 MGAM**：MinerU2.5-Pro 统一重测环境除 MGAM 外是否还有其他变更（test 子集、评测代码）？
 
 ## 相关页面
 

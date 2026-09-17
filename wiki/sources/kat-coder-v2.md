@@ -128,10 +128,10 @@ KRL（Kwai RL）围绕两个核心创新：(1) Tree Training 消除 group sampli
 
 ## 待追问
 
-- KAT-Coder-V1 的基座是什么？报告只说 continued post-training，未公开 backbone 架构和参数量。
-- MCLA 的 K=8 次 forward prefill 的计算开销与收益的 trade-off 曲线如何？是否做过更小 K 的消融？
-- Turn-level policy optimization 的 turn 边界在不同 scaffold 间如何标准化？跨 scaffold 训练时 turn 粒度不一致是否影响 advantage 估计？
-- 五域专家各自的参数量是否与统一 student 相同？OPD 时 teacher 和 student 容量差如何影响蒸馏效果？
+- **需实验或作者披露**：KAT-Coder-V1 的基座是什么？报告只说 continued post-training，未公开 backbone 架构和参数量。
+- **需实验或作者披露**：MCLA 的 K=8 次 forward prefill 的计算开销与收益的 trade-off 曲线如何？是否做过更小 K 的消融？
+- **需实验或作者披露**：Turn-level policy optimization 的 turn 边界在不同 scaffold 间如何标准化？跨 scaffold 训练时 turn 粒度不一致是否影响 advantage 估计？
+- **需实验或作者披露**：五域专家各自的参数量是否与统一 student 相同？OPD 时 teacher 和 student 容量差如何影响蒸馏效果？
 
 ## 相关页面
 

@@ -162,16 +162,19 @@ BEHAVIOR-1K（Table 4，25 held-out seed；Aspire 在 seed 26–35 攒库，评�
 
 在 LIBERO-Pro 上去掉执行引擎和进化搜索 = 零样本 Claude Opus 4.6 + 15 个示例程序。加上引擎（+ 技能库）后再加进化搜索。正文 macro-average：无两者 **14%** → 加引擎 **62%** → 再加进化搜索 **72%**（§3.7）。Table 7/8 分轴：Pos overall 20% / 62% / 77%，Task overall 9% / 61% / 67%；两轴平均即 14.5 / 61.5 / 72。引擎贡献最大；进化搜索主要抬剩余难题，迭代有收益递减（Figure 6(c)、Table 9）。Aspire 最终列是在 seed 66–80 上对「引擎修复程序 vs 进化搜索最佳候选」做 winner 选择，不是无条件采用进化搜索。
 
-## 待追问
+## 证据边界与阅读提示
 
 - 摘要 77/72/32 是相对 **CaP-Agent0** 的成功率百分点，且 Aspire 一份程序、对方每 seed 重写+retries。把 VLA 的近零分和这份 coding-agent 对照写进同一「up to」时，读者容易误读成公平 VLA 对决。
-- 技能库的长期记忆管理原文自己标成未解决（§5）：过时、过特、冗余、误导，以及 Table 6 的非单调。Admission gate 有，但 pruning / ranking / 再验证还没有写成机制。
-- 仿真依赖冻结的 Claude Opus 4.6 + 1M 上下文；真机换了 GPT-5.5。更小模型能否撑同一环，原文明确没验证（§5）。
-- 表达力被预定义 API 卡住。新 sensing / 控制原语要人扩；作者把「agent 如何安全提出并纳入新原语」留给未来（§5）。
-- 真机还不是终身学习者：成功检测、安全复位、安全监控、标定维护都未闭环（§5）。Table 1 只有三条技能、一种 YAM 双臂。
-- nut_assembly 9%、部分 Spatial/Goal 任务进化搜索后仍接近 0（Table 7–8）。接触装配和语言改目标的哪些失败模式进不了当前技能表示？
 - 近邻不要混名：[EmbodiSkill](embodiskill.md) 改自然语言技能正文，没有 per-primitive 痕迹，也没有进化搜索程序；ALFWorld 93.28% 不能填本页 LIBERO-Pro。[EmbodiedSkills](embodied-skills.md) 技能是固定 typed 合同，低层是任务特化 π0.5，不写程序、不扩张 skill library。[AtomicVLA](atomicvla.md) 已 ingest：技能是 SG-MoE 专家路由，低层仍是 π0 连续专家，不是本页程序库。
-- 调试环的 LLM 调用与 simulator/robot rollout 成本没有主表；§5 只定性说 compute-intensive。
+
+## 待追问
+
+- **需实验或作者披露**：技能库的长期记忆管理原文自己标成未解决（§5）：过时、过特、冗余、误导，以及 Table 6 的非单调。Admission gate 有，但 pruning / ranking / 再验证还没有写成机制。
+- **需实验或作者披露**：仿真依赖冻结的 Claude Opus 4.6 + 1M 上下文；真机换了 GPT-5.5。更小模型能否撑同一环，原文明确没验证（§5）。
+- **需实验或作者披露**：表达力被预定义 API 卡住。新 sensing / 控制原语要人扩；作者把「agent 如何安全提出并纳入新原语」留给未来（§5）。
+- **需实验或作者披露**：真机还不是终身学习者：成功检测、安全复位、安全监控、标定维护都未闭环（§5）。Table 1 只有三条技能、一种 YAM 双臂。
+- **需实验或作者披露**：nut_assembly 9%、部分 Spatial/Goal 任务进化搜索后仍接近 0（Table 7–8）。接触装配和语言改目标的哪些失败模式进不了当前技能表示？
+- **需实验或作者披露**：调试环的 LLM 调用与 simulator/robot rollout 成本没有主表；§5 只定性说 compute-intensive。
 
 ## 相关页面
 

@@ -152,13 +152,17 @@ Table 10 与六家开源对照（MiniMax-2.7、GLM-5.1、Kimi-K2.6、Qwen-3.5、
 
 量化：一份 NVFP4 checkpoint 可当 W4A16 或 W4A4 部署；Table 18 对照 BF16，多数项差距很小（Figure 1 里 NVFP4 柱几乎贴着 BF16）。Mamba SSM cache 相对 FP8 KV 在长 decode 下更占优（Figure 14）。
 
+## 证据边界与阅读提示
+
+- Figure 1 吞吐对照混用 TRT-LLM 与 vLLM，5.9× 不能直接读成架构因子。
+
 ## 待追问
 
-- **sampled-token vs full-vocab 的反转**：Ultra 在 agentic 上 sampled-token 更好，V4 主张 full-vocab 更稳。差在 teacher 是否 in-support、还是估计器本身？两边都没有交叉复现。
-- **HLE 16.9% 恢复是否可解**：统一 SFT 再分域、或先用 teacher 造 SFT 再 MOPD，作者列为未做的 Foundations 实验（`§3.3.5`）。
-- 第二轮 MOPD 在 GDPVal 上 **46.7 持平 MOPD1**，Terminal Bench 继续涨。哪些域需要第二轮、哪些一轮就饱和？
-- 预训练第二次发散（16T residual / MaxVio）切到 20T 是权宜；NVFP4 不是原因，真正的优化病理仍不清楚。
-- Figure 1 吞吐对照混用 TRT-LLM 与 vLLM，5.9× 不能直接读成架构因子。
+- **需实验或作者披露**：预训练第二次发散（16T residual / MaxVio）切到 20T 是权宜；NVFP4 不是原因，真正的优化病理仍不清楚。
+
+## 相关追问
+
+主记录：[sampled-token 与 full-vocab OPD 的反转](../comparisons/on-policy-distillation.md#待追问)；[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#待追问)。
 
 ## 相关页面
 

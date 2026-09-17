@@ -39,10 +39,13 @@ Serving 上，Qwen3.5-Omni 这类「Thinker / Talker / codec decoder」全模态
 - 多模态架构与已有的 [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)（Kimi K2.5）形成对照——一个走全模态实时交互，一个走视觉 agentic。
 - Serving 基础设施见 [vLLM-Omni](vllm-omni.md) / [Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)：这类 Thinker / Talker / codec decoder 结构需要 stage graph，而不是单个 text-only LLM serving loop。
 
+## 证据边界与阅读提示
+
+- 录入时未收录独立的 Qwen3.5 base 技术报告；已有材料是本篇 Omni 报告与 HF 权重配置。HF config 支持配置层面的核对，不能升级为 PDF 原文的机制确证。GDN + gated attention 的设计动机见 [Gated Attention](gated-attention.md)、[GDN](gated-delta-net.md) 与 [Qwen3-Next 官方博客](qwen3-next-blog.md)。独立报告是否后来发布，本轮未作外部检索。
+
 ## 待追问
 
-- **不存在「Qwen3.5 base 报告」可补**：截至录入，Qwen3.5 系列只发了本篇 Omni 报告（arXiv:2604.15804）+ HF 权重，没有独立的 base 技术报告。所以架构事实的 tier-1 来源就是 **HF config（权重本身）**，GDN + gated attention 的文字级设计动机散在 [Gated Attention](gated-attention.md) / [GDN](gated-delta-net.md) 两篇原论文和 [Qwen3-Next 官方博客](qwen3-next-blog.md) 里——不要再去找一篇并不存在的 base 报告。
-- Qwen3.5-Omni 用的是哪个尺寸档（397B-A17B / 122B-A10B / 35B-A3B / 27B dense）——报告未明说，HF 上 Omni 也未作为独立仓库公开，需 Omni 自身配置才能定档。
+- **需补外部来源**：Qwen3.5-Omni 用的是哪个尺寸档（397B-A17B / 122B-A10B / 35B-A3B / 27B dense）——报告未明说，HF 上 Omni 也未作为独立仓库公开，需 Omni 自身配置才能定档。
 
 ## 相关页面
 
