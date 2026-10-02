@@ -121,5 +121,6 @@ Swarm 试点（Anthropic original performance take-home，单次、非随机）�
 - [Agentic engineering](../concepts/agentic-engineering.md)
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - [Macaron-V1 技术报告](macaron-v1.md)（MindForge RSI 搜的是 HCP 配置；SoL-Pi 搜的是 token 效率机制）
+- [Dream-RSI](dream-rsi.md)（外层 RSI 的另一对象：探索策略代码；离线信号是发现树回放，不是 token 地板）
 - [Prime Agent 技术报告](prime-agent.md)
 - [Agent Swarm](../concepts/agent-swarm.md)（Kimi 学编排策略；SoL-Pi swarm 试点是未隔离的单次试验）

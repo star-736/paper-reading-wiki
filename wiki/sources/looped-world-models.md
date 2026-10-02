@@ -151,4 +151,5 @@ Table 5 是相对 gemini-3-flash-preview-thinking 的 ScienceWorld 全任务平�
 - [LoopCoder-v2](loopcoder-v2.md) — 同属 looped Transformer，但是 coder + PLT + 有匹配非循环基线
 - [Looped Language Models Improve Compositional Tool Calling](looped-tool-calling.md) — 循环深度的另一评测对象（tool-call DAG）
 - [Qwen-AgentWorld](qwen-agent-world.md) — native language world model，与 LoopWM 不是同一族
+- [Dream-RSI](dream-rsi.md) — 引用 Dreamer 作动机，实现是发现树回放，不学习隐状态动力学
 - [BDH-CQ](bdh-cq.md) — 另一条 latent iteration，任务是 ARC 而不是环境转移

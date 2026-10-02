@@ -125,6 +125,7 @@
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。
 - [Pi coding agent 设计博客](sources/pi-coding-agent.md) - Mario Zechner 2025-11-30：极小核心、四工具、系统提示+工具定义 <1000 token；刻意不做 MCP / sub-agent / plan mode。Terminal-Bench 2.0 自报 Pi + Opus 4.5 约 50%，mixed-model 榜。不是 π0。
 - [SoL-Pi 官方博客](sources/sol-pi.md) - NVLabs 在 Pi 0.84.2 上用 auto-research 留下四个效率机制；相对 Pi token 少 45–49%、平均分保留约 94%。不是 Pi 官方发行版。
+- [Dream-RSI](sources/dream-rsi.md) - Google / DeepMind：不改 coding agent，用已记录发现树回放来改探索策略；Lasso 上同模型调用约少 1.7×，Pro 的平均优势主要来自 RCV1。
 - [EdgeBench 技术报告](sources/edgebench.md) - ByteDance Seed 超长程环境学习基准：134 题（公开 51）、每题 ≥12h；平均曲线 log-sigmoid \(R^2\ge 0.997\)。SoL-Pi 的 held-out 主台。
 - [Databricks coding agent 内部评测博客](sources/databricks-coding-agents.md) - 同模型换膜：Pi 相对 Claude Code / Codex 任务成本可低 2× 以上、每轮约少送 3× context；内部不可复现。
 - [DeepSeek Harness 官方文档](sources/deepseek-harness.md) - `dsh`：Everything is a Plugin，loop/session/sandbox 都是插件；developer preview。V4.1-Flash headline 用 Minimal 两工具模式。Cordis 论文只作内核外链。

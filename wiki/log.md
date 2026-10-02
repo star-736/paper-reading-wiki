@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Dream-RSI
+
+Google / Google DeepMind 等（arXiv:2609.14858v1，2026-09-14，36 页）。新增 `raw/2609.14858v1.pdf`、`sources/dream-rsi.md`，提取 Figure 1/2/3b/4/5/6。不建模型页。Headline：唯一被改的是探索策略代码；历史发现树是确定性回放，选择只保证固定历史上的回放分不下降。Lasso 的 162× 是 Gemini 调用次数对 SimpleTES（gpt-oss-120b，51,200）的跨模型比。Pro 六套里只有 RCV1 快于固定探索。自相关略差于同模型固定探索。回写 harness、agentic engineering，以及 Macaron / SoL-Pi / Prime Agent / Qwen-AgentWorld / LoopWM。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | MiMo-V2.6
 
 LLM-Core Xiaomi（Hugging Face PDF，2026-09-22，44 页，无 arXiv 号）。新增 `raw/MiMo_V2_6_technical_report.pdf`、`sources/mimo-v2.6.md`、`models/mimo-v2.6.md`，提取 Figure 1/2/7/11/13。Headline：一次混合 RL（1568×16，Pro $2.6M / Flash $0.9M）沿 batch、环境与 harness、groupwise grader 三轴放大；router 冻结；其后的 MOPD2 是 Multi-Prefix，难验证域用 SFT teacher。Pro 1.02T/42B，Flash 310B/15B，文本+图像+视频+音频进、文本出。Table 3 与 §4.1 的 DeepSWE 不是同一次测量。回写 MOPD、OPD 对比、后训练、训练—rollout、负载均衡、长上下文、MTP、harness、MoE 规模与 2026 比较。`raw/` 新增该 PDF。
