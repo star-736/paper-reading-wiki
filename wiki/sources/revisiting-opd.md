@@ -121,6 +121,7 @@ WebShop，student 换成 Qwen2.5-1.5B-Instruct，teacher 是同一基座上的 G
 
 - **[OPD 比较页](../comparisons/on-policy-distillation.md)**：V4 用 full-vocab，MiMo / Nemotron 用 sampled-token，Nemotron 的初步实验里 top-k / full-vocab logit matching 在 Terminal Bench 上更差。本文补的是中间一档的小模型证据：teacher top-32 重归一化 reverse KL，7B 数学和 ALFWorld，没有 full-vocab 臂，也没有终端环境。不能拿来裁决 V4 和 Nemotron。
 - **[OPSD](opsd.md)**：被引为 full-vocab 在自蒸馏里强于 sampled-token 的例子。OPSD 的主实验是 forward KL。本文坚持 reverse KL，只改支撑集。
+- **[The Many Faces of OPD](many-faces-opd.md)**：导出未归一化 Top-K 梯度里消不掉的 \(+1\)，并写明重归一化丢掉集合上的概率质量。他们崩掉的是未归一化版本，不是本页 Qwen2.5-7B 配方的复现。
 - **[MiniLLM](minillm.md) / [ExOPD](exopd.md)**：序列级梯度里的未来 log-ratio 之和，和这两页写下的 reward-to-go 是同一分解。本文的重点是把 \(\gamma=0\) 的那一档再从单 token 换成 top-K。ExOPD 被本文相关工作点名为「更灵活的 reward」，没有进实验。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**、MiMo-V2-Flash、GLM-5、Qwen3：被引为 sampled-token / on-policy 流水线的工业出处，不是本文的复现对象。
 - **[GiGPO](gigpo.md)**：ALFWorld 与 WebShop 的 teacher checkpoint 来自这篇的作者框架 verl-agent。本文不改 GiGPO 的 advantage，只把 OPD 的蒸馏项换掉。
@@ -137,6 +138,7 @@ WebShop，student 换成 Qwen2.5-1.5B-Instruct，teacher 是同一基座上的 G
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [OPSD](opsd.md)
+- [The Many Faces of OPD](many-faces-opd.md)
 - [ExOPD](exopd.md)
 - [MiniLLM](minillm.md)
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)

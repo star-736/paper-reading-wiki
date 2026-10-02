@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | The Many Faces of On-Policy Distillation
+
+UIUC + 人大 + 北大（arXiv:2605.11182v2，2026-05-24，32 页）。新增 `raw/2605.11182v2.pdf`、`sources/many-faces-opd.md`，提取 Figure 1/4/11/13 与 GPQA 前缀图。不建模型页。Headline：未归一化 Top-K reverse KL 的 +1 项在支撑集上消不掉，token 要 \(\pi_T>e\pi_S\) 才被抬升。Stop-gradient 与重归一化都能稳住，但重归一化不再逼近全词表。实例级 PI 上 OPSD 失败，共享规则上有效。GPQA-Diamond 上学生前缀把 Qwen3-14B 从 62.12% 拉到 45.96%。回写 OPSD、Revisiting OPD、OPD 比较页与 MOPD 概念页。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | Revisiting On-Policy Distillation
 
 中科院自动化所 + 国科大等（arXiv:2603.25562v2，2026-04-27，26 页，预印本且 work in progress）。新增 `raw/2603.25562v2.pdf`、`sources/revisiting-opd.md`，提取 Figure 1/2/4/5。不建模型页。Headline：token-level OPD 相对序列级 reverse KL 有偏，最坏方差上界从 O(T^4) 降到 O(T^2)。Teacher top-32 重归一化 reverse KL 加 top-p rollout。+19.8% 是交替多任务数学均分的相对值（34.8→41.7），不是全表，也没有 full-vocab 臂。回写 OPD 比较页与 MOPD 概念页。`raw/` 新增该 PDF。

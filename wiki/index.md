@@ -142,6 +142,7 @@
 - [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping，不是生产 OPD 的 reverse KL。Qwen3-1.7B/4B/8B LoRA，相对 GRPO 更省 token。
 - [ExOPD：Generalized On-Policy Distillation](sources/exopd.md) - 人大高瓴 + 腾讯（arXiv:2602.12125v2）：标准 OPD 是 reward 与 KL 等权的特例；λ>1 在同基座 math/code 专家融回 4B 时超过两位 domain teacher，λ=1.5 会不稳。strong-to-weak 只缩小与 30B-A3B teacher 的差距。这个 λ 不是 GKD 的数据混合比例。
 - [Revisiting On-Policy Distillation](sources/revisiting-opd.md) - 中科院自动化所 + 国科大等（arXiv:2603.25562v2，工作进行中）：token-level 相对序列级 reverse KL 有偏，最坏方差上界 O(T^2) 对 O(T^4)。Teacher top-32 重归一化 reverse KL 在交替多任务的数学均分上相对 sampled-token +19.8%（34.8→41.7）。没有 full-vocab 对照。
+- [The Many Faces of On-Policy Distillation](sources/many-faces-opd.md) - UIUC + 人大 + 北大（arXiv:2605.11182v2）：未归一化 Top-K reverse KL 的 +1 项消不掉，要 π_T > e π_S 才抬升 token。Stop-gradient 与重归一化都能稳住。实例级 PI 上 OPSD 失败；共享规则上有效。学生前缀把 Qwen3-14B 的 GPQA 从 62.1% 拉到 46.0%。
 - [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型

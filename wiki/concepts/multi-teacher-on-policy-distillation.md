@@ -200,6 +200,8 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 [nrehiew](../sources/nrehiew-sft-rl-opd.md) 把 OPSD 读成「更接近 RLHF 而非 RLVR」——这是博客评价，不是论文结论。token 级质量控制仍和 [KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) drift-aware truncation、[Keye-VL-2.0](../sources/keye-vl-2.md) top-k overlap 同层，但剪的对象不同：OPSD 剪 full-vocab 里的高贡献 style 词，不是长轨迹 drift。
 
+[Many Faces](../sources/many-faces-opd.md) 在另一套估计器上把 OPSD 拆开：reverse KL 的最优学生是各 PI 条件下 teacher 的归一化几何平均。PI 若是每题一份答案，共识比 PI-teacher 弱，他们的数学实验没稳住；PI 若是共享的系统提示或对齐偏好，共识可以变成测试时用得上的行为。这不推翻 Zhao 等人的 forward KL 数学结果。同文还量到学生前缀会伤 teacher：Qwen3-14B 在 GPQA-Diamond 上从 62.12% 掉到 45.96%。
+
 ### Student 为什么能超越 Teacher
 
 [GKD（Agarwal et al., ICLR 2024）](../sources/generalized-knowledge-distillation.md) 已在 GSM8K 上报告此现象（来源页 `§A.1` 的自蒸馏实验：FLAN T5-Large teacher 20.5%，自蒸馏后 student 反超 teacher）。nrehiew 给出两个假设：
