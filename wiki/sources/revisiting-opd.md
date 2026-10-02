@@ -23,7 +23,7 @@ resource: "../../raw/2603.25562v2.pdf"
 
 比较页还开着「sampled-token 和 full-vocab 谁更稳」。这篇不跑 full-vocab，它解释 **sampled-token 为什么脆**，并给出一个夹在中间的估计器：每个前缀上只在 teacher 的 top-K 里做重归一化 reverse KL，更新仍然是 token-level。摘要里的 **+19.8%** 是交替多任务里数学均分的相对涨幅（34.8 → 41.7），不是全表、也不是百分点。
 
-它和 [Keye](keye-vl-2.md) 的 top-k overlap、[KAT-Coder-V2.5](kat-coder-v2.5.md) 的 drift truncation 不是同一刀。那两家是在 sampled token 上决定算不算 advantage。这篇是把「只看采样到的那一个 token」换成 teacher 支撑集上的一小团分布。
+它和 [Keye](keye-vl-2.md) 的 top-k overlap、[KAT-Coder-V2.5](kat-coder-v2.5.md) 的 drift truncation 不是同一刀。那两家是在 sampled token 上决定算不算 advantage。这篇是把「只看采样到的那一个 token」换成 teacher 支撑集上的一小团分布。[Prune-OPD](prune-opd.md) 用同一形状的重叠比去衰减 reward 并改下一步的最大长度，估计器本身不动。
 
 也不要和 Mach-Mind 引用的 *Rethinking OPD: Phenomenology, Mechanism, and Recipe*（Li et al.，arXiv:2604.13016）混成一篇。本文在相关工作里引用了那篇，自己的题目是 Revisiting。
 

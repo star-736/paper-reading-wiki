@@ -82,7 +82,7 @@ MOPD（§4.8）把 10+ 个三轨专家融合进一个 generalist。核心设计�
 - **路由 reverse-KL**：每个 sample 带 `teacher_route` 标识，路由到对应领域 frozen teacher。student 从自己的 on-policy 分布采样，用 token-level reverse-KL 监督（公式 3）。
 - **k1 estimator + clipped surrogate**：用 Schulman k1 单样本估计 reverse-KL（只需 teacher 和 student 各一个 log-prob 标量），再套 PPO clipped surrogate 修正异步 rollout-to-training 的 off-policy drift（Appendix B 公式 5–9，`ε=0.2`）。同步时（θ=θ_old）退化为纯 on-policy MOPD gradient。
 - **监控量 L_abs**：k1 是有符号估计，running average 可能在 token-level gap 大时仍接近零；额外 log 一个 magnitude-preserving diagnostic `L_abs`（公式 6，不 backprop）。
-- **Early Stopping Rollout**：max_response_length 截到 8K token（即使长 math/code/search），缩短 rollout step、降 vLLM KV-cache 压力。
+- **Early Stopping Rollout**：max_response_length 截到 8K token（即使长 math/code/search），缩短 rollout step、降 vLLM KV-cache 压力。这是固定上限。[Prune-OPD](prune-opd.md) 按重叠比改下一步预算，高兼容时会加长到 12288，和这里的 8K 截断不是同一规则。
 - **Teacher-student 参数量匹配**：匹配 teacher 与 student 参数量比用大 teacher 有更高 top-K overlap rate（引 Li et al. [61]）。
 
 MOPD 融合效果（Table 3，§5.2，已据原文核实）：

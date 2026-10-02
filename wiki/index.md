@@ -147,6 +147,7 @@
 - [Lightning OPD](sources/lightning-opd.md) - NVIDIA（arXiv:2604.13010v3）：teacher log-prob 预计算在 SFT 参考策略的 rollout 上，训练不再开 teacher server。SFT 与 OPD 必须是同一个 teacher。Qwen3-8B-Base 的 AIME 2024 为 69.9%，全流程 30 GPU 时，相对在线 OPD 的 120 GPU 时是 4.0×。30B-A3B 上在线 OPD 单机 OOM。
 - [Lightning OPD 2.0](sources/lightning-opd-2.md) - NVIDIA（arXiv:2607.28449v1）：跨 teacher 时从 teacher–reference 对数差里减掉跨 rollout 可预测的一项。1.0 在这个设定下数学几乎不动。Klear-8B-SFT 的 AIME 2024 从 81.3 到 82.4，LCB v5 从 58.5 到 63.0。评测条数与 1.0 不同。
 - [OPD 综述](sources/opd-survey.md) - 腾讯（arXiv:2604.00626v4，89 页，Ongoing Work）：OPD 是学生轨迹上的 f-divergence 最小化，按目标、信号来源、训练动态三条轴归类。DAgger 的 O(εT) 在 teacher 被学生前缀带偏时不自动成立。缩放式被标成未验证猜想。v4 早于 Lightning OPD 2.0。
+- [Prune-OPD](sources/prune-opd.md) - HKUST(GZ) 等（arXiv:2605.07804v3）：top-k 重叠比低于阈值就累计衰减后续 OPD reward，并按可靠长度改下一步的最大回复长度。低兼容四组 overlap 的时间降幅是 40.6% / 68.0% / 37.6% / 52.6%；Skywork 高兼容对只降 2.9%。正文的 35.7% 与表不符。
 - [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型

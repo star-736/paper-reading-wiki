@@ -93,6 +93,7 @@ Qwen3-4B 蒸 Qwen3-1.7B-Base 时，base 会吐出不成句的非英文串，teac
 - **[OPSD](opsd.md)**：原文主实验是 full-vocab forward KL，Qwen3-1.7B/4B/8B 的数学均分涨了。本文的失败发生在 stop-gradient Top-K reverse KL，而且把 PI 分成实例级和共享规则。两边都对，估计器和 PI 结构不同。
 - **[ExOPD](exopd.md)**：同基座 RL 专家比更大的 teacher 更好用，和本文 Figure 13 同方向。ExOPD 多一个 \(\lambda>1\)。本文没有做 reward extrapolation。
 - **[Keye-VL-2.0](keye-vl-2.md)**：top-k overlap 是采样 token 上的 advantage 门。本文公式 17 的交集是 KL 的支撑，动机是 SGLang 不能逐位置查询。
+- **[Prune-OPD](prune-opd.md)**：也处理学生前缀上 teacher 失准，信号是重叠比，动作是衰减后续 reward 并缩短以后的 rollout。不改 Top-K KL 估计器。实验只在数学。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**、GKD、MiniLLM：被引为 OPD 的算法出处。本文的 sampled-token policy gradient（公式 4–5）就是博客那条 advantage。
 
 ## 待追问

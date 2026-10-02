@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Prune-OPD
+
+HKUST(GZ) 等（arXiv:2605.07804v3，2026-06-01，17 页）。新增 `raw/2605.07804v3.pdf`、`sources/prune-opd.md`，提取 Figure 1/3/5/6/8。不建模型页。Headline：top-k 重叠比低于 γ 就累计，线性衰减后续 reward，并按可靠长度改下一步最大长度。Table 1 四组 overlap 的时间降幅是 40.6% / 68.0% / 37.6% / 52.6%。Skywork 高兼容对只降 2.9%，固定 4K 截断会伤 AIME25。正文 35.7% 与表不符；初值 2048 与附录 1024/6144 不符。无坏事件时损失权重是 1.5。回写 OPD 比较页、MOPD 概念页、KAT-Coder-V2.5、Revisiting、Many Faces。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | StepAudio 3 Realtime
 
 StepFun-Audio Team（arXiv:2609.14005v2，2026-09-19，27 页）。新增 `raw/2609.14005v2.pdf`、`sources/stepaudio-3-realtime.md`、`models/stepaudio-3.md`，提取 Figure 2/3/5/7。Headline：用户流与模型流一起进 AuT，每 320 ms 音频块后跟一个状态或文本 token。Think-While-Speaking 是同一权重的两次并发调用；MTP 只加速私下推理，出口回答严格验证。推理模式 StepAudioChat 宏均分 73.0，实时交互 70.4。四教师参数平均 3:1:1:1，对话宏平均低于最强教师。AA Full-Duplex Overall 98.9；τ-Voice 宏平均 56.0，零售 37.7。ASR Max 的转写表不覆盖 Realtime。参数量未披露。回写全双工 serving、多模态训练、MTP、后训练与 harness。`raw/` 新增该 PDF。

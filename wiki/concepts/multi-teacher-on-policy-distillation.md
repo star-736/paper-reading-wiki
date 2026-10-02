@@ -257,7 +257,7 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 
 1. **统一 RL/OPD 训练框架**：把 RL 和 OPD 深度集成到同一框架（加权 loss `L = α·L_OPD + β·L_RL`，公式 1），支持纯 RL / 纯 OPD / 联合三模式切换。OPD 阶段直接复用 RL 框架的分布式调度、异步 reward routing（20+ task 并行）和 online sampling 闭环。这是已收录报告中唯一把 RL 和 OPD 统一到单一 loss 公式的实现--MiMo/V4/GLM-5 的 OPD 和 RL 在 pipeline 上是先后阶段，不混在一个 loss 里。
 
-2. **Early Stopping Rollout**：max_response_length 截到 8K token（即使长 math/code/search），缩短每步 rollout、降 vLLM KV-cache 压力。引 Ziheng et al. [60]（Less is More: Early Stopping Rollout for OPD）。
+2. **Early Stopping Rollout**：max_response_length 截到 8K token（即使长 math/code/search），缩短每步 rollout、降 vLLM KV-cache 压力。引 Ziheng et al. [60]（Less is More: Early Stopping Rollout for OPD）。[Prune-OPD](../sources/prune-opd.md) 做的是另一件事：用 top-k 重叠比决定可靠长度，高兼容时把预算加到 12288，Skywork 对的固定 4K 截断会伤 AIME25。它不替换这里的 8K 工程选择。
 
 3. **Teacher-student 参数量匹配**：匹配 teacher 与 student 参数量比用大 teacher 有更高 top-K overlap rate，引 Li et al. [61]（Rethinking OPD: Phenomenology, Mechanism, and Recipe）。这与"大 teacher 蒸小 student"的直觉相反。
 

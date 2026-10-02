@@ -46,6 +46,7 @@ timestamp: 2026-06-23
 | **[Many Faces of OPD](../sources/many-faces-opd.md)**（方法，非模型） | 划清 OPD/OPSD 何时崩：PI 结构、前缀错配、Top-K 梯度偏差 | 外部 teacher 或同一模型加 PI。数学用 OpenThoughts / DAPO；对齐用 CharacterBench / EmotionBench | 默认 stop-gradient **且**重归一化的 Top-K reverse KL（\(K=20\)）。未归一化版本会崩。不是 full-vocab | Qwen3-1.7B/4B/8B，每题 1 条 rollout。不进生产流水线 |
 | **[Lightning OPD](../sources/lightning-opd.md)**（方法，非模型） | 去掉在线 teacher server：log-prob 预计算在 SFT 参考策略的 rollout 上 | 单 teacher，且必须与生成 SFT 轨迹的是同一个模型。4B←8B，8B←32B，30B-A3B←同族 Thinking | 采样 token 的 reverse-KL advantage，轨迹分布冻在 \(\pi_{\mathrm{ref}}\)。不是 full-vocab，也不是 Top-K | SFT 3000 step → 离线 OPD 150 step。代码域从数学 OPD checkpoint 接着训 |
 | **[Lightning OPD 2.0](../sources/lightning-opd-2.md)**（方法，非模型） | 跨 teacher：减掉分歧里跨 rollout 可预测的一项，再做离线更新 | OPD teacher 固定为 30B-A3B-Thinking。SFT 参考是 Qwen3-8B 生成的 4B，或 DeepSeek-R1-0528 演示训出的 Klear-8B | 仍是采样 token advantage。只改 \(d_{it}=\ell_T-\ell_R\)，不改参考锚定项 | 同一份冻结 replay，150 step，5 折。评测数学 64 条、代码 8 条，与 1.0 不同 |
+| **[Prune-OPD](../sources/prune-opd.md)**（方法，非模型） | 长轨迹上按局部兼容性分配 OPD 预算，不改 teacher reward 的算法 | 单 teacher。五对数学：1.5B←JustRL-1.5B、1.5B←R1-Distill-7B、Qwen3-1.7B/4B-Base←Qwen3-4B Non-thinking、R1-Distill-7B←Skywork-OR1-7B | 仍是学生 top-k 上的 reverse KL。重叠比低于 γ 就累计，线性衰减后续 reward，再按可靠长度改下一步最大长度。主实验 \(k=16\)、\(\gamma=0.7\) | DAPO-Math-17K，203 step。低兼容四组时间降 40.6% / 68.0% / 37.6% / 52.6%；高兼容只降 2.9% |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
@@ -138,6 +139,8 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 
 [Keye-VL-2.0](../sources/keye-vl-2.md) 同样没有给 MOPD 前后消融表，其配置为 13 个 teacher；新增的 [DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §5.2.4 已明确超过 40 个，因此不再称 Keye 的数量最多。Keye-VL-2.0 的 top-k overlap estimator 与 KAT-Coder-V2.5 的 drift-aware truncation 解决的是同一类问题--teacher 在 student 分布外给出不可靠监督--但路径不同：Keye-VL-2.0 在 token 级别过滤（只保留双方高概率的 overlap），KAT-V2.5 在 token 权重级别控制（低兼容性截断）。
 
+[Prune-OPD](../sources/prune-opd.md) 是 KAT 引用的那篇方法论文，本身不是多教师融合。它用累计低重叠次数衰减 reward，并按可靠长度改下一步的最大回复长度。KAT 把重叠比收成 \(\rho_t\) 的单调权重，再在连续 \(m\) 个 token 上做轨迹内梯度掩码。三处用的是同一形状的集合交，动作不同。低兼容四组的时间降幅以 Table 1 的 40.6% / 68.0% / 37.6% / 52.6% 为准；正文里的 35.7% 与表不符。
+
 ### domain reward 噪声决定 teacher 类型
 
 [nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)从 MiMo Table 7 读出一个跨家规律：**Math/Code 偏好 RL teacher，Creative writing / 知识密集型偏好 self-distillation / 蒸馏**。这与 reward 噪声一致--verifiable reward 的 domain（数学/代码有标准答案）适合 RL teacher，reward 噪声大的 domain（创意写作用 LLM judge 是有偏代理）适合蒸馏。
@@ -177,6 +180,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Lightning OPD](../sources/lightning-opd.md)：离线 teacher log-prob。SFT 与 OPD 必须是同一个 teacher，否则偏差不随漂移消失。
 - [Lightning OPD 2.0](../sources/lightning-opd-2.md)：跨 teacher 时减掉可预测分歧。不取消 1.0 的偏差上界。
 - [OPD 综述](../sources/opd-survey.md)：方法论文的三条设计轴。v4 早于 2.0。本页数字不以综述转述替换。
+- [Prune-OPD](../sources/prune-opd.md)：用 top-k 重叠比分配长轨迹预算。低兼容省时间，高兼容几乎不缩短。KAT 的连续 \(m\) 掩码是另一套实现。
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。

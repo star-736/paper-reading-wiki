@@ -115,7 +115,7 @@ V2.5 的 MOPD 与 V2 的 OPD 在算法骨架上一致（reverse-KL + on-policy�
 两个稳定化机制：
 
 1. **Off-policy cold start**：MOPD 前用专家生成轨迹初始化 student（标准 NLL），预对齐 student 与 teacher 分布，减少早期前缀偏离。
-2. **Drift-aware dynamic truncation**：基于 Prune-OPD 的 top-k overlap 思路，定义 teacher-student 在 token $t$ 的兼容性 $\rho_t = |T_t^k \cap S_t^k| / k$。$\rho_t$ 高时 teacher 监督可靠；低时降权或截断。连续 $m$ 个 token 低于阈值则截断轨迹停止后续 backprop。截断只做 gradient masking 而非显式优化目标，保留截断前所有有效 prefix token，用 length-stratified batching 避免长度偏差。
+2. **Drift-aware dynamic truncation**：沿用 [Prune-OPD](prune-opd.md) 的 top-k overlap，定义 teacher-student 在 token $t$ 的兼容性 $\rho_t = |T_t^k \cap S_t^k| / k$。$\rho_t$ 高时 teacher 监督可靠；低时降权或截断。连续 $m$ 个 token 低于阈值则截断轨迹停止后续 backprop。截断只做 gradient masking 而非显式优化目标，保留截断前所有有效 prefix token，用 length-stratified batching 避免长度偏差。Prune-OPD 原文是累计低重叠次数的线性衰减，再改下一步的最大长度；这里的 \(w_t\) 是 \(\rho_t\) 的单调函数，截断发生在当前轨迹内。
 
 ## 评测要点
 
