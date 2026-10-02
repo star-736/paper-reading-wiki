@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Lightning OPD
+
+NVIDIA（arXiv:2604.13010v3，2026-09-26，21 页）。新增 `raw/2604.13010v3.pdf`、`sources/lightning-opd.md`，提取 Figure 1/2/3。不建模型页。Headline：teacher log-prob 预计算在 \(\pi_{\mathrm{ref}}\) 的 rollout 上；SFT 与 OPD 必须是同一个 teacher，否则梯度偏差不随 \(\chi^2\) 消失。Qwen3-8B-Base 的 AIME 2024 为 69.9%，全流程 30 GPU 时对在线 OPD 的 120。4B 代码均分离线略低于在线。Table 1 的 ExOPD 行不是同一协议。30B-A3B 上在线 OPD 单机 8×H100 OOM。回写 OPD 比较页、MOPD 概念页、ExOPD。`raw/` 新增该 PDF。2.0 未收。
+
 ## [2026-10-03] ingest | The Many Faces of On-Policy Distillation
 
 UIUC + 人大 + 北大（arXiv:2605.11182v2，2026-05-24，32 页）。新增 `raw/2605.11182v2.pdf`、`sources/many-faces-opd.md`，提取 Figure 1/4/11/13 与 GPQA 前缀图。不建模型页。Headline：未归一化 Top-K reverse KL 的 +1 项在支撑集上消不掉，token 要 \(\pi_T>e\pi_S\) 才被抬升。Stop-gradient 与重归一化都能稳住，但重归一化不再逼近全词表。实例级 PI 上 OPSD 失败，共享规则上有效。GPQA-Diamond 上学生前缀把 Qwen3-14B 从 62.12% 拉到 45.96%。回写 OPSD、Revisiting OPD、OPD 比较页与 MOPD 概念页。`raw/` 新增该 PDF。
