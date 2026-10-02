@@ -28,6 +28,7 @@ timestamp: 2026-06-23
 | 模型 | OPD 的定位 | Teacher 配置 | KL 形式 | 在 pipeline 中的位置 |
 | --- | --- | --- | --- | --- |
 | **[MiMo-V2-Flash](../models/mimo-v2-flash.md)** | 多专家**融合**（MOPD 是后训练**主范式**） | >多个 domain-specialized teacher（数学/代码/搜索/工具/通用/安全 各训一个 RL teacher，类型可为 RL/SFT/Self） | token-level reverse KL + training-inference importance sampling 截断，与 ORM advantage 可加权混合 | SFT → 分领域 RL teacher → MOPD（最后阶段） |
+| **[MiMo-V2.6](../models/mimo-v2.6.md)** | 混合 RL 之后的**补域**（MOPD2 = Multi-Prefix） | 可验证域用 mixRL teacher；难验证域用 SFT teacher。数量未写 | 只写 token-level supervision，**没有重写 KL 公式**；不能从 V2-Flash 抄 reverse KL | 短 SFT → 一次混合 GRPO → MOPD2。前缀来自 teacher rollout 或 SFT 示范，学生只再生成一轮 |
 | **[DeepSeek-V4](../models/deepseek-v4.md)** | 多专家**融合**（OPD **完全替代了 mixed RL 阶段**） | >10 个 domain teacher（覆盖各领域），加权 reverse KL | **full-vocabulary** reverse KL（不简化成 token-level estimate） | 分领域 specialist 训练（SFT+GRPO）→ OPD |
 | **[Qwen3](../models/qwen3.md)** lightweight | 把 flagship **压到小模型**（替代小模型的 RL） | **单 teacher**（Qwen3-32B 或 Qwen3-235B-A22B）；只用在 8/14B + 30B-A3B + 4/1.7/0.6B | logit-level reverse KL（off-policy distill 打底 → on-policy distill） | flagship 走完 4 阶段后，lightweight 只跑两阶段 distill |
 | **[Qwen3-VL](../sources/qwen3-vl.md)** lightweight | 同 Qwen3，把 flagship VL 压到小 VL | 单 teacher（flagship Qwen3-VL）；off-policy + on-policy 两阶段 | logit-level reverse KL | long-CoT SFT 之后、RL 之前 |

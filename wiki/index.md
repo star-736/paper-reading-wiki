@@ -19,6 +19,7 @@
 - [GLM-5.3 官方发布博客](sources/glm-5-3-blog.md) - 同一 GLM-5.2 base model 上只扩展后训练；公开长周期可验证环境、`slime` 对齐/调度与 coding/cyber 评测，但不是技术报告。
 - [GLM-5V-Turbo 技术报告](sources/glm-5v-turbo.md) - GLM-5V-Turbo 的 arXiv 报告，重点是 CogViT 视觉编码器、MMTP、30+ 类别多模态 RL 和 agent 框架集成（Claude Code / AutoClaw）。
 - [MiMo-V2-Flash 技术报告](sources/mimo-v2-flash.md) - MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。
+- [MiMo-V2.6 技术报告](sources/mimo-v2.6.md) - 全模态 Pro 1.02T/42B 与 Flash 310B/15B：一次混合 agentic RL、冻结 router、groupwise grading，以及 Multi-Prefix MOPD2。
 - [DeepSeek-V2 技术报告](sources/deepseek-v2.md) - DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。
 - [DeepSeek-V4 技术报告](sources/deepseek-v4.md) - DeepSeek-V4 的 Hugging Face 官方 PDF，重点是百万 token 上下文效率。
@@ -151,6 +152,7 @@
 - [GLM-5.3](models/glm-5-3.md) - Z.ai agentic coding 发布版；参数和模态未披露，官方称沿用 GLM-5.2 base model，能力增益来自后训练规模化。
 - [GLM-5V-Turbo](models/glm-5v-turbo.md) - GLM-5 家族的多模态 agent 基座模型，CogViT + MMTP + 30+ 类别多模态联合 RL，多模态（文本 + 图像 + 视频 + GUI + 文档 + 网页）。
 - [MiMo-V2-Flash](models/mimo-v2-flash.md) - 309B 总参数 / 15B 激活参数的 MoE 模型，优化快速推理和 agentic 工作负载。
+- [MiMo-V2.6](models/mimo-v2.6.md) - 全模态 MoE：Pro 1.02T/42B、Flash 310B/15B，文本+图像+视频+音频进、文本出；另有蒸馏到 Qwen3.5-9B 的开放 9B。
 - [DeepSeek-V4](models/deepseek-v4.md) - 包含 DeepSeek-V4-Flash 和 DeepSeek-V4-Pro 的模型族，目标是原生 1M token 上下文。
 - [DeepSeekMath](models/deepseekmath.md) - DeepSeek-AI 的 7B 数学推理族（Base / Instruct / RL），从 Coder-Base-v1.5 继续预训练；RL 变体是 GRPO 发布检查点，纯文本。
 - [MiniMax-M2 Series](models/minimax-m2-series.md) - 229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。
@@ -230,7 +232,7 @@
 - [Group-in-Group Policy Optimization](concepts/group-in-group-policy-optimization.md) - GiGPO 如何在已有 GRPO 轨迹组上用重复环境状态构造 step-level 对照组，不追加 rollout。
 - [Hierarchy-of-Groups Policy Optimization](concepts/hierarchy-of-groups-policy-optimization.md) - HGPO 如何把同 state 的 step group 再按共同历史拆成嵌套层次，并用深度加权 advantage 控制 prompt-context bias / 小组方差。
 - [Single-Rollout Asynchronous Optimization](concepts/single-rollout-asynchronous-optimization.md) - SAO 如何用单条 rollout 替代组采样，并用 DIS mask 与加速 critic 稳定异步 agentic RL。
-- [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)；[Nemotron 3 Ultra](sources/nemotron-3-ultra.md) 补上两轮 co-evolution 与按域恢复率（Terminal Bench 172.7% / HLE 16.9%）。
+- [Multi-Teacher On-Policy Distillation](concepts/multi-teacher-on-policy-distillation.md) - MiMo-V2-Flash 的 MOPD 范式及其与 DeepSeek-V4 OPD 的关系，并含跨家共用的 [OPD 数学依据](concepts/multi-teacher-on-policy-distillation.md#数学依据opd-为什么-work)；[Nemotron 3 Ultra](sources/nemotron-3-ultra.md) 补上两轮 co-evolution 与按域恢复率（Terminal Bench 172.7% / HLE 16.9%）。[MiMo-V2.6](sources/mimo-v2.6.md) 的 MOPD2 是 Multi-Prefix，和 Nemotron 的第二轮同名缩写不是一回事。
 - [百万 token 上下文服务](concepts/million-token-context-serving.md) - V4 异构 KV 与 prefix reuse，V4.1 将长期全局缓存和短期 SWA 分开，用近似有界重放降低持久存储；engine 侧 I/O 见 KV cache 层。
 - [Agentic 评测体系](concepts/agentic-evaluation-benchmarks.md) - SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、UniClawBench 等 benchmark 的作用和可比性风险；含 UniClawBench 的 capability-driven / 三角色闭环差异化定位。
 - [Forge Agent-Native RL](concepts/forge-agent-native-rl.md) - MiniMax-M2 如何把 agent harness、RL 训练、长上下文 rollout 和 serving 加速解耦。
@@ -252,7 +254,7 @@
 
 ## 比较
 
-- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi、Qwen3.8-Flash-Next 与 Qwen3.8-Omni-Flash 等的横向比较。
+- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、MiMo-V2.6、DeepSeek-V4、MiniMax-M2、Kimi、Qwen3.8-Flash-Next 与 Qwen3.8-Omni-Flash 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。

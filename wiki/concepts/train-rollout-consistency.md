@@ -43,13 +43,14 @@ timestamp: 2026-09-11
 
 - 一手出处：[R3](../sources/r3.md)（Ma et al.，北大 + 小米，arXiv:2510.11370）。Qwen3-30B-A3B 上约 10% 的 (token, layer) router 选错专家、94% token 至少一层不同；重放后 train–infer KL 从 $1.535\times 10^{-3}$ 降到 $7.54\times 10^{-4}$，接近 dense。不要和 GSPO 文里的 **Recompute** Routing Replay 混：那套从训练重算阶段取路由，`mini_step=1` 时失效。
 - [MiMo-V2-Flash](../sources/mimo-v2-flash.md) §4.6.1 在 RL / MOPD 基建里采用（同团队，request-level prefix cache 存 KV + routed experts）；[Miles](../sources/miles-v0-1.md) §2.5 做成 `--use-rollout-routing-replay`，因为 session server 已经记录 routed experts，重放覆盖整个多轮 episode 而非单次 completion。
+- [MiMo-V2.6](../sources/mimo-v2.6.md) §6.4 继续重放专家下标，并额外重放 top-p / top-k 的候选集：训练 log-prob 在该集合上重归一化。top-p 用固定形状的全词表 bitmap 传回。同一节还在每次更新后按 rollout 的 MXFP4 Humming GEMM 做 quantize–dequantize，让两边看到同一份专家权重。上下文缓存仍是 request 级，专家下标和候选集到 rollout 收齐才返回。
 - 代价：R3 原文只报 rollout 额外延迟 <3%。**60 MB / 轨迹**是 Miles 按 (tokens−1)×layers×k 个 32 位整数估的（例：32K × 60 层 × k=8），不是 Ma et al. 的数字。因此它是 per-recipe 选择而非全局开关，dense 模型上是空操作。
 
 ### 第三层：量化 / 精度契约
 
 核心约束是**两边必须共享同一份量化协议**：只量化 rollout，或两边量化方式不同，会让两边从同一权重算出不同结果，误差逐层累积（Miles §3.1 称其可能直接导致 catastrophic train-rollout mismatch）。做法是把量化实现成端到端契约，检查 checkpoint 转换、trainer 前向、rollout、权重导出四个阶段同契约；允许的部署组合只有「两边同格式」或「trainer 留 BF16 而 rollout 量化」两种（NVFP4 例外，它要求每个接触权重的阶段都量化）。
 
-- 各家变体：[MiniMax-M1](../sources/minimax-m1.md) 在 hybrid Lightning Attention 上看到 train/infer kernel 概率对不齐（LM head 高幅激活），reward 不涨；LM output head 改 FP32 后相关从约 0.987 到 0.997（Figure 3），小 dense softmax 模型上没出现。[Ring-2.6](../sources/ling-2.6.md) 用 module-aware FP8——LM Head 走 FP32、Attention/Shared Experts 保 BF16、Routed Experts 用 blockwise FP8，按模块敏感度分配精度；[Kimi K3](../sources/kimi-k3.md) 从 SFT 起即 QAT（MXFP4 权重 + MXFP8 激活），RL 时 rollout 与 training 共用同一量化方案；[Laguna](../sources/laguna-m1-xs2.md) 保留 BF16 权重、只把 KV cache 存 FP8——作者明确写「为安全牺牲一半并发」，因为 FP8 权重的预发布消融显示 train-inference KL mismatch 变大；[VibeThinker-3B](../sources/vibethinker-3b.md)（MGPO）观察到 rollout engine 优化推理吞吐后被放大的概率失配，直接改用全 on-policy。
+- 各家变体：[MiniMax-M1](../sources/minimax-m1.md) 在 hybrid Lightning Attention 上看到 train/infer kernel 概率对不齐（LM head 高幅激活），reward 不涨；LM output head 改 FP32 后相关从约 0.987 到 0.997（Figure 3），小 dense softmax 模型上没出现。[Ring-2.6](../sources/ling-2.6.md) 用 module-aware FP8——LM Head 走 FP32、Attention/Shared Experts 保 BF16、Routed Experts 用 blockwise FP8，按模块敏感度分配精度；[Kimi K3](../sources/kimi-k3.md) 从 SFT 起即 QAT（MXFP4 权重 + MXFP8 激活），RL 时 rollout 与 training 共用同一量化方案；[MiMo-V2.6](../sources/mimo-v2.6.md) 在 mid-training 做 MXFP4 QAT，RL 的专家 rollout 用 MXFP4，训练侧按同一 Humming GEMM 做 QDQ；[Laguna](../sources/laguna-m1-xs2.md) 保留 BF16 权重、只把 KV cache 存 FP8——作者明确写「为安全牺牲一半并发」，因为 FP8 权重的预发布消融显示 train-inference KL mismatch 变大；[VibeThinker-3B](../sources/vibethinker-3b.md)（MGPO）观察到 rollout engine 优化推理吞吐后被放大的概率失配，直接改用全 on-policy。
 
 ### 第四层：ratio 修正（mask / clip 形状）
 

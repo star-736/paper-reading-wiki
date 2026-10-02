@@ -41,3 +41,4 @@ MiMo-V2-Flash 是 Xiaomi LLM-Core 发布的开放权重 MoE 模型，目标是�
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
+- 后作：[MiMo-V2.6](mimo-v2.6.md)

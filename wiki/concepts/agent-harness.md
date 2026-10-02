@@ -71,6 +71,7 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 - [KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) 用 harness randomization（format / context-structure / control-flow）和 harness rewriting 对抗 scaffold overfitting。
 - [Laguna](../sources/laguna-m1-xs2.md) 用 OpenHands / OpenCode2 / Mini-SWE-Agent 多 harness 训练，并加 IF judge。
 - [Kimi K3](../sources/kimi-k3.md) 的 Unified White-Box RL Env 按配置实例化 Kimi Code / Claude Code / Codex / OpenClaw / Hermes，目标是 harness-agnostic RL。
+- [MiMo-V2.6](../sources/mimo-v2.6.md) 不用生产 harness 直接做 RL：同一条最小 agent loop 重组出 mini-harness。DeepSWE v1.1 上，未参与训练的 codex、claude code、mini-swe-agent 的 pass@1 均值大约从 50% 到 66%（Figure 10）。这是训练分布里的迁移，不是换评测膜的成对消融。
 
 这些和 Prime Agent 的「先做一张表达性膜再 co-train」方向相反但互补：前者防止模型绑死在一种 CLI，后者假设当前模型还不会用满一张更强的膜。
 
@@ -110,7 +111,7 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 
 ## 相关页面
 
-- 来源：[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
+- 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
 

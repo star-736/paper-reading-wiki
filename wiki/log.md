@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | MiMo-V2.6
+
+LLM-Core Xiaomi（Hugging Face PDF，2026-09-22，44 页，无 arXiv 号）。新增 `raw/MiMo_V2_6_technical_report.pdf`、`sources/mimo-v2.6.md`、`models/mimo-v2.6.md`，提取 Figure 1/2/7/11/13。Headline：一次混合 RL（1568×16，Pro $2.6M / Flash $0.9M）沿 batch、环境与 harness、groupwise grader 三轴放大；router 冻结；其后的 MOPD2 是 Multi-Prefix，难验证域用 SFT teacher。Pro 1.02T/42B，Flash 310B/15B，文本+图像+视频+音频进、文本出。Table 3 与 §4.1 的 DeepSWE 不是同一次测量。回写 MOPD、OPD 对比、后训练、训练—rollout、负载均衡、长上下文、MTP、harness、MoE 规模与 2026 比较。`raw/` 新增该 PDF。
+
 ## [2026-10-03] deepen | 门控参数与 GDN 主表边界
 
 重读 Gated Attention 与 Gated DeltaNet。MoE Table 1 为 400B tokens，dense Table 2 含 400B / 1T / 3.5T；G1 elementwise 约 201M、headwise 约 1.6M，§3.1 的 wall-time <2% 没有部署分项。GDN 主实验为 1.3B/100B：语言建模、常识推理均值和检索均值优于 Mamba2 与 DeltaNet，但 ARC-e 71.21 低于 Mamba2 的 72.47，纯循环检索 30.6 仍低于 Transformer++ 的 37.0。Table S.1/S.2 是 400M 与 500M、各 15B tokens。`raw/` 未改。

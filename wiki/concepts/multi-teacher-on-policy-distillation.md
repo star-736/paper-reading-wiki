@@ -297,9 +297,21 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 §7.1 的 Talker 才写出 “Multi-Teacher On-Policy Distillation (MOPD)”，引用 Ma et al. 2026（arXiv:2606.30406），范围是多语言语音、用来减轻单语语料的外国口音。这是引用，不是把 MiMo 的 token-level KL、domain routing 或恢复率复现了一遍。随后的 Talker RL 用的是 [GSPO](../sources/group-sequence-policy-optimization.md)，奖励来自已经对齐人类偏好的 Thinker。
 
+## MiMo-V2.6 的 MOPD2：Multi-Prefix，不是第二轮 co-evolution
+
+[MiMo-V2.6](../sources/mimo-v2.6.md) §5.6 的 MOPD2 展开为 **Multi-Prefix Multi-Teacher On-Policy Distillation**。它接在 V2-Flash 的 MOPD 和 Ma et al. (2026) 之后，位置仍是一次混合 RL 的后面。两支并行：
+
+- **Standard MOPD**：可验证域的 mixRL teacher 监督学生自己采样的整段 rollout。
+- **Prefix-Conditioned OPD**（Liao et al., 2026）：有 k 个 assistant turn 的轨迹切成 k 个历史前缀，学生只再生成一轮。前缀来自 teacher rollout 或 SFT 示范。开放域（长程游戏开发、科学研究、具身智能）先训 SFT teacher；SFT 示范提供上下文，学生写自己的续写。
+
+报告写的是 token-level supervision，没有重写 V2-Flash 的 reverse-KL 公式，也没有 teacher 个数和分项恢复率。Table 3 是这一节之后的最终榜，不能单独当成 MOPD2 的消融。
+
+这个缩写不要和 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 的 MOPD2 混用。后者是第二轮 teacher–student co-evolution，并给出按域恢复率。两边只是阶段编号撞了同一个简称。
+
 ## 待追问
 
 - **需实验或作者披露**：MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
+- **现有材料待核**：MiMo-V2.6 的 MOPD2 是否仍用 token-level reverse KL，以及前缀蒸馏和整段 MOPD 各贡献多少，本 PDF 没有写。
 - **需实验或作者披露**：Teacher 数量增加时，student 容量是否足够保留所有能力？
 - **需实验或作者披露**：KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
 

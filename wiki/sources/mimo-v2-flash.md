@@ -16,6 +16,7 @@ resource: "../../raw/mimo-v2-flash-2601.02780.pdf"
 - 版本/日期：arXiv:2601.02780v2，2026-01-08
 - 团队：LLM-Core Xiaomi
 - 模型页：[MiMo-V2-Flash](../models/mimo-v2-flash.md)
+- 后作：[MiMo-V2.6 技术报告](mimo-v2.6.md) 把文本骨干和 MOPD 指向本报告，并改成全模态与一次混合 RL
 
 ## 核心结论
 
@@ -58,3 +59,4 @@ RL / MOPD 基建用 SGLang + Megatron。§4.6.1 采用 [R3](r3.md)（Ma et al., 
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [训练—rollout 一致性](../concepts/train-rollout-consistency.md)
 - 模型：[MiMo-V2-Flash](../models/mimo-v2-flash.md)
+- 后作：[MiMo-V2.6 技术报告](mimo-v2.6.md)

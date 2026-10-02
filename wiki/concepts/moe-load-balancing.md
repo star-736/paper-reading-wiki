@@ -32,6 +32,7 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 | Kimi K3 | **QB（exact 解）** | Quantile Balancing，分位数推 bias，无学习率；896 routed / 16 active | [K3 报告](../sources/kimi-k3.md) §2.3.3 |
 | MiniMax-M2 | 联合优化 bias；辅助损失减弱 | §2.2.1 明说 bias 与模型参数联合优化；梯度路径与剩余 auxiliary loss 系数未披露，不能归为已确证的梯度外 sign 更新 | [M2 核验](../sources/minimax-m2-series.md#专家偏置的联合优化与证据边界) |
 | MiMo-V2-Flash | 混合 | expert bias update factor 0.001 + MoE sequence aux loss 1e-5 | [MiMo 报告](../sources/mimo-v2-flash.md) |
+| MiMo-V2.6 | RL 阶段冻结 router；预训练配方未在本报告重述 | §5.4：可训 router 在第 9 层 20 步内 CV 0.78→2.0、峰值 6×→16×、冷专家 0.5%→22%；换回初始 router 后负载恢复、benchmark 不变 | [MiMo-V2.6](../sources/mimo-v2.6.md) §5.4 |
 | Ling-2.6 / Ring-2.6 | bias | aux-loss-free，bias-update rate γ=0.001→0.0001（后期衰减） | [Ling-2.6 报告](../sources/ling-2.6.md) |
 | Qwen3 | aux loss（演进） | global-batch load balancing loss（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*），非 micro-batch 口径 | [Qwen3 报告](../sources/qwen3.md) |
 | Laguna XS.2 | aux loss | [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）aux loss（只在非 padding token 上算） | [Laguna 报告](../sources/laguna-m1-xs2.md) |
@@ -70,6 +71,7 @@ MoE 的 top-K 路由若不加控制，会出现 **routing collapse**（少数专
 - QB 升级：[Stable LatentMoE](stable-latentmoe.md)、[Kimi K3](../sources/kimi-k3.md)
 - aux loss 阵营：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)、[DeepSeek-V2](../sources/deepseek-v2.md)（旧世三重 loss）
 - bias 阵营采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K2.5](../sources/kimi-k2.5.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
+- RL 期冻结 router：[MiMo-V2.6](../sources/mimo-v2.6.md)（不把冻结写成一种新的 bias 更新规则）
 - 相关变体：[MiniMax-M2 Series](../sources/minimax-m2-series.md#专家偏置的联合优化与证据边界)（联合优化 bias，未确证为同一 sign-update 实现）。
 - 上位概念：[MoE 前沿模型扩展](moe-frontier-model-scaling.md)
 - 研究模型沿用：[Engram](../sources/engram.md)

@@ -18,6 +18,8 @@ timestamp: 2026-06-06
 | --- | ---: | ---: | --- |
 | [GLM-5](../models/glm-5.md) | 744B | 40B | 256 experts；相比 GLM-4.5 显著放大。 |
 | [MiMo-V2-Flash](../models/mimo-v2-flash.md) | 309B | 15B | 256 experts，8 active，无 shared experts。 |
+| [MiMo-V2.6-Flash](../models/mimo-v2.6.md) | 310B | 15B | 256 experts，8 active，无 shared experts。ViT 681M 与音频编码器另行列出；报告未写它们是否已计入 310B。 |
+| [MiMo-V2.6-Pro](../models/mimo-v2.6.md) | 1.02T | 42B | 384 experts，8 active，无 shared experts。 |
 | [DeepSeek-V4-Flash](../models/deepseek-v4.md) | 284B | 13B | 256 routed experts + 1 shared expert；6 routed active。 |
 | [DeepSeek-V4-Pro](../models/deepseek-v4.md) | 1.6T | 49B | 384 routed experts + 1 shared expert；6 routed active。 |
 | [MiniMax-M2](../models/minimax-m2-series.md) | 229.9B | 9.8B | 256 fine-grained experts，8 active，sigmoid gating。 |

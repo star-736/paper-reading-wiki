@@ -33,6 +33,8 @@ MSA 在内容稀疏这一支里走相反方向：把粒度从 token 抬到 block
 
 MiMo-V2-Flash 的 hybrid SWA/GA 更像工程上保守的折中。SWA 限制局部窗口，GA 周期性提供全局通路。5:1 比例和 128-token window 让大多数层成本较低，同时避免纯局部模型完全失去远程通信能力。
 
+[MiMo-V2.6](../sources/mimo-v2.6.md) 沿用同一窗口 128 的 hybrid 模式，并把上下文从预训练中途的 256K 扩到 mid-training 末尾的 1M。Table 1 的层数是 Flash 48/39/9、Pro 70/60/10；本报告没有再写 5:1。第一层是 dense FFN 的 GA。1M RL 训练时，SWA 层在 context parallel 下只交换窗口能碰到的 KV。视觉编码器自己也是 24 SWA + 4 GA，音频 tokenizer 是 12 SWA + 12 GA。
+
 [Gemma 4](../models/gemma-4.md) 走同一路线（E2B 4:1，其余 5:1），但在 KV 侧做了更激进的压缩：全局层直接复用 key 作为 value（values = keys，与 [MLA](multi-head-latent-attention.md) 的 KV 压缩思路类似但不完全相同）、全局层用 p-RoPE (p=0.25) 替代标准 RoPE、并在 E2B/E4B 上做 KV cache sharing（20/35 和 18/42）。三者组合把全局 KV cache 压低 37.5%。Gemma 4 的 RULER 128k 评测中 31B 达 96.4、E4B 达 86.6，远超 Gemma 3 27B 的 66.0，说明 SWA/GA 混合 + KV 侧优化在 128K 级上下文足够有效，不需要切换到 DSA/CSA 等内容稀疏方案。
 
 [Laguna XS.2](../sources/laguna-m1-xs2.md)（Poolside，2026-05）把 SWA/GA 比例从 5:1 收紧到 **3:1**（更偏全局通路），且 SWA 窗口放到 512（MiMo 是 128）。区别于 Gemma 4 在全局层做 key-as-value/p-RoPE/KV-sharing 等 KV 侧压缩，Laguna 在 attention 侧加 [softplus per-head gating](attention-gating.md)（[Gated Attention 报告](../sources/gated-attention.md)）+ GA 层 partial RoPE(50%) + θ=5e5。其 16B proxy 消融（Table 9）逐步加 SWA-1024→per-head gating + θ_swa=1e4→GA partial RoPE→SWA-512→48GA/64SWA Q-heads + k_dense=1，4K/32K/128K Avg 从基线 0.5389/0.308/0.290 到最终 0.5455/0.305/0.296——值得注意的是直接加 SWA-1024 会让 32K/128K 退化（0.274/0.267），靠后续 partial RoPE + 缩窗到 512 + 调 Q-head 分配才把长上下文捞回来。Laguna 用纯 RoPE scale 翻倍（无训练）把上下文从 128K 推到 256K，是模式稀疏路线最保守的长上下文扩展。

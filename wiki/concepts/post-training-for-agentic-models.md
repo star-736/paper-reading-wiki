@@ -30,6 +30,12 @@ Base model 给出知识、代码和推理基础，但 agentic model 还需要在
 
 这和普通蒸馏的差别在于：student 学的是自己真实会生成的轨迹，而不是离线 teacher 数据。因此 MOPD 试图减少 exposure bias，并缓解 sequential training 中常见的 capability see-saw。
 
+## MiMo-V2.6：一次混合 RL，再加 Multi-Prefix MOPD2
+
+[MiMo-V2.6](../models/mimo-v2.6.md) 把后训练的主循环改成一次混任务 GRPO：1,568 条 prompt、组大小 16、staleness 4，代码 / 通用 / 视觉 / 网络安全和多套 mini-harness 在同一步里更新。细奖励来自 groupwise grading：高通过率代码题用离线 rubric 乘上测试分，其余代码题在线重分配通过者的 advantage，并在确认 reward hacking 时把奖励置 0。RL 期间冻结 MoE router。
+
+MOPD 仍在 RL 之后，但名字改成 MOPD2，含义是 **Multi-Prefix** Multi-Teacher On-Policy Distillation。可验证域继续用 mixRL teacher 监督整段学生 rollout；难验证域用 SFT teacher，学生只在历史前缀上再生成一轮。这个缩写和 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 的第二轮 MOPD2 不是同一机制。本报告没有重写 V2-Flash 的 KL 公式。详见 [来源页](../sources/mimo-v2.6.md)。
+
 ## DeepSeek-V4：多 reasoning mode 与 OPD
 
 [DeepSeek-V4](../models/deepseek-v4.md) 的后训练强调三种 reasoning effort：Non-think、Think High、Think Max。不同模式使用不同 RL 配置、length penalty 和 context window。报告还使用多 teacher On-Policy Distillation（OPD）把十多个 domain expert 合并到统一模型中，并为了稳定性采用 full-vocabulary logit distillation。
@@ -124,6 +130,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - GLM-5：如何让 agent 在真实环境中高吞吐学习。
 - GLM-5.3：如何把可验证长周期环境的生产、奖励审计和训练—rollout 系统调度一同扩展；base model 不变时，后训练规模本身仍可成为主要变量。
 - MiMo-V2-Flash：如何把多个专门 teacher 的能力合成到一个 student。
+- MiMo-V2.6：如何用一次混合 RL 同时放大 batch、环境和 grader，再把难验证域交给 Multi-Prefix 蒸馏。
 - DeepSeek-V4：如何在超长上下文和多 reasoning mode 下做稳定蒸馏与 RL。
 - [MiniMax-M1](../sources/minimax-m1.md) / CISPO：如何把 PPO clip 从「丢掉高 $r$ token」改成「夹 IS 权重、所有 token 进梯度」，并在 hybrid 长生成上把 RL 跑完。
 - MiniMax-M2：如何把 agent harness、reward、rollout、training 和 serving 组织成可扩展系统。
