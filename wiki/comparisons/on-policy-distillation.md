@@ -41,6 +41,7 @@ timestamp: 2026-06-23
 | **[Miles](../sources/miles-v0-1.md)**（训练系统，非模型） | 把 OPD 接进**任意** RL 循环（框架侧接口） | **不限数量**：served teacher（外部 SGLang 服务在 rollout 期间打分；可与 student 架构不同或大到装不下，但须共享 student 的 tokenizer）或 in-process teacher（同架构，Megatron 在 student 旁加载第二份）；多个 served teacher 按 prompt metadata 的 tag 路由 | token-level 单样本 reverse KL，**折进 advantage 而非 loss**（两个 log-prob 都是固定输入，惩罚表现为 dense per-token reward）；top-K 变体只在 served teacher 下可用 | 与 RL **同阶段可组合**——不改 loss 形式，因此能与 GRPO / GSPO / PPO / REINFORCE++ 任意叠加；文档实验在 Qwen3.5-35B-A3B 上设任务 reward = 0、teacher 只加五步可验证 reward 的 RL |
 | **[Nemotron 3 Ultra](../models/nemotron-3-ultra.md)** | 多专家**融合**（MOPD 叠在统一 RLVR **之后**，两轮 co-evolution） | **>10** 个域教师（STEM / Chat / IF / Terminal / SWE / Search / Office / Usability / Agentic Safety 等；第二轮新训 Coding/Chat2/SWE2…并复用第一轮一部分）；RLVR student 兼 self-teacher | sampled-token reverse KL 当 advantage + 异步 behavior/prox 拆分 + IcePop mask + PPO clip；**试过 full-vocab / top-k logit matching，agentic 上不如 sampled-token** | SFT → 统一 RLVR → **MOPD warmup（轻 SFT）** → MOPD × 2 → MTP Boosting；**不替换 RL** |
 | **[OPSD](../sources/opsd.md)**（方法，非模型） | **自蒸馏**：用参考解答当 privileged context，让模型教没看答案的自己 | **无外部 teacher**；同一初始权重，teacher 冻结、看 \(x,y^\star\)，student 只看 \(x\)（LoRA 更新） | 主实验 **full-vocab forward KL** \(D_{\mathrm{KL}}(p_T\parallel p_S)\) + 词表级 pointwise clipping；reverse KL 在 AIME25 无效；sampled-token 弱于 full-vocab | 单独后训练：OpenThoughts 数学子集、Qwen3-Instruct 1.7B/4B/8B、100 step；不进入融合 / 召回 / 压小模型流水线 |
+| **[ExOPD](../sources/exopd.md)**（方法，非模型） | 同基座域 RL **融回**原 student，并用 \(\lambda>1\) 越过 teacher | 2 个同尺寸 teacher（Qwen3-4B-Non-Thinking 的 math / code GRPO），每条样本按域路由，不混 logits。另有 strong-to-weak：30B-A3B → 1.7B/4B | sampled-token reverse KL；advantage 里把隐式 reward 乘 \(\lambda\)。\(\lambda=1\) 即标准 OPD，主实验 \(\lambda=1.25\)。不是 full-vocab | 同基座 GRPO teacher → G-OPD 50 step；strong-to-weak 100 step。不进生产流水线 |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
@@ -139,6 +140,8 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 
 更值得注意的是 student-teacher 差距的方向：**RL domain 的最终 merged student 几乎总是超过 teacher，self-distill domain 的 student 有时不如 teacher**（MiMo Table 7 中 BrowseComp −6.8、Arena-Hard Creative Writing −3.9 的落后都在 self-distill / SFT domain）。nrehiew 没给出解释，但点出了 pipeline 收敛趋势：GLM-5 和 DeepSeek-V4 都用 OPD 做最终 expert merging，最终 checkpoint 不经 RL--这意味着「怎么训 expert」成为核心问题，而 domain reward 噪声可能是 teacher 类型选择的可操作判据。
 
+[ExOPD](../sources/exopd.md) 给出的是另一条路，而且只在 \(\lambda>1\) 时把「超过同基座 RL teacher」写成闭式：学生去拟合 teacher 相对 pre-RL reference 的 log-ratio 的外推。主表（Qwen3-4B，math+code，\(\lambda=1.25\)）里它是唯一在两边都超过 domain teacher 的方法；标准 OPD 的代码均分还低于 teacher。这不能拿来解释上一段的 MiMo Table 7——那些生产配方没有这个 \(\lambda\)。
+
 ## 证据边界与阅读提示
 
 - **GLM-5 的 cross-stage distillation 应不应该归到 OPD**？它的 KL 算法、on-policy 形式与另外几家一致（都引同一篇 Thinking Machines Lab 博客），但目的（召回而非融合 / 压缩）独立。本页倾向于把它列出来作为第三类用法，而不是排除在 OPD 之外。
@@ -150,7 +153,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - **需实验或作者披露**：**off-policy distill + on-policy distill 的两阶段是不是更通用**？Qwen3 和 Qwen3-VL 都走这条；MiMo 直接从 SFT 进 MOPD 不做 off-policy 预热；V4 也从 specialist 训练进 OPD 不做 off-policy 预热。两阶段是 Qwen 家族的偏好，还是普适更优？
 - **需实验或作者披露**：**MOPD 的 teacher-student co-evolution 循环**：[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 已跑两轮（Figure 10 + Table 5）。第二轮在 Terminal Bench 继续涨（50.8→54.0）、GDPVal 持平 46.7。HLE 两轮几乎不动（25.6→26.7）。还没回答的是：哪些域需要第二轮、统一 SFT 能否救回 HLE 那类「teacher 靠 off-policy 新数据」的缺口。 Ultra §3.3.5 把统一 SFT 再分域、或 teacher 先造 SFT 再 MOPD 列为未做的 Foundations 实验。
 - **需实验或作者披露**：**teacher 类型选择（RL vs SFT vs Self）是否由 domain reward 噪声决定**？[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)指出 MiMo Table 7 中 Math/Code 偏好 RL teacher、Creative writing / 知识密集型偏好 self-distillation，与 reward 噪声一致--verifiable reward 的 domain 适合 RL teacher，LLM judge 有偏的 domain 适合蒸馏。这是否意味着 teacher 类型选择有一条可操作规则？
-- **需实验或作者披露**：**为什么 RL domain 的 student 几乎总是超过 teacher，self-distill domain 却不一定**？nrehiew 注意到 MiMo Table 7 里最终 merged student 在 RL domain 普超 teacher、在 self-distilled domain 有时不如 teacher。这与 on-policy 承重墙实验（teacher 质量不是决定性的）是否矛盾--还是 self-distill domain 的 reward 噪声让 teacher 信号本身不可靠？
+- **需实验或作者披露**：**为什么 RL domain 的 student 几乎总是超过 teacher，self-distill domain 却不一定**？nrehiew 注意到 MiMo Table 7 里最终 merged student 在 RL domain 普超 teacher、在 self-distilled domain 有时不如 teacher。这与 on-policy 承重墙实验（teacher 质量不是决定性的）是否矛盾--还是 self-distill domain 的 reward 噪声让 teacher 信号本身不可靠？[ExOPD](../sources/exopd.md) 只解释了 \(\lambda>1\)、同基座、prompt 按域分开的情形；\(\lambda=1\) 的生产配方仍然开着。
 
 ## 相关页面
 
@@ -164,6 +167,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Miles v0.1](../sources/miles-v0-1.md)：唯一把 OPD 做成框架侧接口的来源（advantage 折入而非 loss 加权、served / in-process teacher 两种部署、top-K 变体只在 served teacher 下可用），并提供唯一一条「蒸馏只缩长度、不涨分」的公开结论。
 - [Nemotron 3 Ultra 技术报告](../sources/nemotron-3-ultra.md)：两轮 MOPD co-evolution + 按域恢复率（Terminal Bench 172.7% / HLE 16.9%）+ warmup 轻 SFT；sampled-token 优于 logit matching 的反例。
 - [OPSD](../sources/opsd.md)：无外部 teacher 的 privileged-context 自蒸馏；主实验 forward KL + full-vocab，与生产 reverse-KL 配方分叉。
+- [ExOPD](../sources/exopd.md)：同基座双教师上把 reward scale 放到 \(\lambda=1.25\)，主表超过两位 domain teacher；不解释 \(\lambda=1\) 的生产超 teacher。
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。

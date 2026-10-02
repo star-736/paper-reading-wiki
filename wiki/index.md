@@ -140,6 +140,7 @@
 - [GKD：On-Policy Distillation of Language Models](sources/generalized-knowledge-distillation.md) - Google DeepMind 的 ICLR 2024 源头论文：把自回归 LM 蒸馏重写成 imitation learning，给出「student 数据比例 λ × 发散度 D」两个旋钮的统一目标（supervised / on-policy KD、ImitKD、f-distill 都是实例）。校准两处口径——on-policy 标准实例用 teacher-first 方向、最优发散度 task-dependent；并提供 wiki 现有 forward/reverse KL 行为对照表的一手出处（Figure A.16）与适用边界。
 - [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
 - [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping，不是生产 OPD 的 reverse KL。Qwen3-1.7B/4B/8B LoRA，相对 GRPO 更省 token。
+- [ExOPD：Generalized On-Policy Distillation](sources/exopd.md) - 人大高瓴 + 腾讯（arXiv:2602.12125v2）：标准 OPD 是 reward 与 KL 等权的特例；λ>1 在同基座 math/code 专家融回 4B 时超过两位 domain teacher，λ=1.5 会不稳。strong-to-weak 只缩小与 30B-A3B teacher 的差距。这个 λ 不是 GKD 的数据混合比例。
 - [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型

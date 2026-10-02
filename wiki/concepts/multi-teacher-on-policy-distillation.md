@@ -159,6 +159,8 @@ $$\pi^*(y\mid x) \;=\; \pi_{T_{k(x)}}(y\mid x), \quad \text{其中 } k(x) = \tex
 
 这是 OPD 在数学上**没**完全闭合的部分，也是为什么 GLM-5 §3.5（"mixed in appropriate proportions"）和 MiMo §4 都把 teacher 选择 / domain routing / 采样比例挂在嘴边——这一步外包给了数据 curation，不是公式能解决的。
 
+[ExOPD](../sources/exopd.md) 没有合上这个口，它处理的是旁边另一件事。标准 OPD 在 \(\lambda=1\) 时的闭式最优就是 teacher。ExOPD 把隐式 reward 的权重放到 \(\lambda>1\)，最优解变成 teacher 的 log-prob 再加 \((\lambda-1)\) 倍的 \((\log\pi^\star-\log\pi_{\mathrm{ref}})\)。实验里 teacher 是**同一个** Qwen3-4B 的 math / code GRPO，prompt 按域分开，\(\lambda=1.25\) 时学生在主表的 7 个分项上都超过对应 domain teacher。重叠 prompt 上两个 teacher 抢同一条输入，这篇没有测。它也解释不了 MiMo Table 7 和 Nemotron 在普通 \(\lambda=1\) OPD 下超过 teacher：那一组的闭式仍然是 teacher。
+
 ## 分布视角：SFT / RL / OPD 的三轴对照
 
 > 以下框架来自 [nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)（2026），它把三种 post-training 方法放在同一个分布视角下：**target distribution 是什么 / 数据从哪来 / KL 方向**。这与上面的七层数学依据互补--七层讲「OPD 为什么 work」，分布视角讲「把 SFT 和 RL 也拉进来，差异在哪一层」。

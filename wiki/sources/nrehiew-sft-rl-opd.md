@@ -120,6 +120,8 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 
 值得注意的是：在 RL 领域，最终 merged student 几乎总是超过 teacher；在 self-distilled 领域，student 有时不如 teacher。
 
+[ExOPD](exopd.md) 把「超过同基座 RL teacher」写成 \(\lambda>1\) 的闭式外推，主表里标准 OPD（\(\lambda=1\)）并不会在代码上超过 teacher。它的 Figure 5 里 ExOPD 的熵高于标准 OPD，作者归因于回复更长。这和上面「OPD 比 RL 更早掉熵」不是同一对照，也不能解释生产配方在 \(\lambda=1\) 下超过 teacher。
+
 ### 8. 终极问题
 
 理想的 post-training 算法需要同时具备：蒸馏的**密度** + RL 的**无偏** + 两者的 **on-policy** 特性。目前没有解。outcome reward 太稀疏（RL 昂贵）；Process Reward Model（[Lightman et al.](https://arxiv.org/abs/2305.20050)）大规模训练效率低；logit distillation 密度高但有偏，被迫进入 messy clipping schemes。
@@ -146,6 +148,7 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)：MOPD 机制 + 跨家共用 OPD 数学依据（七层论证）。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：各家 OPD 用法分歧（目的 / KL 形式 / pipeline 位置）。
 - [OPSD](opsd.md)：本博客 OPSD 转述的一手出处；主实验是 forward KL + full-vocab，不是 reverse KL。
+- [ExOPD](exopd.md)：\(\lambda>1\) 才把超过同基座 RL teacher 写成闭式；不解释本页看到的 \(\lambda=1\) 生产超 teacher。
 - [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：两轮 MOPD；HLE 16.9% 恢复率是「额外 SFT teacher → OPD」的生产反例。
 - [DPO](dpo.md)：离线偏好闭式解，不在本博客的 SFT / RL / OPD 三轴里（off-policy 成对比较，不是 teacher 分布蒸馏）。
 - [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Qwen3 技术报告](qwen3.md) / [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：本博客引用的 pipeline 趋势来源；Ultra 是后续生产对照。

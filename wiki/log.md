@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | ExOPD
+
+人大高瓴 + 腾讯（arXiv:2602.12125v2，2026-02-26，17 页）。新增 `raw/2602.12125v2.pdf`、`sources/exopd.md`，提取 Figure 1/2–3/4/5。不建模型页。Headline：G-OPD 用 reward scale λ 和 reference 把 OPD 写成 dense KL-constrained RL；ExOPD 取 λ=1.25。同基座双教师主表 7 项都超过对应 domain teacher，1200-step teacher 上数学不再项项超过。strong-to-weak 不越过 30B-A3B。这个 λ 不是 GKD 的数据混合比例。回写 MOPD 概念页、OPD 对比、GKD 的 λ 待追问、nrehiew。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | Dream-RSI
 
 Google / Google DeepMind 等（arXiv:2609.14858v1，2026-09-14，36 页）。新增 `raw/2609.14858v1.pdf`、`sources/dream-rsi.md`，提取 Figure 1/2/3b/4/5/6。不建模型页。Headline：唯一被改的是探索策略代码；历史发现树是确定性回放，选择只保证固定历史上的回放分不下降。Lasso 的 162× 是 Gemini 调用次数对 SimpleTES（gpt-oss-120b，51,200）的跨模型比。Pro 六套里只有 RCV1 快于固定探索。自相关略差于同模型固定探索。回写 harness、agentic engineering，以及 Macaron / SoL-Pi / Prime Agent / Qwen-AgentWorld / LoopWM。`raw/` 新增该 PDF。

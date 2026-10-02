@@ -135,7 +135,7 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 ## 待追问
 
 - **现有材料待核**：**`§4.4` 的 student 规模与 Figure 10 caption 口径不一致**：正文写「把我们蒸馏后的 FLAN T5-**Base** student 在两个 held-out 套件上评测」，而 Figure 10 的三张子图标题是 `FLAN T5-XL → Base`，caption 里的 student 数字（MMLU 35.6% / BBH 31.25%）却标为 T5-**large**。两处不可换算、不可相减，需回原文或原作者代码确认后才能引用具体分数。
-- **需实验或作者披露**：**λ 轴在 2026 的 OPD 实现里没有等价物**：GKD 明确说 GSM8K 上 on-policy 数据低于 25% 时增益不稳定（`Figure 8`），而 MiMo / GLM-5 / V4 的 token-level OPD 事实上都取 λ=1，且都没有做混合比例的消融。是这一维在大模型场景下不再重要，还是被工程默认值掩盖了？
+- **需实验或作者披露**：**数据混合比例这根 λ 轴在 2026 的生产 OPD 里没有等价物**：GKD 明确说 GSM8K 上 on-policy 数据低于 25% 时增益不稳定（`Figure 8`），而 MiMo / GLM-5 / V4 的 token-level OPD 事实上都取 λ=1，且都没有做混合比例的消融。是这一维在大模型场景下不再重要，还是被工程默认值掩盖了？[ExOPD](exopd.md) 的 λ 是另一根轴（隐式 reward 相对 KL 的权重），不要当成这根轴的答案。
 - **需实验或作者披露**：**forward KL 的 mode-covering 刻画能推多远**：[AKL](akl.md) 已收原文。连续 toy（本篇 Figure A.16）上的 mean/mode-seeking 在逐步 softmax 下不成立；驻点相同，有限 epoch 差在 head vs tail。本篇指令微调上 reverse KL 大胜，应读成没训到收敛时的路径差。AKL 的理论覆盖不到 sampled-token reverse-KL PG，和 2026 生产 OPD 的估计器仍有一层缝。
 
 ## 相关页面
@@ -145,5 +145,6 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](nrehiew-sft-rl-opd.md)：分布视角下 SFT / RL / OPD 的三轴对照。
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：MiMo / V4 / Qwen3 / Qwen3-VL / GLM-5 等报告里 OPD 的用法对比。
 - [OPSD](opsd.md)：把本页 λ=1 + forward KL 的 on-policy 实例接到「同一模型、teacher 看 \(y^\star\)」；主实验确认这条支路在竞赛数学上优于 reverse KL。
+- [ExOPD](exopd.md)：同名 λ 是 reward scale，不是本页的数据混合比例。标准 OPD 在它那里是 reward 与 KL 等权的特例。
 - [AKL](akl.md)：把本页 Figure A.16 的连续 toy 降级；离散词表逐步 softmax 上 FKL/RKL 同驻点。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：OPD 在整条后训练流水线里的位置。
