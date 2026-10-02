@@ -20,7 +20,7 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 
 ## 核心结论
 
-这是一篇**系统性消融研究**，而非新模型报告：在 3.5T token 数据上，对 **30 个 gating 变体**做对照实验（15B MoE / 15A2B 与 1.7B dense 两套模型），系统拆解「在 softmax 注意力里加门」到底带来什么。
+这是一篇**系统性消融研究**，而非新模型报告：对 **30 个 gating 变体**做对照实验，使用不同训练预算（MoE 主表为 400B tokens，dense 实验最高 3.5T tokens）（15B MoE / 15A2B 与 1.7B dense 两套模型），系统拆解「在 softmax 注意力里加门」到底带来什么。
 
 中心发现：一个极简改动——**在 SDPA 输出后加一个 head-specific 的 sigmoid 门**（论文记作 G1 位置）——稳定地提升性能（PPL 降最多 0.2、MMLU 涨 2 分），同时增强训练稳定性、容忍更大学习率、改善 scaling。论文把效果归因到两个因素：**(1) 非线性**——给 softmax 注意力里 value + dense 两个线性层构成的低秩映射注入非线性；**(2) 稀疏性**——query-dependent 的稀疏门分数调制 SDPA 输出，引入输入相关的稀疏。
 
@@ -43,13 +43,30 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 ## 两个机制因素
 
 1. **非线性补偿低秩**：value 投影 $W_V$ 与 dense 输出投影 $W_O$ 两个连续线性层可合并成一个低秩线性映射；在 G1/G2 位置插入门的非线性，直接提升这个低秩变换的表达力。
-2. **稀疏调制 + 消除 sink**：门分数本身高度稀疏，给 SDPA 输出加上 input-dependent 稀疏。此前工作把 attention sink 解释为「softmax 非负归一化导致的冗余注意力堆积」——当 query-dependent 稀疏门作用在 SDPA 输出上时，dense 和 MoE 模型（3.5T token）实测**不再出现 attention sink**，长度泛化随之大幅改善。
+2. **稀疏调制 + 消除 sink**：门分数本身高度稀疏，给 SDPA 输出加上 input-dependent 稀疏。此前工作把 attention sink 解释为「softmax 非负归一化导致的冗余注意力堆积」——当 query-dependent 稀疏门作用在 SDPA 输出上时，所测 dense / MoE 配置实测 attention sink 显著减弱，长度泛化随之大幅改善。
 
 ## 实验配置
 
 - **MoE**：15B 总参 / 2.54B 激活（15A2B），128 expert top-8，fine-grained expert、global-batch LBL、z-loss，注意力用 GQA。
 - **Dense**：1.7B。
-- 数据：3.5T token（训练稳定性图覆盖 3T）。
+- 数据：MoE Table 1 为 400B tokens；dense Table 2 分别有 400B、1T 与 3.5T 设置，不能把全部变体视为均训练了 3.5T。
+
+## 门控参数与成本边界
+
+**已据原文核实（`supported`）**：Table 1 的 MoE 使用 24 层、hidden size 2048、32 个 query heads、4 个 KV heads、head dim 128（Table 7）。G1 的门作用于 SDPA 输出，因此逐元素门覆盖的是 query heads，而不是只有 4 个 KV heads。
+
+| 方法（Table 1） | 门分数形状 | 新增参数（约，M） | Avg PPL | MMLU |
+| --- | --- | ---: | ---: | ---: |
+| Baseline | 无 | 0 | 6.026 | 58.79 |
+| G1 elementwise，逐头逐维 | $n\times32\times128$ | 201 | 5.761 | 60.82 |
+| G1 headwise，每头一个标量 | $n\times32$ | 1.6 | 5.792 | 60.05 |
+| G2 elementwise，value 输出门 | $n\times4\times128$ | 25 | 5.820 | 59.17 |
+
+**本页计算**：按 Eq. 5 的 $XW_\theta$，只计无 bias 的门投影权重，G1 elementwise 为 $24\times2048\times(32\times128)=201{,}326{,}592$ 个参数；headwise 为 $24\times2048\times32=1{,}572{,}864$，两者相差 128 倍。G2 elementwise 则为 $24\times2048\times(4\times128)=25{,}165{,}824$。这些结果对应原表的约数；201M 相对约 15B 总参数为 1.34%，不是零成本。
+
+Dense 实验（§3.2.2、Table 2）**通过缩小 FFN 宽度保持总参数不变**，因此“1.7B 加门后仍是 1.7B”不表示门没有参数，而是把预算从 FFN 分给门。MoE 表的新增参数口径与 dense 表的固定总参数口径必须分开。
+
+**延迟证据的范围**：§3.1 在实验设置中自报 gating 带来的 wall-time latency 小于 2%。这支持论文设置下低开销的描述，但该句没有给独立的 prefill / decode、batch、硬件与上下文长度分项测量。不能把它当成任意服务场景下“推理开销恒小于 2%”的保证；部署成本仍见待追问。
 
 ## 与已有沉淀的关系
 
@@ -60,7 +77,7 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 
 ## 待追问
 
-- **现有材料待核**：G1 elementwise 门额外参数量与推理开销具体多少？论文主打「简单」，但 head-specific elementwise 门在大模型上的真实增量值得核对配置表。
+- **需实验或作者披露**：G1 elementwise / headwise 的参数已由 Table 1/7 核实；还需同一硬件、模型、batch 与上下文下的 prefill / decode 延迟、吞吐及峰值显存曲线。§3.1 的 wall-time <2% 自报没有这些分项，不能直接外推到更大生产模型。
 - **需实验或作者披露**：attention sink 消除后，原本被认为「sink 是有用的注意力垃圾桶」的那派观点（registers/StreamingLLM）在这个框架下如何解释？论文给的是经验观测，机制论证可再深挖。
 - **需实验或作者披露**：该门已进 Qwen3-Next 系（含 Qwen3-Coder-Next、Qwen3.5-Omni）和 Trinity Large，但论文消融只到 15B 尺度；更大尺度上「去 sink → 长度外推增益」是否同样成立，这些采用方的报告**继承而非重新验证**该收益，仍缺大尺度的专门复测数据。Qwen3.5 已到 397B 级；Qwen3.8-Flash-Next 的新增门控证据集中在稳定性（GatedNorm / GR），不是重新统计 attention sink。
 

@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] deepen | 门控参数与 GDN 主表边界
+
+重读 Gated Attention 与 Gated DeltaNet。MoE Table 1 为 400B tokens，dense Table 2 含 400B / 1T / 3.5T；G1 elementwise 约 201M、headwise 约 1.6M，§3.1 的 wall-time <2% 没有部署分项。GDN 主实验为 1.3B/100B：语言建模、常识推理均值和检索均值优于 Mamba2 与 DeltaNet，但 ARC-e 71.21 低于 Mamba2 的 72.47，纯循环检索 30.6 仍低于 Transformer++ 的 37.0。Table S.1/S.2 是 400M 与 500M、各 15B tokens。`raw/` 未改。
+
 ## [2026-10-03] ingest | Qwen3.8-Omni
 
 Qwen Team（arXiv:2609.25611v1，24 页）。新增 `raw/2609.25611v1.pdf`、`sources/qwen3.8-omni.md`、`models/qwen3.8-omni-flash.md`，提取 Figure 1/2/3。Headline：Thinker–Talker 继承 Qwen3.8-Next 骨干，多模态预训练后再做 QSA；文本相对 Qwen3.8-Flash 上下约 1 分。Thinker 的多教师蒸馏未写 on-policy KL，Talker 语音才点名 MOPD，并用 GSPO。Qwen Code 取证使 LVOmniBench 63.3→73.6。参数量、GR、n-gram 未复述。视觉编码器两处出处冲突。回写 Qwen3.5-Omni、架构报告、harness、serving、MOPD、GSPO、稀疏对比与 2026 比较。`raw/` 新增该 PDF。

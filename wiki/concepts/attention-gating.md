@@ -10,7 +10,7 @@ timestamp: 2026-06-21
 
 ## 定义
 
-「门控（gating）」是给某个张量乘上一个由输入算出的、值域受限的分数 $\sigma(XW)$，从而选择性地保留或抹掉它的特征：
+「门控（gating）」是给某个张量乘上一个由输入算出的调制分数（本页默认 sigmoid 门的值域为 (0,1)） $\sigma(XW)$，从而选择性地保留或抹掉它的特征：
 
 $$Y' = Y \odot \sigma(XW)$$
 
@@ -37,7 +37,7 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
 报告把效果归到两个独立因素：
 
 1. **非线性**：softmax 注意力里 value 投影 $W_V$ 与输出投影 $W_O$ 两个连续线性层可合并成一个低秩线性映射。在 G1/G2 插门，就是给这个低秩变换注入非线性，提升表达力。
-2. **稀疏 + 消除 attention sink**：门分数本身高度稀疏，给 SDPA 输出加上 input-dependent 稀疏。此前研究把 **attention sink**（首 token 吸走大量注意力）和 **massive activation**（首 token 隐状态值异常大）归因于 softmax 非负归一化的冗余堆积。实测：baseline 平均 **46.7%** 注意力被首 token 吸走（某层 83%），加 query-dependent 稀疏门后降到 **4.8%**（该层 4%），dense 和 MoE 模型（3.5T token）都不再出现 attention sink。
+2. **稀疏 + 消除 attention sink**：门分数本身高度稀疏，给 SDPA 输出加上 input-dependent 稀疏。此前研究把 **attention sink**（首 token 吸走大量注意力）和 **massive activation**（首 token 隐状态值异常大）归因于 softmax 非负归一化的冗余堆积。实测：baseline 平均 **46.7%** 注意力被首 token 吸走（某层 83%），加 query-dependent 稀疏门后降到 **4.8%**（该层 4%），所测配置中的 attention sink 显著减弱；MoE 主表为 400B tokens，dense 实验最高到 3.5T，不能混写训练预算。
 
 副产品：attention-sink-free 的模型**长度外推**显著更好，RULER 涨 10+ 分。
 
@@ -52,18 +52,18 @@ Gated Attention 报告沿五个维度遍历了 30 个变体：
   - **Trinity Large**（Arcee AI，400B MoE / 13B active，**非 Qwen**）：独立采用者，且用法不同——不在混合栈里，而是在更常规的 full-attention 栈里用「SDPA 输出后、输出投影前」的门。说明 gated attention 不是 Qwen 专属技巧。（来源：[Sebastian Raschka, Gated Attention](https://sebastianraschka.com/llm-architecture-gallery/gated-attention)）
 - **[Kimi Linear](../sources/kimi-linear.md)（KDA）**：两层关系。其一，KDA 在输出投影前也用了 **data-dependent sigmoid 输出门**（低秩参数化），报告明说目的之一是**缓解 attention sink**——与 Gated Attention 完全独立的团队/架构上得到同一类结论，互为佐证。其二，据第三方分析，Kimi Linear 本质是把 **Qwen3-Next 那个 gated-attention 全局层换成了 MLA**——两者是「同一混合骨架、不同全局层」的对照（来源：[Sebastian Raschka, Beyond Standard LLMs](https://magazine.sebastianraschka.com/p/beyond-standard-llms)）。
 - **[Kimi K3](../sources/kimi-k3.md)（Gated MLA + Gated KDA，2026-07，首个开源 3T 级）**：把输出门从 Kimi Linear 的**低秩**升级到 **input-dependent full-rank** 投影，且 KDA 层和 Gated MLA 层用**同款全秩门**（`y = W_o[Sigmoid(W_g x) ⊙ RMSNorm(~o)]` for KDA；`y = W_o[Sigmoid(W_g x) ⊙ ~o]` for MLA）。这是 full-rank 门首次同时用在混合栈的线性注意力层和 softmax 全局层——K3 报告明说门让「每个 token 能调制从全局注意力 / recurrent state 读出的通道」。与 Gated Attention 报告的「G1 SDPA 输出门」同属 output gating 家族，但 K3 的 full-rank 参数化比 Gated Attention 消融的 head-specific elementwise 门更重（全秩 `W_g` 投影），且 K3 在 2.8T 规模验证其有效。配套 Gated MLA 还用 NoPE + FP32 attention output（纠正 flash attention rounding）。
-- **[Laguna XS.2](../sources/laguna-m1-xs2.md)（Poolside，2026-05，33.4B/3B MoE agentic coding）**：在 3:1 interleaved SWA/GA 架构里用 **softplus-based per-head gating [67]**——[67] 正是 [Gated Attention 报告](../sources/gated-attention.md)。报告写「softplus」而非「sigmoid」，是 Gated Attention 报告里 head-specific elementwise 门的激活选择变体（论文同时讨论 sigmoid/SiLU，softplus 与 sigmoid 同为有界单调，属同一家族的有界乘性门）。Laguna 是 Gated Attention 报告之外又一**非 Qwen 团队**的生产采用者（继 Trinity Large 之后），且把门用在 SWA 层与 GA 层统一的 per-head gating 配置里，配 GA 层 partial RoPE(50%) + θ=5e5、SWA 层 window 512 + θ=1e4。消融（16B proxy, Table 9）显示加 per-head gating + θ_swa=1e4 这一步把 4K Avg 从 0.5292 拉到 0.5328，是最终架构的组成步骤之一。
+- **[Laguna XS.2](../sources/laguna-m1-xs2.md)（Poolside，2026-05，33.4B/3B MoE agentic coding）**：在 3:1 interleaved SWA/GA 架构里用 **softplus-based per-head gating [67]**——[67] 正是 [Gated Attention 报告](../sources/gated-attention.md)。报告写「softplus」而非「sigmoid」，与 Gated Attention 默认 head-specific elementwise 门的精确对应仍需核查（论文同时讨论 sigmoid/SiLU，softplus 单调但无上界，sigmoid 才有界于 (0,1)，不能据引用关系把二者当作同一种有界门）。Laguna 是 Gated Attention 报告之外又一**非 Qwen 团队**的生产采用者（继 Trinity Large 之后），且把门用在 SWA 层与 GA 层统一的 per-head gating 配置里，配 GA 层 partial RoPE(50%) + θ=5e5、SWA 层 window 512 + θ=1e4。消融（16B proxy, Table 9）显示加 per-head gating + θ_swa=1e4 这一步把 4K Avg 从 0.5292 拉到 0.5328，是最终架构的组成步骤之一。
 - **延伸**：NSA、Switch Heads 等也带门控，但常和稀疏/路由耦合在一起。Gated Attention 的贡献正是把「门本身的价值」从路由/稀疏里**解耦**出来（它发现 Switch Heads 退化到单 expert、门只调制 value 输出时增益仍在）。
 
 ## 为什么重要
 
-- **一个近乎免费的质量 + 稳定性升级**。G1 门改动极小（一个 sigmoid 投影），却同时拿到 PPL/MMLU 提升、loss spike 消除、可用更大学习率、更好 scaling——这是为什么它能直接进 Qwen3-Next 这种生产模型。
+- **参数成本取决于门粒度**。15A2B 设置的 G1 elementwise 门新增约 201M 参数，headwise 约 1.6M；1.7B dense 实验通过缩减 FFN 保持总参数不变。原文 wall-time <2% 自报不能替代部署分项测量，见 [参数与成本边界](../sources/gated-attention.md#门控参数与成本边界)。
 - **它给「attention sink 是不是必要的」一个反例**。registers/StreamingLLM 一派把 sink 当成「有用的注意力垃圾桶」；这里证明 query-dependent 稀疏门可以直接消掉 sink 而质量更好，长度外推还更强。
 - **它和线性注意力的门是同一思想的两次独立印证**。两条路线（softmax / 线性 RNN）都发现「在输出端加数据相关的门」有用，提示门控可能是比具体注意力形式更底层的有效组件。
 
 ## 相关追问
 
-主记录：[门控的参数与推理开销](../sources/gated-attention.md#待追问)；[attention sink 消失后的机制解释](../sources/gated-attention.md#待追问)；[大尺度去 sink 效应](../sources/gated-attention.md#待追问)。
+主记录：[参数已核实，部署成本待测](../sources/gated-attention.md#门控参数与成本边界)；[attention sink 消失后的机制解释](../sources/gated-attention.md#待追问)；[大尺度去 sink 效应](../sources/gated-attention.md#待追问)。
 
 ## 相关页面
 
