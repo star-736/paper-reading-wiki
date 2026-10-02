@@ -146,5 +146,6 @@ $$\mathbb{E}_{x\sim X}\!\left[(1-\alpha)\,\mathbb{E}_{y\sim p_S^{\theta}}[r(y)] 
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)：MiMo / V4 / Qwen3 / Qwen3-VL / GLM-5 等报告里 OPD 的用法对比。
 - [OPSD](opsd.md)：把本页 λ=1 + forward KL 的 on-policy 实例接到「同一模型、teacher 看 \(y^\star\)」；主实验确认这条支路在竞赛数学上优于 reverse KL。
 - [ExOPD](exopd.md)：同名 λ 是 reward scale，不是本页的数据混合比例。标准 OPD 在它那里是 reward 与 KL 等权的特例。
+- [OPD 综述](opd-survey.md)：把本页放进 f-divergence 地图。实验排序以本页为准，不用综述的转述。
 - [AKL](akl.md)：把本页 Figure A.16 的连续 toy 降级；离散词表逐步 softmax 上 FKL/RKL 同驻点。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：OPD 在整条后训练流水线里的位置。

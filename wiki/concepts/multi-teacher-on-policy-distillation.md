@@ -320,6 +320,10 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 这个缩写不要和 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 的 MOPD2 混用。后者是第二轮 teacher–student co-evolution，并给出按域恢复率。两边只是阶段编号撞了同一个简称。
 
+## 综述的三条轴
+
+[OPD 综述](../sources/opd-survey.md)（arXiv:2604.00626v4，2026-06-18）把 OPD 收成学生轨迹上的 f-divergence，再按目标、信号来源、训练动态分轴。它是地图，不是新实验。DAgger 从 \(O(\epsilon T^2)\) 降到 \(O(\epsilon T)\) 的那一步，在 teacher 被学生前缀带偏时不自动成立。缩放律公式被作者标成未验证的猜想。v4 早于 Lightning OPD 2.0。已有一手页的数字不要改成综述的转述。
+
 ## 待追问
 
 - **需实验或作者披露**：MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？

@@ -104,3 +104,4 @@ Teacher 不一致的消融只报 AIME 2024（Table 4）。8B、Lightning：SFT �
 - [The Many Faces of OPD](many-faces-opd.md)
 - [Revisiting On-Policy Distillation](revisiting-opd.md)
 - [Lightning OPD 2.0](lightning-opd-2.md)
+- [OPD 综述](opd-survey.md)：v4 记录了本页的 4.0× 和 teacher consistency，早于 2.0。

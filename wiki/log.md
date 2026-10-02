@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | OPD 综述
+
+腾讯（arXiv:2604.00626v4，2026-06-18，89 页，预印本，arXiv 标注 Ongoing Work）。新增 `raw/2604.00626v4.pdf`、`sources/opd-survey.md`，提取 Figure 1。不建模型页。Headline：OPD 定义为学生当前策略上的期望，统一成 \(\pi_{\mathrm{mix}}\) 上的 f-divergence。三条轴是目标、信号来源、训练动态。DAgger 的 \(O(\epsilon T)\) 在失准 teacher 上不自动成立。缩放式被作者标成未验证猜想。v4 早于 Lightning OPD 2.0。GKD 的实验排序以一手页为准。回写 OPD 比较页、MOPD 概念页、GKD。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | Lightning OPD 2.0
 
 NVIDIA（arXiv:2607.28449v1，2026-07-30，14 页）。新增 `raw/2607.28449v1.pdf`、`sources/lightning-opd-2.md`，提取 Figure 1/2/3。不建模型页。Headline：跨 teacher 时从 \(d_{it}=\ell_T-\ell_R\) 减去 5 折交叉拟合的查表均值，再做离线 OPD。1.0 在该设定下数学均分几乎不动（4B 48.3→48.6，Klear 停在 73.6）。2.0 相对 1.0 的数学 / 代码均分是 +3.1 / +1.4 和 +1.0 / +1.4。Klear 的 AIME 2024 从 81.3 到 82.4。评测为数学 64 条、代码 8 条，与 1.0 不可直接相减。桶数未写。回写 Lightning OPD、OPD 比较页、MOPD 概念页。`raw/` 新增该 PDF。

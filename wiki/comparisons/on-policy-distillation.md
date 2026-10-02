@@ -176,6 +176,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [The Many Faces of On-Policy Distillation](../sources/many-faces-opd.md)：未归一化 Top-K 的 \(+1\) 偏差、OPSD 的 PI 结构、学生前缀把 teacher 从 62.1% 拉到 46.0%。
 - [Lightning OPD](../sources/lightning-opd.md)：离线 teacher log-prob。SFT 与 OPD 必须是同一个 teacher，否则偏差不随漂移消失。
 - [Lightning OPD 2.0](../sources/lightning-opd-2.md)：跨 teacher 时减掉可预测分歧。不取消 1.0 的偏差上界。
+- [OPD 综述](../sources/opd-survey.md)：方法论文的三条设计轴。v4 早于 2.0。本页数字不以综述转述替换。
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。
