@@ -54,3 +54,4 @@ Serving 上，Qwen3.5-Omni 这类「Thinker / Talker / codec decoder」全模态
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)
 - 同家族来源：[Qwen3-Coder-Next](qwen3-coder-next.md)、[Gated Attention](gated-attention.md)、[Gated DeltaNet](gated-delta-net.md)
 - 下一代：[Qwen3.8-Omni](qwen3.8-omni.md)（Thinker 改接 Qwen3.8-Next，并增加空间音频与 agent harness）
+- 引用更早 Qwen3-Omni AuT 的音频全双工：[StepAudio 3 Realtime](stepaudio-3-realtime.md)（arXiv:2509.17765 的编码器；本页不是那份配置的来源）

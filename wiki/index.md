@@ -93,6 +93,7 @@
 - [Looped World Models](sources/looped-world-models.md) - FaceMind 把 looped Transformer 接到 world model 隐状态（Prelude–Recurrent–Coda + 谱约束保留 + 延迟解码）；约 1B 在 ScienceWorld 五步 next-state 上 EM 68.4 vs Claude 47.2，AlfWorld 并非全面领先；100× 效率是对闭源 API 的参数比，不是同族对照。
 - [BDH-CQ 技术报告](sources/bdh-cq.md) - Pathway 的 150M ARC 推理系统：演示写入 recurrent memory、查询在连续 latent workspace 中迭代，不输出中间 CoT；报告 ARC-AGI-1 29.5% pass@2、$0.00070/task 的特定成本口径效率点，核心实现仍 proprietary。
 - [MiniCPM-o 4.5 技术报告](sources/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Omni-Flow 框架沿共享时间轴对齐多模态 I/O 流，LLM 只生成文本 token 委托轻量 speech decoder 生成语音，TAIL 时间对齐交错，端侧 INT4 < 12GB。
+- [StepAudio 3 Realtime 技术报告](sources/stepaudio-3-realtime.md) - StepFun 的音频语言全双工报告：用户流与自身语音一起进 AuT，每 320 ms 跟一个状态 token；同一模型两次并发调用边说边想。推理模式 StepAudioChat 73.0，实时交互 70.4；AA Full-Duplex Overall 98.9。参数量未披露。
 - [Keye-VL-2.0 技术报告](sources/keye-vl-2.md) - 快手 Keye Team 的开源 30B-A3B 多模态 MoE 模型，首个把 DSA 适配到 GQA 多模态架构（indexer MQA + aggregation GQA），256K 长视频上下文 + Cross-Modal MOPD（13 个 RL teacher，top-k overlap estimator）。
 - [JoyAI-VL-Interaction 技术报告](sources/joyai-vl-interaction.md) - JD.com 的 8B 视觉驱动交互模型：每秒自主决定说话/静默/委托后台，AdaCodec 预测式视频编码 + 4M 时间对齐数据 + 角色加权 SFT + GRPO RL，完整可部署系统，vs Doubao/Gemini 人工盲评胜率 77.6%/87.9%。
 - [MOSS-VL 技术报告](sources/moss-vl.md) - OpenMOSS 的 11.3B 实时 VLM：视觉 token 留在 gated cross-attention 通道外，XRoPE 对齐时空位置，Realtime-SFT 学说话/静默/修订；流式公开基准量化 L2--L4，L5“生成时仍感知”仍待专门 benchmark。
@@ -191,6 +192,7 @@
 - [LoopWM](models/loopwm.md) - FaceMind 约 1B 的 looped latent world model；公开实验是 ScienceWorld / AlfWorld 文本观测，层宽与训练配方未披露。
 - [BDH-CQ](models/bdh-cq.md) - Pathway 的 150M ARC 网格推理系统：示例递归写入 memory、查询以连续 latent workspace 迭代求解；关键模型实现未公开。
 - [MiniCPM-o 4.5](models/minicpm-o-4-5.md) - OpenBMB 9B 全双工全模态交互模型，Qwen3-8B backbone + Whisper + speech decoder 端到端可微，Omni-Flow + TAIL，多模态（文本+图像+视频+音频输入；文本+音频输出），端侧 INT4 < 12GB。
+- [StepAudio 3](models/stepaudio-3.md) - StepFun 音频语言家族：Realtime 与 ASR Max 共享预训练和 mid-training，SFT 分叉。音频+文本进；Realtime 出流式语音，ASR Max 出转写。MoE 规模未披露。预训练 32K / 1.2T，mid-training 128K。
 - [MiniCPM4.1](models/minicpm-4.1.md) - OpenBMB 基于 InfLLM-V2 的 8B hybrid reasoning；短序列可切 dense、长序列块稀疏。纯文本。不要和 MiniCPM-o 4.5 混。
 - [RWKV](models/rwkv.md) - Peng 等 169M–14B dense RNN 族（后称 RWKV-4），Pile 330B；WKV 是 channel-wise 衰减，不是矩阵线性注意力。纯文本。
 - [Keye-VL-2.0](models/keye-vl-2.md) - 快手开源 30B-A3B 多模态 MoE 模型，GQA+DSA 256K 长视频理解 + Cross-Modal MOPD（13 teacher），多模态（文本+图像+视频），基于 Qwen3-30B-A3B-Thinking-2507。

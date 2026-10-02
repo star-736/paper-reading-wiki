@@ -59,3 +59,7 @@ V4 OPD 选择**full-vocabulary logit distillation**而非 token-level KL estimat
 
 - **需实验或作者披露**：架构能力强但复杂；报告本身也把架构简化列为未来方向。
 - **需补外部来源**：当前来源不是 arXiv，后续如果出现 arXiv 版本或新 revision，需要更新来源页和日志。
+
+## 相关页面
+
+- 被用作文本对话对照：[StepAudio 3 Realtime](stepaudio-3-realtime.md)。StepAudioChat 上 DeepSeek-V4-Flash 的宏均分 71.4 来自对方报告，不是本页评测。

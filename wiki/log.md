@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | StepAudio 3 Realtime
+
+StepFun-Audio Team（arXiv:2609.14005v2，2026-09-19，27 页）。新增 `raw/2609.14005v2.pdf`、`sources/stepaudio-3-realtime.md`、`models/stepaudio-3.md`，提取 Figure 2/3/5/7。Headline：用户流与模型流一起进 AuT，每 320 ms 音频块后跟一个状态或文本 token。Think-While-Speaking 是同一权重的两次并发调用；MTP 只加速私下推理，出口回答严格验证。推理模式 StepAudioChat 宏均分 73.0，实时交互 70.4。四教师参数平均 3:1:1:1，对话宏平均低于最强教师。AA Full-Duplex Overall 98.9；τ-Voice 宏平均 56.0，零售 37.7。ASR Max 的转写表不覆盖 Realtime。参数量未披露。回写全双工 serving、多模态训练、MTP、后训练与 harness。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | OPD 综述
 
 腾讯（arXiv:2604.00626v4，2026-06-18，89 页，预印本，arXiv 标注 Ongoing Work）。新增 `raw/2604.00626v4.pdf`、`sources/opd-survey.md`，提取 Figure 1。不建模型页。Headline：OPD 定义为学生当前策略上的期望，统一成 \(\pi_{\mathrm{mix}}\) 上的 f-divergence。三条轴是目标、信号来源、训练动态。DAgger 的 \(O(\epsilon T)\) 在失准 teacher 上不自动成立。缩放式被作者标成未验证猜想。v4 早于 Lightning OPD 2.0。GKD 的实验排序以一手页为准。回写 OPD 比较页、MOPD 概念页、GKD。`raw/` 新增该 PDF。

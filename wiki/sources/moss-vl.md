@@ -100,5 +100,6 @@ XRoPE 的 64 个 RoPE frequency pairs 按 `(t,h,w)=(24,20,20)` 分配。这里�
 
 - 模型：[MOSS-VL](../models/moss-vl.md)
 - 视觉交互对照：[JoyAI-VL-Interaction](joyai-vl-interaction.md)、[MiniCPM-o 4.5](minicpm-o-4-5.md)
+- 音频侧的「边生成边做另一件事」：[StepAudio 3 Realtime](stepaudio-3-realtime.md)。那边并行的是私下推理和开口，不是视觉帧
 - 基座部件：[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)
 - 概念：[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

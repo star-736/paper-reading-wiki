@@ -64,3 +64,4 @@ JoyAI-VL-Interaction 的定位与知识库中其他多模态模型有本质区�
 - [Qwen3](qwen3.md) - LLM backbone 来源
 - [Qwen3-VL](qwen3-vl.md) - 视觉编码器来源
 - [MOSS-VL](moss-vl.md) - 持续视觉交互的另一条路线：cross-attention 视觉 KV 旁路 + Realtime-SFT，强调生成期间仍接收新帧
+- [StepAudio 3](stepaudio-3.md) - 语音在模型内的全双工；JoyAI 把 ASR/TTS 留在模型外

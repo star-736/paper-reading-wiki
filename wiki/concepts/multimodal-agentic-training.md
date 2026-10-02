@@ -79,6 +79,14 @@ XRoPE 与绝对时间戳在这里各管一件事：前者把文本 query、视�
 
 和 K2.5 的 zero-vision SFT 不同：这里的文本能力保持是结果（Table 2 相对 Qwen3.8-Flash 上下各约 1 分），不是「SFT 阶段不看图像」的训练设定。和 JoyAI 的每秒说话/静默也不同。Omni 的长视频动作是粗到细的工具调用：主 agent 按问题检索音视频片段，必要时把音、画分给子 agent。Table 7 把这件事从权重里拆出来了——同一 checkpoint，加上 Qwen Code 之后 LVOmniBench 63.3→73.6。所以这一代的 agentic 增益至少有一部分住在执行膜里，不能全部记到联合训练上。
 
+### StepAudio 3：边说边想，工具也留在对话环里
+
+[StepAudio 3 Realtime](../sources/stepaudio-3-realtime.md) 把实时语音交互写成四件事同时进行：双流感知、320 ms 一级的地板管理、同一次权重上的两次并发调用，以及异步工具。它没有视觉通道。音频理解的主表宏平均 81.3，八项里领先四项；AudioMultiChallenge 相对 Gemini 3.1 Pro 低 17.7 分。
+
+和上面几条路线并列时，差在「想」和「说」是否绑在同一步。JoyAI 按秒决定开口，语音在模型外。MiniCPM-o 4.5 用 1 秒 chunk 把感知和文本 token 对齐，语音交给轻量 decoder。MOSS-VL 要解决的是生成期间还能不能看见新帧。Qwen3.8-Omni 把长视频取证放进 harness。StepAudio 默认 Speak-First：开口不等推理写完，随后还可以补一句或改口。Adaptive Thinking 是另训的一套权重，八类思考率从 51.5% 到 82.0%。受益最大的 Reasoning 类思考率只有 59.5%，分数相对同表 Direct SFT 的 71.89 为 66.80。这是本页根据各报告接口做的对照，几份报告没有在同一实时协议上对打。
+
+四名教师用参数权重 3:1:1:1 合成，推理时没有路由。对话宏平均 73.0，低于最强对话教师的 74.2。这和 Qwen3.8-Omni 把专家轨迹蒸馏进一个 student 是两条集成手续。
+
 ## 相关页面
 
 - [Kimi K2.5](../models/kimi-k2.5.md)
@@ -86,6 +94,7 @@ XRoPE 与绝对时间戳在这里各管一件事：前者把文本 query、视�
 - [MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
 - [Qwen3.8-Omni-Flash](../models/qwen3.8-omni-flash.md)
 - [MOSS-VL](../models/moss-vl.md)
+- [StepAudio 3](../models/stepaudio-3.md)
 - [Agent Swarm](agent-swarm.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [Any-to-any 多模态 serving](any-to-any-multimodal-serving.md) - 训练出多模态 agent 只是上半场；vLLM-Omni 这类 serving 系统解决多阶段多模态模型如何在线运行。

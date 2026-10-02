@@ -55,6 +55,12 @@ vLLM-Omni 用 Qwen2.5-Omni / Qwen3-Omni 展示了一个典型 stage graph：Thin
 
 Serving 侧，MiniCPM-o 4.5 提供自研 **llama.cpp-omni** 框架：INT4 量化下 RTX 4090 RTF 0.21 / 11GB，跨 macOS / Windows / Linux 兼容，适合端侧部署。这与 vLLM-Omni 的服务器级 disaggregated serving 形成端侧 vs 云端的互补。两个系统面临的核心问题一致——多阶段模型的编排与资源分配——但 MiniCPM-o 4.5 通过端到端训练减少了 stage 边界的传输开销，而 vLLM-Omni 通过 stage graph 解耦获得独立批处理和资源配置的灵活性。
 
+### StepAudio 3 Realtime：双流进同一个解码器，服务拓扑没有展开
+
+[StepAudio 3 Realtime](../sources/stepaudio-3-realtime.md) 也是听和说重叠，但报告停在模型接口。用户音频和模型自己正在播的音频一起进入 AuT，文本另路进入 MoE 解码器，Generator 的输出写回模型音频流（Figure 3）。时间单位是 320 ms 音频块后跟一个状态或文本 token。Think-While-Speaking 是同一次权重的两次并发调用，一次写私下推理，一次按已经说出的内容往下接。工具走模型内部的三路选择：直接答、轻量工具、异步后端。
+
+正文没有 stage graph、TTFT、RTF 或并发调用的显存。和 MiniCPM-o 4.5 比，这里的开口接在 LLM decoder 之后的 Generator 上，报告也没有写 LLM 只出文本 token。和 Qwen3.8-Omni 比，实时工具没有被写成一张外置 harness。读 serving 时这页只能说明数据怎么流进模型，不能当成引擎测量。
+
 ### 百万 token serving：同是 disaggregation，但对象不同
 
 [百万 token 上下文服务](million-token-context-serving.md) 关注 DeepSeek-V4 的异构 KV-cache、on-disk cache、shared-prefix reuse、prefill/decode disaggregation。它的中间态主要是 **KV / state cache**。
@@ -99,6 +105,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)、[LMCache 技术报告](../sources/lmcache.md)
-- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[StepAudio 3 Realtime 技术报告](../sources/stepaudio-3-realtime.md)、[FreeToken](../sources/freetoken.md)、[LMCache 技术报告](../sources/lmcache.md)
+- 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)、[StepAudio 3](../models/stepaudio-3.md)
 - 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)、[KV cache 层](kv-cache-layer.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)

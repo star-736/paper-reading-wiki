@@ -43,5 +43,6 @@ MiniCPM-o 4.5 的核心创新不在单一模态能力，而在**交互范式**�
 - [Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md) - 端到端架构 + llama.cpp-omni 是 any-to-any serving 的端侧实例
 - [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md) - 渐进式多模态融合策略
 - [MOSS-VL](moss-vl.md) - 视觉实时交互的另一条路线：以独立 gated cross-attention KV 通道让新帧可在文本生成期间追加；MOSS 的 L5 量化 benchmark 仍缺失
+- [StepAudio 3](stepaudio-3.md) - 纯音频全双工：320 ms 状态 token，同一权重两次调用边说边想；没有视觉，也不是 LLM 只出文本 token
 - [Qwen3](../models/qwen3.md) - LLM backbone
 - [Qwen3.5-Omni](../models/qwen3.5.md) - 同类全模态模型，走 Hybrid MoE + GDN 路线；MiniCPM-o 4.5 以 9B dense 走端侧效率路线

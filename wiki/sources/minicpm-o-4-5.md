@@ -127,4 +127,5 @@ Table 11：vLLM on RTX 4090，BF16 下 Qwen3-Omni-30B-A3B OOM，MiniCPM-o 4.5 15
 - [Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md) - MiniCPM-o 4.5 的端到端架构是 any-to-any serving 的模型侧对应物；llama.cpp-omni 是轻量端侧 serving 实例
 - [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md) - MiniCPM-o 4.5 的渐进式多模态训练与 Kimi K2.5 的 early vision fusion 代表两种不同的融合策略
 - [MOSS-VL 技术报告](moss-vl.md) - 视觉流式交互的架构对照：MOSS 以 cross-attention KV 旁路处理“生成中继续感知”，不覆盖 MiniCPM 的原生音频全双工 I/O
+- [StepAudio 3 Realtime](stepaudio-3-realtime.md) - 音频全双工的另一时间单位：320 ms 一块后跟状态 token，开口接在 LLM 后的 Generator；没有视觉通道
 - [Qwen3](../models/qwen3.md) - MiniCPM-o 4.5 的 LLM backbone

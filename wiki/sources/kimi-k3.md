@@ -285,3 +285,4 @@ Anthropic/OpenAI 拒绝 cyber 任务，故仅对比 GLM-5.2。
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agent harness](../concepts/agent-harness.md) — Unified White-Box RL Env 按配置实例化多种 CLI，目标是 harness-agnostic RL
 - 同族前作：[Kimi K2.5 技术报告](../sources/kimi-k2.5.md)、[Kimi Linear 技术报告](../sources/kimi-linear.md)（KDA 首次提出）
+- 被用作文本对话对照：[StepAudio 3 Realtime](stepaudio-3-realtime.md) 的 StepAudioChat 推理模式里，Kimi K3 宏均分 77.1。那是对方基准上的分数，不是本报告主表

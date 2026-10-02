@@ -70,6 +70,10 @@ timestamp: 2026-10-03
 
 Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agent 两侧。正文没有给「关掉这张膜」的成对分数。Table 7 能分开的是另一件事：同一 Omni-Flash，直接读输入对比用 Qwen Code 取证，LVOmniBench 63.3→73.6，OmniVideoBench 的 token/问约降 45.7%。那是执行设置，不是 Live-Harness 的消融。
 
+### StepAudio 3：工具路由写在模型里
+
+[StepAudio 3 Realtime](../sources/stepaudio-3-realtime.md) 的 Voice Agent 在直接回答、轻量工具和异步后端之间选择。用户可以在任务进行时继续说话；澄清、确认，以及没有证据就不要声称完成，都是训出来的模型行为。报告没有可替换的 loop、插件或状态契约。对照上面的 Qwen-Live-Harness：那边前台说话、后台工具跑在统一 adapter 上；这边异步执行留在模型自己的对话环里。
+
 ### 训练侧：不要让模型过拟合某一个 scaffold
 
 多份后训练报告把 harness 当训练分布的一部分，而不是评测后才换上的皮肤：
@@ -118,7 +122,7 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 
 ## 相关页面
 
-- 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Dream-RSI](../sources/dream-rsi.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
+- 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Dream-RSI](../sources/dream-rsi.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[StepAudio 3 Realtime 技术报告](../sources/stepaudio-3-realtime.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
 

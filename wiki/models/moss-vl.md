@@ -59,6 +59,6 @@ MOSS-VL 不把 RoPE 只留给 text self-attention。XRoPE 让文本 query 与视
 ## 相关页面
 
 - 来源：[MOSS-VL 技术报告](../sources/moss-vl.md)
-- 视觉交互对照：[JoyAI-VL-Interaction](joyai-vl-interaction.md)、[MiniCPM-o 4.5](minicpm-o-4-5.md)
+- 视觉交互对照：[JoyAI-VL-Interaction](joyai-vl-interaction.md)、[MiniCPM-o 4.5](minicpm-o-4-5.md)、[StepAudio 3](stepaudio-3.md)
 - 基座：[Qwen3](qwen3.md)、[Qwen3-VL](qwen3-vl.md)
 - 概念：[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)

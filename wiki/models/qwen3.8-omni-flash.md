@@ -40,3 +40,4 @@ Thinker 的第一阶段蒸馏不要和 Talker 的 MOPD 合成一件事。前者�
 - 骨干与前代：[Qwen3.8-Flash-Next](qwen3.8-flash-next.md)、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)、[Qwen3.5-Omni](../sources/qwen3.5-omni.md)、[Qwen3.5](qwen3.5.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)、[Agent harness](../concepts/agent-harness.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - 比较：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)、[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
+- 音频全双工对照：[StepAudio 3](stepaudio-3.md)。AuT 引用的是 Qwen3-Omni 报告，不是本模型写明的编码器配置

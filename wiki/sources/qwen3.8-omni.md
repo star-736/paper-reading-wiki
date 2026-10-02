@@ -269,6 +269,7 @@ Table 10 的脚注级说明：Realtime 为了响应速度走 non-thinking。因�
 ## 相关页面
 
 - 模型：[Qwen3.8-Omni-Flash](../models/qwen3.8-omni-flash.md)、[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)、[Qwen3.5](../models/qwen3.5.md)
+- 音频全双工对照：[StepAudio 3 Realtime](stepaudio-3-realtime.md)。它引用的 AuT 来自 Qwen3-Omni（arXiv:2509.17765），不是本报告的 6.25 Hz 配置；实时工具写在模型对话环里，而不是 Qwen-Live-Harness
 - 前作：[Qwen3.8-Next 架构报告](qwen3.8-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)、[Agent harness](../concepts/agent-harness.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - 算法与评测：[GSPO](group-sequence-policy-optimization.md)、[UniClawBench](uniclawbench.md)、[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)、[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
