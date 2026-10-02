@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Revisiting On-Policy Distillation
+
+中科院自动化所 + 国科大等（arXiv:2603.25562v2，2026-04-27，26 页，预印本且 work in progress）。新增 `raw/2603.25562v2.pdf`、`sources/revisiting-opd.md`，提取 Figure 1/2/4/5。不建模型页。Headline：token-level OPD 相对序列级 reverse KL 有偏，最坏方差上界从 O(T^4) 降到 O(T^2)。Teacher top-32 重归一化 reverse KL 加 top-p rollout。+19.8% 是交替多任务数学均分的相对值（34.8→41.7），不是全表，也没有 full-vocab 臂。回写 OPD 比较页与 MOPD 概念页。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | ExOPD
 
 人大高瓴 + 腾讯（arXiv:2602.12125v2，2026-02-26，17 页）。新增 `raw/2602.12125v2.pdf`、`sources/exopd.md`，提取 Figure 1/2–3/4/5。不建模型页。Headline：G-OPD 用 reward scale λ 和 reference 把 OPD 写成 dense KL-constrained RL；ExOPD 取 λ=1.25。同基座双教师主表 7 项都超过对应 domain teacher，1200-step teacher 上数学不再项项超过。strong-to-weak 不越过 30B-A3B。这个 λ 不是 GKD 的数据混合比例。回写 MOPD 概念页、OPD 对比、GKD 的 λ 待追问、nrehiew。`raw/` 新增该 PDF。

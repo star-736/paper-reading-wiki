@@ -236,6 +236,8 @@ MiMo-V2-Flash 报告的 Table 7（MOPD 前后 student vs. best teacher 对比）
 
 [DeepSeek-V4](../models/deepseek-v4.md) 也使用多 teacher OPD，但强调 full-vocabulary logit distillation。它认为 token-level KL 估计虽然省资源，但方差高、训练不稳定，因此通过 teacher hidden-state caching、按 teacher 排序调度和 TileLang kernel 来支持完整 logits 的 KL 计算。
 
+[Revisiting OPD](../sources/revisiting-opd.md) 把「方差」拆开了：相对序列级 reverse KL，token-level 估计器有偏，最坏方差上界从 \(O(T^4)\) 降到 \(O(T^2)\)。它要修的是 sampled-token 这一档，做法是 teacher top-32 上的重归一化 reverse KL，不是 V4 的全词表。7B 实验没有 full-vocab 对照。
+
 ## Keye-VL-2.0 的 Cross-Modal MOPD
 
 [Keye-VL-2.0](../sources/keye-vl-2.md) 是 MOPD 在多模态场景的首次大规模应用。它与 MiMo MOPD 的核心思路一致（多 domain teacher + on-policy student rollout + token-level KL），但增加了四项工程增强：

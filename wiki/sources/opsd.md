@@ -134,6 +134,7 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
 - [nrehiew 博客](nrehiew-sft-rl-opd.md)
 - [ExOPD](exopd.md)：外部 teacher 的 sampled-token reverse KL，用 reward scale 越过同基座 RL teacher；和本页的 full-vocab forward KL 不是一条估计器
+- [Revisiting OPD](revisiting-opd.md)：引用本页作为 full-vocab 强于 sampled-token 的例子，自己的主实验仍是 reverse KL 的 teacher top-K
 - [MiniLLM](minillm.md)
 - [AKL](akl.md)
 - [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)

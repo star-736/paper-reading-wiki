@@ -141,6 +141,7 @@
 - [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
 - [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping，不是生产 OPD 的 reverse KL。Qwen3-1.7B/4B/8B LoRA，相对 GRPO 更省 token。
 - [ExOPD：Generalized On-Policy Distillation](sources/exopd.md) - 人大高瓴 + 腾讯（arXiv:2602.12125v2）：标准 OPD 是 reward 与 KL 等权的特例；λ>1 在同基座 math/code 专家融回 4B 时超过两位 domain teacher，λ=1.5 会不稳。strong-to-weak 只缩小与 30B-A3B teacher 的差距。这个 λ 不是 GKD 的数据混合比例。
+- [Revisiting On-Policy Distillation](sources/revisiting-opd.md) - 中科院自动化所 + 国科大等（arXiv:2603.25562v2，工作进行中）：token-level 相对序列级 reverse KL 有偏，最坏方差上界 O(T^2) 对 O(T^4)。Teacher top-32 重归一化 reverse KL 在交替多任务的数学均分上相对 sampled-token +19.8%（34.8→41.7）。没有 full-vocab 对照。
 - [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型
