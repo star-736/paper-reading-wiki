@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Lightning OPD 2.0
+
+NVIDIA（arXiv:2607.28449v1，2026-07-30，14 页）。新增 `raw/2607.28449v1.pdf`、`sources/lightning-opd-2.md`，提取 Figure 1/2/3。不建模型页。Headline：跨 teacher 时从 \(d_{it}=\ell_T-\ell_R\) 减去 5 折交叉拟合的查表均值，再做离线 OPD。1.0 在该设定下数学均分几乎不动（4B 48.3→48.6，Klear 停在 73.6）。2.0 相对 1.0 的数学 / 代码均分是 +3.1 / +1.4 和 +1.0 / +1.4。Klear 的 AIME 2024 从 81.3 到 82.4。评测为数学 64 条、代码 8 条，与 1.0 不可直接相减。桶数未写。回写 Lightning OPD、OPD 比较页、MOPD 概念页。`raw/` 新增该 PDF。
+
 ## [2026-10-03] ingest | Lightning OPD
 
 NVIDIA（arXiv:2604.13010v3，2026-09-26，21 页）。新增 `raw/2604.13010v3.pdf`、`sources/lightning-opd.md`，提取 Figure 1/2/3。不建模型页。Headline：teacher log-prob 预计算在 \(\pi_{\mathrm{ref}}\) 的 rollout 上；SFT 与 OPD 必须是同一个 teacher，否则梯度偏差不随 \(\chi^2\) 消失。Qwen3-8B-Base 的 AIME 2024 为 69.9%，全流程 30 GPU 时对在线 OPD 的 120。4B 代码均分离线略低于在线。Table 1 的 ExOPD 行不是同一协议。30B-A3B 上在线 OPD 单机 8×H100 OOM。回写 OPD 比较页、MOPD 概念页、ExOPD。`raw/` 新增该 PDF。2.0 未收。

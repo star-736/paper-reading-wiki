@@ -289,7 +289,7 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 [Lightning OPD](../sources/lightning-opd.md) 仍用采样 token 的 \(A_t=\log\pi_T-\log\pi_\theta\)，但轨迹不再从当前学生采。Rollout 和 teacher log-prob 都在 SFT 参考策略 \(\pi_{\mathrm{ref}}\) 上预先算好，训练时不再开 teacher server。条件是生成 SFT 轨迹的模型和 OPD 打分的模型是同一个；否则梯度偏差有一个与 \(\chi^2\) 无关的上界。8B 全流程从 120 GPU 时降到 30，AIME 2024 为 69.9%。30B-A3B 上，同一台 8×H100 同时放学生和 teacher 会 OOM。
 
-本页前面的生产配方大多是「分域 RL 或 SFT 专家，再换一个 student 做 OPD」。按这篇的定义，SFT 数据的生成者通常不是后来的 OPD teacher，属于 teacher 不一致。偏差在那些规模上有多大，这篇没有测。同作者的 2.0 还没进库。
+本页前面的生产配方大多是「分域 RL 或 SFT 专家，再换一个 student 做 OPD」。按这篇的定义，SFT 数据的生成者通常不是后来的 OPD teacher，属于 teacher 不一致。偏差在那些规模上有多大，这篇没有测。[Lightning OPD 2.0](../sources/lightning-opd-2.md) 在单 teacher 的跨模型设定里，把可预测的分歧减掉后再做离线更新。Klear 的 AIME 2024 只从 81.3 到 82.4。它没有测按 prompt 路由的多 teacher。
 
 ## Nemotron 3 Ultra：两轮 co-evolution 与按域恢复率
 

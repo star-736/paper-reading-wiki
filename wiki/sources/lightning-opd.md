@@ -22,7 +22,7 @@ resource: "../../raw/2604.13010v3.pdf"
 
 已收录的 OPD 都默认训练时有一个在线 teacher：Miles 把它做成 served teacher 或 in-process teacher，生产报告在每个 rollout 上现算 log-prob。这篇把 teacher 的 log-prob **事先算好、冻在一份固定 rollout 上**，训练循环里不再开 teacher server。能这么做的条件被他们命名为 **teacher consistency**：生成 SFT 轨迹的模型和 OPD 打分的模型必须是同一个。违反时，偏差不会靠学生少漂移而消失。
 
-同作者后来的 Lightning OPD 2.0（arXiv:2607.28449）试图用 style residualization 放宽这个条件。那篇还没进库，本页不把它的结论写成已核实。
+同作者的 [Lightning OPD 2.0](lightning-opd-2.md) 在跨 teacher 的冻结 replay 上减掉可预测分歧。那是另一套评测，不取消本页的偏差上界。
 
 ## 核心结论
 
@@ -89,7 +89,7 @@ Teacher 不一致的消融只报 AIME 2024（Table 4）。8B、Lightning：SFT �
 
 ## 待追问
 
-- **需补外部来源**：Lightning OPD 2.0（arXiv:2607.28449）声称 style residualization 可以放宽 teacher consistency。本页只核实 v3。
+- **已另页核实**：[Lightning OPD 2.0](lightning-opd-2.md) 在跨 teacher 的冻结 replay 上减掉可预测分歧。它不取消本页的 \(G\sigma_\Delta\) 上界，也不把分数补回一致 teacher 的最优点。评测条数与本页不同。
 - **需实验或作者披露**：支撑覆盖在 150 step 之后是否仍成立。学生可以走出 \(\pi_{\mathrm{ref}}\) 几乎不走的 token，定理 3.5 的换元就不再严格。
 - **需实验或作者披露**：生产多 teacher 流水线里，SFT 生成者和 OPD teacher 不是同一人时，偏差是 Table 4 这种几个点，还是会被路由冲掉。本文只做了单 teacher 的 4B/8B 交叉。
 - **现有材料待核**：Table 1 的 ExOPD 行不是同一协议。4B 代码均分离线略低于在线，不能写成每一列都打平。
@@ -103,3 +103,4 @@ Teacher 不一致的消融只报 AIME 2024（Table 4）。8B、Lightning：SFT �
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
 - [The Many Faces of OPD](many-faces-opd.md)
 - [Revisiting On-Policy Distillation](revisiting-opd.md)
+- [Lightning OPD 2.0](lightning-opd-2.md)

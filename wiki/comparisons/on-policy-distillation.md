@@ -45,6 +45,7 @@ timestamp: 2026-06-23
 | **[Revisiting OPD](../sources/revisiting-opd.md)**（方法，非模型） | 解释 sampled-token 为什么脆，改成 teacher top-K 局部支撑 | 单 teacher：OpenThinker3-7B 蒸 Qwen2.5-7B-Instruct；交替任务再加一个 GiGPO ALFWorld teacher | teacher top-32 上**重归一化** reverse KL，不是 sampled-token，也不是 full-vocab。另加 top-p rollout 与 special-token mask | 单任务数学 400 step；ALFWorld 与数学 batch 交替各 200 step。7B，不进生产流水线 |
 | **[Many Faces of OPD](../sources/many-faces-opd.md)**（方法，非模型） | 划清 OPD/OPSD 何时崩：PI 结构、前缀错配、Top-K 梯度偏差 | 外部 teacher 或同一模型加 PI。数学用 OpenThoughts / DAPO；对齐用 CharacterBench / EmotionBench | 默认 stop-gradient **且**重归一化的 Top-K reverse KL（\(K=20\)）。未归一化版本会崩。不是 full-vocab | Qwen3-1.7B/4B/8B，每题 1 条 rollout。不进生产流水线 |
 | **[Lightning OPD](../sources/lightning-opd.md)**（方法，非模型） | 去掉在线 teacher server：log-prob 预计算在 SFT 参考策略的 rollout 上 | 单 teacher，且必须与生成 SFT 轨迹的是同一个模型。4B←8B，8B←32B，30B-A3B←同族 Thinking | 采样 token 的 reverse-KL advantage，轨迹分布冻在 \(\pi_{\mathrm{ref}}\)。不是 full-vocab，也不是 Top-K | SFT 3000 step → 离线 OPD 150 step。代码域从数学 OPD checkpoint 接着训 |
+| **[Lightning OPD 2.0](../sources/lightning-opd-2.md)**（方法，非模型） | 跨 teacher：减掉分歧里跨 rollout 可预测的一项，再做离线更新 | OPD teacher 固定为 30B-A3B-Thinking。SFT 参考是 Qwen3-8B 生成的 4B，或 DeepSeek-R1-0528 演示训出的 Klear-8B | 仍是采样 token advantage。只改 \(d_{it}=\ell_T-\ell_R\)，不改参考锚定项 | 同一份冻结 replay，150 step，5 折。评测数学 64 条、代码 8 条，与 1.0 不同 |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
@@ -174,6 +175,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Revisiting On-Policy Distillation](../sources/revisiting-opd.md)：sampled-token 的三种脆点，以及 teacher top-32 重归一化 reverse KL。+19.8% 是交替多任务数学均分的相对值。
 - [The Many Faces of On-Policy Distillation](../sources/many-faces-opd.md)：未归一化 Top-K 的 \(+1\) 偏差、OPSD 的 PI 结构、学生前缀把 teacher 从 62.1% 拉到 46.0%。
 - [Lightning OPD](../sources/lightning-opd.md)：离线 teacher log-prob。SFT 与 OPD 必须是同一个 teacher，否则偏差不随漂移消失。
+- [Lightning OPD 2.0](../sources/lightning-opd-2.md)：跨 teacher 时减掉可预测分歧。不取消 1.0 的偏差上界。
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。
