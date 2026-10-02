@@ -41,7 +41,13 @@ vLLM-Omni 用 Qwen2.5-Omni / Qwen3-Omni 展示了一个典型 stage graph：Thin
 
 [Qwen3-VL](../sources/qwen3-vl.md) 是多模态输入 → text output 的 VL 模型：Vision Encoder + MLP merger + Qwen3 LLM，DeepStack 把 ViT 中间层视觉 token residual-add 到 LLM 前 3 层。它会遇到 encoder / prefill / multimodal embedding cache 的 serving 问题，但输出仍主要是 autoregressive text。
 
-因此 Qwen3-VL 更接近 multimodal-input LLM serving；Qwen-Omni / Qwen3.5-Omni / vLLM-Omni 这一线则进入 any-to-any serving：输出端也多模态，必须服务 Talker、Vocoder、DiT 等下游 generator。
+因此 Qwen3-VL 更接近 multimodal-input LLM serving；Qwen-Omni / Qwen3.5-Omni / Qwen3.8-Omni / vLLM-Omni 这一线则进入 any-to-any serving：输出端也多模态，必须服务 Talker、codec decoder 等下游 generator。
+
+### Qwen3.8-Omni：同一条 Thinker–Talker，实时缺口被写成 harness
+
+[Qwen3.8-Omni](../sources/qwen3.8-omni.md) 继续用 Thinker 出文本、Talker 吃 Thinker 的高层表示出 RVQ 语音，Code2Wav 从 24 kHz 上采样到 48 kHz，ARIA 仍负责在不完整文本前缀上接语音。Table 9 给出的是 API 侧 TTFT / TTFC / 生成 RTF（音视频 20 秒时 TTFC 约 1.35 秒，RTF 约 0.153），协议含网络，不是引擎内部的 stage 拆分。
+
+它没有描述 vLLM-Omni 那种 Thinker / Talker / Vocoder 的 stage graph。实时交互被写成 [Qwen-Live-Harness](agent-harness.md) 的编排：异步工具、主动提醒、持久记忆。这层回答的是「通话进行时谁在跑、状态放哪」，不是「codec token 在哪张卡上 batch」。读 serving 时不要把这份 harness 报告当成 Qwen3-Omni 阶段图的替代测量。
 
 ### MiniCPM-o 4.5：端到端架构是 stage graph 的模型侧融合，llama.cpp-omni 是端侧 serving 实例
 
@@ -93,6 +99,6 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 ## 相关页面
 
-- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)、[LMCache 技术报告](../sources/lmcache.md)
+- 来源：[vLLM-Omni 技术报告](../sources/vllm-omni.md)、[Qwen3.5-Omni 技术报告](../sources/qwen3.5-omni.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[Qwen3-VL 技术报告](../sources/qwen3-vl.md)、[JoyAI-VL-Interaction 技术报告](../sources/joyai-vl-interaction.md)、[MiniCPM-o 4.5 技术报告](../sources/minicpm-o-4-5.md)、[FreeToken](../sources/freetoken.md)、[LMCache 技术报告](../sources/lmcache.md)
 - 模型：[Qwen3.5](../models/qwen3.5.md)、[Qwen3-VL](../models/qwen3-vl.md)、[JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)、[MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
 - 相邻概念：[百万 token 上下文服务](million-token-context-serving.md)、[端侧 MoE serving](edge-native-moe-serving.md)、[KV cache 层](kv-cache-layer.md)、[多模态 Agentic 训练](multimodal-agentic-training.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[异步 Agent RL](asynchronous-agent-rl.md)

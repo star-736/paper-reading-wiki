@@ -142,6 +142,10 @@ GR 把残差加成 $n_r=4$ 支，再和 GatedNorm 合成一个读算子。加宽
 
 这是预训练架构报告，没有 SFT / RL 配方或 instruct 分数。组织段写了 “base and post-trained models”，§4 实际只给 base。后训练只作为否决信号出现：NoPE 预训练看不出差别、后训练容易 endless generation；GR 稀疏写预训练几乎免费、后训练变差。QSA 的 RL 稳定性未测。
 
+## 下游采用
+
+[Qwen3.8-Omni](qwen3.8-omni.md) 写明 Thinker 使用本报告的 hybrid sparse MoE 骨干，但 QSA 日程不同：多模态通用阶段之后，S3 冻结骨干、dense attention 仍开着，只训 indexer，S4 才联合打开稀疏。那篇没有复述 GR、n-gram、Muon 或 125B/6B，不能把这些生产配置自动记到 Omni 上。视觉编码器在 Omni 正文里同时写成「来自 Qwen3.8-Next」和「来自 Qwen3.5」；本报告没有视觉编码器，帮不上这个冲突。
+
 ## 评测要点
 
 Table 11 是 base 模型、14 项预训练基准，对照 Qwen3.8-27B-Base（27B dense）和 Qwen3.7-Plus-Base（397B / 17B 激活）。Flash-Next 14 项全胜 27B；对 397B 旗舰 8 胜 6 负，最大分差 2.59（MultiPL-E）。
@@ -171,7 +175,7 @@ QSA 的 1M 数字是 RULER / 8-needle MRCR，不是 agent 长轨迹。效率数�
 
 ## 相关页面
 
-- 模型：[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)
+- 模型：[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)、下游全模态：[Qwen3.8-Omni-Flash](../models/qwen3.8-omni-flash.md)
 - 前作：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Qwen3.5](../models/qwen3.5.md)、[Qwen3](qwen3.md)
 - 机制前身：[Gated DeltaNet](gated-delta-net.md)、[Gated Attention](gated-attention.md)、[IndexCache](indexcache.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[Attention Residuals](../concepts/attention-residuals.md)、[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)、[跨层索引复用](../concepts/cross-layer-index-reuse.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)、[多 token 预测](../concepts/multi-token-prediction.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)、[条件记忆](../concepts/conditional-memory.md)

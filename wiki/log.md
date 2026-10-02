@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Qwen3.8-Omni
+
+Qwen Team（arXiv:2609.25611v1，24 页）。新增 `raw/2609.25611v1.pdf`、`sources/qwen3.8-omni.md`、`models/qwen3.8-omni-flash.md`，提取 Figure 1/2/3。Headline：Thinker–Talker 继承 Qwen3.8-Next 骨干，多模态预训练后再做 QSA；文本相对 Qwen3.8-Flash 上下约 1 分。Thinker 的多教师蒸馏未写 on-policy KL，Talker 语音才点名 MOPD，并用 GSPO。Qwen Code 取证使 LVOmniBench 63.3→73.6。参数量、GR、n-gram 未复述。视觉编码器两处出处冲突。回写 Qwen3.5-Omni、架构报告、harness、serving、MOPD、GSPO、稀疏对比与 2026 比较。`raw/` 新增该 PDF。
+
 ## [2026-09-13] ingest | FAST
 
 Pertsch / Stachowicz 等（arXiv:2501.09747v1）。新增 `raw/2501.09747v1.pdf`、`sources/fast.md`，提取 Figure 2/4/6/11。不建模型页。Headline：DCT+量化+BPE 压 1 秒动作 chunk；相对 OpenVLA 式逐步 256-bin 改的是分词层，不是第四种动作头。FAST+ 是 1M 轨迹上的 universal tokenizer。接到 π0 骨干匹配 diffusion、训练最多 5× 更快（本页数字）。回写 VLA 概念页与 π0 / π0.5 / π0.7 / InternVLA-A1.5 / OpenVLA。`raw/` 新增该 PDF。
@@ -1534,3 +1538,7 @@ deepen `wiki/concepts/multi-teacher-on-policy-distillation.md`：第二层补 Mi
 ## [2026-09-17] verify | M2 bias 与 GLM 专家负载均衡披露范围
 
 重读 M2 §2.2.1、Loss-Free Balancing §3 / Algorithm 1，以及 GLM-5 / GLM-5V-Turbo 的架构与系统段。`supported`：M2 bias 与模型参数联合优化；`refuted`：据引用关系认定 M2 原样使用梯度外 sign 更新。GLM 的系统负载均衡不能补出专家均衡配方，主追问转为需作者披露。同步校准谱系，并据 Algorithm 1 原图将负载误差纠正为平均减实际；修正 MiMo 辅助损失系数“更重”的倒置表述。关闭 1 条、转类 1 条，现余 636（36 / 81 / 519）。纯文本证据补为正文，既有机制图保留，`raw/` 未改。
+
+## [2026-09-17] verify | Gated Attention 参数成本与 GDN 实验规模
+
+重读 Gated Attention §3.1–3.2 / Table 1/2/7，核实 15A2B 的 G1 elementwise 约 201M、headwise 约 1.6M 新增参数；dense 以缩 FFN 保总参，wall-time <2% 自报不等于部署分项保证。重读 GDN §4 / Table 3/4 / S.1/S.2，补主实验 1.3B/100B、消融 400M/15B 与 500M/15B，区分纯循环、混合及训练吞吐。`supported`：所列配置与主表数字；`refuted`：门无参数成本、GDN 每项领先、softplus 与 sigmoid 均有界。复用已有 GDN 机制图、数值表重排 Markdown；关闭 1 条、转类 1 条，现余 635（34 / 81 / 520）。`raw/` 未改。

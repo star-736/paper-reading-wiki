@@ -40,7 +40,7 @@
 - [DeltaNet](sources/delta-net.md) - Yang 等 NeurIPS 2024：把 Schlag 的 delta rule 做成 WY Householder 的 chunkwise 并行训练；1.3B/100B 上 ppl 与零样本超过 Mamba/GLA，召回受状态尺寸限制。GDN 的 delta 前作，没有遗忘门。
 - [RWKV](sources/rwkv.md) - Peng 等 EMNLP 2023：AFT 收成 RNN。WKV 是 channel-wise 指数衰减加权，推理 $O(d)$，不是矩阵 $S$、不是 delta rule。发布 169M–14B、Pile 330B。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。
-- [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。
+- [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen3.5 代全模态报告：Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。下一代见 Qwen3.8-Omni。
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
 - [Qwen3 技术报告](sources/qwen3.md) - Qwen 系列 2025-05 基座报告（arXiv:2505.09388），标准 GQA + RoPE + RMSNorm + MoE，36T tokens / 119 语言；后训练核心 = 统一 thinking/non-thinking 双模式 + thinking budget + Strong-to-Weak Distillation 完胜 RL（1/10 GPU 时长）。Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的基座前作。
 - [Qwen3-VL 技术报告](sources/qwen3-vl.md) - Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。
@@ -130,6 +130,7 @@
 - [MMSearch-R1 技术报告](sources/mmsearch-r1.md) - ByteDance + NTU 的首个端到端 RL 多模态搜索框架：GRPO 教 LMM 按需发起图像搜索与文本搜索，search penalty 抑制过度搜索，FVQA 数据集，5 benchmark 平均 54.6% 超同尺寸 RAG。
 - [DeepMMSearch-R1 技术报告](sources/deepmmsearch-r1.md) - Apple + Johns Hopkins 的多模态 web search 训练方法：SFT + GRPO 两阶段教 MLLM 做多轮文本搜索与裁剪图像搜索，DeepMMSearchVQA 数据集，6 benchmark 平均 57.13 超 RAG workflow +21pp。
 - [Qwen3.8-Next 架构报告](sources/qwen3.8-next.md) - Qwen3.8-Flash-Next：125B/6B + 51B 主机 n-gram，3:1 GDN + QSA、Gated Residual、Muon；14 项 base 8 胜 6 负追平 397B-A17B，约 1/9 训练 FLOPs。
+- [Qwen3.8-Omni 技术报告](sources/qwen3.8-omni.md) - Qwen3.8-Omni-Flash：继承 Qwen3.8-Next 的 Thinker–Talker 全模态 agent，多模态预训练后再开 QSA；Thinker 做轨迹蒸馏 + 统一 RL，并放出 Qwen-MM-Plugins 与 Qwen-Live-Harness。参数量未披露。
 - [GiGPO](sources/gigpo.md) - NTU + Skywork 的 NeurIPS 2025 论文：在 GRPO 轨迹组上用 anchor state grouping 回收 step-level 相对优势，ALFWorld / WebShop 相对 GRPO 约 +13 / +9 个百分点，不增加 rollout 与 GPU 显存。
 - [Hierarchy-of-Groups Policy Optimization（HGPO）](sources/hierarchy-of-groups-policy-optimization.md) - NTU + 东南大学的 ICLR 2026 论文：指出 finite-memory step-wise RL 中同 state step 也可能历史不一致；用历史层次 group + 深度权重 advantage，在不新增 rollout 下交换 bias / variance。
 - [Engram](sources/engram.md) - DeepSeek-AI + 北大的条件记忆模块：hashed $N$-gram 做 $O(1)$ lookup，U 形稀疏分配下 iso-param / iso-FLOPs 优于纯 MoE；100B 表主机预取吞吐掉不到 3%。
@@ -160,6 +161,7 @@
 - [Qwen3-Coder-Next](models/qwen3-coder-next.md) - 79.7B 总参 / ~3B 激活的编码 agent 模型，基于 Qwen3-Next，3 GDN : 1 gated-attention 混合栈（已据 HF config 核实），纯文本。
 - [Qwen3.5](models/qwen3.5.md) - Qwen3.5 多模态 Hybrid MoE 家族（397B-A17B 旗舰到 0.8B dense），3 GDN : 1 gated-attention，Qwen3.5-Omni 的架构基座。
 - [Qwen3.8-Flash-Next](models/qwen3.8-flash-next.md) - Qwen 125B/6B 激活 MoE（+51B 主机 n-gram），3:1 GDN + QSA 与 Gated Residual；架构报告只覆盖预训练 base。
+- [Qwen3.8-Omni-Flash](models/qwen3.8-omni-flash.md) - 原生全模态 Thinker–Talker，继承 Qwen3.8-Next 骨干并在多模态预训练后启用 QSA；文本+图像+音频+空间音频+视频进，文本与语音出。参数量未披露。
 - [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL/3.8-Flash-Next 的 LLM 前作。
 - [Qwen3-VL](models/qwen3-vl.md) - Qwen3-VL 多模态家族（2B/4B/8B/32B dense + 30B-A3B / 235B-A22B MoE），256K context，LLM backbone 用标准 GQA 的 Qwen3，叠 SigLIP-2 + DeepStack + Interleaved MRoPE + 文本时间戳。
 - [Gemma 4](models/gemma-4.md) - Google DeepMind 多模态 dense + MoE 家族（E2B/E4B/12B/26B-A4B/31B），原生文本+图像+音频，5:1 SWA/GA + key-as-value + p-RoPE，12B 为 encoder-free 架构。
@@ -250,7 +252,7 @@
 
 ## 比较
 
-- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi 与 Qwen3.8-Flash-Next 等的横向比较。
+- [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、DeepSeek-V4、MiniMax-M2、Kimi、Qwen3.8-Flash-Next 与 Qwen3.8-Omni-Flash 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
 - [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
@@ -259,22 +261,22 @@
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。当前剩余 **636 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。当前剩余 **635 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
-| 现有材料待核 | 36 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
+| 现有材料待核 | 34 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
 | 需补外部来源 | 81 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 519 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 需实验或作者披露 | 520 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 636 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 635 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
 | 主题 | 核查入口 | 可完成的下一步 |
 | --- | --- | --- |
 | MLA 后续演进与选型动机 | [MLA](concepts/multi-head-latent-attention.md#待追问) | 投影形状与 D.2 已闭合；仍需核对 V2→V3→V3.2→V4 演进和 MSA 选择 GQA 的动机。 |
-| 门控的成本和实验尺度 | [Gated Attention](sources/gated-attention.md#待追问)、[GDN](sources/gated-delta-net.md#待追问)、[KDA](concepts/linear-attention-and-delta-rule.md#待追问) | 先补参数和训练规模，再把未测的端到端成本留作实验问题。 |
+| 线性门控的剩余材料问题 | [GDN](sources/gated-delta-net.md#待追问)、[KDA](concepts/linear-attention-and-delta-rule.md#待追问) | G1 参数与 GDN 规模已核；仍需核对 GDN 标量门的选型依据、KDA 门投影的精确配置。 |
 | 小激活编码模型评测 | [Qwen3-Coder-Next](sources/qwen3-coder-next.md#待追问) | 补 SWE-bench 数字、对照对象与协议。 |
 | 附录中的具体设置 | [Inner Monologue](sources/inner-monologue.md#待追问)、[SayCan](sources/saycan.md#待追问)、[RWKV](sources/rwkv.md#待追问) | 分别补描述器、启用技能数量及附录任务明细。 |
 

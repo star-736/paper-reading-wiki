@@ -39,6 +39,7 @@ Qwen3.8-Flash-Next 是 Qwen Team 的预训练架构模型，用来证明：在 3
 ## 相关页面
 
 - 来源：[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)
+- 下游全模态：[Qwen3.8-Omni-Flash](qwen3.8-omni-flash.md)（继承本骨干，但参数量、GR 与 n-gram 未在那篇复述）
 - 家族：[Qwen3](qwen3.md)、[Qwen3.5](qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)、[Attention Residuals](../concepts/attention-residuals.md)、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)、[条件记忆](../concepts/conditional-memory.md)
 - 比较：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)、[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

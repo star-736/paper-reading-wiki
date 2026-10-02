@@ -73,11 +73,18 @@ XRoPE 与绝对时间戳在这里各管一件事：前者把文本 query、视�
 
 这让三条实时路线的差异更清晰：JoyAI 优先解决**按秒的行为决策与后台委托**，MiniCPM-o 4.5 优先解决**含音频的全双工 I/O 流对齐**，MOSS-VL 优先解决**视觉生成期间的持续感知**。这是基于三份报告的本页原创综合，不代表三者已在同一协议下做过端到端对打；尤其 MOSS-VL 的 L5 尚无公开基准量化，论文只在 L2--L4 上报告分数。
 
+### Qwen3.8-Omni：文本 agent 能力靠联合预训练搬到音视频，取证本身也是动作
+
+[Qwen3.8-Omni-Flash](../sources/qwen3.8-omni.md) 把「多模态 agent」写成生产工作流，而不是再加一类视觉 RL 任务。预训练从 S1 就同时对齐视觉、单声道音频和空间音频，S2 在约 2.5T token 里混入文本 1.1T 与音频 0.7T。后训练先让各领域专家各自 SFT+RL，再把轨迹蒸馏进一个 student，然后做跨模态统一 RL。作者把这一步的动机写成减少模态之间的干扰，但没有写 student 采样是否 on-policy。
+
+和 K2.5 的 zero-vision SFT 不同：这里的文本能力保持是结果（Table 2 相对 Qwen3.8-Flash 上下各约 1 分），不是「SFT 阶段不看图像」的训练设定。和 JoyAI 的每秒说话/静默也不同。Omni 的长视频动作是粗到细的工具调用：主 agent 按问题检索音视频片段，必要时把音、画分给子 agent。Table 7 把这件事从权重里拆出来了——同一 checkpoint，加上 Qwen Code 之后 LVOmniBench 63.3→73.6。所以这一代的 agentic 增益至少有一部分住在执行膜里，不能全部记到联合训练上。
+
 ## 相关页面
 
 - [Kimi K2.5](../models/kimi-k2.5.md)
 - [JoyAI-VL-Interaction](../models/joyai-vl-interaction.md)
 - [MiniCPM-o 4.5](../models/minicpm-o-4-5.md)
+- [Qwen3.8-Omni-Flash](../models/qwen3.8-omni-flash.md)
 - [MOSS-VL](../models/moss-vl.md)
 - [Agent Swarm](agent-swarm.md)
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)

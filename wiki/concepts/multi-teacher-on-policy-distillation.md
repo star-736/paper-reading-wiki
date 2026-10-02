@@ -291,6 +291,12 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 作者还报告：full-vocab / top-k logit matching 在 Terminal Bench 上**不如 sampled-token**（`§3.3.5`）。这与 V4「full-vocab 更稳」直接对照，两边都没有交叉复现。多数 agentic 任务实际用 PivotRL 式单轮 rollout，不是端到端多轮。
 
+## Qwen3.8-Omni：Thinker 的蒸馏没有点名 OPD，Talker 的语音才点名
+
+[Qwen3.8-Omni](../sources/qwen3.8-omni.md) §4 的 Thinker Stage 1 是多教师轨迹蒸馏：专家从 Qwen3.8 base 各自做 SFT+RL，轨迹混成一份数据再蒸馏进 student。正文没有写 student 是否从自己的分布采样，也没有写 KL。它不能记进本页的 MOPD 实例。
+
+§7.1 的 Talker 才写出 “Multi-Teacher On-Policy Distillation (MOPD)”，引用 Ma et al. 2026（arXiv:2606.30406），范围是多语言语音、用来减轻单语语料的外国口音。这是引用，不是把 MiMo 的 token-level KL、domain routing 或恢复率复现了一遍。随后的 Talker RL 用的是 [GSPO](../sources/group-sequence-policy-optimization.md)，奖励来自已经对齐人类偏好的 Thinker。
+
 ## 待追问
 
 - **需实验或作者披露**：MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？

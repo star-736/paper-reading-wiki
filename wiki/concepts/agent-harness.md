@@ -58,6 +58,12 @@ timestamp: 2026-09-12
 
 [UI-Mate](../sources/ui-mate.md) 的 Demo Workflow Harness 不搜索 HCP，也不提供 REPL。它把一条录屏变成指针驱动的 subtask checklist：当前目标、完成判据、不含坐标的里程碑，外加 `subtask_complete`。live 截图对示范有否决权，所以这层膜改变的是条件化，不是动作空间本身。33-task self-demo 上严格成功 17.2%→35.4%，是「同一模型换可见程序」的成对证据；作者同时承认 workflow 钉在上下文开头会破坏 KV 前缀，属于膜的实现税。它与 Prime Agent / Macaron 的差别：后两者在冻结 L0 时改 runtime 原语或配置；UI-Mate 还专门为这层膜做了 SFT（对齐 / 错位 / 无关示范），权重和膜是一起训的。
 
+### Qwen3.8-Omni：给已有 harness 补音视频，再单独做一张实时膜
+
+[Qwen3.8-Omni](../sources/qwen3.8-omni.md) 把两张膜分开。Qwen-MM-Plugins 不替换 Claude Code / OpenClaw 这一类主循环，而是给它们补上音视频：字幕与笔记摘要、懒加载记忆、从教程视频抽出的技能，以及剪辑、翻译、MV 的现成模块。模型可以当主 agent，也可以当这些工具背后的子 agent。Qwen-Live-Harness 则是另一张实时膜：前台继续说话，Qwen Code / Codex / Claude Code 在统一 adapter 后异步执行；打断语音不取消已委托任务；主动提醒来自独立的感知会话；跨通话保留的是文本化的用户事实和画面观察。
+
+Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agent 两侧。正文没有给「关掉这张膜」的成对分数。Table 7 能分开的是另一件事：同一 Omni-Flash，直接读输入对比用 Qwen Code 取证，LVOmniBench 63.3→73.6，OmniVideoBench 的 token/问约降 45.7%。那是执行设置，不是 Live-Harness 的消融。
+
 ### 训练侧：不要让模型过拟合某一个 scaffold
 
 多份后训练报告把 harness 当训练分布的一部分，而不是评测后才换上的皮肤：
@@ -104,7 +110,7 @@ timestamp: 2026-09-12
 
 ## 相关页面
 
-- 来源：[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
+- 来源：[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
 

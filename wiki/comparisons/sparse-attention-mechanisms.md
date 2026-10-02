@@ -77,7 +77,7 @@ timestamp: 2026-09-13
 
 **多层 KL 蒸馏 = 对均值分布的单 KL（梯度等价）**。这条事实在 MSA（同一层多 head 取平均）、IndexCache（同一 anchor 多层取平均）和 [YOIO](../sources/yoio.md)（整栈 cross-decoder × 全头平均成一份 $\bar A$）里都被独立用到。意味着只要 teacher 与待训练 q 不依赖参数，多 KL 项都可以直接折叠成对质心分布的 KL，便于推断"indexer 学到的是什么"——不是过拟合到某一层/某一 head，而是被服务集合的注意力质心。CLSA 的 teacher 是整份共享记忆上的共识 token，因为结构上只有一个 indexer。
 
-**RL 稳定性是第二轴评判**。GLM-5 报告显式提到 DSA 在 RL 阶段会因为 top-k 算子非确定性导致训练/推理 selection 不一致、entropy 几步崩塌；处理方式是 deterministic `torch.topk` + 默认冻结 indexer。MSA 论文本身止于 pretraining，Outlook 那节明说「把 selector-only 设计扩展到 pretraining 之外的场景、包括 reinforcement-learning post-training 和 agentic deployment」是待做工作。QSA 同样只覆盖 CPT（dense distillation → sparse training），没有 RL 数字。CLSA 止于 sparse adaptation，也没有 RL。换句话说，MSA / NSA / [MoBA](../sources/moba.md) / QSA / CLSA 在 RL 阶段的稳定性目前是 open problem，部署到 agentic post-training 时这是必查项。MoBA 原文的下游评测还把 **decode 切回 full attention**，连推理期稀疏都不贯穿。
+**RL 稳定性是第二轴评判**。GLM-5 报告显式提到 DSA 在 RL 阶段会因为 top-k 算子非确定性导致训练/推理 selection 不一致、entropy 几步崩塌；处理方式是 deterministic `torch.topk` + 默认冻结 indexer。MSA 论文本身止于 pretraining，Outlook 那节明说「把 selector-only 设计扩展到 pretraining 之外的场景、包括 reinforcement-learning post-training 和 agentic deployment」是待做工作。QSA 的架构报告只覆盖 CPT（dense distillation → sparse training）。[Qwen3.8-Omni](../sources/qwen3.8-omni.md) 在多模态预训练之后重做 indexer warmup，并在打开 QSA 之后进入 Thinker 的统一 RL，但仍没有 indexer 是否冻结、top-k 是否确定、或 entropy 曲线。CLSA 止于 sparse adaptation，也没有 RL。换句话说，MSA / NSA / [MoBA](../sources/moba.md) / QSA / CLSA 在 RL 阶段的选择稳定性目前仍是 open problem，部署到 agentic post-training 时这是必查项。MoBA 原文的下游评测还把 **decode 切回 full attention**，连推理期稀疏都不贯穿。
 
 **部署前要看的是 4 件事，不是 1 件**：主注意力 FLOPs + indexer/选择器 FLOPs + KV-cache 访存 + RL/serving 稳定性。光看主注意力的 28× / 90% 这种数字会忽略另外 3 项中可能反吃掉的成本。
 
@@ -97,7 +97,7 @@ timestamp: 2026-09-13
 - [跨层索引复用](../concepts/cross-layer-index-reuse.md)
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md)
 - [百万 token 上下文服务](../concepts/million-token-context-serving.md)
-- 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[MoBA](../sources/moba.md)、[InfLLM-V2](../sources/infllm-v2.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)
+- 来源：[NSA](../sources/nsa.md)、[MSA](../sources/msa.md)、[MoBA](../sources/moba.md)、[InfLLM-V2](../sources/infllm-v2.md)、[IndexCache](../sources/indexcache.md)、[YOIO](../sources/yoio.md)、[YOCO](../sources/yoco.md)、[KVpop](../sources/kvpop.md)、[Qwen3.8-Next](../sources/qwen3.8-next.md)、[Qwen3.8-Omni](../sources/qwen3.8-omni.md)
 
 ## 证据边界与阅读提示
 

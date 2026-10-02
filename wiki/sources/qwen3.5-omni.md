@@ -1,7 +1,7 @@
 ---
 type: Source
 title: "Qwen3.5-Omni 技术报告"
-description: "Qwen 全模态家族最新代，Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。"
+description: "Qwen3.5 代的全模态报告：Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。下一代全模态见 Qwen3.8-Omni。"
 tags: ["source", "qwen3-5-omni"]
 timestamp: 2026-06-21
 resource: "../../raw/Team%20-%202026%20-%20Qwen3.5-omni%20technical%20report.pdf"
@@ -17,7 +17,7 @@ resource: "../../raw/Team%20-%202026%20-%20Qwen3.5-omni%20technical%20report.pdf
 
 ## 核心结论
 
-Qwen3.5-Omni 是 Qwen-Omni 全模态家族的最新一代，规模扩到数千亿参数、支持 **256k 上下文**，靠 1 亿+ 小时音视频 + 异构图文对训练，具备强全模态能力（Qwen3.5-Omni-Plus 在 215 个音频/音视频子任务上 SOTA，关键音频任务超过 Gemini-3.1 Pro）。
+Qwen3.5-Omni 是 Qwen-Omni 在 Qwen3.5 hybrid 基座上的那一代全模态模型，规模扩到数千亿参数、支持 **256k 上下文**，靠 1 亿+ 小时音视频 + 异构图文对训练。Qwen3.5-Omni-Plus 在 215 个音频/音视频子任务上的 SOTA 声称，以及关键音频任务超过 Gemini-3.1 Pro，都属于本报告当时的对照。下一代全模态 agent 是 [Qwen3.8-Omni-Flash](qwen3.8-omni.md)，骨干换成 Qwen3.8-Next，不再把本篇当作家族最新报告。
 
 架构上，Thinker 和 Talker 都构建在 **Qwen3.5 引入的 Hybrid Attention MoE** 框架上，其中包含 **Gated DeltaNet（GDN）模块**——报告明说它对长音视频序列建模特别有效，显著降低长上下文推理的 KV-cache I/O 开销、提升吞吐与并发。
 
@@ -53,3 +53,4 @@ Serving 上，Qwen3.5-Omni 这类「Thinker / Talker / codec decoder」全模态
 - 前作 / 横向：[Qwen3 技术报告](qwen3.md)（标准 GQA 基座前作）、[Qwen3-VL 技术报告](qwen3-vl.md)（另一条多模态扩展，走 Qwen3 标准 GQA backbone 而非 hybrid）
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)、[注意力门控](../concepts/attention-gating.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)、[Any-to-any 多模态 serving](../concepts/any-to-any-multimodal-serving.md)
 - 同家族来源：[Qwen3-Coder-Next](qwen3-coder-next.md)、[Gated Attention](gated-attention.md)、[Gated DeltaNet](gated-delta-net.md)
+- 下一代：[Qwen3.8-Omni](qwen3.8-omni.md)（Thinker 改接 Qwen3.8-Next，并增加空间音频与 agent harness）
