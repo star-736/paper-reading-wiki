@@ -122,6 +122,7 @@ Reward correction 改用自训的 4B RL teacher，student 是 1.7B（Figure 6）
 - **[OPSD](opsd.md)**：另一条 on-policy 自蒸馏。主实验是 full-vocab forward KL；本文是外部 teacher 的 sampled-token reverse KL。
 - **[Revisiting OPD](revisiting-opd.md)**：相关工作把本文算作更灵活的 reward 配方。它自己改的是支撑集，不是 \(\lambda\)。
 - **[Lightning OPD](lightning-opd.md)**：Table 1 引用本文多 teacher 的 AIME24 61.0 和 LCB 29.0。学生、teacher 和数据都不同，不是同一协议下的对照。
+- **[Uni-OPD](uni-opd.md)**：在自己的 Qwen3-4B 多教师表里复现了 ExOPD 基线，数学 47.7、代码 62.0，Uni-OPD 是 48.5、63.6。超参写明对齐 G-OPD 仓库。这不是本文主表，也不能用来改 \(\lambda=1.25\) 的结论。他们不放大 \(\lambda\)，改的是数据均衡和轨迹回报间隔。
 - **[DPO](dpo.md)**：公式 10 的隐式 reward 形式来自 Rafailov et al.。差别是本文的 \(\pi^\star\) 不必是从 \(\pi_{\mathrm{ref}}\) 解出来的 RL 最优策略。
 
 ## 待追问
@@ -141,6 +142,7 @@ Reward correction 改用自训的 4B RL teacher，student 是 1.7B（Figure 6）
 - [OPSD](opsd.md)
 - [Revisiting OPD](revisiting-opd.md)
 - [Lightning OPD](lightning-opd.md)
+- [Uni-OPD](uni-opd.md)
 - [MiniLLM](minillm.md)
 - [nrehiew 博客](nrehiew-sft-rl-opd.md)
 - [MiMo-V2-Flash 技术报告](mimo-v2-flash.md)

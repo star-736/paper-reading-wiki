@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | Uni-OPD
+
+浙大 + 深圳 Loop + 腾讯（arXiv:2605.03677v2，2026-07-06，38 页）。新增 `raw/2605.03677v2.pdf`、`sources/uni-opd.md`，提取 Figure 1/2/3/5。不建模型页。Headline：学生侧上采样中间难度并把对错比拉回 1:1；教师侧用 0/1 结果校准轨迹级 reverse-KL 回报。主实验是 Mean 模式的 margin shift，文本域 Spread、\(\delta=0.4\)，多模态 Lift、\(\delta=0\)。正文公式写的是 MinMax 和 Lift。Qwen3-4B 多教师数学 47.0→48.5、代码 60.2→63.6，高于自训 4B RL teacher。强到弱的 30B 数学 58.3，4B 只到 42.9。主表的 pass@1 是 32 条或 4 条的平均准确率。回写 OPD 比较页、MOPD 概念页、ExOPD、OPD 综述、Miles、f-OPD、Thinking Machines。
+
 ## [2026-10-03] ingest | f-OPD
 
 港理工（arXiv:2605.17862v1，2026-05-18，21 页）。新增 `raw/2605.17862v1.pdf`、`sources/f-opd.md`，提取 Figure 1/2/3/4。不建模型页。Headline：异步目标差拆成 rollout drift 与 supervision drift。新鲜度是 \((\tau+1)^{-1}\exp(-(\alpha\sqrt{D^{\mathrm{roll}}}+\beta\sqrt{D^{\mathrm{sup}}}))\)，ReLU 门控后再加 \(\lambda\) 倍 rollout KL，缓冲均值或对齐率过低就刷新。Coding 的 250 题子集上同步 resolve 41.8、异步 26.8、f-OPD 39.4；吞吐 \(1.00\times/1.61\times/1.46\times\)。固定刷新的 \(1.15\times\) 是摊销模型。异步 post-patch 回归 12.1 与 7.4 冲突。蒸馏损失 \(\ell\) 没有写成 KL 方向。回写 OPD 比较页、MOPD 概念页、异步 Agent RL、Miles、OPD 综述、Prune-OPD 与 Thinking Machines。

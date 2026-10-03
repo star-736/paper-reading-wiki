@@ -149,6 +149,7 @@
 - [OPD 综述](sources/opd-survey.md) - 腾讯（arXiv:2604.00626v4，89 页，Ongoing Work）：OPD 是学生轨迹上的 f-divergence 最小化，按目标、信号来源、训练动态三条轴归类。DAgger 的 O(εT) 在 teacher 被学生前缀带偏时不自动成立。缩放式被标成未验证猜想。v4 早于 Lightning OPD 2.0。
 - [Prune-OPD](sources/prune-opd.md) - HKUST(GZ) 等（arXiv:2605.07804v3）：top-k 重叠比低于阈值就累计衰减后续 OPD reward，并按可靠长度改下一步的最大回复长度。低兼容四组 overlap 的时间降幅是 40.6% / 68.0% / 37.6% / 52.6%；Skywork 高兼容对只降 2.9%。正文的 35.7% 与表不符。
 - [f-OPD](sources/f-opd.md) - 港理工（arXiv:2605.17862v1）：异步 OPD 的目标差拆成 rollout drift 与 teacher 上下文的 supervision drift，用样本新鲜度做 ReLU 加权、rollout 锚定和缓冲刷新。Coding 子集上同步 resolve 41.8、异步 26.8、f-OPD 39.4，吞吐 1.46×。异步的 post-patch 回归两表是 12.1 和 7.4。
+- [Uni-OPD](sources/uni-opd.md) - 浙大 + 深圳 Loop + 腾讯（arXiv:2605.03677v2）：学生侧均衡难度和对错比，教师侧用结果奖励把轨迹回报的顺序拉开。Qwen3-4B 多教师数学 47.0→48.5、代码 60.2→63.6。主实验是 Mean 模式的 margin shift，和正文的 MinMax 公式不是同一默认。
 - [AKL：Rethinking KL Divergence in LLM KD](sources/akl.md) - 港大 + 清华 + 腾讯（COLING 2025）：离散词表上 FKL/RKL 同驻点 \(q=p\)，有限 epoch 差在 head vs tail；Adaptive KL 按缺口加权。把 GKD/MiniLLM 连续 toy 的 mode-seeking 刻画降级。
 
 ## 模型

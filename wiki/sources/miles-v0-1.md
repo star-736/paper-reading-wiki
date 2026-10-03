@@ -163,7 +163,7 @@ adapter 成为循环的工作单元：trainer 更新它、权重路径同步它�
 
 - student 自己生成，teacher 给**同一批 token** 逐位置打分；per-token 信号 $\log\pi_{\text{student}}(x_t)-\log\pi_{\text{teacher}}(x_t)$ 是该位置 reverse KL 的单样本估计。Miles **把它折进 advantage 而不是 loss**：advantage estimator 算完之后，从每个 token 的 advantage 里减去按系数缩放的 divergence 估计，然后 policy-gradient 更新照旧。所以蒸馏是与 GRPO / PPO 等**并列可组合**，而不是替换它们；任务 reward 可以保留，也可以设 0 只做蒸馏。两个 log-prob 都是固定输入（rollout 时记录，或由单独的 teacher pass 产生），因此惩罚表现为 dense per-token reward，而不是额外 loss 项。
 - **top-K 变体**（跟随 Li et al.）站在这条一样本估计与全词表 divergence 之间：teacher 对每个位置的候选集打分（student 的 top-K，或两边 top-K 的交集），估计变成该集合上的加权和。**只在 served teacher 下可用。**
-- teacher 放哪决定何时拿到 log-prob：**served teacher**（外部 SGLang 服务器在 rollout 期间给每条完成的轨迹打分，log-prob 随轨迹进 trainer；teacher 可以架构不同、也可以大到装不下，但**必须共享 student 的 tokenizer**，因为打分是在 student 的 token IDs 上做的）；**in-process teacher**（Megatron 在 student 旁边加载第二个同架构模型，训练 step 里做一次专门前向）。可以注册多个 served teacher，按 prompt metadata 里的 tag 路由——例如数学专家给数学 prompt 打分、代码专家给代码 prompt 打分。
+- teacher 放哪决定何时拿到 log-prob：**served teacher**（外部 SGLang 服务器在 rollout 期间给每条完成的轨迹打分，log-prob 随轨迹进 trainer；teacher 可以架构不同、也可以大到装不下，但**必须共享 student 的 tokenizer**，因为打分是在 student 的 token IDs 上做的）；**in-process teacher**（Megatron 在 student 旁边加载第二个同架构模型，训练 step 里做一次专门前向）。可以注册多个 served teacher，按 prompt metadata 里的 tag 路由——例如数学专家给数学 prompt 打分、代码专家给代码 prompt 打分。[Uni-OPD](uni-opd.md) 用的就是这条：教师做成独立 SGLang 服务，按任务路由，学生在 Megatron 里训。他们的均分不是这份系统报告的实验。
 - **文档里的 Qwen3.5-35B-A3B 运行**：teacher 是同一模型加五步可验证 reward 的 RL，student 从 base checkpoint 起，任务 reward 设为 0，reverse-KL 惩罚提供全部训练信号。五步内 held-out DAPO prompt 上的 response 长度从 14,070 降到 6,132 token，accuracy 从 84.0% 到 85.2%。**作者自己把结论限定为 response 长度降 56%、accuracy 无可信变化**——1.2 个点落在该评测约 1.6 点的标准误内，不是 benchmark 提升。
 
 ### True-on-policy alignment（§5.3）
@@ -244,7 +244,7 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 
 - 概念：[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)、[多 token 预测](../concepts/multi-token-prediction.md)
 - 比较：[OPD 跨报告对比](../comparisons/on-policy-distillation.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻来源：[R3](r3.md)（`--use-rollout-routing-replay` 的算法定义）、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）
+- 相邻来源：[R3](r3.md)（`--use-rollout-routing-replay` 的算法定义）、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）、[Uni-OPD](uni-opd.md)（在 Miles 上做按域路由的 OPD）
 - 模型：[GLM-5](../models/glm-5.md)（案例研究对象）、[Kimi K2.5](../models/kimi-k2.5.md) 与 [Qwen3.5](../models/qwen3.5.md)（LoRA recipe 覆盖）
 
 关联提问页：[RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md#相关追问)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md#相关追问)。

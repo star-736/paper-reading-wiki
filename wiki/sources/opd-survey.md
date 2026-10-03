@@ -78,6 +78,7 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 - **[MOPD 概念页](../concepts/multi-teacher-on-policy-distillation.md)**：七层论证讲的是逼近一个固定 teacher。综述的 ExOPD 小节和失败目录是旁边的两支：外推可以越过 teacher，前缀失准可以让 teacher 信号本身坏掉。
 - **[GKD](generalized-knowledge-distillation.md)**：综述的 \(\lambda\) 是数据混合，和 ExOPD 的 reward scale 不是同一个符号。综述自己在 ExOPD 小节改用了 \(\alpha\)。
 - **[f-OPD](f-opd.md)**：v4 放在训练动态轴（Figure 1 的 6.2，方法表写成 Freshness-aware control / Trajectory / Async-OPD lag bounding）。正文一段把它收成用 freshness budget 限制 rollout 与更新之间的 lag。原文还有 rollout / supervision 两项 KL、ReLU 样本权重和 rollout 锚定。Coding 数字以原文 Table 1–2 为准。
+- **[Uni-OPD](uni-opd.md)**：同一张动态表写成 Dual-perspective data balancing。综述后文用「不会做」和「做错但看不出来」转述难度。原文是 8 次通过数的上采样、1:1 对错比，以及 \(G_{\mathrm{OPD}}\) 与 0/1 结果的 margin shift。均分以原文 Table 1–3 为准。
 - **v4 没收的后续**：Lightning OPD 2.0、以及 2026 年 6 月 18 日之后的预印本。清单仓库可能比 PDF 更新，不能用网页补进「综述已核实」。
 
 ## 待追问
@@ -101,4 +102,5 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 - [Lightning OPD](lightning-opd.md)
 - [Lightning OPD 2.0](lightning-opd-2.md)
 - [f-OPD](f-opd.md)
+- [Uni-OPD](uni-opd.md)
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)

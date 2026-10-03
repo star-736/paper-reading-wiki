@@ -206,6 +206,10 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 [f-OPD](../sources/f-opd.md)（Chen et al.，arXiv:2605.17862v1）不换 teacher 个数。它把异步执行写成同步目标与缓冲目标之差：rollout drift 是旧学生前缀，supervision drift 是冻结 teacher 在过期上下文上的分布。样本新鲜度是年龄倒数乘上这两项 KL 平方根的指数衰减；低于阈值的样本被 ReLU 去掉，留下的样本还加一项 rollout KL，缓冲太旧就整批重采。Coding 的 250 题子集上，同步 resolve 41.8、裸异步 26.8、f-OPD 39.4，相对吞吐 \(1.46\times\)。蒸馏损失本身没有写成 reverse KL。
 
+### 顺序一致：Uni-OPD
+
+[Uni-OPD](../sources/uni-opd.md)（Hou et al.，arXiv:2605.03677v2）仍是按域路由的 sampled-token reverse KL，不把多个教师的 logits 加在一起。它先改数据：离线按 8 次通过数上采样中间难度，在线把一批 rollout 的对错比拉回 1:1。再改回报：轨迹级 \(G_{\mathrm{OPD}}\) 若和 0/1 结果反序，就做 margin shift。主实验用组内均值间隔，文本域 Spread、\(\delta=0.4\)，多模态 Lift、\(\delta=0\)。正文公式写的是最坏间隔和只抬正确轨迹。Qwen3-4B 多教师上数学 47.0→48.5、代码 60.2→63.6，高于作者自训的 4B 域 RL teacher。同一配方对 Qwen3-30B-A3B 的数学只把 4B 学生从 41.2 送到 42.9，teacher 是 58.3。
+
 ### Student 为什么能超越 Teacher
 
 [GKD（Agarwal et al., ICLR 2024）](../sources/generalized-knowledge-distillation.md) 已在 GSM8K 上报告此现象（来源页 `§A.1` 的自蒸馏实验：FLAN T5-Large teacher 20.5%，自蒸馏后 student 反超 teacher）。nrehiew 给出两个假设：

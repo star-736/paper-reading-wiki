@@ -130,6 +130,7 @@ Table 2 在裸异步上逐件加上机制。工具是 Avg@4，coding 是 resolve
 - **[异步 Agent RL](../concepts/asynchronous-agent-rl.md)** 和 **[Miles](miles-v0-1.md)** 处理的是 RL 缓冲变旧：版本差、丢组、TITO。这篇把同类过期放到 OPD 目标里，多了一项冻结 teacher 的上下文漂移，并且用连续新鲜度加权，而不是只按版本丢样本。
 - **[Prune-OPD](prune-opd.md)** 也在长轨迹上减不可靠监督，信号是学生和 teacher 的 top-k 重叠，动作是衰减后续 reward 并缩短下一步。这里的信号是策略年龄加两个 KL，动作是样本权重、锚定 KL 和整缓冲刷新。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)** 被引成学生–teacher 协议的来源。博客正文的 reverse KL 没有写进这篇的 \(\ell\)。
+- **[Uni-OPD](uni-opd.md)** 修的是当前 rollout 上轨迹回报和 0/1 结果反序，不处理异步缓冲的新鲜度。
 - **[OPD 综述](opd-survey.md)** v4 把它放在训练动态轴，表里写成 Freshness-aware control、轨迹级、Async-OPD lag bounding。综述那一段收成「用 freshness budget 限制 rollout 策略和更新策略的 lag」。原文还有两项 KL、ReLU 权重和 rollout 锚定。数字以这篇 Table 1–2 为准。
 
 ## 待追问
@@ -150,4 +151,5 @@ Table 2 在裸异步上逐件加上机制。工具是 Avg@4，coding 是 resolve
 - [Miles v0.1](miles-v0-1.md)
 - [Prune-OPD](prune-opd.md)
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
+- [Uni-OPD](uni-opd.md)
 - [OPD 综述](opd-survey.md)
