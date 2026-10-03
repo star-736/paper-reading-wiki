@@ -47,6 +47,7 @@ timestamp: 2026-06-23
 | **[Lightning OPD](../sources/lightning-opd.md)**（方法，非模型） | 去掉在线 teacher server：log-prob 预计算在 SFT 参考策略的 rollout 上 | 单 teacher，且必须与生成 SFT 轨迹的是同一个模型。4B←8B，8B←32B，30B-A3B←同族 Thinking | 采样 token 的 reverse-KL advantage，轨迹分布冻在 \(\pi_{\mathrm{ref}}\)。不是 full-vocab，也不是 Top-K | SFT 3000 step → 离线 OPD 150 step。代码域从数学 OPD checkpoint 接着训 |
 | **[Lightning OPD 2.0](../sources/lightning-opd-2.md)**（方法，非模型） | 跨 teacher：减掉分歧里跨 rollout 可预测的一项，再做离线更新 | OPD teacher 固定为 30B-A3B-Thinking。SFT 参考是 Qwen3-8B 生成的 4B，或 DeepSeek-R1-0528 演示训出的 Klear-8B | 仍是采样 token advantage。只改 \(d_{it}=\ell_T-\ell_R\)，不改参考锚定项 | 同一份冻结 replay，150 step，5 折。评测数学 64 条、代码 8 条，与 1.0 不同 |
 | **[Prune-OPD](../sources/prune-opd.md)**（方法，非模型） | 长轨迹上按局部兼容性分配 OPD 预算，不改 teacher reward 的算法 | 单 teacher。五对数学：1.5B←JustRL-1.5B、1.5B←R1-Distill-7B、Qwen3-1.7B/4B-Base←Qwen3-4B Non-thinking、R1-Distill-7B←Skywork-OR1-7B | 仍是学生 top-k 上的 reverse KL。重叠比低于 γ 就累计，线性衰减后续 reward，再按可靠长度改下一步最大长度。主实验 \(k=16\)、\(\gamma=0.7\) | DAPO-Math-17K，203 step。低兼容四组时间降 40.6% / 68.0% / 37.6% / 52.6%；高兼容只降 2.9% |
+| **[f-OPD](../sources/f-opd.md)**（方法，非模型） | 异步流水线里按样本新鲜度压过期梯度，并在缓冲太旧时重采 | 冻结的外部 teacher。推理是 Qwen2.5-Math-72B→7B；工具和 coding 是 Qwen3-Coder-30B-A3B→Qwen3-8B | 诊断是 KL(当前对过期)。蒸馏损失 \(\ell\) 没有写成 reverse KL 或 forward KL。ReLU(\(f_i-\xi\)) 加权，再加 \(\lambda\) 倍 rollout KL | 400 step、五种子。Coding 为 SWE-bench Verified 的 250 题子集：同步 resolve 41.8，异步 26.8，f-OPD 39.4，吞吐 \(1.46\times\) |
 
 > 已收录但**未**用 OPD 的：DeepSeek-V2、DeepSeek-V3.2、Qwen3-Coder-Next、MiniMax-M2、MSA、IndexCache、Kimi-K2.5、Kimi-Linear、Ling-2.6。
 
@@ -54,7 +55,7 @@ timestamp: 2026-06-23
 
 原文确证（[DeepSeek-V4.1-Flash](../sources/deepseek-v41-flash.md) §5.1、§5.2.4）：沿用 SFT→RL→OPD，最终阶段在全领域数据上做 full-vocabulary OPD，使用**超过 40 个 teacher**；teacher 可来自不同训练阶段，也可与 student 架构不同。异步执行中允许调整数据混合、每数据集并发和 active teachers，并处理不同配置样本同时在途的过渡。
 
-作者明确不主张新的后训练算法，将主要进展归于任务、环境及数据规模与质量；没有给 40+ teacher 数量消融或完整 OPD 前后表。**本页综合**：这仍是多专家融合，但“横向领域专家”与“纵向阶段快照”的边界不再互斥，系统须同时支持两种来源，不能仅按 teacher 数量判断能力召回或融合。
+作者明确不主张新的后训练算法，将主要进展归于任务、环境及数据规模与质量；没有给 40+ teacher 数量消融或完整 OPD 前后表。**本页综合**：这仍是多专家融合，但“横向领域专家”与“纵向阶段快照”的边界不再互斥，系统须同时支持两种来源，不能仅按 teacher 数量判断能力召回或融合。[f-OPD](../sources/f-opd.md) 处理的是另一件异步：缓冲样本相对当前学生和当前 teacher 上下文的目标差，不是这 40 个 teacher 的在途混合。
 
 ## 三轴对比
 
@@ -181,6 +182,7 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Lightning OPD 2.0](../sources/lightning-opd-2.md)：跨 teacher 时减掉可预测分歧。不取消 1.0 的偏差上界。
 - [OPD 综述](../sources/opd-survey.md)：方法论文的三条设计轴。v4 早于 2.0。本页数字不以综述转述替换。
 - [Prune-OPD](../sources/prune-opd.md)：用 top-k 重叠比分配长轨迹预算。低兼容省时间，高兼容几乎不缩短。KAT 的连续 \(m\) 掩码是另一套实现。
+- [f-OPD](../sources/f-opd.md)：异步样本的新鲜度。Coding 子集上 resolve 39.4、吞吐 \(1.46\times\)。异步 post-patch 回归两表不一致。
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。

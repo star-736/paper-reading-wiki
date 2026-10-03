@@ -149,3 +149,4 @@ training_client.forward_backward(trajectories, loss_fn="importance_sampling")
 - [DPO](dpo.md)：同样常被说成「不用 RL」，但是离线 Bradley-Terry 分类，不是本博客的 on-policy reverse-KL。
 - [GLM-5 技术报告](glm-5.md) / [MiMo-V2-Flash 技术报告](mimo-v2-flash.md) / [Qwen3 技术报告](qwen3.md) / [Qwen3-VL 技术报告](qwen3-vl.md) / [DeepSeek-V4 技术报告](deepseek-v4.md) / [Nemotron 3 Ultra 技术报告](nemotron-3-ultra.md)：直接引用或应用本博客算法的技术报告。Ultra 的 `§3.3` 把本博客与 Cascade / Xiao et al. 并列引用。
 - [OPSD](opsd.md)：把本博客的 sampled-token reverse KL 当对照支路；主实验选的是 GKD 式 full-vocab forward KL，数学设定上更强。
+- [f-OPD](f-opd.md)：把本博客引成学生 rollout、teacher 打分的协议来源。它的蒸馏损失没有写成 reverse KL。

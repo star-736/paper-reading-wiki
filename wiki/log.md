@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] ingest | f-OPD
+
+港理工（arXiv:2605.17862v1，2026-05-18，21 页）。新增 `raw/2605.17862v1.pdf`、`sources/f-opd.md`，提取 Figure 1/2/3/4。不建模型页。Headline：异步目标差拆成 rollout drift 与 supervision drift。新鲜度是 \((\tau+1)^{-1}\exp(-(\alpha\sqrt{D^{\mathrm{roll}}}+\beta\sqrt{D^{\mathrm{sup}}}))\)，ReLU 门控后再加 \(\lambda\) 倍 rollout KL，缓冲均值或对齐率过低就刷新。Coding 的 250 题子集上同步 resolve 41.8、异步 26.8、f-OPD 39.4；吞吐 \(1.00\times/1.61\times/1.46\times\)。固定刷新的 \(1.15\times\) 是摊销模型。异步 post-patch 回归 12.1 与 7.4 冲突。蒸馏损失 \(\ell\) 没有写成 KL 方向。回写 OPD 比较页、MOPD 概念页、异步 Agent RL、Miles、OPD 综述、Prune-OPD 与 Thinking Machines。
+
 ## [2026-10-03] deepen | OPSD：On-Policy Self-Distillation
 
 Self-Distilled Reasoner（Zhao et al.）已有 arXiv v3 来源页。补 ICML 2026 会议版 `raw/icml2026-pmlr-v306-zhao26be.pdf`（PMLR 306:162433–162448，16 页）。Table 1–4 与 v3 一致。会议版附录新增训练和评测都关 thinking 的 Avg@12：8B 平均 +15.4，4B +4.4，1.7B +0.3；8B 从 step 50 回落到 step 100。表注写按 benchmark 取最佳 checkpoint，单元格是每个模型一个步数。v2 摘要的 8–12× 在 v3 和会议版摘要里已删除。v3 的 Table 5–8 在会议版改为 Table 7–10。回写 MOPD 概念页与 OPD 比较页。

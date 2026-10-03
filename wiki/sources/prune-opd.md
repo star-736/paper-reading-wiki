@@ -132,3 +132,4 @@ Figure 2 的图注写「4 个 DeepSeek 学生对」，图内四行实际是 Tabl
 - [ExOPD](exopd.md)
 - [Keye-VL-2.0](keye-vl-2.md)：top-k overlap 用来决定采样 token 的 advantage 算不算
 - [Mach-Mind-4-Flash](mach-mind-4-flash.md)：固定 8K 的 Early Stopping Rollout，引的是另一篇
+- [f-OPD](f-opd.md)：另一套长轨迹控制。信号是样本年龄加两个 KL，动作是权重、锚定和整缓冲刷新

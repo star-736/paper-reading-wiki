@@ -169,7 +169,7 @@ adapter 成为循环的工作单元：trainer 更新它、权重路径同步它�
 ### True-on-policy alignment（§5.3）
 
 - 目标是把两边概率的数值差压到**恰好为 0**：两边跑同一个 attention kernel（FlashAttention-3，其 prefill 与 decode 路径 bitwise 一致）；两边都用**batch invariance** 的 matmul kernel（输出不随「多少请求共享一个 batch」变化），因为 rollout 的 batch 无法与 trainer 对齐；Megatron 侧把 Transformer Engine 的 fused 实现换成 Megatron 本地实现、关掉 fused rotary-embedding 与 bias-SwiGLU kernel、按 per-model kernel contract 钉住其余算子；FSDP 侧选匹配的 attention 实现；SGLang 跑 deterministic-inference mode，trainer 侧 cuBLAS / Transformer Engine / NCCL 都配成确定性执行；用 TP 时把 row-parallel linear 及其后的 all-reduce 做成与并行度无关；最后 rollout engine **用一次 prefill pass 重新给完成的序列打分**，而不是报 decode kernel 产出的 log-prob，让两边用同形状的计算。在受支持配置下两边对每个采样 token 给出完全相同的 log-probability，Miles 报告的绝对差恰为 0。
-- 代价是吞吐（确定性与 batch-invariant kernel 放弃了一些默认优化）。保证有两条边界：覆盖范围只有 dense Qwen3 0.6B 与 4B（Megatron 或 FSDP，配 data / tensor / pipeline / context 并行），线外模型 Miles 拒绝启动而不是给部分保证；保证只覆盖**一个指标**（每个采样 token 的 log-probability），不主张两边在输出分布上处处一致，也不处理另一个 off-policy 来源（权重更旧时生成的轨迹），后者由数据缓冲单独限制。
+- 代价是吞吐（确定性与 batch-invariant kernel 放弃了一些默认优化）。保证有两条边界：覆盖范围只有 dense Qwen3 0.6B 与 4B（Megatron 或 FSDP，配 data / tensor / pipeline / context 并行），线外模型 Miles 拒绝启动而不是给部分保证；保证只覆盖**一个指标**（每个采样 token 的 log-probability），不主张两边在输出分布上处处一致，也不处理另一个 off-policy 来源（权重更旧时生成的轨迹），后者由数据缓冲单独限制。[f-OPD](f-opd.md) 讨论的是 OPD 里的同类过期：旧 rollout，再加上 teacher 上下文漂移，用样本新鲜度加权，而不是这套 bitwise log-prob 对齐。
 
 ### Miles-Diffusion（§6）
 

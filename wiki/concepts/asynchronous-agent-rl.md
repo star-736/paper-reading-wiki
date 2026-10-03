@@ -99,10 +99,14 @@ GLM-5.3 进一步把**训练—rollout 数值一致性**显式当作这一系统
 
 它还给了已收录报告里少见的**单次运行诚实标注**：GLM-5.2 744B 的 64 × GB300 参考运行报中位 step 263 s、prefix-cache 命中率 96%、train–inference KL 均值 0.0369、raw reward 9 步移动平均 0.438 → 0.556，但作者明确把 reward 上升写成「观察而非测得的改进」，因为单次运行、单一任务分布分不清它与 run-to-run 波动。
 
+## OPD 上的对应物：f-OPD
+
+上面几节都是 RL 的版本差和丢组。[f-OPD](../sources/f-opd.md) 把同一类过期放进蒸馏目标：旧学生 rollout，加上冻结 teacher 打分时的上下文。控制是样本新鲜度加权、rollout KL 锚定和缓冲刷新，不是 importance ratio 或按版本丢组。它的 coding 数字在 250 题子集上，不要和 Miles 的 GLM-5.2 吞吐案例放在一张表里比。
+
 ## 相关页面
 
 - 算法：[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - 系统层：[训练—rollout 一致性](train-rollout-consistency.md)、[RL 权重同步与部署拓扑](rl-weight-synchronization.md)
-- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[Miles v0.1](../sources/miles-v0-1.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)、[Ring-1T](../sources/ring-1t.md)（C3PO++ / IcePop）、[Ling-2.6](../sources/ling-2.6.md)
+- 来源：[SAO 论文](../sources/single-rollout-asynchronous-optimization.md)、[Miles v0.1](../sources/miles-v0-1.md)、[GLM-5 技术报告](../sources/glm-5.md)、[GLM-5.3 官方发布博客](../sources/glm-5-3-blog.md)、[Ring-1T](../sources/ring-1t.md)（C3PO++ / IcePop）、[Ling-2.6](../sources/ling-2.6.md)、[f-OPD](../sources/f-opd.md)（异步 OPD 的新鲜度，不是 RL 丢组）
 - [Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)

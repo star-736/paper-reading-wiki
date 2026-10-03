@@ -202,6 +202,10 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 [Many Faces](../sources/many-faces-opd.md) 在另一套估计器上把 OPSD 拆开：reverse KL 的最优学生是各 PI 条件下 teacher 的归一化几何平均。PI 若是每题一份答案，共识比 PI-teacher 弱，他们的数学实验没稳住；PI 若是共享的系统提示或对齐偏好，共识可以变成测试时用得上的行为。这不推翻 Zhao 等人的 forward KL 数学结果。同文还量到学生前缀会伤 teacher：Qwen3-14B 在 GPQA-Diamond 上从 62.12% 掉到 45.96%。
 
+### 异步缓冲：f-OPD
+
+[f-OPD](../sources/f-opd.md)（Chen et al.，arXiv:2605.17862v1）不换 teacher 个数。它把异步执行写成同步目标与缓冲目标之差：rollout drift 是旧学生前缀，supervision drift 是冻结 teacher 在过期上下文上的分布。样本新鲜度是年龄倒数乘上这两项 KL 平方根的指数衰减；低于阈值的样本被 ReLU 去掉，留下的样本还加一项 rollout KL，缓冲太旧就整批重采。Coding 的 250 题子集上，同步 resolve 41.8、裸异步 26.8、f-OPD 39.4，相对吞吐 \(1.46\times\)。蒸馏损失本身没有写成 reverse KL。
+
 ### Student 为什么能超越 Teacher
 
 [GKD（Agarwal et al., ICLR 2024）](../sources/generalized-knowledge-distillation.md) 已在 GSM8K 上报告此现象（来源页 `§A.1` 的自蒸馏实验：FLAN T5-Large teacher 20.5%，自蒸馏后 student 反超 teacher）。nrehiew 给出两个假设：
