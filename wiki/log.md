@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-03] deepen | OPSD：On-Policy Self-Distillation
+
+Self-Distilled Reasoner（Zhao et al.）已有 arXiv v3 来源页。补 ICML 2026 会议版 `raw/icml2026-pmlr-v306-zhao26be.pdf`（PMLR 306:162433–162448，16 页）。Table 1–4 与 v3 一致。会议版附录新增训练和评测都关 thinking 的 Avg@12：8B 平均 +15.4，4B +4.4，1.7B +0.3；8B 从 step 50 回落到 step 100。表注写按 benchmark 取最佳 checkpoint，单元格是每个模型一个步数。v2 摘要的 8–12× 在 v3 和会议版摘要里已删除。v3 的 Table 5–8 在会议版改为 Table 7–10。回写 MOPD 概念页与 OPD 比较页。
+
 ## [2026-10-03] ingest | Prune-OPD
 
 HKUST(GZ) 等（arXiv:2605.07804v3，2026-06-01，17 页）。新增 `raw/2605.07804v3.pdf`、`sources/prune-opd.md`，提取 Figure 1/3/5/6/8。不建模型页。Headline：top-k 重叠比低于 γ 就累计，线性衰减后续 reward，并按可靠长度改下一步最大长度。Table 1 四组 overlap 的时间降幅是 40.6% / 68.0% / 37.6% / 52.6%。Skywork 高兼容对只降 2.9%，固定 4K 截断会伤 AIME25。正文 35.7% 与表不符；初值 2048 与附录 1024/6144 不符。无坏事件时损失权重是 1.5。回写 OPD 比较页、MOPD 概念页、KAT-Coder-V2.5、Revisiting、Many Faces。`raw/` 新增该 PDF。

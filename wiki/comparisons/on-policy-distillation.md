@@ -97,7 +97,7 @@ Qwen3 / Qwen3-VL 的 logit-level KL 介于两者之间：**单 teacher + 单 stu
 
 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 走 token-level sampled-token 这一派，但给了一条反向证据：初步实验里 top-k / full-vocab logit matching 在 Terminal Bench 上**不如** sampled-token（`§3.3.5`）。作者假设 student 前缀对 teacher 支撑不足时，匹配整张分布会放大校准很差的 logits。这不能推翻 V4 的工程选择——两边都没有在同一模型上交叉复现——但说明「full-vocab 必然更稳」不是已核实的跨家事实。
 
-[OPSD](../sources/opsd.md) 站在 GKD 那一端：竞赛数学 + LoRA 小模型上 **full-vocab forward KL 优于 sampled-token reverse-KL shaping**（Table 4），而且 reverse KL 本身几乎没涨（Table 3）。和 Ultra 的反转叠在一起，估计器选择至少随任务域变，不能写成单一配方。
+[OPSD](../sources/opsd.md) 站在 GKD 那一端：竞赛数学 + LoRA 小模型上 **full-vocab forward KL 优于 sampled-token reverse-KL shaping**（Table 4），而且 reverse KL 本身几乎没涨（Table 3）。和 Ultra 的反转叠在一起，估计器选择至少随任务域变，不能写成单一配方。ICML 2026 会议版在主表之外加了训练和评测都关 thinking 的附录：8B 的三榜平均增益是 +15.4，大于 4B 和 1.7B，并且 8B 在 step 50 之后回落。这组数字不能和主表（评测开 thinking）相减。
 
 方向本身也不是定理。[AKL](../sources/akl.md) 证明逐步 softmax 上 FKL 与 RKL 同驻点 \(q=p\)，有限步里差在 head vs tail；GKD / MiniLLM 那张 mode-seeking 图是连续单峰 \(q\) 的 toy。生产 reverse-KL advantage 仍是另一条估计器，AKL 没覆盖。
 

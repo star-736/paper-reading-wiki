@@ -1,9 +1,9 @@
 ---
 type: Source
 title: "OPSD：On-Policy Self-Distillation"
-description: "UCLA + HKU + Meta 的方法论文（arXiv:2601.18734v3）：同一 LLM 当 teacher/student，teacher 看 privileged 参考解答、student 只看题目；在 student 自己的 rollout 上做 full-vocab 蒸馏。默认是 teacher-first forward KL，不是 2026 生产 OPD 的 reverse KL；style token 的 KL 远高于 math token，要用词表级 pointwise clipping。"
+description: "UCLA + HKU + Meta 的方法论文（arXiv:2601.18734v3；ICML 2026，PMLR 306）：同一 LLM 当 teacher/student，teacher 看 privileged 参考解答、student 只看题目；在 student 自己的 rollout 上做 full-vocab 蒸馏。默认是 teacher-first forward KL，配词表级 pointwise clipping。会议版附录另有一组训练和评测都关闭 thinking 的结果，8B 平均增益最大，且 step 50 之后回落。"
 tags: ["source", "opsd", "on-policy-distillation", "self-distillation"]
-timestamp: 2026-09-12
+timestamp: 2026-10-03
 resource: "../../raw/2601.18734v3.pdf"
 ---
 
@@ -11,11 +11,13 @@ resource: "../../raw/2601.18734v3.pdf"
 
 ## 来源
 
-- 原始 PDF：[`raw/2601.18734v3.pdf`](../../raw/2601.18734v3.pdf)
+- 原始 PDF：[`raw/2601.18734v3.pdf`](../../raw/2601.18734v3.pdf)（本页主表、公式和 Figure 1–4 的定位符）
+- 会议版 PDF：[`raw/icml2026-pmlr-v306-zhao26be.pdf`](../../raw/icml2026-pmlr-v306-zhao26be.pdf)
 - 标题：Self-Distilled Reasoner: On-Policy Self-Distillation for Large Language Models
-- 版本 / 日期：arXiv:2601.18734v3，2026-03-20（v1 2026-01-26）
+- 版本 / 日期：arXiv:2601.18734v3，2026-03-20（v1 2026-01-26，v2 2026-03-05）。发表为 ICML 2026，*Proceedings of the 43rd International Conference on Machine Learning*，PMLR 306:162433–162448，会议 2026-07-06 至 2026-07-11，首尔。会议 PDF 生成于 2026-06-13。OpenReview：<https://openreview.net/forum?id=Jpxfof0EaS>
 - 作者：Siyan Zhao（UCLA，实习于 Meta）、Zhihui Xie（HKU）、Mengchen Liu / Jing Huang / Guan Pang / Feiyu Chen（Meta Superintelligence Labs）、Aditya Grover（UCLA）
 - 代码：<https://github.com/siyan-zhao/OPSD>
+- 版本差：会议版 Table 1–4 与 v3 相同。附录插入全非思考实验后，v3 的 Table 5–8 在会议版改为 Table 7–10。v2 摘要写 “8-12× token efficiency”；v3 与会议版摘要改为 “superior token efficiency”，不再给倍数。效率比较仍以训练预算为准：OPSD 是 1 条 rollout × 1024 token、100 step，GRPO 是 8 条 × 16k、最多 500 step。
 - 模型链接：**未建模型页**——不发布新模型实体；实验是 Qwen3-Instruct 1.7B / 4B / 8B 上的 LoRA 后训练
 
 ## 为什么这篇在 wiki 里独占一席
@@ -81,7 +83,7 @@ Table 4（Qwen3-4B，生成 2048，pass@8）：full-vocab AIME25 84.1 / HMMT25 6
 
 ### Style token 主导信号 → pointwise clipping
 
-Table 5（10 道题平均的位置级 \(D_{\mathrm{KL}}(p_T\parallel p_S)\)）。主配置 TM-off student / TM-on teacher：
+v3 Table 5（会议版 Table 7；10 道题平均的位置级 \(D_{\mathrm{KL}}(p_T\parallel p_S)\)）。主配置 TM-off student / TM-on teacher：
 
 | 模型 | Style | Math | Other |
 | --- | ---: | ---: | ---: |
@@ -107,14 +109,30 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 
 > Figure 3. Token Efficiency of OPSD. … At the same number of training steps, OPSD uses significantly fewer tokens but outperforms GRPO on all benchmarks. … more than half of its batches have zero reward standard deviation within 100 steps, yielding no gradient signal.（`§4.2`）
 
-训练配置（Table 6）：有效 batch 32，LoRA r=64，8×A100/H100，OpenThoughts 数学子集最多 30K 题。评测 Avg@12、temperature 1.0、thinking 开。
+训练配置（v3 Table 6，会议版 Table 8）：有效 batch 32，LoRA r=64，8×A100/H100，OpenThoughts 数学子集最多 30K 题。评测 Avg@12、temperature 1.0、thinking 开。
+
+### 会议版附录：训练和评测都关闭 thinking
+
+会议版附录 B 有 v3 没有的一组实验：student 与 teacher 都关闭 Qwen3 thinking，评测也关闭 thinking，指标仍是 Avg@12。汇总表（会议版 Table 5）每个模型只用一个 checkpoint：1.7B 为 step 50，4B 为 step 100，8B 为 step 50。
+
+| 模型 | AIME24 | AIME25 | HMMT25 | 平均增益 |
+| --- | ---: | ---: | ---: | ---: |
+| Qwen3-1.7B base → OPSD | 11.9 → 15.0（+3.1） | 9.2 → 6.2（−3.0） | 5.0 → 5.8（+0.8） | +0.3 |
+| Qwen3-4B base → OPSD | 23.1 → 31.1（+8.0） | 21.4 → 21.1（−0.3） | 10.8 → 16.4（+5.6） | +4.4 |
+| Qwen3-8B base → OPSD | 26.4 → 49.7（+23.3） | 19.7 → 35.0（+15.3） | 10.8 → 18.3（+7.5） | +15.4 |
+
+逐步结果（会议版 Table 6）里，8B 在 step 50 之后回落：AIME24 49.7 → 45.3 → 38.3，AIME25 35.0 → 26.9 → 27.5，HMMT25 18.3 → 17.5 → 15.3（step 50 / 75 / 100）。结论因此把「更大模型是否更稳」写成开放问题，并写已经观察到后期训练步的不稳定和掉点。
+
+表注写 “the best checkpoint for each model and benchmark”。单元格实际是每个模型一个步数。1.7B 的 step 75 三榜合计 27.2，高于被采用的 step 50 的 27.0。
+
+这组 base 远低于主表：主表评测开 thinking，1.7B 的 AIME24 base 是 51.5。两组增益不能相减。
 
 ## 与现有 wiki 页的关系
 
 - **[GKD](generalized-knowledge-distillation.md)**：full-vocab、λ=1、teacher-first forward KL 的直接实例；OPSD 只是把 teacher 从「更大的外部模型」换成「带 \(y^\star\) 的冻结初始策略」。
 - **[AKL](akl.md)**：100 step 内 forward KL 远强于 reverse KL，落在 AKL「有限步数、FKL 先 head」的区间；不要倒过来说 AKL 预测了 OPSD。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**：sampled-token reverse KL 那条支路在本文是对照，不是默认；Table 4 显示它在这套数学设定上弱于 full-vocab。
-- **[nrehiew 博客](nrehiew-sft-rl-opd.md)**：把 OPSD 引进 wiki 的二手来源。style vs math 的观察与 Table 5 一致；「更接近 RLHF 而非 RLVR」是 nrehiew 的评价，不是本文结论。本文默认 forward KL，与 nrehiew 转述的 reverse-KL 配方不是同一件事。
+- **[nrehiew 博客](nrehiew-sft-rl-opd.md)**：把 OPSD 引进 wiki 的二手来源。style vs math 的观察与 v3 Table 5 一致；「更接近 RLHF 而非 RLVR」是 nrehiew 的评价，不是本文结论。本文默认 forward KL，与 nrehiew 转述的 reverse-KL 配方不是同一件事。
 - **[Nemotron 3 Ultra](nemotron-3-ultra.md)**：生产 MOPD 试过 full-vocab，agentic 上不如 sampled-token。本文在竞赛数学 + LoRA 小模型上方向相反。
 - Context distillation（Snell et al. 2022）、STaR / ReST：相关工作里的 off-policy / 硬标签自训练前身；OPSD 的差异是 on-policy + soft 分布匹配。
 
@@ -122,7 +140,7 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 
 - **需实验或作者披露**：**冻结初始 teacher vs 跟着更新的 teacher**：正文只说冻结更稳，没有量化「当前策略当 teacher」会怎么崩。
 - **需实验或作者披露**：**\(\tau\) 未调**：附录自己写更大模型可能还能再涨。clipping 是机制还是这个 \(\tau\) 碰巧够用？
-- **需实验或作者披露**：**1.7B 大涨、8B 几乎贴着 GRPO**：是小模型更吃 dense 信号，还是 OpenThoughts 对 8B 已经接近饱和？
+- **现有材料待核**：**尺度方向随协议变**。主表评测开 thinking 时，1.7B 均分从 37.1 到 43.4（+6.3），8B 只比 GRPO 多 0.8。会议版训练和评测都关 thinking 时，平均增益反过来是 8B +15.4、4B +4.4、1.7B +0.3，且 8B 在 step 50 后回落。作者没有解释这是容量还是 thinking 协议造成的。
 - **需实验或作者披露**：**竞赛数学以外有没有证据**：无代码、无 agent、无多 teacher。privileged \(y^\star\) 在没有参考解答的任务上怎么构造？
 - **需补外部来源**：concurrent SDPO（环境反馈当 privileged info，arXiv:2601.20802）与 SDFT（持续学习，arXiv:2601.19897）未收原文。
 

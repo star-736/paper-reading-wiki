@@ -196,7 +196,7 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 一手出处：[OPSD](../sources/opsd.md)（Zhao et al.，arXiv:2601.18734v3）。同一套 LLM 权重拆成两种条件分布：student 只看题目，teacher 看题目 + 参考解答 \(y^\star\)；student 采样自己的轨迹，teacher 在同一前缀上给 dense 监督，**不生成 token**。训练时 teacher **冻结为初始策略**（再叠加 LoRA），所以不是「当前自己蒸当前自己」。
 
-需要按原文校准的口径：主实验是 **full-vocab、teacher-first forward KL**（GKD 的 on-policy 标准实例），不是 2026 生产 OPD 的 reverse KL。Table 3 上 reverse KL 在 AIME25 从 36.7 走到 35.0。style token（`wait` / `alright`）的位置级 KL 仍比 math token 高一个数量级（Table 5，1.7B 上 0.85 vs 0.14），对策是对词表项 f-divergence 做 \(\min(\ell_{n,v},\tau)\)；无 clipping 会在 100 step 内把 AIME24 拉崩（Figure 4）。
+需要按原文校准的口径：主实验是 **full-vocab、teacher-first forward KL**（GKD 的 on-policy 标准实例），不是 2026 生产 OPD 的 reverse KL。Table 3 上 reverse KL 在 AIME25 从 36.7 走到 35.0。style token（`wait` / `alright`）的位置级 KL 仍比 math token 高一个数量级（arXiv v3 Table 5，会议版 Table 7；1.7B 上 0.85 vs 0.14），对策是对词表项 f-divergence 做 \(\min(\ell_{n,v},\tau)\)；无 clipping 会在 100 step 内把 AIME24 拉崩（Figure 4）。ICML 2026 会议版附录另有一组学生、教师和评测都关 thinking 的结果：三榜平均增益是 8B +15.4、4B +4.4、1.7B +0.3，8B 在 step 50 后回落。这和主表「评测开 thinking、1.7B 增益最大」是两套协议。
 
 [nrehiew](../sources/nrehiew-sft-rl-opd.md) 把 OPSD 读成「更接近 RLHF 而非 RLVR」——这是博客评价，不是论文结论。token 级质量控制仍和 [KAT-Coder-V2.5](../sources/kat-coder-v2.5.md) drift-aware truncation、[Keye-VL-2.0](../sources/keye-vl-2.md) top-k overlap 同层，但剪的对象不同：OPSD 剪 full-vocab 里的高贡献 style 词，不是长轨迹 drift。
 
