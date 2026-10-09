@@ -98,12 +98,14 @@ OOD：把 TL;DR 上训好的 DPO / PPO 直接评 CNN/DailyMail 新闻摘要（Ta
 - [Ling-2.6](ling-2.6.md) 的 Bidirectional Preference Alignment 把正负向信号放进**显式 reward model**，不是本页的无 RM 闭式路线。
 - [Iterative RPO](iterative-rpo.md)：在本页 Eq. 7 上给 winner 再加一条长度归一化 NLL（TRL `rpo_alpha`）。动机是纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。
 - [KTO](kto.md)：另一条离线 HALO，不改本页 Eq. 7。监督从 pair 换成二元 desirable / undesirable，价值函数从处处凹的 $-\log\sigma$ 换成增益凹 / 损失凸的 logistic，参考点从 dispreferred $y$ 换成 KL。KTO 原文把 DPO 分类为 HALO（Theorem 3.5），最大对照到 30B。它不回答「2026 为何不用 DPO」。
+- [IPO](ipo.md)：把本页收进 ΨPO。$\Psi(q)=\log(q/(1-q))$ 且 Bradley-Terry 成立时，最优策略与本页、RLHF 相同。IPO 把 $\Psi$ 取成恒等，用平方损失把同一个 log-ratio 间隙回归到 $1/(2\tau)$，$\tau$ 对应本页的 $\beta$。实验只在 3 动作 bandit 上。
+- [ORPO](orpo.md)：去掉 $\pi_{\mathrm{ref}}$。chosen 的长度平均 NLL 上加 $\lambda$ 倍 log odds ratio 的 logistic。Odds 用的是长度平均后的序列概率。
+- [SimPO](simpo.md)：也去掉 $\pi_{\mathrm{ref}}$。sigmoid 里比较的是 $\beta/|y|$ 倍的平均 log-prob，再减目标 margin $\gamma$。四组 7B/8B 上 AlpacaEval 2 LC 高于同协议 DPO，最大差 6.4（Mistral-Base）。
 
 ## 待追问
 
 - **需实验或作者披露**：无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$，对公开偏好集（HH、TL;DR）的分布偏移有多大？论文没有量化。
 - **需实验或作者披露**：Figure 3 右图后期 win rate 轻微回落，论文问这是不是 reward over-optimization 在 DPO 里的对应物，没有下结论。
-- **需补外部来源**：后续偏好方法与 Eq. 7 的关系，原文没有讨论；不能写成 DPO 的推论。[Iterative RPO](iterative-rpo.md) 已核（DPO+NLL）。[KTO](kto.md) 已核（二元 desirable/undesirable 的前景理论 HALO，不是 Eq. 7 的变体，也不解释 2026 为何弃用 DPO）。**找论文可解**（尚未 ingest）：IPO（Azar et al., [arXiv:2310.12036](https://arxiv.org/abs/2310.12036)）、ORPO（Hong et al., [arXiv:2403.07691](https://arxiv.org/abs/2403.07691)）、SimPO（Meng et al., [arXiv:2405.14734](https://arxiv.org/abs/2405.14734)）。**找论文也答不了**：2026 agentic / RLVR 栈为何几乎不用 DPO，这些偏好论文不会给出生产弃用的因果。
 
 ## 相关追问
 
@@ -112,5 +114,5 @@ OOD：把 TL;DR 上训好的 DPO / PPO 直接评 CNN/DailyMail 新闻摘要（Ta
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)、[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
-- 相邻算法：[DAPO](dapo.md)（名字易混）、[Iterative RPO](iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[KTO](kto.md)（二元 HALO，不需要 pair）、[VAPO](vapo.md)、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
+- 相邻算法：[DAPO](dapo.md)（名字易混）、[Iterative RPO](iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[KTO](kto.md)（二元 HALO，不需要 pair）、[IPO](ipo.md)（ΨPO；平方损失回归到 $1/(2\tau)$）、[ORPO](orpo.md)（无参考模型的 odds ratio）、[SimPO](simpo.md)（长度平均 log-prob + margin）、[VAPO](vapo.md)、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)

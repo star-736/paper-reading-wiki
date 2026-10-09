@@ -57,6 +57,9 @@
 - [DPO](sources/dpo.md) - Stanford 的 NeurIPS 2023 论文：把 KL-constrained RLHF 的最优策略写成闭式，用 Bradley-Terry 偏好差消去配分函数，把 PPO 回路收成一条 logistic 分类损失。最大实验 6B；与 DAPO 同名不同族。
 - [Iterative RPO](sources/iterative-rpo.md) - Meta FAIR + NYU：DPO 上给 winner 再加长度归一化 NLL（TRL `rpo_alpha=1.0`），按最终答案对错造 pair 并迭代；Llama-2-70B-Chat 的 GSM8K 55.6→81.6。
 - [KTO](sources/kto.md) - Stanford + Contextual AI 的 ICML 2024 论文：用 Kahneman-Tversky 前景理论价值函数做离线对齐，二元 desirable/undesirable、不需要 pair；1B–30B 上匹配或超过 DPO。不是 GRPO 变体。
+- [IPO](sources/ipo.md) - DeepMind 的 ΨPO：Bradley-Terry 下 DPO 是 logit 映射的特例；IPO 用平方损失把 log-ratio 间隙回归到 $1/(2\tau)$。实验只在 3 动作 bandit 上。
+- [ORPO](sources/orpo.md) - KAIST：无参考模型，chosen 的长度平均 NLL 加 log odds ratio。Mistral-ORPO-β 的 AlpacaEval 2.0 为 12.20%；OPT 受控对照在 125M 上低于 DPO。
+- [SimPO](sources/simpo.md) - Princeton + UVA，NeurIPS 2024：长度平均 log-prob 当奖励，再减目标 margin；不用参考模型。四组 7B/8B 上 AlpacaEval 2 LC 最高比同协议 DPO 高 6.4。
 - [Group Sequence Policy Optimization](sources/group-sequence-policy-optimization.md) - Qwen 团队提出 GSPO：用 sequence likelihood ratio 与 sequence-level clipping 替代 GRPO token-level ratio，稳定 Qwen3-30B-A3B 等 MoE RL 训练。
 - [Soft Adaptive Policy Optimization](sources/soft-adaptive-policy-optimization.md) - Qwen 团队提出 SAPO：用 temperature-controlled soft gate 替代 hard clipping，兼顾 sequence coherence 与 token adaptivity，并用于 Qwen3-VL RL 训练。
 - [Cumulative Token Policy Optimization](sources/cumulative-token-policy-optimization.md) - UIUC + Michigan + Amazon 的 preprint：IS ratio 第三粒度——到位置 $t$ 为止的 prefix 连乘（Prop. 1 无偏、Prop. 2 方差严格低于 full sequence），配 $\sqrt t$ 放大的 log-space clip；TIR 数学上 Qwen3-4B/14B avg 51.4/58.8 超 GRPO/GSPO，但 14B 增益集中在 AIME 且无 MoE 实验。
@@ -269,21 +272,21 @@
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、MiMo-V2.6、DeepSeek-V4、MiniMax-M2、Kimi、Qwen3.8-Flash-Next 与 Qwen3.8-Omni-Flash 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
-- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`），以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
+- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`）、IPO / ORPO / SimPO 三条离线改写，以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
 
 ## 待追问分流
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。当前剩余 **635 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。当前剩余 **638 条**；OPD 跨任务普适性仍保留为实验问题。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。下表为核验后的计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
 | 现有材料待核 | 34 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
-| 需补外部来源 | 81 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 520 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 需补外部来源 | 80 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
+| 需实验或作者披露 | 524 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 635 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 638 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
@@ -296,4 +299,4 @@
 
 ### 需要新来源的明确入口
 
-可优先补 [DPO 后续方法 IPO / ORPO / SimPO](sources/dpo.md#待追问)、[RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)、[SDPO / SDFT](sources/opsd.md#待追问)。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。
+可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)、[SDPO / SDFT](sources/opsd.md#待追问)。IPO / ORPO / SimPO 已入库。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。

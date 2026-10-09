@@ -17,7 +17,7 @@ resource: "../../raw/Pang 等 - 2024 - Iterative Reasoning Preference Optimizati
 - arXiv：<https://arxiv.org/abs/2404.19733>
 - 工程入口：Hugging Face TRL `DPOConfig.rpo_alpha`（论文建议 $\alpha=1.0$）
 - 定位：这是 **DPO 损失上给 winner 再加一条 SFT** 的算法论文，不发布独立模型。主实验是 Llama-2-70B-Chat，任务是 GSM8K / MATH / ARC-Challenge。
-- 易混：本页是 TRL 叫 `rpo_alpha` 的那篇。不要写成 [Regularized Preference Optimization](https://arxiv.org/abs/2405.16436)（同样 DPO+SFT，但 $\eta$ 约 0.005，动机是防 proxy 过优化），也不要写成 ORPO（SFT + odds-ratio，无 reference model）。
+- 易混：本页是 TRL 叫 `rpo_alpha` 的那篇。不要写成 [Regularized Preference Optimization](https://arxiv.org/abs/2405.16436)（同样 DPO+SFT，但 $\eta$ 约 0.005，动机是防 proxy 过优化），也不要写成 [ORPO](orpo.md)（SFT + odds-ratio，无 reference model）。
 
 ## 核心结论
 

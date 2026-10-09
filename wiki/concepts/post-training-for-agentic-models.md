@@ -143,6 +143,9 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - [DPO](../sources/dpo.md)：如何把 KL-constrained RLHF 收成离线偏好对上的一条 logistic 损失，不再训独立 RM、也不在训练环里采样。这是 2023 的闭式偏好路线；已收录的 2026 报告几乎都改走 RLVR / GRPO 家族和 MOPD，本条只作历史对照，避免与 DAPO 撞名。
 - [KTO](../sources/kto.md)：如何用前景理论价值函数在**不需要 pair** 的二元 desirable/undesirable 信号上做离线对齐。仍是 2024 的离线 HALO，不是 2026 RLVR / GRPO 主轴，也不解释 DPO 为何退出生产栈。不要把「不需要 pair」写成 agentic RL 替代。
 - [Iterative RPO](../sources/iterative-rpo.md)：如何在 DPO 上给 winner 再加一条 SFT（TRL `rpo_alpha`）。纯 DPO 会压低 chosen logprob；GSM8K 上同数据 73.1 vs 61.8。与 VAPO 的 positive-example NLL 同构，只是挂在 DPO 而不是 PPO。
+- [IPO](../sources/ipo.md)：如何用 ΨPO 把 DPO / RLHF 收成 logit 映射的特例，再把 Ψ 取成恒等，用平方损失把 log-ratio 间隙钉在 $1/(2\tau)$。原文实验只在 3 动作 bandit 上；语言模型数字见 SimPO 的基线表。
+- [ORPO](../sources/orpo.md)：如何去掉参考模型，把 log odds ratio 的弱惩罚直接加进 chosen 的 SFT。受控胜率只报到 OPT-1.3B，而且 125M 上低于 DPO。
+- [SimPO](../sources/simpo.md)：如何用长度平均 log-prob 替换 DPO 的 $\log(\pi/\pi_{\mathrm{ref}})$，并在 Bradley-Terry 里减去手调 margin $\gamma$。四组 7B/8B 的 AlpacaEval 2 LC 高于同协议 DPO；推理任务上的掉点附录自己标成未补。
 - ARPO：如何把探索预算从完整轨迹平均采样，转移到工具反馈后的高熵 step-level 行为。
 - GiGPO：如何在不追加 rollout 的前提下，用组内重复状态构造 step-level 相对优势。
 - HGPO：如何在不追加 rollout 的前提下，进一步用共同历史控制同 state step group 的 prompt 混杂。

@@ -1,5 +1,17 @@
 # 日志
 
+## [2026-10-10] ingest | SimPO
+
+Princeton + UVA（NeurIPS 2024，arXiv:2405.14734v3，2024-11-01，32 页）。新增 `raw/2405.14734v3.pdf`、`sources/simpo.md`，提取 Figure 1/4。不建模型页。Headline：奖励换成 $\beta/|y|$ 倍平均 log-prob，Bradley-Terry 再减 $\gamma$，无参考模型。四组里 AlpacaEval 2 LC 相对同协议 DPO 最大 +6.4（Mistral-Base 21.5 vs 15.1）；Arena-Hard 最大 +7.5（Llama-3-Base 23.4 vs 15.9）。同表 IPO、ORPO 的 LC 都低于 DPO。Gemma-2-9B-it 放出检查点 LC 72.4、Arena-Hard 59.1。$\gamma$ 手调。回写 DPO、IPO、ORPO、比较页与后训练概念页。
+
+## [2026-10-10] ingest | ORPO
+
+KAIST（arXiv:2403.07691v2，2024-03-14，22 页）。新增 `raw/2403.07691v2.pdf`、`sources/orpo.md`，提取 Figure 2/7。不建模型页。Headline：chosen 的长度平均 NLL 加 $\lambda$ 倍 log odds ratio，无 $\pi_{\mathrm{ref}}$。Odds 用 Eq. 3 的长度平均概率。HH-RLHF 上对 DPO 的奖励模型胜率 41.7% / 49.4% / 70.9%（OPT 125M / 350M / 1.3B）。Mistral-ORPO-β 的 AlpacaEval 2.0 为 12.20%，MT-Bench 图与结论为 7.32；引言写 α 为 7.24，图与结论为 7.23。回写 DPO、比较页与后训练概念页。
+
+## [2026-10-10] ingest | IPO
+
+Google DeepMind（arXiv:2310.12036v2，2023-11-22，13 页，PDF 标 Under review）。新增 `raw/2310.12036v2.pdf`、`sources/ipo.md`，提取 Figure 1/2。不建模型页。Headline：ΨPO 在 $\Psi=\mathrm{logit}$ 且 Bradley-Terry 成立时与 DPO / RLHF 最优策略相同；IPO 把 $\Psi$ 取成恒等，平方损失把 log-ratio 间隙回归到 $1/(2\tau)$。实验是 3 动作 bandit。Theorem 2 的唯一性要求行为策略与参考策略支撑相同。回写 DPO、比较页与后训练概念页。
+
 ## [2026-10-03] ingest | Uni-OPD
 
 浙大 + 深圳 Loop + 腾讯（arXiv:2605.03677v2，2026-07-06，38 页）。新增 `raw/2605.03677v2.pdf`、`sources/uni-opd.md`，提取 Figure 1/2/3/5。不建模型页。Headline：学生侧上采样中间难度并把对错比拉回 1:1；教师侧用 0/1 结果校准轨迹级 reverse-KL 回报。主实验是 Mean 模式的 margin shift，文本域 Spread、\(\delta=0.4\)，多模态 Lift、\(\delta=0\)。正文公式写的是 MinMax 和 Lift。Qwen3-4B 多教师数学 47.0→48.5、代码 60.2→63.6，高于自训 4B RL teacher。强到弱的 30B 数学 58.3，4B 只到 42.9。主表的 pass@1 是 32 条或 4 条的平均准确率。回写 OPD 比较页、MOPD 概念页、ExOPD、OPD 综述、Miles、f-OPD、Thinking Machines。
