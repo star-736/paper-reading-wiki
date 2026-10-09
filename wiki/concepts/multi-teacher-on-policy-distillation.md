@@ -202,6 +202,18 @@ nrehiew 在 Minimal Code Editing 任务上做了直接对照：先分别用 SFT 
 
 [Many Faces](../sources/many-faces-opd.md) 在另一套估计器上把 OPSD 拆开：reverse KL 的最优学生是各 PI 条件下 teacher 的归一化几何平均。PI 若是每题一份答案，共识比 PI-teacher 弱，他们的数学实验没稳住；PI 若是共享的系统提示或对齐偏好，共识可以变成测试时用得上的行为。这不推翻 Zhao 等人的 forward KL 数学结果。同文还量到学生前缀会伤 teacher：Qwen3-14B 在 GPQA-Diamond 上从 62.12% 掉到 45.96%。
 
+### SDPO：环境反馈当事后教师
+
+一手出处：[SDPO](../sources/sdpo.md)（Hübotter et al.，arXiv:2601.20802v2）。和 OPSD 一样不请外部模型，privileged 信息换成环境输出或同组里另一条成功样本。学生先采样，自教师只在这条前缀上重算 \(\pi_\theta(\cdot\mid x,f)\)，不另生成 token。教师用 EMA 跟着学生走，不是冻在初始策略。
+
+公式 1 是 reverse KL。实验分叉：只有标量奖励时选 Jensen–Shannon、学生 top-100 加尾项；LiveCodeBench 与测试时发现用 reverse KL、top-20 加尾项。Qwen3-8B 在 LCBv6 上 48.8% 对 GRPO 41.2%，达到 GRPO 终点少 4× 生成。Qwen2.5-1.5B 上正文写 SDPO 低于 GRPO。这组数字全部关闭 thinking，不能和 OPSD 主表相减。
+
+### SDFT：示范当教师的持续学习
+
+一手出处：[SDFT](../sources/sdft.md)（Shenfeld et al.，arXiv:2601.19897v2）。privileged 信息是专家示范 \(c\)，不是 OPSD 的参考解答，也不是 SDPO 的环境输出。学生采样，教师是 \(\pi(\cdot\mid x,c)\)，用 EMA 更新。公式 1 写成 reverse KL；Practical Implementation 写实践中 forward KL 更好，Table 5 没有标方向。
+
+Qwen2.5-7B-Instruct 全参数。科学问答新任务 32.1→70.2，六项先前能力平均 65.5→64.5；同协议 SFT 是 66.2 与 53.4。3B 上 SDFT 比 SFT 低 3.3 分。顺序学习的曲线把基座标成 0，没有绝对分表。
+
 ### 异步缓冲：f-OPD
 
 [f-OPD](../sources/f-opd.md)（Chen et al.，arXiv:2605.17862v1）不换 teacher 个数。它把异步执行写成同步目标与缓冲目标之差：rollout drift 是旧学生前缀，supervision drift 是冻结 teacher 在过期上下文上的分布。样本新鲜度是年龄倒数乘上这两项 KL 平方根的指数衰减；低于阈值的样本被 ReLU 去掉，留下的样本还加一项 rollout KL，缓冲太旧就整批重采。Coding 的 250 题子集上，同步 resolve 41.8、裸异步 26.8、f-OPD 39.4，相对吞吐 \(1.46\times\)。蒸馏损失本身没有写成 reverse KL。

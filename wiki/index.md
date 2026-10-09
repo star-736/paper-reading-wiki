@@ -144,6 +144,8 @@
 - [GKD：On-Policy Distillation of Language Models](sources/generalized-knowledge-distillation.md) - Google DeepMind 的 ICLR 2024 源头论文：把自回归 LM 蒸馏重写成 imitation learning，给出「student 数据比例 λ × 发散度 D」两个旋钮的统一目标（supervised / on-policy KD、ImitKD、f-distill 都是实例）。校准两处口径——on-policy 标准实例用 teacher-first 方向、最优发散度 task-dependent；并提供 wiki 现有 forward/reverse KL 行为对照表的一手出处（Figure A.16）与适用边界。
 - [MiniLLM：On-Policy Distillation of Large Language Models](sources/minillm.md) - 清华 CoAI + MSR 的另一支源头（ICLR 2024）：标准 KD 的 forward KLD 换成 reverse KLD，用 Policy Gradient Theorem 求梯度（$R_t$ 累积 log-ratio 当 reward），配 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧。给出 ExAccErr 随长度不累积、ECE 更接近 teacher、长回答子集优势更大的机制证据。
 - [OPSD：On-Policy Self-Distillation](sources/opsd.md) - UCLA + HKU + Meta 的 Self-Distilled Reasoner，ICML 2026：同一 LLM、teacher 看参考解答、student 只看题目；主实验是 full-vocab forward KL + 词表级 clipping。Qwen3-1.7B/4B/8B LoRA。会议版全关 thinking 时 8B 平均增益 +15.4，step 50 后回落。
+- [SDPO：Self-Distillation Policy Optimization](sources/sdpo.md) - ETH + MPI + MIT + Stanford：环境文本或同组成功样本当事后教师，重估学生自己的 rollout。公式 1 是 reverse KL；无丰富反馈的实验用 Jensen–Shannon。Qwen3-8B 的 LiveCodeBench v6 为 48.8% 对 GRPO 41.2%。不是 OPSD 的参考解答。
+- [SDFT：Self-Distillation Fine-Tuning](sources/sdft.md) - MIT + ETH：专家示范当教师，学生在自己的 rollout 上蒸馏，用来在没有奖励函数时持续学习。公式 1 是 reverse KL，实践段写 forward KL 更好，主表未标注方向。Qwen2.5-7B 科学问答 32.1→70.2，先前能力平均 65.5→64.5。
 - [ExOPD：Generalized On-Policy Distillation](sources/exopd.md) - 人大高瓴 + 腾讯（arXiv:2602.12125v2）：标准 OPD 是 reward 与 KL 等权的特例；λ>1 在同基座 math/code 专家融回 4B 时超过两位 domain teacher，λ=1.5 会不稳。strong-to-weak 只缩小与 30B-A3B teacher 的差距。这个 λ 不是 GKD 的数据混合比例。
 - [Revisiting On-Policy Distillation](sources/revisiting-opd.md) - 中科院自动化所 + 国科大等（arXiv:2603.25562v2，工作进行中）：token-level 相对序列级 reverse KL 有偏，最坏方差上界 O(T^2) 对 O(T^4)。Teacher top-32 重归一化 reverse KL 在交替多任务的数学均分上相对 sampled-token +19.8%（34.8→41.7）。没有 full-vocab 对照。
 - [The Many Faces of On-Policy Distillation](sources/many-faces-opd.md) - UIUC + 人大 + 北大（arXiv:2605.11182v2）：未归一化 Top-K reverse KL 的 +1 项消不掉，要 π_T > e π_S 才抬升 token。Stop-gradient 与重归一化都能稳住。实例级 PI 上 OPSD 失败；共享规则上有效。学生前缀把 Qwen3-14B 的 GPQA 从 62.1% 拉到 46.0%。
@@ -278,15 +280,15 @@
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。当前剩余 **638 条**；OPD 跨任务普适性仍保留为实验问题。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。同日入库 SDPO 与 SDFT，关闭 OPSD 页那条外部来源。SDFT 页新增 3 条实验类待追问；OPSD 与 SDPO 上各改写成 1 条跨设定对照。当前剩余 **642 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
 | 现有材料待核 | 34 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
-| 需补外部来源 | 80 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 524 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 需补外部来源 | 79 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
+| 需实验或作者披露 | 529 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 638 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 642 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
@@ -299,4 +301,4 @@
 
 ### 需要新来源的明确入口
 
-可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)、[SDPO / SDFT](sources/opsd.md#待追问)。IPO / ORPO / SimPO 已入库。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。
+可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)。IPO / ORPO / SimPO、SDPO、SDFT 已入库，OPSD 页那条外部来源已关闭。OPD 综述仍缺一手页：[ListOPD / Rock Tokens / local teachability](sources/opd-survey.md#待追问)，以及 Jeong 的 KL 重置和 Gemma 2 是否为学生 rollout 上的 OPD。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。

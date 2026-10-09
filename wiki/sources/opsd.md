@@ -134,6 +134,8 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**：sampled-token reverse KL 那条支路在本文是对照，不是默认；Table 4 显示它在这套数学设定上弱于 full-vocab。
 - **[nrehiew 博客](nrehiew-sft-rl-opd.md)**：把 OPSD 引进 wiki 的二手来源。style vs math 的观察与 v3 Table 5 一致；「更接近 RLHF 而非 RLVR」是 nrehiew 的评价，不是本文结论。本文默认 forward KL，与 nrehiew 转述的 reverse-KL 配方不是同一件事。
 - **[Nemotron 3 Ultra](nemotron-3-ultra.md)**：生产 MOPD 试过 full-vocab，agentic 上不如 sampled-token。本文在竞赛数学 + LoRA 小模型上方向相反。
+- **[SDPO](sdpo.md)**：同一权重、两种条件的另一条 concurrent。privileged 信息是环境输出或同组成功样本，不是参考解答 \(y^\star\)；教师用 EMA 更新，代码实验是 reverse KL。数字不能和本页相减。
+- **[SDFT](sdft.md)**：示范或文章当上下文的持续学习版。公式 1 写成 reverse KL，实践段改口 forward KL，主表未标注方向。Qwen2.5-7B 全参数，不是本页的 Qwen3 LoRA。
 - Context distillation（Snell et al. 2022）、STaR / ReST：相关工作里的 off-policy / 硬标签自训练前身；OPSD 的差异是 on-policy + soft 分布匹配。
 
 ## 待追问
@@ -142,7 +144,7 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 - **需实验或作者披露**：**\(\tau\) 未调**：附录自己写更大模型可能还能再涨。clipping 是机制还是这个 \(\tau\) 碰巧够用？
 - **现有材料待核**：**尺度方向随协议变**。主表评测开 thinking 时，1.7B 均分从 37.1 到 43.4（+6.3），8B 只比 GRPO 多 0.8。会议版训练和评测都关 thinking 时，平均增益反过来是 8B +15.4、4B +4.4、1.7B +0.3，且 8B 在 step 50 后回落。作者没有解释这是容量还是 thinking 协议造成的。
 - **需实验或作者披露**：**竞赛数学以外有没有证据**：无代码、无 agent、无多 teacher。privileged \(y^\star\) 在没有参考解答的任务上怎么构造？
-- **需补外部来源**：concurrent SDPO（环境反馈当 privileged info，arXiv:2601.20802）与 SDFT（持续学习，arXiv:2601.19897）未收原文。
+- **需实验或作者披露**：本页的参考解答 \(y^\star\) 与 [SDFT](sdft.md) 的专家示范、[SDPO](sdpo.md) 的环境反馈，是三种 privileged context。哪一种在没有标准答案的任务上仍成立，三篇都没有交叉实验。
 
 ## 相关页面
 
@@ -151,6 +153,8 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 - [GKD](generalized-knowledge-distillation.md)
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
 - [nrehiew 博客](nrehiew-sft-rl-opd.md)
+- [SDPO](sdpo.md)：环境反馈当 privileged context 的自蒸馏；教师不冻结
+- [SDFT](sdft.md)：专家示范当 privileged context；持续学习设定
 - [ExOPD](exopd.md)：外部 teacher 的 sampled-token reverse KL，用 reward scale 越过同基座 RL teacher；和本页的 full-vocab forward KL 不是一条估计器
 - [Revisiting OPD](revisiting-opd.md)：引用本页作为 full-vocab 强于 sampled-token 的例子，自己的主实验仍是 reverse KL 的 teacher top-K
 - [The Many Faces of OPD](many-faces-opd.md)：用 stop-gradient Top-K reverse KL 时，实例级 PI 的数学 OPSD 没稳住。不推翻本页的 forward KL 结果

@@ -21,7 +21,7 @@ timestamp: 2026-06-23
 1. 把多个领域 RL teacher **融合**进一个 student（MiMo、DeepSeek-V4、Nemotron 3 Ultra），
 2. 把 flagship 模型的能力**压到小模型**里（Qwen3、Qwen3-VL），
 3. 把 RL 流水线里多个阶段的能力**召回**到最终 checkpoint（GLM-5），
-4. 还是 **不请外部 teacher**，用参考解答当 privileged context 让模型教自己（[OPSD](../sources/opsd.md)）？
+4. 还是 **不请外部 teacher**，用参考解答（[OPSD](../sources/opsd.md)）、环境文本（[SDPO](../sources/sdpo.md)）或专家示范（[SDFT](../sources/sdft.md)）让模型教自己？
 
 ## 速览
 
@@ -41,6 +41,8 @@ timestamp: 2026-06-23
 | **[Miles](../sources/miles-v0-1.md)**（训练系统，非模型） | 把 OPD 接进**任意** RL 循环（框架侧接口） | **不限数量**：served teacher（外部 SGLang 服务在 rollout 期间打分；可与 student 架构不同或大到装不下，但须共享 student 的 tokenizer）或 in-process teacher（同架构，Megatron 在 student 旁加载第二份）；多个 served teacher 按 prompt metadata 的 tag 路由 | token-level 单样本 reverse KL，**折进 advantage 而非 loss**（两个 log-prob 都是固定输入，惩罚表现为 dense per-token reward）；top-K 变体只在 served teacher 下可用 | 与 RL **同阶段可组合**——不改 loss 形式，因此能与 GRPO / GSPO / PPO / REINFORCE++ 任意叠加；文档实验在 Qwen3.5-35B-A3B 上设任务 reward = 0、teacher 只加五步可验证 reward 的 RL |
 | **[Nemotron 3 Ultra](../models/nemotron-3-ultra.md)** | 多专家**融合**（MOPD 叠在统一 RLVR **之后**，两轮 co-evolution） | **>10** 个域教师（STEM / Chat / IF / Terminal / SWE / Search / Office / Usability / Agentic Safety 等；第二轮新训 Coding/Chat2/SWE2…并复用第一轮一部分）；RLVR student 兼 self-teacher | sampled-token reverse KL 当 advantage + 异步 behavior/prox 拆分 + IcePop mask + PPO clip；**试过 full-vocab / top-k logit matching，agentic 上不如 sampled-token** | SFT → 统一 RLVR → **MOPD warmup（轻 SFT）** → MOPD × 2 → MTP Boosting；**不替换 RL** |
 | **[OPSD](../sources/opsd.md)**（方法，非模型） | **自蒸馏**：用参考解答当 privileged context，让模型教没看答案的自己 | **无外部 teacher**；同一初始权重，teacher 冻结、看 \(x,y^\star\)，student 只看 \(x\)（LoRA 更新） | 主实验 **full-vocab forward KL** \(D_{\mathrm{KL}}(p_T\parallel p_S)\) + 词表级 pointwise clipping；reverse KL 在 AIME25 无效；sampled-token 弱于 full-vocab | 单独后训练：OpenThoughts 数学子集、Qwen3-Instruct 1.7B/4B/8B、100 step；不进入融合 / 召回 / 压小模型流水线 |
+| **[SDPO](../sources/sdpo.md)**（方法，非模型） | **自蒸馏**：环境文本或同组成功样本当 \(f\)，重估学生刚才的 rollout | **无外部 teacher**；同一参数，教师是 \(\pi_\theta(\cdot\mid x,f)\)，EMA 跟学生走，不生成 token | 公式 1 是 reverse KL。§3 实验是 Jensen–Shannon、学生 top-100 + 尾项；§4/§5 是 reverse KL、top-20 + 尾项。不是教师 top-K 重归一化 | 科学问答 / ToolAlpaca / LiveCodeBench v6；Qwen3-8B 上 LCBv6 48.8% 对 GRPO 41.2%。不进生产融合流水线 |
+| **[SDFT](../sources/sdft.md)**（方法，非模型） | **自蒸馏**：专家示范当 \(c\)，在没有奖励函数时做持续学习 | **无外部 teacher**；教师是 \(\pi(\cdot\mid x,c)\)，EMA 跟学生走。学生只看 \(x\) | 公式 1 是 reverse KL，全词表解析梯度、每题 1 条 rollout。实践段写 forward KL 更好，主表未标注方向 | Qwen2.5-7B-Instruct 全参数。科学问答 32.1→70.2，先前能力平均 65.5→64.5。不进生产融合流水线 |
 | **[ExOPD](../sources/exopd.md)**（方法，非模型） | 同基座域 RL **融回**原 student，并用 \(\lambda>1\) 越过 teacher | 2 个同尺寸 teacher（Qwen3-4B-Non-Thinking 的 math / code GRPO），每条样本按域路由，不混 logits。另有 strong-to-weak：30B-A3B → 1.7B/4B | sampled-token reverse KL；advantage 里把隐式 reward 乘 \(\lambda\)。\(\lambda=1\) 即标准 OPD，主实验 \(\lambda=1.25\)。不是 full-vocab | 同基座 GRPO teacher → G-OPD 50 step；strong-to-weak 100 step。不进生产流水线 |
 | **[Revisiting OPD](../sources/revisiting-opd.md)**（方法，非模型） | 解释 sampled-token 为什么脆，改成 teacher top-K 局部支撑 | 单 teacher：OpenThinker3-7B 蒸 Qwen2.5-7B-Instruct；交替任务再加一个 GiGPO ALFWorld teacher | teacher top-32 上**重归一化** reverse KL，不是 sampled-token，也不是 full-vocab。另加 top-p rollout 与 special-token mask | 单任务数学 400 step；ALFWorld 与数学 batch 交替各 200 step。7B，不进生产流水线 |
 | **[Many Faces of OPD](../sources/many-faces-opd.md)**（方法，非模型） | 划清 OPD/OPSD 何时崩：PI 结构、前缀错配、Top-K 梯度偏差 | 外部 teacher 或同一模型加 PI。数学用 OpenThoughts / DAPO；对齐用 CharacterBench / EmotionBench | 默认 stop-gradient **且**重归一化的 Top-K reverse KL（\(K=20\)）。未归一化版本会崩。不是 full-vocab | Qwen3-1.7B/4B/8B，每题 1 条 rollout。不进生产流水线 |
@@ -176,6 +178,8 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [Miles v0.1](../sources/miles-v0-1.md)：唯一把 OPD 做成框架侧接口的来源（advantage 折入而非 loss 加权、served / in-process teacher 两种部署、top-K 变体只在 served teacher 下可用），并提供唯一一条「蒸馏只缩长度、不涨分」的公开结论。
 - [Nemotron 3 Ultra 技术报告](../sources/nemotron-3-ultra.md)：两轮 MOPD co-evolution + 按域恢复率（Terminal Bench 172.7% / HLE 16.9%）+ warmup 轻 SFT；sampled-token 优于 logit matching 的反例。
 - [OPSD](../sources/opsd.md)：无外部 teacher 的 privileged-context 自蒸馏；主实验 forward KL + full-vocab，与生产 reverse-KL 配方分叉。
+- [SDPO](../sources/sdpo.md)：环境反馈或同组成功样本当 \(f\)；教师 EMA 更新。公式 1 是 reverse KL，无丰富反馈的实验改用 Jensen–Shannon。
+- [SDFT](../sources/sdft.md)：专家示范当 \(c\)。公式 1 是 reverse KL，实践段写 forward KL 更好，主表未标注方向。
 - [ExOPD](../sources/exopd.md)：同基座双教师上把 reward scale 放到 \(\lambda=1.25\)，主表超过两位 domain teacher；不解释 \(\lambda=1\) 的生产超 teacher。
 - [Revisiting On-Policy Distillation](../sources/revisiting-opd.md)：sampled-token 的三种脆点，以及 teacher top-32 重归一化 reverse KL。+19.8% 是交替多任务数学均分的相对值。
 - [The Many Faces of On-Policy Distillation](../sources/many-faces-opd.md)：未归一化 Top-K 的 \(+1\) 偏差、OPSD 的 PI 结构、学生前缀把 teacher 从 62.1% 拉到 46.0%。

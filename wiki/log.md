@@ -1,5 +1,13 @@
 # 日志
 
+## [2026-10-10] ingest | SDFT
+
+MIT Improbable AI + ETH Zurich（arXiv:2601.19897v2，2026-08-07，22 页）。新增 `raw/2601.19897v2.pdf`、`sources/sdft.md`，提取 Figure 2/3/4/5。不建模型页。Headline：专家示范当教师上下文，学生在自己的 rollout 上蒸馏。公式 1 是 reverse KL；Practical Implementation 写 forward KL 更好，算法 1 指向附录 A.1 的 reverse KL 解析梯度，主表未标注方向。Qwen2.5-7B-Instruct 全参数。科学问答 32.1→70.2，先前能力平均 65.5→64.5；SFT 为 66.2 与 53.4。3B 上比 SFT 低 3.3。知识严格分 89，Oracle RAG 91。回写 OPSD、SDPO、OPD 比较页与 MOPD 概念页。OPSD 的外部来源条目关闭。
+
+## [2026-10-10] ingest | SDPO
+
+ETH Zurich + MPI-IS + MIT + Stanford（arXiv:2601.20802v2，2026-02-16，50 页）。新增 `raw/2601.20802v2.pdf`、`sources/sdpo.md`，提取 Figure 1/4/10/13。不建模型页。Headline：自教师是同一策略在环境反馈或同组成功样本下的条件分布，只重算学生 rollout 的 log-prob。公式 1 是 reverse KL；§3 实验选 Jensen–Shannon、学生 top-100 + 尾项，§4/§5 用 reverse KL、top-20。Qwen3-8B 的 LiveCodeBench v6 为 48.8% 对 GRPO 41.2%，少 4× 生成达到 GRPO 终点。全部关闭 thinking。正文写 Qwen2.5-8B 持平，Figure 17 的横轴是 1.5/3/7。回写 OPSD、OPD 比较页与 MOPD 概念页。OPSD 的外部来源只剩 SDFT。
+
 ## [2026-10-10] ingest | SimPO
 
 Princeton + UVA（NeurIPS 2024，arXiv:2405.14734v3，2024-11-01，32 页）。新增 `raw/2405.14734v3.pdf`、`sources/simpo.md`，提取 Figure 1/4。不建模型页。Headline：奖励换成 $\beta/|y|$ 倍平均 log-prob，Bradley-Terry 再减 $\gamma$，无参考模型。四组里 AlpacaEval 2 LC 相对同协议 DPO 最大 +6.4（Mistral-Base 21.5 vs 15.1）；Arena-Hard 最大 +7.5（Llama-3-Base 23.4 vs 15.9）。同表 IPO、ORPO 的 LC 都低于 DPO。Gemma-2-9B-it 放出检查点 LC 72.4、Arena-Hard 59.1。$\gamma$ 手调。回写 DPO、IPO、ORPO、比较页与后训练概念页。
