@@ -49,13 +49,9 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 
 Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要管理上下文、使用工具、吸收环境反馈、记住先前动作，并在长历史中保持稳定推理。
 
+[EdgeBench](../sources/edgebench.md) §5.3 在 42 题子集上只换 Opus 4.8 的上下文长度：外部 workspace、compaction 和 notes 已经可用时，1M 相对 200k 在 2h / 6h / 12h 仍高 5.8 / 5.5 / 4.4 分。更长窗口在这组同协议里继续提供增益。各报告没有把「哪个公开 benchmark 最能预测真实 coding 生产力」做成对照，也没有把 preserved thinking 的部署暴露程度写成实验结果，本库不再把这两句开放清单留在待追问。
+
 新增两篇报告后，一个更清晰的趋势是：agentic 能力越来越依赖运行系统。MiniMax 的 Forge 说明训练系统要能承受长尾 rollout、black-box scaffold 和大规模可验证反馈；Kimi 的 Agent Swarm 说明推理时也可以通过并行 sub-agent 改变任务复杂度和上下文形态。ARPO 进一步说明，哪怕不改 harness，**rollout 预算在轨迹内部的分配方式**也会影响 tool-use 行为学习：工具反馈后的高熵节点比完整轨迹开头更值得追加探索。DeepMMSearch-R1 则从另一个角度说明：**工具调用的结构化协议 + RL 精炼**可以让模型在知识密集任务中更高效地使用搜索工具——不是调用更多次，而是更精准。
-
-## 待追问
-
-- **需实验或作者披露**：哪些 benchmark 最能预测真实 coding agent 生产力？
-- **需实验或作者披露**：Thinking preservation 在部署中应该暴露到什么程度？
-- **需实验或作者披露**：更长上下文会减少 context management 的必要性，还是让 context management 更重要？
 
 ## 相关页面
 

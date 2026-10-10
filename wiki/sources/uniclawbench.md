@@ -48,6 +48,7 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 **三角色设计的关键**：
 
 - **Executor Agent**：在 fresh Docker 容器中执行，可访问 browser、命令行、GUI 应用、本地文件和注入的服务。hidden references 和 grading rubrics 永不暴露给 executor。
+- **Cross-Platform**（原文确证，§3.1 与 Appendix B.5）：这是能力类别，不是环境标签，也不是闭集平台组合，更不是跨 OS 矩阵。任务要在异构应用之间同步状态。正文点名的界面包括网页、桌面 GUI、本地文件、日历、表格、笔记工具、引用管理器和 GitHub CLI 一类平台 CLI；附录示例是本地 PDF 经 Zotero 与 Obsidian 桌面应用流转。名单以 “and so on” 收尾，论文没有再给一张组合枚举表。
 - **Supervisor Agent**（hidden）：在独立 workspace 中，用 checkpoint-based rubric 评分，返回 pass / fail / continue 三态。pass = 任务完成；fail = 不可恢复错误；continue = 有缺陷但可后续恢复。supervisor 输出 detailed justification，将证据映射到 rubric。
 - **User Simulator**：只收到 executor 的可见轨迹和 supervisor 的粗粒度状态信号（不收到 hidden rubric），生成自然语言反馈，经 sanitize 后作为下一轮 user message 回传 executor。这模拟了真实人-agent 交互，同时隔离评分标准。
 
@@ -99,7 +100,7 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 | Kimi-2.6 | EDICT | 0.320 | 0.695 | 2.53 | 51.5 |
 | Kimi-2.6 | Nanobot | 0.278 | 0.573 | 0.86 | 21.3 |
 
-> Table 2 节选。OpenClaw 全面最高 PR；EDICT AS 高但 PR 低（coordination friction）；Nanobot token 效率最高但 PR 最低。
+> Table 2 节选。OpenClaw 全面最高 PR；EDICT AS 高但 PR 低（coordination friction）；Nanobot token 效率最高但 PR 最低。executor 实验就是这三套框架。Hermes Agent 只出现在参考文献 [27]，没有作为 executor backbone 参与对照，因此不存在「Hermes 与 OpenClaw 都没评」这组差异。本库不再追一份论文没做的 Hermes 对照。
 
 **框架特征分析**：
 
@@ -110,11 +111,6 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 ### 多轮反馈效果（Figure 4c）
 
 随 supervision cycle 增加，pass rate 持续上升（Cycle 1 → 2 → 3：23.8% → 29.5% → 31.7%），验证多轮 user feedback 对动态错误恢复的关键作用。
-
-## 待追问
-
-- **现有材料待核**：Cross-Platform 任务的"多平台"具体指哪些平台组合（browser + GUI app? 跨 OS?），正文仅举例未枚举。
-- **需实验或作者披露**：论文引用了 Hermes Agent [27] 和 OpenClaw [39] 作为 proactive agent 平台代表，但未在实验中评测它们作为 executor backbone 的差异。
 
 ## 相关页面
 

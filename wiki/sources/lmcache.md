@@ -37,7 +37,7 @@ LMCACHE 的回答是把 KV cache 做成 **inference engine 和异构存储 / 网
 2. **标准化 KV connector**：把 LMCache 与 engine 内部 KV layout 解耦；API 由 LMCache 团队发起，与 vLLM 团队共同实现和维护。
 3. **一等控制 API**：lookup / move / pin / clear / compress，让 router 做 cache-aware 调度，也让应用显式钉住热文档。
 
-Headline 评测（§ 8.2，Figure 8）：多轮文档问答、每 query 约 10K token 上下文，CPU offload 上限 500 GB。相对最强基线，同 TTFT 下吞吐 **2.3–14×**（摘要写 up to 15×）；QPS=1 时 TTFT **1.9–8.1×** 更小。生产采用方包括 vLLM Production Stack、NVIDIA Dynamo、llm-d、KServe、AIBrix（§ 3.2, § 6）。
+Headline 评测（§ 8.2，Figure 8）：多轮文档问答、每 query 约 10K token 上下文，CPU offload 上限 500 GB。相对最强基线，同 TTFT 下吞吐 **2.3–14×**；QPS=1 时 TTFT **1.9–8.1×** 更小。生产采用方包括 vLLM Production Stack、NVIDIA Dynamo、llm-d、KServe、AIBrix（§ 3.2, § 6）。
 
 ![LMCache Figure 2：左 (a) Context caching——多个 Request 打到不同 inference engine，下方青色 LMCache 做 Cross-query reuse of KV caches（CPU/disk offload）。右 (b) PD disaggregation——prefiller 实例经 LMCache 把 KV 交给 decoder 实例，做 Cross-engine sharing。](../assets/lmcache/fig2-two-scenarios.png)
 
@@ -145,16 +145,17 @@ B200 上测 prefill vs 加载。**32 Gbps** 时，只有输入超过 **256K toke
 
 ## 证据边界与阅读提示
 
+- 摘要写 “up to 15× improvement in throughput”，举例工作负载是 multi-round question answering and document analysis，未写同 TTFT，也未标模型或 QPS。§1 末段把 “up to 15× higher throughput” 同时挂到 local prefix caching、distributed prefix reuse 和 PD disaggregation。§8.2 正文与 Figure 8 caption 对多轮文档问答 CPU offload 写的是同 TTFT 下 query processing rate **2.3–14×**（相对最强基线、五个模型）。全文没有 15× 的模型或 QPS 点；§8.4 远程存储同 TTFT 吞吐是 1.3–3×。这两处对不上。
 - 两家商业 API 匿名且黑盒，机制归因是作者推测。
+- Table 3 有 `compress` / `decompress`，参数是 `compression_method`。正文没有算法、压缩比或质量评测，不再追这套未写的配方。
+- §8.7 Sensitivity Study / Figure 15：32 Gbps 下，KV load 只在上下文超过 256K 时优于 naive prefill。这是带宽–长度敏感性观察，论文没有写成在线切换策略。
+- 原文没有 Dynamic offloading 的 stall 与复制比定量消融。
+- 原文只举例 Sliding Window Attention 与 MLA 会改 engine 内部管理，没有 MLA / DSA / CSA-HCA / GDN 这些 layout 的实测。
+- 原文把真实 trace 压到一小时，没有未压缩 burst 的对照。
 
 ## 待追问
 
-- **需实验或作者披露**：摘要 15× 与 § 8.2 的 2.3–14×（同 TTFT 吞吐）差 1 个百分点量级；15× 的具体模型 / QPS 点未单独标出。
-- **需实验或作者披露**：`compress` API 在 Table 3 存在，正文没有压缩算法、压缩比或质量评测。
-- **需实验或作者披露**：Load vs prefill 的 crossover（32 Gbps / 256K）只给了敏感性曲线，没有写成在线自适应策略。
-- **需实验或作者披露**：Dynamic offloading 的 stall vs 复制比没有定量消融。
-- **需实验或作者披露**：Connector 是否覆盖 MLA / DSA / CSA-HCA / GDN 这类非标准 KV layout，论文只举例 Sliding Window Attention 与 Multi-Head Latent Attention「会改 engine 内部管理」，没有实测这些 layout。
-- **需实验或作者披露**：真实 trace 被时间压缩到一小时，burst 结构是否被抹平未知。
+- **同一篇数字对不上**：摘要 up to 15×（未写同 TTFT，未标模型 / QPS）与 §8.2 / Figure 8 的同 TTFT 吞吐 2.3–14× 不是同一句已核对的口径；§1 末段还把 15× 扩到 PD 与分布式复用。具体落点原文没有。
 
 ## 相关页面
 

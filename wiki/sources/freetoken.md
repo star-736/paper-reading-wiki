@@ -40,7 +40,7 @@ FreeToken 的回答是把个人机器当成统一弹性推理平台，而不是�
 
 > Figure 1 | FreeToken serves the models on the cost–capability Pareto frontier, at interactive speed on consumer hardware.（§ 1 Introduction, Figure 1）
 
-Headline 结果（§ 1, § 5.2–5.3）：支持 20+ MoE；RTX 5090 上 Qwen3.6-35B-A3B 77–83 tok/s、DeepSeek-V4-Flash 22–25 tok/s，相对最强端侧基线 decode 1.5–2.3×，且跨 agent 工作负载相对单轮 W1 的 decode 波动 ≤12%；最差 TTFT < 44 s，而各基线至少在一个设置里超过 150 s（OpenClaw 默认 120 s idle watchdog）。8GB RTX 4060 笔记本上 35B（NVFP4）39.3 tok/s，超过 Codex 中位 33 tok/s；32GB 游戏桌面交互式服务 284B；单卡 RTX PRO 6000 上 GLM-5.2 753B 为 llama.cpp 的 2.0×（14.9 vs 7.3 tok/s）。
+Headline 结果（§ 1, § 5.2–5.3）：支持 20+ MoE；RTX 5090 上 Qwen3.6-35B-A3B 77–83 tok/s、DeepSeek-V4-Flash 22–25 tok/s，相对最强端侧基线 decode 1.5–2.3×，且跨 agent 工作负载相对单轮 W1 的 decode 波动 ≤12%；FreeToken 每个 cell 的 worst-case TTFT 低于 44 s（原文只给上界）；llama.cpp / Ollama / KTransformers 的最差 turn 分别为 232 s / 179 s / 946 s，且每家至少在一个设置里超过 150 s（§ 1, § 5.2；OpenClaw 默认 120 s idle watchdog）。8GB RTX 4060 笔记本上 35B（NVFP4）39.3 tok/s，超过 Codex 中位 33 tok/s；32GB 游戏桌面交互式服务 284B；单卡 RTX PRO 6000 上 GLM-5.2 753B 为 llama.cpp 的 2.0×（14.9 vs 7.3 tok/s）。
 
 ## 架构与执行
 
@@ -97,6 +97,8 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 
 > Figure 3 | End-to-end serving on the RTX 5090 across four workloads … and two models … × marks configurations an engine cannot serve.（§ 5.2 Main Results, Figure 3）
 
+§ 5.2 的 tail 不在 Figure 3 里：图的下排是 mean TTFT。正文写 FreeToken 的 worst turn 在每个 cell 低于 44 s（上界，没有逐 cell 点值）；llama.cpp 232 s、Ollama 179 s、KTransformers 946 s，三家都在某处超过 150 s。MoE-Infinity 没有 worst-turn 数字。作者用这些 stall 对照 OpenClaw 的 120 s idle watchdog，以及 Claude Code 约十分钟的默认请求超时。
+
 机制归因（§ 5.3）：
 
 - **Pipelined prefill**：打开 overlap 后，每 8192-token chunk 1.19–1.22 s，等于 64.4 GB expert 池按 52.7 GB/s 流一遍——PCIe 5.0 ×16 的实际天花板，expert 计算被完全藏在传输后；16k tokens 时 prefill 6.7k tok/s。关掉第二 buffer，吞吐在 4k/8k/16k 分别掉 19% / 25% / 26%。
@@ -110,11 +112,8 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 - **找论文也答不了 / 已闭合**：Qwen3.6-35B-A3B 是评测骨干，不为此臆造 Qwen3.6 独立架构页；wiki 只有 [Qwen3.5](../models/qwen3.5.md) 家族页。
 - 3090/4090/5090 的端侧数字来自「双路服务器 + 6 线程 cap」的仿真，桌面/笔记本两台才是真实消费级；跨档读数要带这个口径。
 - 论文明确不比较跨引擎 wall-clock（轨迹分叉）。「交互式」指 decode tok/s 与 TTFT，不是端到端任务完成时间。
-
-## 待追问
-
-- **需实验或作者披露**：`models.md` 的 known-good 表没有逐检查点写 CUDA-graph 快路径。README 只有 graph-compatible execution 这一句。
-- **需实验或作者披露**：最差 TTFT < 44 s 是原文概括；Figure 3 只画 mean TTFT，tail 分布未给表。
+- `models.md` 的 known-good 表没有逐检查点写 CUDA-graph 快路径，README 只有 graph-compatible execution。缺这张表不阻碍理解 offload 机制，不再追。
+- § 1 与 § 5.2 的 FreeToken worst-case TTFT 只是上界（below 44 s / stays below 44 s in every cell），不是逐 workload × 模型的点值。Figure 3 下排是 mean TTFT，原文没有 tail 分位数表。基线最差 turn 的点值已写入评测：llama.cpp 232 s、Ollama 179 s、KTransformers 946 s。没有还没抄的 tail 列。
 
 ## 相关页面
 

@@ -45,18 +45,18 @@ GLM-OCR 是面向真实生产系统的轻量多模态 OCR 模型，核心论点�
 
 GLM-OCR Core 走视觉-语言生成范式：
 
-- **视觉编码器（CogViT，~400M）**：从文档图像提取高层视觉表示。[GLM-5V-Turbo](glm-5v-turbo.md) 同样使用 CogViT 视觉编码器，是同族视觉前端。
+- **视觉编码器（CogViT，~400M）**：从文档图像提取高层视觉表示。[GLM-5V-Turbo](glm-5v-turbo.md) 同样使用名为 CogViT 的视觉编码器。已发布 [zai-org/GLM-OCR](https://huggingface.co/zai-org/GLM-OCR) config（本地 `raw/hf-weight-configs-2026-10-11/GLM-OCR.json`）把视觉塔写成 `model_type=glm_ocr_vision`（depth 24、hidden 1024、patch 14、image 336），没有 `base_model` 指向 GLM-5V-Turbo。参数量接近不能当成同一份权重。是否复制过权重，报告没有写，不再追。
 - **LLM 解码器（GLM，~500M）**：自回归语言模型，以视觉 embedding（经 connector 投影到语言空间）和文本 prompt 为前缀 token，生成结构化输出（Markdown / JSON）。
 
 ### MTP 机制（核心加速点）
 
 除主预测头外，附加 **k 个共享参数辅助头**同时预测未来 k 个 token。这些头共享相同参数但被训练来建模不同未来偏移。推理时每步生成多 token，降延迟并鼓励更好的局部结构一致性。
 
-关键数字（已据原文核实）：
+关键数字（已据原文核实，§1 / §2.1）：
 - 训练时预测 **10 tokens/step**
 - 推理时平均生成 **5.2 tokens/step**
 - 约 **50% 吞吐提升**
-- 共享参数方案显著降低 MTP 引入的额外 GPU 内存开销（引用 [35] = [GLM-5](glm-5.md) 的参数共享思路）
+- 辅助头共享参数、建模不同未来偏移。已发布 config 的 `num_nextn_predict_layers` 为 **1**，对应一份共享 MTP 模块，不是 10 套独立权重。5.2 是平均每步生成长度，config 没有另写推理 draft 长度。引用 [35] 是 [GLM-5](glm-5.md) 的参数共享思路，本报告没有把 GLM-5 的实现再展开。
 
 这与 [DSpark](dspark.md)（推测解码 drafter）、[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash（block-diffusion draft）、[Gemma 4](../models/gemma-4.md) MTP drafter 同属 MTP 加速家族，但 GLM-OCR 的特点是 **MTP 同时作为训练目标（不只是推理加速）**，且用共享参数而非独立 draft model 控内存。详见 [多 Token 预测](../concepts/multi-token-prediction.md)。
 
@@ -79,7 +79,7 @@ GLM-OCR Core 走视觉-语言生成范式：
 
 ## 后训练
 
-Stage 4 用 [GRPO](../comparisons/llm-rl-policy-optimization.md)（Group Relative Policy Optimization）提升结构化输出可靠性和任务准确率。训练样本由 SFT 模型 rollout 生成，自动评测后按难度分层构造分级优化集。Reward 设计 task-aware，整合准确性指标和结构验证信号：
+Stage 4 用 [GRPO](../comparisons/llm-rl-policy-optimization.md)（Group Relative Policy Optimization）提升结构化输出可靠性和任务准确率。训练样本由 SFT 模型 rollout 生成，自动评测后按难度分层构造分级优化集。clip、dynamic sampling、是否沿用 DAPO 都没有写，这些配方细节不再追。Reward 设计 task-aware，整合准确性指标和结构验证信号：
 
 | 任务 | 主准确性 reward | 附加约束 |
 | --- | --- | --- |
@@ -144,16 +144,17 @@ OmniDocBench v1.5 细分（Table 4，Overall 94.62）：表格识别绝对最佳
 - 本报告自报 OmniDocBench **v1.5** = 94.62（Table 4）
 - [MinerU2.5-Pro](mineru-2-5-pro.md) Table 2 统一重测 GLM-OCR 在 **v1.6** = 95.15（Full）
 
-v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)（Multi-Granularity Adaptive Matching）修正 v1.5 的粒度匹配偏差，一般会提分（消除粒度惩罚）。此处 v1.6 > v1.5 符合预期。**读 GLM-OCR 分数时须区分 v1.5 自报分与 v1.6 统一重测分**——这与 [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) 方向相反：1.0 的 v1.5 自报 94.10、v1.6 自报 92.03、MinerU 统一重测 89.87（统一重测降，不像 MGAM）；GLM-OCR 统一重测升，符合 MGAM 提分预期。
+v1.6 比 v1.5 高 0.53 分。MinerU2.5-Pro 引入的 [MGAM](mineru-2-5-pro.md)（Multi-Granularity Adaptive Matching）修正 v1.5 的粒度匹配偏差，一般会提分（消除粒度惩罚）。此处 v1.6 > v1.5 符合预期。**读 GLM-OCR 分数时须区分 v1.5 自报分与 v1.6 统一重测分**——这与 [HunyuanOCR 1.0](hunyuan-ocr-1.0.md) 方向相反：1.0 的 v1.5 自报 94.10、v1.6 自报 92.03、MinerU 统一重测 89.87（统一重测降，不像 MGAM）；GLM-OCR 统一重测升，符合 MGAM 提分预期。GLM-OCR 从 v1.5 自报 94.62 到 v1.6 统一重测 95.15 是升的，HunyuanOCR 1.0 从自报 92.03 到统一重测 89.87 是降的，不能用 MGAM 一种解释套两边。
+
+## 证据边界与阅读提示
+
+- 与 DSpark 独立 drafter、DFlash 在同一负载下的接受率和内存，原文没有这项对照。
+- MTP 在高并发下是否衰减，原文没有这项测量。现有吞吐是单副本单并发。
+- 布局检测错误对最终分数的定量影响，原文没有这项测量。Limitations §6.1 承认错误会传到下游。
 
 ## 待追问
 
-- **需补外部来源**：**MTP 的 k 值与共享参数细节**：训练预测 10 tokens/step，推理平均 5.2 tokens/step——推理时 k 是多少？10 个头全用还是子集？共享参数方案具体如何实现（引用 GLM-5 [35] 但未展开）？与 [DSpark](dspark.md) 独立 drafter、[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash block-diffusion 的接受率/内存 trade-off 缺乏直接对比。
-- **需实验或作者披露**：**MTP 在高并发下是否有 DSpark 指出的静态多 token drafter 吞吐反噬**：报告只给单副本单并发吞吐，c>1 时加速比是否衰减？[HunyuanOCR-1.5](hunyuan-ocr-1.5.md) DFlash 在 c=32 时加速比已从 2.14× 降到 1.80×。
-- **需实验或作者披露**：**Stage 4 RL 的 GRPO 配置**：论文称用 GRPO + 难度分层 + task-aware reward，但 clip / dynamic sampling / 是否沿用 DAPO recipe 未明确，无法与 MinerU2.5-Pro Stage 3 / HunyuanOCR IcePop 直接对比。
-- **需实验或作者披露**：**CogViT 是否与 GLM-5V-Turbo 同一套权重**。2026-10-10 的 [zai-org/GLM-OCR](https://huggingface.co/zai-org/GLM-OCR) `config.json` 把视觉塔写成 `model_type=glm_ocr_vision`（depth 24、hidden 1024、patch 14、image 336），没有 `base_model` 指向 GLM-5V-Turbo。Hugging Face 上也没有智谱官方的 GLM-5V-Turbo 检查点。参数量接近不能当成同一份权重。
-- **需实验或作者披露**：**PP-DocLayout-V3 的错误传播**：Limitations §6.1 承认两阶段 pipeline 有错误传播（布局检测不准则下游降级），但未给布局错误对最终分数的定量影响。
-- **需补外部来源**：**v1.5→v1.6 的 0.53 分提升是否全归 MGAM**：MinerU2.5-Pro 统一重测环境除 MGAM 外是否还有其他变更（test 子集、评测代码）？
+- **数字归因未闭合**：**v1.5 自报 94.62 到 v1.6 统一重测 95.15 的 +0.53** 是否全部来自 MGAM。统一重测环境是否还改了 test 子集或评测代码，两篇报告都没写。
 
 ## 相关页面
 

@@ -43,8 +43,8 @@ Kimi K2.5 在 SWE-Bench Verified 为 76.8，SWE-Bench Pro public 为 50.7，SWE-
 
 多模态方面，报告给出 VideoMMMU 86.6、MMVU 80.4、OCRBench 92.3、OSWorld-Verified 63.3 和 WebArena 58.9。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：zero-vision SFT 的成立条件是什么？是否必须先有足够强的 joint pretraining？
-- **需实验或作者披露**：Agent Swarm 的提升有多少来自并行搜索，有多少来自 context sharding？
-- **需实验或作者披露**：冻结 sub-agent 能稳定训练，但是否限制了长期协作策略的上限？
+- zero-vision SFT 是否必须先有足够强的联合预训练，原文没有这项对照。
+- Agent Swarm 的提升里，并行搜索与 context sharding 各占多少，原文没有这项对照。
+- 冻结 sub-agent 是否限制长期协作策略的上限，原文没有这项实验。

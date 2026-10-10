@@ -90,11 +90,8 @@ RTX 4090、3 相机：图像编码 14 ms + 观察前向 32 ms + 10 步 flow 27 m
 - [FAST](fast.md) 已 ingest：分词器论文，不是本页的新动作头。它把 FAST 接到本页 PaliGemma 骨干上训 π0-FAST，报匹配 diffusion、训练最多 5× 更快——**那是 FAST 论文的数字，不是本 PDF**。本页对照仍是把 OpenVLA 重训到 π 混合物（§VI-A、Figure 7）。
 - [AtomicVLA](atomicvla.md) 已 ingest：在本页连续专家上加 SG-MoE，不是第四种动作头。它的 LIBERO / CALVIN 数字是那边的协议，不要回填本页。
 - 与 OpenVLA 的对照是「把 OpenVLA 重训到 π 混合物」，不是 OpenVLA 论文自己的 Bridge/Google robot 协议，不能直接和 [OpenVLA](openvla.md) Table 4/6 横比。
-
-## 待追问
-
-- **需实验或作者披露**：预训练混合物该怎么配、跨任务/跨本体正迁移有多大，原文 §VII 自己列为未解。
-- **需实验或作者披露**：高层 VLM 在 π0 里是外挂；[π0.5](pi0.5.md) 改成同一模型先预测 semantic subtask。这条统一是否必须，π0 原文没有消融。
+- 跨任务 / 跨本体的正迁移有多大，原文 §VII 列为未解，没有测量。混合物具体怎么配未公开，本页不追。
+- π0 自己的混合物上，原文没有「外挂高层 VLM vs 同一权重」的对照。[π0.5](pi0.5.md) Figure 13 是另一套家务协议。
 
 ## 相关页面
 

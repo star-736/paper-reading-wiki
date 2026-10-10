@@ -124,14 +124,12 @@ Reward correction 改用自训的 4B RL teacher，student 是 1.7B（Figure 6）
 - **[Lightning OPD](lightning-opd.md)**：Table 1 引用本文多 teacher 的 AIME24 61.0 和 LCB 29.0。学生、teacher 和数据都不同，不是同一协议下的对照。
 - **[Uni-OPD](uni-opd.md)**：在自己的 Qwen3-4B 多教师表里复现了 ExOPD 基线，数学 47.7、代码 62.0，Uni-OPD 是 48.5、63.6。超参写明对齐 G-OPD 仓库。这不是本文主表，也不能用来改 \(\lambda=1.25\) 的结论。他们不放大 \(\lambda\)，改的是数据均衡和轨迹回报间隔。
 - **[DPO](dpo.md)**：公式 10 的隐式 reward 形式来自 Rafailov et al.。差别是本文的 \(\pi^\star\) 不必是从 \(\pi_{\mathrm{ref}}\) 解出来的 RL 最优策略。
+- **[ListOPD](listopd.md)**：把本文的 reward-extrapolation \(\lambda\) 接到近确定 JSON，并给出 clip-safe 阈值。Fashion 上 \(c=5\) 的标记是 1.22。那不是本文数学/代码主表 \(\lambda=1.25\) 的复现，也不是 GKD 的数据混合比例。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：\(\lambda=1\) 的生产 OPD 为什么也会超过 teacher？本文的闭式在 \(\lambda=1\) 时就是 teacher。主表里标准 OPD 数学均分只高 0.5、代码还低 0.3，和 MiMo / Nemotron 的「RL 域 student 普超 teacher」不是同一结果。
-- **需实验或作者披露**：重叠 prompt、两个以上的域、跨模型族、thinking 模式。作者把这三件列为未来工作；公开实现也写明多 teacher 只支持 math/code 两个。
-- **现有材料待核**：1200-step teacher 上「每一项超过 domain teacher」已经不成立。主表的「only method」不能外推到训满的专家。
-- **需实验或作者披露**：\(\lambda=1.5\) 的尖峰 hacking 和长度偏差只有现象描述。没有像 OPSD 那样的 pointwise clip，也没有报 \(\lambda\) 在 1.25 附近的误差。
-- **需实验或作者披露**：reward correction 没有在 30B-A3B 上做过，因为拿不到它的 pre-RL。Figure 6 的增益是 4B teacher → 1.7B student。
+- 重叠 prompt、两个以上的域、跨模型族和 thinking 模式，原文没有实验；作者把这些列为未来工作。
+- 原文没有把 \(\lambda=1.5\) 回落里的 implicit reward hacking 和长度偏差拆开的对照。
 
 ## 相关页面
 
@@ -147,3 +145,4 @@ Reward correction 改用自训的 4B RL teacher，student 是 1.7B（Figure 6）
 - [nrehiew 博客](nrehiew-sft-rl-opd.md)
 - [MiMo-V2-Flash 技术报告](mimo-v2-flash.md)
 - [DPO](dpo.md)
+- [ListOPD](listopd.md)：同一根 reward-scale \(\lambda\) 在结构化输出上的 clip-safe 边界

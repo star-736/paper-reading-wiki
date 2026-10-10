@@ -23,9 +23,9 @@ resource: "https://z.ai/blog/glm-5.3"
 
 ## 核心结论
 
-Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2 的增益全部来自后训练的环境、任务多样性与计算量扩展（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。因此，不能把它的能力提升归因于未披露的新架构、参数规模或预训练语料。
+Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2 的增益全部来自后训练的环境、任务多样性与计算量扩展（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。因此，不能把它的能力提升归因于未披露的新架构、参数规模或预训练语料。GLM-5.2 这份 base 的参数、注意力架构，以及它和 GLM-5 技术报告里那个模型的关系，本页材料没有写。不能因同属 GLM-5 家族而直接等同。
 
-博客描述的环境生成链条是：research agent 从真实工作中归纳任务模式，合成为带多步依赖和隐藏状态的可执行环境；judge agent 尝试解题以检查可解性；verifier 不看参考解生成，再由 solver trajectory 发现并封堵 reward shortcut。通过 oracle、no-op 与 unsolved-state 检查的 verifier 才提供可直接训练的二元 reward（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。这是 [Agentic engineering](../concepts/agentic-engineering.md) 中“环境本身是可扩展训练数据基础设施”的又一实例。
+博客描述的环境生成链条是：research agent 从真实工作中归纳任务模式，合成为带多步依赖和隐藏状态的可执行环境；judge agent 尝试解题以检查可解性；verifier 不看参考解生成，再由 solver trajectory 发现并封堵 reward shortcut。通过 oracle、no-op 与 unsolved-state 检查的 verifier 才提供可直接训练的二元 reward（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。真实任务来源、人工介入比例、去重方式，以及 verifier 的 false-positive / false-negative 率，博客没有写。这是 [Agentic engineering](../concepts/agentic-engineering.md) 中“环境本身是可扩展训练数据基础设施”的又一实例。
 
 ## 后训练与系统
 
@@ -51,18 +51,11 @@ Z.ai 明确称 GLM-5.3 与 GLM-5.2 使用同一 base model，发布版相对 5.2
 | CyberGym | 84.5 | 77.2 | Claude Code 2.1.207、无 web tools；1,507 tasks、single-run Pass@1 |
 | ExploitBench | 54.4 | 24.4 | 300 interaction rounds；41 tasks、3 revisions 的 capability coverage 平均 |
 
-![Z.ai Code Bench v1.0 将 GLM-5.3、GLM-5.2、Claude Fable 5 与 Claude Opus 4.8 的 accuracy 对平均每任务 output tokens 作图；GLM-5.3 在其 low/high/max thinking 档均高于 GLM-5.2，但该私有 benchmark 的任务集与检查表未公开。](../assets/glm-5-3-blog/zai-code-bench-effort.png)
+![Z.ai Code Bench v1.0 将 GLM-5.3、GLM-5.2、Claude Fable 5 与 Claude Opus 4.8 的 accuracy 对平均每任务 output tokens 作图；GLM-5.3 在其 low/high/max thinking 档均高于 GLM-5.2，但该私有 benchmark 的任务集、检查表、污染控制与统计不确定性未公开，不能代替公开 benchmark。](../assets/glm-5-3-blog/zai-code-bench-effort.png)
 
 > 发布页图注："Agentic Coding Performance by Effort Level"；Z.ai Code Bench v1.0，在 Claude Code 2.1.207 上评测（来源：[GLM-5.3 官方发布博客](https://z.ai/blog/glm-5.3)）。
 
 安全能力部分只记录评测和披露治理信号：作者称在后训练混入漏洞发现数据与环境后，能力从单点缺陷识别扩展到多阶段 exploitation chain 推理；其公开披露台账记录已公开和仍在披露中的发现。该说法及 2,436 个发现等统计仍待独立审计，本文不展开任何利用步骤（来源：[Z.ai Security Disclosure Ledger](https://cvd.z.ai/)）。
-
-## 待追问
-
-- **需实验或作者披露**：GLM-5.2 base model 的参数、注意力架构与 GLM-5 的关系尚未由本页披露；不能因同属 GLM-5 家族而直接等同。
-- **需实验或作者披露**：环境生成的真实任务来源、人工介入比例、去重方式和 verifier 的 false-positive / false-negative 率未公开。
-- **需实验或作者披露**：Z.ai Code Bench 是私有基准；其任务、checklist、污染控制与统计不确定性未开放，不能作为公开 benchmark 的替代。
-- **需实验或作者披露**：训练—rollout 的 $10^{-7}$ log-prob 对齐、2.3 倍吞吐和网络安全发现统计均缺少独立复现或方法细节。
 
 ## 相关页面
 

@@ -58,7 +58,7 @@ $$\mathcal{L}(\theta) = -\mathbb{E}_{(C, q, \tau) \sim \mathcal{D}_{\text{train}
 
 ### 数据来源
 
-人工挑选 9 个 GitHub 仓库（§ 4.1，Table 4），三条标准：(1) 规模与成熟度（>7000 effective PRs）；(2) 社区交互频率（高频 code review 提供自然语言推理信号）；(3) 语言多样性（Python / Java / C / Rust 等）。最终从 61810 个 PR 中构造 1762 个 task query。
+人工挑选 9 个 GitHub 仓库（§ 4.1，Table 4），三条标准：(1) 规模与成熟度（>7000 effective PRs）；(2) 社区交互频率（高频 code review 提供自然语言推理信号）；(3) 语言多样性（Python / Java / C / Rust 等）。最终从 61810 个 PR 中构造 1762 个 task query。原文没有检验这 9 个仓库的人工挑选是否带来选择偏差，也没有泛化到未收录技术栈的对照。
 
 | 仓库 | PR 数 | Query 数 |
 | --- | --- | --- |
@@ -76,7 +76,7 @@ $$\mathcal{L}(\theta) = -\mathbb{E}_{(C, q, \tau) \sim \mathcal{D}_{\text{train}
 
 Pipeline 分三步（§ 4.2–4.3）：
 
-**Step 1: Query Construction。** 用 GitHub API 元数据构建 PR 链后，用 LLM 为每个 PR 合成一个 sub-query。设计约束：sub-query 必须阐释当前步骤要解决的核心问题和推理链，但**故意隐去具体实现细节**（不出现字面函数名/类名/变量名），迫使 agent 在 rollout 中自行做代码导航和定位。同时，初始 query 携带整条 PR 链的全局概览，确保 agent 从一开始就理解长周期任务的全局目标与结构分解。
+**Step 1: Query Construction。** 用 GitHub API 元数据构建 PR 链后，用 LLM 为每个 PR 合成一个 sub-query。设计约束：sub-query 必须阐释当前步骤要解决的核心问题和推理链，但**故意隐去具体实现细节**（不出现字面函数名/类名/变量名），迫使 agent 在 rollout 中自行做代码导航和定位。同时，初始 query 携带整条 PR 链的全局概览，确保 agent 从一开始就理解长周期任务的全局目标与结构分解。原文没有放松「隐去函数名/变量名」这一约束的对照。
 
 **Step 2: Rollout Data Collection。** 构建可复现的增量开发环境：checkout base commit SHA，agent（GLM-4.6）用两套 scaffold（SII-CLI + mini SWE-agent）做 rollout，产出 diff patch。关键机制是**跨 stage 状态传递**——stage $t$ 的初始状态是 base commit 叠加前序轨迹的 patch：$S^{(t)}_{\text{init}} = B_t \oplus \Delta\tau_{t-1}$（式 4）。这模拟了真实增量开发：前一个 PR 的修改影响后一个 PR 的起点。Evaluator 用 LLM judge 对比 agent patch 与 ground-truth patch，判定 pass/fail，fail 则 retry，pass 则进入下一 stage。
 
@@ -109,7 +109,7 @@ Table 1（§ 5.3）在 GLM-4.6 上比较四种训练数据：
 
 ### 跨模型泛化
 
-Table 2（§ 5.3）在 GLM-4.6、Qwen3-30B-A3B、Qwen3-32B、Qwen3-4B 上做 SFT，daVinci-Agency 一致提升 AVG（GLM-4.6: 0.441→0.475, Qwen3-32B: 0.280→0.292, Qwen3-30B-A3B: 0.295→0.307）。Qwen3-4B 因模型容量限制收益微弱（0.164→0.168）。
+Table 2（§ 5.3）在 GLM-4.6、Qwen3-30B-A3B、Qwen3-32B、Qwen3-4B 上做 SFT，daVinci-Agency 一致提升 AVG（GLM-4.6: 0.441→0.475, Qwen3-32B: 0.280→0.292, Qwen3-30B-A3B: 0.295→0.307）。Qwen3-4B 因模型容量限制收益微弱（0.164→0.168）。原文没有最低模型容量门槛的受控测定。
 
 ### 效率收益
 
@@ -121,19 +121,11 @@ Figure 6（§ 6.2）：fine-tuned 模型不仅分数更高，token 和工具调�
 
 > Figure 7: Performance scaling analysis across training horizons and inference budgets. Left: Training Horizon Scaling. Extending training trajectory horizon by scaling PR chains from daVinci-Agency-Short's 59.39K to daVinci-Agency-Long's 84.82K tokens significantly enhances model performance. Right: Inference-time Budget Scaling on SWE-bench.（§ 6.3）
 
-两条 scaling law：(1) **Train Scaling**——延长训练轨迹 horizon（daVinci-Agency-Short 59.39K → Long 84.82K tokens/sample）提升长周期 benchmark；(2) **Test Scaling**——增加推理步数上限，daVinci-Agency 稳步提升而基线几乎不动。
+两条 scaling law：(1) **Train Scaling**——延长训练轨迹 horizon（daVinci-Agency-Short 59.39K → Long 84.82K tokens/sample）提升长周期 benchmark；(2) **Test Scaling**——增加推理步数上限，daVinci-Agency 稳步提升而基线几乎不动。原文受成功率限制，实现里 PR 链最多连 5 个，并把更长链写成 future work（§7）；没有更长链上收益是否递减的实验。
 
 ### Rejection Sampling 消融
 
-Table 5（Appendix B）：不用 rejection sampling，AVG 从 0.405 暴跌到 0.205（低于 base model）；用 rejection sampling 后 0.421。证明数据质量过滤是必需的——原始 rollout 噪声太大，直接 SFT 会导致灾难性退化。
-
-## 待追问
-
-- **需实验或作者披露**：当前受成功率限制，PR 链最多连 5 个。更长的链是否持续带来 train scaling 收益，还是存在收益递减点？
-- **需实验或作者披露**：Query Constructor 故意隐去实现细节（不出现函数名/变量名），这一设计对 agent 的代码导航能力学习有多关键？如果放松约束（给部分实现提示），数据效率与能力习得如何变化？
-- **需实验或作者披露**：跨模型泛化中 Qwen3-4B 几乎无收益——daVinci-Agency 的长周期监督信号是否有最低模型容量门槛？门槛大概在什么参数量级？
-- **需实验或作者披露**：9 个仓库的人工挑选是否引入了选择偏差？覆盖的语言/领域是否足够支撑泛化到未收录的技术栈？
-- **需实验或作者披露**：Scaling Success 策略只延长成功轨迹，但失败轨迹中是否也包含有价值的修正信号（类似 bug-fix pattern）？当前的 rejection sampling 是否丢弃了这些？
+Table 5（Appendix B）：不用 rejection sampling，AVG 从 0.405 暴跌到 0.205（低于 base model）；用 rejection sampling 后 0.421。证明数据质量过滤是必需的——原始 rollout 噪声太大，直接 SFT 会导致灾难性退化。原文没有检验失败轨迹中的修正信号是否被 rejection sampling 丢掉。
 
 ## 相关页面
 

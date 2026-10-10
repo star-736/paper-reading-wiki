@@ -72,6 +72,8 @@ $$
 
 **YaRN** = 上述温度 + NTK-by-parts（Definition 2）。
 
+**外部佐证**（2026-10-11 阅读的 [transformers v5.1.0 `modeling_rope_utils.py`](https://github.com/huggingface/transformers/blob/v5.1.0/src/transformers/modeling_rope_utils.py) `_compute_yarn_parameters`）：`ROPE_INIT_FUNCTIONS["yarn"]` 的默认边界是 `beta_fast=32`、`beta_slow=1`。注释写 “as suggested in the paper”。按 `find_correction_range(beta_fast, beta_slow)` 的 ramp，高旋转维保持原频率、低旋转维除以 `factor`，对应论文 \(\alpha=1\)（`beta_slow`）、\(\beta=32\)（`beta_fast`），字段名不是 \(\alpha/\beta\)。未设置 `attention_factor`、且没有同时给出 `mscale` 与 `mscale_all_dim` 时，`attention_factor = 0.1\ln(\mathrm{factor})+1`，等于论文的 \(\sqrt{1/t}\)。若两者都给了，温度改成两个 `get_mscale` 的比值，不再是这一条公式。
+
 ### Dynamic Scaling（§3.4）
 
 凡是带固定 $s$ 的方法（PI / NTK-aware / NTK-by-parts / YaRN）都有两种用法：整段推理锁死 $s=L'/L$；或每个 forward 取 $s=\max(1,l'/L)$。后者叫 Dynamic Scaling。锁死 $s$ 会在短于 $L$ 时打折、超过 $L'$ 时突然崩；动态 $s$ 可以在越过训练窗后平滑退化。与 NTK-aware 合称 Dynamic NTK，与 YaRN 合称 Dynamic-YaRN。
@@ -114,12 +116,9 @@ Llama 2 128K 模型的 passkey：7B / 13B 的 $s=32$ 在测到的窗内平均准
 ## 证据边界与阅读提示
 
 - ReRoPE、LM-Infinite 因改 attention、当时不兼容 FA2，没进对照（§2.3）。
-
-## 待追问
-
-- **需补外部来源**：$\alpha=1$、$\beta=32$ 和 $\sqrt{1/t}=0.1\ln(s)+1$ 是在 LLaMA / Llama 2 上拟合的。 [Qwen3](qwen3.md) 训练期 ABF（base $10^4\to 10^6$）再推理期 YaRN factor=4，报告没写 $\alpha/\beta/t$，也没写固定 $s$ 还是 Dynamic Scaling。vLLM 的 YaRN 已核为固定 `factor` 的 cos/sin 表（见上）。Hugging Face `ROPE_INIT_FUNCTIONS["yarn"]` 的 $\alpha/\beta$ 默认值是否逐条等于 Definition 2，本页仍未核。
-- **需实验或作者披露**：原文主结果是微调；生产（[Qwen3](qwen3.md) 32K→128K 是 YaRN + [Dual Chunk Attention](dual-chunk-attention.md) 再 4×、[Qwen3-Next](qwen3-next-blog.md) 256K→1M、[Laguna](laguna-m1-xs2.md) 只在 GA 层加 YaRN）把 YaRN 当推理或中段训练旋钮。三种用法（微调 / Dynamic 零样本 / 固定 factor 推理）没有同模型对照。DCA 改的是注意力位置索引，与本页的频率切分正交。
-- **需实验或作者披露**：没有 256K / 1M 数字。Qwen3-Next 的 1M YaRN 远超本页 128K 证据。
+- [Qwen3](qwen3.md) 没有写自己的 \(\alpha/\beta/t\)。这不阻碍理解 YaRN 的定义，不再向那份报告追这组默认值。
+- 原文的长度数字停在 128K。更长窗是后续系统的用法，不再向这篇论文追 256K / 1M 表。
+- 原文没有在同一模型上对照微调、Dynamic 零样本和固定 factor 推理这三种用法。
 
 ## 相关页面
 

@@ -87,7 +87,7 @@ GRPO 的 token gate 是二元 trust region：band 内梯度为 1，band 外为 0
 
 > 论文 Figure 4 原文标题："Training reward and validation performance of a cold-start model fine-tuned from Qwen3-30B-A3B-Base under different RL algorithms."（§5.1）
 
-controlled experiments（§5.1）：Qwen3-30B-A3B-Base cold-start；数学 reasoning queries；AIME25 / HMMT25 / BeyondAIME，average Pass@1 over 16 samples；batch 分成 4 个 mini-batches；SAPO 默认 $\tau_{pos}=1.0$、$\tau_{neg}=1.05$；对比 GSPO 与 GRPO-R2（GRPO + routing replay）。
+controlled experiments（§5.1）：Qwen3-30B-A3B-Base cold-start；数学 reasoning queries；AIME25 / HMMT25 / BeyondAIME，average Pass@1 over 16 samples；batch 分成 4 个 mini-batches；SAPO 默认 $\tau_{pos}=1.0$、$\tau_{neg}=1.05$。$\tau$ 是手设常数，Figure 5 只比较三档相对大小，没有自适应规则。对比 GSPO 与 GRPO-R2（GRPO + routing replay）。
 
 ![SAPO Figure 5：非对称温度消融。$\tau_{neg}>\tau_{pos}$ 最稳定；$\tau_{neg}=\tau_{pos}$ 次之；$\tau_{neg}<\tau_{pos}$ 最不稳定，说明负 advantage token 梯度更容易带来训练不稳定。](../assets/sapo/fig5-temperature-ablation.png)
 
@@ -101,6 +101,8 @@ SAPO 的特殊价值是它不只停留在数学 controlled experiment；论文 �
 
 > 论文 Figure 6 原文标题："Training reward and validation performance of Qwen3-VL-30B-A3B from a preliminary cold-start initialization, showing that SAPO achieves consistent improvements and outperforms GSPO and GRPO-R2 under the same compute budget."（§5.2）
 
+摘要与 §5.2 写 SAPO 在 Qwen3-VL 的不同尺寸和 MoE / dense 架构上都有收益。公开曲线只有 Qwen3-VL-30B-A3B 这一条，其它尺寸的数字不在 PDF 里。
+
 Qwen3-VL 实验评测四项：AIME25（Pass@1 with 32 samples）、LiveCodeBench v6（Pass@1 with 8 samples）、ZebraLogic、MathVision。论文只给曲线与 aggregated validation score，没有给完整表格数值；可作为「Qwen3-VL 后续训练使用 SAPO」的算法来源，但不应改写 Qwen3-VL 技术报告里的原始 pipeline 事实。
 
 ## 与其他页面的关系
@@ -109,12 +111,9 @@ Qwen3-VL 实验评测四项：AIME25（Pass@1 with 32 samples）、LiveCodeBench
 - [Group Sequence Policy Optimization](group-sequence-policy-optimization.md)：SAPO 直接继承/批评 GSPO，认为 GSPO sequence-level hard clipping 会因少数 off-policy token 牺牲整条 sequence 的 near-on-policy token 信号。
 - [Qwen3-VL 技术报告](qwen3-vl.md)：SAPO 是 Qwen3-VL 后续/配套 RL 方法证据，应该作为外部后训练算法补充，而不是替换原报告的三阶段后训练描述。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：SAPO 说所有方法最终可能仍有 instability，只是 SAPO 稳定更久；它是否能完全避免 collapse，还是只是延迟 collapse？正文倾向后者。
-- **需实验或作者披露**：$\tau_{pos}$ / $\tau_{neg}$ 是否能自适应，而非固定 1.0 / 1.05？论文只做三档消融。
-- **需实验或作者披露**：SAPO 在 Qwen3-VL family 的不同尺寸/架构上都有效，但正文只展示 30B-A3B preliminary checkpoint 曲线；其它尺寸的具体收益未列表。
-- **需实验或作者披露**：SAPO 的 soft gate 是否会降低对极端坏 token 的惩罚力度？论文强调平滑保留信号，但没有给 reward hacking / safety 侧实验。
+- 原文没有检验 SAPO 是避免 collapse 还是只延迟 collapse 的更长程实验，也没有 reward hacking 或 safety 侧实验。
 
 ## 相关页面
 

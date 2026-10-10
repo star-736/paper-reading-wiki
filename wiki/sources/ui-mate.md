@@ -133,7 +133,7 @@ OSWorkerBench 指令-only（原文确证，Table 2；200 步预算）：
 
 100 个长程办公任务，41 个归一化应用，10 个职位族。67 个 Long-Memory、49 个 Multi-App，两标签独立、可重叠。88 个任务用企业应用后端的状态 evaluator，12 个用表格/图像/复合文档的任务特定 evaluator。严格成功要求全部终态条件；进度是 checkpoint 加权分。Long-Memory / Multi-App 子集只报严格成功，因为标签可能只对应部分 checkpoint（原文确证，§6.4）。
 
-示范资源是两套不同集合，不是 100 任务的划分：33 self-demo（同任务强 agent 成功 rollout，去像素坐标）用于本报告的定量 DemoCUA；45 variant-demo（相关但非同一任务的真人录屏）测程序迁移。成对协议固定指令、初始环境、预算和 verifier，只改示范是否可见（原文确证，§6）。
+示范资源是两套不同集合，不是 100 任务的划分：33 self-demo（同任务强 agent 成功 rollout，去像素坐标）用于本报告的定量 DemoCUA；45 variant-demo（相关但非同一任务的真人录屏）测程序迁移。成对协议固定指令、初始环境、预算和 verifier，只改示范是否可见（原文确证，§6）。§10 把 variant-demo 写成 open problem：45 题没有系统汇总。其中 10 题试点里，把示范段复制到与目标实体数一致之后，该设置净正向，但作者认为还不够稳，未进主表（原文确证，§10）。这 10 题没有绝对成功率。
 
 ### Self-demo 定量结果
 
@@ -149,13 +149,9 @@ OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：�
 
 - **找论文也答不了 / 已闭合**：不建独立 Qwen3.6 模型页。27B 的 hybrid/dense 细节不能从本报告升级为已核实架构；本库也不臆造 Qwen3.6 技术报告。
 - OSWorld-Subset 按「本模型失败」筛选，self-demo 又来自更强 agent，不能外推到任意任务或真人示范。
-
-## 待追问
-
-- **需实验或作者披露**：45-task variant-demo 只有 10 题试点：把示范段复制到目标实体数后净正向，但作者认为不够稳，未进主表（§10）。
-- **需实验或作者披露**：Historical reasoning 与 RL 探索的冲突只有定性熵塌缩描述，没有给出可复现的熵曲线或替代算法。
-- **需实验或作者披露**：IcePop + SeqClip 的过滤比例、以及 PCM 开启时的具体 `b / wmax` 未披露。
-- **需实验或作者披露**：Workflow 钉在上下文开头导致 KV-cache 无法复用，作者标为 future work，没有给出改到末尾后的速度数字。
+- Historical reasoning 放进 RL 会加速熵塌缩、评测变差，已写入 §7.4.2。报告没有可复现熵曲线，也没有替代算法，不再追问曲线本身。
+- IcePop 与 SeqClip 的过滤比例，以及 PCM 的 `b` / `wmax` 数值未披露。Eq. 13 只给 `0 < b ≤ wmax`。这些是未公开超参，不再追问。
+- Workflow 钉在上下文开头、KV-cache 不能跨步复用，以及「改到末尾」属于 future work，已写入 §5.3。报告没有速度数字，不再追问。
 
 ## 相关页面
 

@@ -140,15 +140,13 @@ Algorithm 1 的主循环：每步按公式 3 的 $p$ 采样数据集 → 从该�
 - **更新间隔 $T_{\text{update}}$（Figure 3，原文确证）**：50 步最优；太短（10）不稳，太长（500）适应慢。
 - **reward 形式（Figure 4，原文确证）**：$\Delta$-Entropy（熵减）reward 在 8B 上与 $\Delta$-Loss 相当，说明框架对 reward 定义灵活，不确定度下降也是有效信号。
 
+## 证据边界与阅读提示
+
+- 原文没有把本方法迁到预训练 domain reweighting 的实验。Limitations 把 mixture policy 写成 dataset-level，instance-level 是开放方向；原文没有与 Qwen3 instance-level 混合的直接对比。
+
 ## 待追问
 
-- **需实验或作者披露**：**reward 计算是否真做了梯度更新？——论文内部矛盾**：§4.2 与 Algorithm 1 第 14 行明确写 reward 来自「virtual one-step update」后的 $L_{\text{pre}}-L_{\text{post}}$，即要对每个数据集做一次临时梯度更新（必然含反向传播 + 参数更新）；但 §8 Efficiency 又称 reward「relies solely on forward passes and requires no additional backward computation」，且开销推导 $19/50\times 1/3\approx 12.7\%$ 也假设只用前向（前向约占一步训练 1/3）。若真做梯度更新，开销应接近一个完整训练步而非 1/3。这是 tier-3 推断的矛盾，需作者澄清实现究竟用了 forward-only 近似还是真做了 virtual gradient step（若是后者，12.7% 开销推导就站不住）。
-- **需实验或作者披露**：**跨阶段泛化**：方法在 SFT 阶段验证，能否迁移到预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM 场景）？SFT 数据集异构性强（LIMA vs FLAN 尺度差 50×），预训练 domain 尺度差更温和，prior-scaling 的锚定收益可能不同。
-- **需实验或作者披露**：**instance-level 扩展**：作者在 Limitations 自陈 mixture policy 是 dataset-level，instance-level 是 open direction。这与 [Qwen3](qwen3.md) 已落地的 instance-level 标注混合形成对照，但二者无公开直接对比。
-
-## 相关追问
-
-主记录：[在线混合与 proxy 路线的规模对照](../concepts/data-mixture-optimization.md#待追问)。
+- **需核对原文**：reward 计算是否真做了梯度更新。§4.2 与 Algorithm 1 第 14 行写 reward 来自「virtual one-step update」后的 $L_{\text{pre}}-L_{\text{post}}$，即要对每个数据集做一次临时梯度更新；§8 Efficiency 又称 reward「relies solely on forward passes and requires no additional backward computation」，开销推导 $19/50\times 1/3\approx 12.7\%$ 也假设只用前向。两处口径对不上，要回原文核对实现，而不是另跑实验。
 
 ## 相关页面
 

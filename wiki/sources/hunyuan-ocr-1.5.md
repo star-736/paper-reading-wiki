@@ -69,7 +69,7 @@ Draft model 配置：~90.7M 参数，block size B=16，n=16 anchors/sequence，�
 
 > Figure 3: Overview of Agentic Data Flow.（§ 4 Agentic Data Flow）
 
-Agentic Data Flow 不是简单扩大数据量，而是面向模型弱点的数据构造系统。算法工程师用自然语言描述目标能力需求（如「为低资源语言构造合成 OCR 数据」），agent 自主分解任务、确定所需物料和工具调用、开发数据 pipeline，并在生产过程中与算法工程师持续交互迭代。
+Agentic Data Flow 不是简单扩大数据量，而是面向模型弱点的数据构造系统。算法工程师用自然语言描述目标能力需求（如「为低资源语言构造合成 OCR 数据」），agent 自主分解任务、确定所需物料和工具调用、开发数据 pipeline，并在生产过程中与算法工程师持续交互迭代。报告点名 HunyuanOCR-1.0 与 Qwen3.5 作为清洗和标注工具。agent 自身的 backbone 没有写，不再追。
 
 Agent 配备的工具：web search、OCR 服务、VLM 服务、文件处理脚本、图像清洗工具、数据生成工具。物料准备阶段 agent 自动测试字体渲染兼容性、维护语言-字体-支持词汇映射、对候选图批量跑 HunyuanOCR-1.0 挖掘 hard case。Pipeline 开发阶段 agent 创建项目、写渲染/QA 生成脚本、支持多种布局/增强/输出格式，根据反馈多轮修订。
 
@@ -117,12 +117,15 @@ OmniDocBench v1.6（端到端文档解析）总分 94.74，是 1B 级模型 SOTA
 
 推理速度：DFlash 在 vLLM 下 1.408s/page（0.706 page/s），比 dots.ocr 快 5.08×、比 DeepSeek-OCR 2 快 3.88×、比 Unlimited-OCR 快 2.60×。
 
+## 证据边界与阅读提示
+
+- 原文 Table 6 记下 vLLM 并发加速比：c=1 为 2.14×，c=32 为 1.80×。把它说成静态多 token drafter 的吞吐反噬，原文没有这项对照。
+- IcePop 的 train-inference ratio mask 与 token-level clipping、以及与 GSPO sequence-level ratio 的组合，原文没有这项实验。
+- 本报告自报的 OmniDocBench v1.6 总分 94.74 还没有统一重测。原文没有这项对照。
+
 ## 待追问
 
-- **需实验或作者披露**：DFlash 的 draft model（90.7M / 5 层）在高并发下是否有 DSpark 论文指出的静态多 token drafter 吞吐反噬问题？报告只给了 c=1 到 c=32 的数据，c=32 时加速比已从 2.14× 降到 1.80×。
-- **需实验或作者披露**：Agentic Data Flow 的 agent 具体用什么模型驱动？报告提到 Qwen3.5 参与标注，但 agent 本身的 backbone 未明确。
-- **需实验或作者披露**：IcePop 的 train-inference ratio mask 与 GLM-5 的 token-level clipping、GSPO 的 sequence-level ratio 之间是什么关系？IcePop 一手出处（[Ring-1T](ring-1t.md) Appendix A.1）写它不依赖 sequence-level 优化、可与 GSPO 并进，但本报告没有组合实验。
-- **需实验或作者披露**：**HunyuanOCR 1.0 三套 OmniDocBench 分数**：[1.0 原文](hunyuan-ocr-1.0.md) Table 4 = **94.10**（Ouyang 2024 协议，附录写成 v1.5）；本报告自报 1.0 的 v1.6 = **92.03**；[MinerU2.5-Pro](mineru-2-5-pro.md) 统一重测 v1.6 Full = **89.87**。v1.5→v1.6 自报已对上版本；**92.03 vs 89.87 仍未归因**。1.5 自身 94.74 尚无统一重测。
+- **数字相互矛盾**：**HunyuanOCR 1.0 在 v1.6 上的 92.03 vs 89.87**。[1.0 原文](hunyuan-ocr-1.0.md) Table 4 的 **94.10** 是 v1.5 协议，与 92.03 的版本差已经对上。同属 v1.6 的自报 92.03 和 [MinerU2.5-Pro](mineru-2-5-pro.md) 统一重测 89.87 仍差 2.16，两篇都没归因。
 
 ## 相关页面
 

@@ -14,7 +14,7 @@ resource: "../../raw/2408.15664v1.pdf"
 - 文件：`raw/2408.15664v1.pdf`
 - 标题：Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts
 - 团队 / 日期：Lean Wang, Huazuo Gao, Chenggang Zhao, Xu Sun, Damai Dai（DeepSeek-AI + 北大）；arXiv:2408.15664v1，2024-08
-- 定位：**方法论文，非模型报告**——MoE 负载均衡问题本身。提出 Loss-Free Balancing（偏置门控），是 DeepSeek-V3 / V3.2 / V4、Kimi K2 系、MiMo-V2-Flash、Ling-2.6 等一线 MoE 生产模型共同采用（或混合采用）的负载均衡标准的**一手出处**。
+- 定位：**方法论文，非模型报告**——MoE 负载均衡问题本身。提出 Loss-Free Balancing（偏置门控），是 [DeepSeek-V3](deepseek-v3.md) / V3.2 / V4、Kimi K2 系、MiMo-V2-Flash、Ling-2.6 等一线 MoE 生产模型共同采用（或混合采用）的负载均衡标准的**一手出处**。
 
 ## 核心结论
 
@@ -109,30 +109,27 @@ Table 1 的三方法性质矩阵（原文，绿=好性质，红=坏性质）：
 
 本页是 wiki 内 MoE 负载均衡谱系的**一手锚点**。各报告对它的引用与采用（均已在对应 `raw/` PDF 中核实）：
 
-- **DeepSeek 系（采用起点）**：本论文的直系下游——同团队（Lean Wang / Damai Dai 都在 DeepSeek-AI），V3 起全系把 auxiliary-loss-free bias 路由写入生产。**[DeepSeek-V4](../sources/deepseek-v4.md) 原文直接引用**："For load balancing, we also employ the auxiliary-loss-free strategy (DeepSeek-AI, 2024; **Wang et al., 2024a**)"，并披露 bias update speed = 0.001（正是本论文 Figure 4 的甜点值）；V4 还叠加一个 weight 1e-4 的 sequence-wise balance loss 防**单序列内**极端失衡——单序列粒度是原论文 MaxVio_global/batch 两口径都没覆盖的盲区，生产配置实际是"纯 bias + 轻微序列级 loss"的混合。
+- **DeepSeek 系（采用起点）**：本论文的直系下游——同团队（Lean Wang / Damai Dai 都在 DeepSeek-AI），[DeepSeek-V3](deepseek-v3.md) 起全系把 auxiliary-loss-free bias 路由写入生产。**[DeepSeek-V4](../sources/deepseek-v4.md) 原文直接引用**："For load balancing, we also employ the auxiliary-loss-free strategy (DeepSeek-AI, 2024; **Wang et al., 2024a**)"，并披露 bias update speed = 0.001（正是本论文 Figure 4 的甜点值）；V4 还叠加一个 weight 1e-4 的 sequence-wise balance loss 防**单序列内**极端失衡——单序列粒度是原论文 MaxVio_global/batch 两口径都没覆盖的盲区，生产配置实际是"纯 bias + 轻微序列级 loss"的混合。[DeepSeek-V3](deepseek-v3.md) §2.1.2 自己引用 Wang et al. 2024a，规定 bias 只用于 top-K、门控仍用原始亲和分，并用「过载则 bias 减 γ、欠载则加 γ」描述更新。§4.2 把 γ 设为 0.001（前 14.3T token），最后 500B token 改为 0；互补 sequence-wise loss 的 α 已是 0.0001。因此 1e-4 的序列级项在 V3 原文里已经写出。V3 没有引用本论文 Figure 4，也没有把 γ=0.001 写成该图的选型结论。
 - **[Kimi K2/K2.5](../sources/kimi-k2.5.md)**：常规 aux-loss-free bias（384 routed / 8 active 规模下够用）。
 - **[Kimi K3](../sources/kimi-k3.md)**：显式指出本方法（K3 报告引 [30]）的固定步长 sign 更新在 ~10³ experts 失效，用 [Quantile Balancing](../concepts/stable-latentmoe.md) 升级为 balanced assignment 对偶 LP 的 exact coordinate minimizer（SignSGD 一步即原版 sign 更新，QB 直接跳到同一对偶目标的精确解）。**谱系：本论文 → sign update → K3 QB**。
 - **[MiniMax-M2](minimax-m2-series.md#专家偏置的联合优化与证据边界)（引用但更新规则不同）**：§2.2.1 明说 expert bias 与模型参数联合优化，以大幅降低 auxiliary loss；不能把它列为已确证采用本页“历史负载 sign 更新、bias 不进输出权重”的同一实现。具体梯度路径及剩余辅助损失系数未披露。
 - **[MiMo-V2-Flash](../sources/mimo-v2-flash.md)**：混合路线——expert bias update factor 0.001（Stage 1/2）**加上** MoE sequence auxiliary loss 1e-5；与 V4 的"纯 bias + 轻序列级 loss"同型，所列 MiMo 系数 1e-5 比 V4 的 1e-4 小一个数量级；但损失归一化及训练条件不同，不能只凭系数判断实际梯度影响。
 - **[Ling-2.6](../sources/ling-2.6.md)**：auxiliary-loss-free load balancing（bias-update rate γ=0.001 → 0.0001，训练后期衰减），Inclusion AI 侧的独立采用证据。
-- **[Qwen3](../sources/qwen3.md)（对照，非采用）**：Qwen3 用的是 global-batch load balancing **loss**（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail*）——aux-loss-based 阵营在生产模型里仍是主流选项之一；[Laguna XS.2](../sources/laguna-m1-xs2.md) 同路线（同一 Qiu 文 aux loss，只在非 padding token 上算）。**注意：本 wiki 此前在 Stable LatentMoE 页写"aux-loss-free sign update（K2/Qwen3 用）"是错的——Qwen3 走的是 loss 路线，已修正。**
+- **[Qwen3](../sources/qwen3.md)（对照，非采用）**：Qwen3 用的是 global-batch load balancing **loss**。公式在 [Demons in the Detail](demons-in-the-detail.md)（同步 $\bar f_i$，不是 micro-batch 口径），不在 Qwen3 报告正文里。[Laguna XS.2](../sources/laguna-m1-xs2.md) 同路线（只在非 padding token 上算）。**注意：本 wiki 此前在 Stable LatentMoE 页写"aux-loss-free sign update（K2/Qwen3 用）"是错的——Qwen3 走的是 loss 路线，已修正。**
+- **GLM-5 / GLM-5V-Turbo**：两篇现有报告里没有 expert bias 更新或 expert auxiliary-loss 配方。DP/PP 均衡、rollout 路由和视觉分片均衡都不是专家路由配方。报告未说明不等于模型未采用；缺的是官方配方，不再单独追问。核查见 [GLM-5](glm-5.md#专家负载均衡的披露边界) 与 [GLM-5V-Turbo](glm-5v-turbo.md#负载均衡的层次区别)。
 
-**谱系总表**（详见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）：auxiliary loss（Switch/GShard → V2 三重 loss → Qwen3 global-batch / Laguna）↔ auxiliary-loss-free bias（**本论文** → V3/V4 + 序列级 loss、K2 系、MiMo 混合、Ling-2.6）→ QB（K3，896-expert 规模的 exact 解）。
+**谱系总表**（详见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)）：auxiliary loss（Switch/GShard → V2 三重 loss → Qwen3 global-batch / Laguna）↔ auxiliary-loss-free bias（**本论文** → [V3](deepseek-v3.md)/V4 + 序列级 loss、K2 系、MiMo 混合、Ling-2.6）→ QB（K3，896-expert 规模的 exact 解）。
 
 MiniMax-M2 的联合优化 bias 单独列为相关变体，不能并入已确证的梯度外 sign-update 分支。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**GLM-5 / GLM-5V-Turbo 的专家负载均衡策略**：已重读两篇现有报告，未找到 expert bias 更新或 expert auxiliary-loss 配方。GLM-5 的 DP/PP 工作负载均衡、DP-aware rollout 路由，以及 GLM-5V-Turbo 的视觉分片均衡均不是该问题的答案。需要官方训练配方、训练实现或作者澄清；不能把报告未说明写成模型未采用。核查范围见 [GLM-5](glm-5.md#专家负载均衡的披露边界) 与 [GLM-5V-Turbo](glm-5v-turbo.md#负载均衡的层次区别)。
-- **需实验或作者披露**：**sequence-wise balance loss 的必要性**：V4 和 MiMo 都在 bias 之外加了序列级 loss，但两者权重差一个数量级（1e-4 vs 1e-5）。什么场景下单序列失衡会伤到？原论文只测了 global/batch 两口径，没测序列口径——生产模型补这个 loss 暗示原论文口径有盲区，但没有公开对照实验。
-- **需实验或作者披露**：**sigmoid gate 结论的稳健性**：附录 C 在 1B 上得出"sigmoid 优于 softmax"，V4 换 Sqrt(Softplus) 但保留 bias 路线。gate 函数与 bias 调平策略的耦合（归一化 vs 独立分数）值得一份跨 gate 的系统消融。
-- **需实验或作者披露**：**EC 泄漏批判的适用边界**：批判成立的前提是自回归训练（未来 token 不可见）。EC 在 BERT 式双向模型或非 LM 场景（如 VLA 的分块训练）是否仍是可行选项？wiki 内 [InternVLA-A1.5](../sources/internvla-a1.5.md) 等未涉及 MoE，暂无对照案例。
-- **需实验或作者披露**：**MaxVio 0.04 的系统意义**：论文没给"MaxVio 降到多少才够"的阈值分析。K3 QB 用 exact 解追完美平衡，但 0.04 vs 0.00 在真实 EP 训练吞吐上差多少？E/R bound（MoonEP）视角的量化缺失。
+- 原文没有这项实验/对照：没有序列级 balance loss 的对照，附录 C 的 sigmoid / softmax 也没有跨 gate 的系统消融，EC 泄漏批判没有扩到双向模型或非语言模型，MaxVio 也没有「降到多少才够」的阈值或吞吐对照。序列级口径不在原文 global/batch 两套指标里，已写在跨报告信号。
 
 ## 相关页面
 
 - 概念页：[MoE 负载均衡谱系](../concepts/moe-load-balancing.md)（本论文为中心的完整谱系表）
-- 下游采用：[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3](../sources/kimi-k3.md)（QB 升级）、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
+- 下游采用：[DeepSeek-V3](deepseek-v3.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3](../sources/kimi-k3.md)（QB 升级）、[MiniMax-M2 Series](../sources/minimax-m2-series.md)、[MiMo-V2-Flash](../sources/mimo-v2-flash.md)、[Ling and Ring 2.6](../sources/ling-2.6.md)
 - 对照路线：[Qwen3](../sources/qwen3.md)、[Laguna M.1/XS.2](../sources/laguna-m1-xs2.md)（aux loss 阵营）
 - 相关机制：[Stable LatentMoE](../concepts/stable-latentmoe.md)（Quantile Balancing 是本方法的直接升级）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)
 

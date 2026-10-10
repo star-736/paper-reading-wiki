@@ -79,13 +79,9 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 
 **LoopWM 把循环对象换成环境隐状态**：[Looped World Models](../sources/looped-world-models.md) 的内循环精炼的是单步转移估计，外循环才是环境时间；作者自己把「循环 = 物理定律反复作用」标成概念类比。它与 LoopCoder-v2 / Ouro 共享「参数共享 + 可变深度」，但不共享评测对象：前者问 next-state 文本是否像环境，后者问代码或 tool-call DAG 是否更好。因此不能用 ScienceWorld EM 68.4 去外推 PLT 的 R=2 饱和，也不能用 LoopCoder 的 gain–cost 剪刀去否定「复杂转移多循环几次」。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**PLT + 稀疏注意力 / 线性注意力**：如果 PLT 的每次 loop 内部用 DSA 或 GDN 替代 full attention，Ω(r) 会改变吗？loop-count 饱和点会移动吗？
-- **需实验或作者披露**：**PLT + MTP 叠加**：latent loop 和 MTP 都是 test-time compute scaling 路径，两者是否如 latent loop + explicit CoT 一样互补？
-- **需实验或作者披露**：**CLP offset 自适应**：当前 Ω(r) 恒定是 CLP 固定右移 1 位的结果。如果 offset 量随 loop 自适应减小（如 learnable shift amount），能否推迟饱和点？
-- **需实验或作者披露**：**跨参数量 scaling**：7B 上 R=2 最优，更大模型上 gain–cost 交叉点是否会不同？Schwethelm 的 r^0.46 scaling law 是否暗示更大模型也需要更多 loop 才能饱和？
-- **需实验或作者披露**：**World-model 循环是否也饱和**：LoopWM 主张复杂转移（碰撞、接触）多分迭代、简单转移早停，但没有给出平均 $T$、退出分布，也没有固定 $T=1/2/3$ 的配对。若环境隐状态也有 LoopCoder-v2 那种收益递减，自适应深度的节省幅度会远小于 §3.4 的 100 层思想实验。
+- 原文没有这项实验/对照：没有 PLT 每次 loop 换成 DSA 或 GDN 的实验，没有 PLT 与 MTP 的叠加实验，没有把 CLP offset 改成可学习移位的实验，也没有在大于 7B 的模型上重找 gain–cost 交叉点。LoopWM 没有公开平均 $T$、退出分布或固定 $T$ 的配对，见该来源页的证据边界。
 
 ## 相关页面
 
@@ -102,5 +98,3 @@ Looped Transformer 代表了一种与本 wiki 已收录的效率路线**正交**
 - [高效长上下文注意力](efficient-long-context-attention.md) — 正交路线：单次前向传播内的长序列效率
 - [多 token 预测](multi-token-prediction.md) — 正交路线：单次前向传播内的多 token 摊销
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md) — LoopCoder-v2 在 SWE-bench / Terminal-Bench 上的数据点
-
-关联提问页：[LoopCoder-v2: Only Loop Once for Efficient Test-Time Computation Scaling](../sources/loopcoder-v2.md#相关追问)。

@@ -114,22 +114,15 @@ margins `s_{i,j} - α_i^{(t)}` 减掉 biased cutoff，旧 bias 只通过 cutoff 
 - **[Ling-2.6](../sources/ling-2.6.md)**：256 routed + 1 shared, 8 active，fine-grained MoE（expert intermediate=2048），前 4 层 dense FFN。规模与稀疏度都远低于 K3，未走 latent 压缩路线，也未提激活爆炸或负载失衡的专门解法——说明这两类问题在 ~1T / 256-expert 规模尚未尖锐到需要 Stable LatentMoE 级别的工程。
 - **[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md)**：另一条 **LatentMoE 生产集成**，但不是 Stable 三组件。550B/55B，512 routed / top-22，latent 2048（相对 hidden 8192 是 1/4，比 K3 的 d/2 更窄），引用 Elango et al. 2026。报告没有公开 SiTU-GLU 或 Quantile Balancing；预训练用 MaxVio 当健康代理，第一层 MaxVio 到 12T 时约 12，第二次 loss 发散后把总 token 收到 20T。这是「LatentMoE 结构」与「K3 用来稳住 896-expert 的三组件」必须分开记的对照点。
 - **SiTU-GLU 与 GLU/SwiGLU 家族**：SwiGLU 是当前 LLM FFN 主流（K2/Qwen3/DeepSeek 系都用）。SiTU-GLU 是首个为 3T 规模 + 极端稀疏 MoE 设计的 bounded 变体。与 hard clamping 的区别（smooth cap 保留饱和区梯度）是 K3 报告强调的训练优势点，但缺跨模型的对比 ablation。
-- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2 系 / DeepSeek-V3 起 / MiniMax-M2 / Ling-2.6 用；Qwen3 走的是 aux loss 路线而非 bias）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。完整谱系见 [MoE 负载均衡谱系](moe-load-balancing.md)。这里的 ECHO 是 MoE expert-parallel 通信栈，**不是** [ECHO 终端观测辅助 CE](../sources/echo.md)。**已闭合：不臆造 QB 独立报告**，Quantile Balancing 的一手在 [Kimi K3](../sources/kimi-k3.md)。
+- **QB 与负载均衡方法谱系**：aux-loss-based（[33]，加额外 loss 项）、aux-loss-free sign update（[30]，K2 系 / DeepSeek-V3 起 / MiniMax-M2 / Ling-2.6 用；Qwen3 走的是 aux loss 路线而非 bias，公式见 [Demons in the Detail](../sources/demons-in-the-detail.md)）、ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解）、BIP（同 assignment 不等式约束，慢）。QB 的定位是 **aux-loss-free 的 exact 解**——不引入额外 loss、无学习率、几步平衡，是对 sign update 在 10³ expert 规模的直接升级。完整谱系见 [MoE 负载均衡谱系](moe-load-balancing.md)。这里的 ECHO 是 MoE expert-parallel 通信栈，**不是** [ECHO 终端观测辅助 CE](../sources/echo.md)。**已闭合：不臆造 QB 独立报告**，Quantile Balancing 的一手在 [Kimi K3](../sources/kimi-k3.md)。
+
+报告把 Normalized LatentMoE 写成 consistently improves validation loss and downstream benchmarks，但没有 loss 或 benchmark 数字。SiTU-GLU 的 β1=4、β2=25 只给了值，没有选择方法，也没有相对 SwiGLU 的 loss 差。推理时 bias 冻结，报告没写从哪一步冻结。半宽 routed expert 相对全宽牺牲多少表达力、以及和 DeepSeek 全宽 routed expert 的同规模对比，报告都没有；2/(2+16) 只是专家个数的算术，不是充分性结论。原文没有这项实验/对照：没有 sign update 在约 896 expert 下的失败模式量化，也没有 QB 与 MoonEP 冗余规划的对照。这些未披露项不改变 Normalized LatentMoE、SiTU-GLU 和 QB 的已公开定义。
 
 ## 为什么重要
 
 - **它把开源 MoE 推过 3T 门槛**。2.8T 是开源模型首次达到 3T 级，而支撑这个规模的关键不是单纯加 expert，而是让 896-expert/16-active 的极端稀疏**可训练**——LatentMoE 压通信、Normalized + SiTU-GLU 压激活爆炸、QB 解负载失衡，三者缺一不可。
 - **QB 是 aux-loss-free 路由的算法升级**。原版 sign update 在 256-384 expert（K2/Qwen3 规模）够用，到 896 失效。QB 把"调 bias"从 sign-SGD 升级成对偶 LP 的 exact coordinate minimizer，无学习率、几步收敛——这个思路对任何走 aux-loss-free + 大 expert pool 的后续模型都适用。
 - **SiTU-GLU 是 bounded activation 的工程化**。SwiGLU 无界在低精度（FP8/MXFP4）下是 outlier 源，K3 的 QAT 全程 MXFP4 让这个问题更尖锐。SiTU-GLU 给了一个"原点附近等价 SwiGLU + 大值有界 + 饱和区有梯度"的解，与 K3 的 deployment-aware QAT 路线配套。
-
-## 待追问
-
-- **需实验或作者披露**：**Normalized LatentMoE 的 ablation 数字**。报告说"consistently improves validation loss and downstream benchmarks"但未给具体数字。RMSNorm 带来多少 loss 改善、哪些 benchmark 涨？
-- **需实验或作者披露**：**SiTU-GLU 的 β1=4 / β2=25 选择依据**。报告给值但未给选择方法。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 MXFP4 dynamic range 的关系？SwiGLU（β→∞）作为 ablation 基线的 loss 差距？
-- **需实验或作者披露**：**QB vs sign update 的收敛速度对比**。报告说 QB "equilibrates within a few update steps even for nearly 10³ experts"，但未给 sign update 在 896 expert 下的失败模式量化（振荡幅度、dying expert 比例）。这个对比是 QB 必要性的核心证据。
-- **需实验或作者披露**：**QB 的 train-inference consistency 细节**。推理时 bias 冻结，但训练时 bias 每 step 更新——bias 在训练后期的稳定性如何？是否会因最后几个 step 的 batch distribution 摆动影响最终 bias？报告说"final bias is frozen at inference"但未说从哪个 step 冻结。
-- **需实验或作者披露**：**LatentMoE 的表达力损失**。routed expert 在 ℓ=d/2 空间操作，相对全宽 expert 牺牲多少表达力？K3 靠 2 个全宽 shared expert 补，但 shared 占比（2 / (2+16) = 11%）是否够？与 DeepSeek 系全宽 routed expert 的 head-to-head 质量对比缺（不同模型规模、不同训练数据，不可直接比）。
-- **需实验或作者披露**：**MoonEP 的 E/R bound 与 QB 的关系**。MoonEP 保证 EP rank 间负载平衡（每 rank 恰收 S×K token），QB 保证 expert 间负载平衡（每 expert 收 mk/n token）。两者作用层级不同（EP rank vs expert），但都追求"完美平衡"。它们是否耦合——QB 的 balanced routing 是否让 MoonEP 的 redundant expert planning 更容易？
 
 ## 相关页面
 

@@ -118,12 +118,9 @@ Figure 8 的 scaling 分析给出三个实用结论：
 - 与 [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) 的关系：ARPO 把 GAIA / WebWalkerQA / HLE / XBench 作为 deep search 主评测，同时用 AIME、MATH、HotpotQA、2Wiki、MuSiQue、Bamboogle 等覆盖 reasoning 与 multi-hop QA。
 - 与 [Qwen3](../models/qwen3.md) 的关系：Qwen3 在本论文里是被 ARPO 训练的 backbone（8B/14B deep search），不是 Qwen3 官方报告的一部分；只能作为「外部后训练算法在 Qwen3 backbone 上验证」的证据。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：ARPO 的 entropy spike 观察是否在 coding agent / terminal agent 中同样成立？论文工具主要是 search、browser、Python interpreter，和 SWE-bench 式仓库编辑还有距离。
-- **需实验或作者披露**：partial rollout 的 branching 会不会和真实部署时的 tree search / self-consistency 解码重复？训练期探索收益与推理期采样收益如何分摊，正文没有展开。
-- **需实验或作者披露**：deep search 实验依赖 Bing 搜索、browser agent、LLM-as-judge 和 token-level F1；如果换搜索 API / browser 模型 / judge，ARPO 相对 GRPO 的优势是否稳定？
-- **需实验或作者披露**：GPG theorem 支撑 macro action policy gradient，但 entropy 阈值、$\alpha/\beta/\tau$ 的选择仍是经验超参；是否存在更原则化的 uncertainty criterion？
+- 原文工具主要是 search、browser、Python interpreter。没有 coding / terminal agent 上的 entropy spike 实验，没有 partial rollout 与推理期 tree search / self-consistency 的分摊实验，没有更换搜索 API、browser 或 judge 的对照，也没有替代 entropy 阈值的 uncertainty 准则实验。
 
 ## 相关页面
 
@@ -131,5 +128,3 @@ Figure 8 的 scaling 分析给出三个实用结论：
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[Forge Agent-Native RL](../concepts/forge-agent-native-rl.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - 相邻算法：[GiGPO](gigpo.md)、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)
 - 模型：[Qwen3](../models/qwen3.md)
-
-关联提问页：[Agentic Reinforced Policy Optimization](../concepts/agentic-reinforced-policy-optimization.md#相关追问)。

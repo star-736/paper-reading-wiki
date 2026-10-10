@@ -74,7 +74,7 @@ Naive binning（§III）：每维独立切成 \(N\) 个均匀 bin，最常用 \(
 | 数据 | 当前任务集 | 主要是 π0 混合物；同一轨迹还带关节 / 末端世界系 / 相机系（Appendix A） |
 | 维数 | 原动作维 | **pad 到 32 维** |
 | 用法 | 换数据要重 fit BPE | 作者写成对任意机器人 1 秒 chunk 的黑盒 |
-| 发布 | 可用 `tokenizer.fit(action_dataset)` 自训 | HF `physical-intelligence/fast` |
+| 发布 | 可用 `tokenizer.fit(action_dataset)` 自训 | HF `physical-intelligence/fast`；`processor_config.json` 的 `vocab_size` 是 **2048**（scale 仍为 10）。单数据集实验的 1024 不是这份权重 |
 
 推荐：输入按分位数归到 \([-1,1]\)，一次 token 化 1 秒（§V-C）。Fig. 6 上 FAST+ 贴近数据集特化 FAST。注意：作者自己写，universal tokenizer 的训练混合物**含本页真机评测任务的数据**（§VI-A Comparisons），所以 Fig. 6 不是「分词器完全没见过该任务」。真正 held-out 的是 Fig. 8 那组压缩测试（人形、灵巧手、UMI、Waymo 等），只报压缩比，不报策略。
 
@@ -121,14 +121,8 @@ DROID 训练细节（Appendix D）：成功 episode 75k、滤全零空闲步、2
 - **[π0](pi0.md) 原文是 flow，不是 FAST。** 本页把 FAST 接到 π0 的 PaliGemma 骨干和混合物上，得到自回归的 π0-FAST，并报匹配 diffusion、最多 5× 更快。这些数留在本页。π0 来源页的对照仍是「把 OpenVLA 重训到 π 混合物」。
 - **[π0.5](pi0.5.md) 的用法是 FAST→flow 两阶段。** 预训练 280k 步用 FAST 当标准 VLM next-token，后训练再长 flow expert。这不是本页的 π0-FAST（推理仍吐 FAST token）。π0.5 引用本页说离散预训练更省算力；不要把 Fig. 11 的柱填进 π0.5 的家庭家务。
 - **[π0.7](pi0.7.md) 只拿 FAST 当 Knowledge Insulation 的 VLM 训练信号。** 推理不吐 FAST，梯度不从 expert 回灌 VLM。不是两阶段配方，也不是本页的 AR 策略。
-- **[InternVLA-A1.5](internvla-a1.5.md) Stage 1 用 FAST 离散 token 做 VLM transferring，Stage 2 起换成 flow chunk。** 和 π0.5 同属「先离散后连续」，骨干是 Qwen-3.5 2B + unified expert，不是 PaliGemma。三篇都只引用本页，没有对照表说明 BPE 词表是不是 HF 上那份 FAST+。
+- **[InternVLA-A1.5](internvla-a1.5.md) Stage 1 用 FAST 离散 token 做 VLM transferring，Stage 2 起换成 flow chunk。** 和 π0.5 同属「先离散后连续」，骨干是 Qwen-3.5 2B + unified expert，不是 PaliGemma。InternVLA 写 action vocabulary 2048，与发布的 FAST+ 词表大小相同；其官方训练代码进一步加载 `physical-intelligence/fast` 的 `tokenizer.json`。π0.5 / π0.7 没写词表大小，官方代码也没写出 merges 来源。残余记在 [Vision-Language-Action](../concepts/vision-language-action.md#待追问)。
 - **[OpenVLA](openvla.md) 的 256-bin 是本页 naive 基线，不是 FAST。** 本页给 OpenVLA 加上 FAST+ 才能在 50 Hz 叠 T 恤上训起来（§VI-D）；不要把那根柱读回 OpenVLA 原文的 Bridge / Google robot 表。
-
-## 待追问
-
-- **需实验或作者披露**：自回归推理 750 ms 能否用投机解码 / 量化拉到 diffusion 的 100 ms 量级，原文没做（§VI-E、§VII）。
-- **需实验或作者披露**：FAST+ 在人形、灵巧手、导航上的**策略**成绩，本页只有压缩比（Fig. 8）。
-- **需实验或作者披露**：DCT+BPE 接到非自回归（diffusion / flow）解码会怎样，§VII 只列为方向。
 
 ## 相关追问
 

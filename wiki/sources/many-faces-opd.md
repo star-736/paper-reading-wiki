@@ -96,12 +96,12 @@ Qwen3-4B 蒸 Qwen3-1.7B-Base 时，base 会吐出不成句的非英文串，teac
 - **[Prune-OPD](prune-opd.md)**：也处理学生前缀上 teacher 失准，信号是重叠比，动作是衰减后续 reward 并缩短以后的 rollout。不改 Top-K KL 估计器。实验只在数学。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**、GKD、MiniLLM：被引为 OPD 的算法出处。本文的 sampled-token policy gradient（公式 4–5）就是博客那条 advantage。
 
-## 待追问
+Figure 13 中间面板没有可读的终点分。论文只写 1.7B-GRPO teacher「显著更好」，没有表。对齐和长度压缩也是曲线。这些数不在 PDF 里，不再追。作者把结论限定在测过的模型族和规模；10 张 Blackwell、最长训练回复 4096，和 V4 的全词表多 teacher 不是同一档，这是范围说明，不再另开一条。
 
-- **需实验或作者披露**：重归一化 Top-K 在 Qwen2.5-7B 数学上的增益（Revisiting）和未归一化 Top-K 在 Qwen3 上的崩溃，没有同一协议的对照。Stop-gradient 与重归一化谁更接近全词表 reverse KL，本文只给了梯度形式。
-- **需实验或作者披露**：数学 OPSD 的失败是否换回 full-vocab forward KL 就消失。Zhao 等人的设定本文没有重跑。
-- **需实验或作者披露**：Figure 13 中间面板没有读出最终分。论文只写 1.7B-GRPO teacher「显著更好」，没有表。对齐和长度压缩也是曲线，不是最终表。
-- **现有材料待核**：作者写结论限于他们测过的模型族和规模。10 张 Blackwell、最长训练回复 4096，和 V4 的全词表多 teacher 不是同一档。
+## 证据边界与阅读提示
+
+- 原文没有把重归一化 Top-K、未归一化 Top-K 和全词表 reverse KL 放在同一协议下对照。Stop-gradient 与重归一化谁更接近全词表，本文只给了梯度形式。
+- 原文没有重跑 Zhao 等人的 full-vocab forward KL 数学设定。
 
 ## 相关页面
 

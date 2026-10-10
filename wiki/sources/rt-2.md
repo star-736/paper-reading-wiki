@@ -159,24 +159,20 @@ PaLI-X-55B 符号理解最强；PaLM-E-12B 在数学推理子项上更好，论�
 - 当时可拿来做 VLA 的 VLM 很少，希望更多开源模型或开放微调 API。
 - Language-Table 真机失败例：笔会滚下桌、香蕉质心远离接触点——未见过的物体动力学（Figure 9）。
 
-均匀 256-bin 与后来的分位数 bin / flow-matching 连续头，原文没有比较。那是后文推断，见待追问。
+均匀 256-bin 与后来的分位数 bin / flow-matching 连续头，原文没有同协议比较。跨论文的精度差记在 [Vision-Language-Action](../concepts/vision-language-action.md#证据边界与阅读提示)，不要回填本页 Table 4。
 
 ## 证据边界与阅读提示
 
-- 本页的 RT-2 与 Open X-Embodiment 的 RT-2-X：同一套离散 token 配方，但数据从厨房 RT-1 换成 OXE 约 350k。OpenVLA 赢的是 RT-2-X，不是本页 Table 4 的 55B。两边协议不能横比。
+- 本页的 RT-2 与 [Open X-Embodiment](open-x-embodiment.md) 的 RT-2-X：同一套 256-bin 配方，数据从厨房 RT-1 换成跨本体混合物。OXE 全文是 1M+ 轨迹 / 22 本体；实验混合物是当时的 9 个本体。OpenVLA §5.1 把 RT-2-X 的训练集写成 350k，本页 PDF 没有这个数。OpenVLA 赢的是 RT-2-X，不是本页 Table 4 的 55B。两边协议不能横比。
 - PaLM-E-12B 脚注 1：其预训练混合物含高层 VQA 用的机器人图，可能和泛化场景的图像相似，但那些例子不含本实验评的低层动作。
-
-## 待追问
-
-- **需实验或作者披露**：均匀 256-bin 相对 OpenVLA 的分位数 bin、以及 π0 的连续 flow，精度和频率各差多少？本页只报 1–3 Hz / 5 Hz。
-- **需实验或作者披露**：CoT 变体只有定性 Figure 7，没有与主模型同协议的成功率。
+- CoT 变体只有定性 Figure 7。原文没有与主模型同协议的成功率对照。
 
 ## 相关页面
 
 - 模型：[RT-2](../models/rt-2.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（VLA 一词的出处；本页是封闭离散 token 配方）
 - 本页 §1 针对的分层 planner：[SayCan](saycan.md)
-- 开源复现同一动作头：[OpenVLA](openvla.md) · [模型](../models/openvla.md)（256-bin + Llama 词表覆盖；对照的是 RT-2-X 不是本页）
+- 开源复现同一动作头：[OpenVLA](openvla.md) · [模型](../models/openvla.md)（256-bin + Llama 词表覆盖；对照的是 [RT-2-X](open-x-embodiment.md) 不是本页）
 - 连续 flow，不再走 token：[π0](pi0.md)
 - 开世界 co-training：[π0.5](pi0.5.md)
 - 后续 MoT + flow：[InternVLA-A1.5](internvla-a1.5.md)

@@ -3,7 +3,7 @@ type: Concept
 title: "RL 权重同步与部署拓扑"
 description: "训练更新后把权重送到 rollout engine 的三条传输路径（NCCL broadcast / P2P RDMA / disk-delta）及其适用条件，含「收益随 fleet 宽度而非模型规模增长」的实测规律与 pause 成本。"
 tags: ["concept", "rl-weight-synchronization", "post-training-infra", "asynchronous-rl"]
-timestamp: 2026-09-11
+timestamp: 2026-10-11
 ---
 
 # RL 权重同步与部署拓扑
@@ -43,17 +43,11 @@ colocated（trainer 与引擎同卡）时是本地 handoff，不涉及传输；�
 - 与 [训练—rollout 一致性](train-rollout-consistency.md) **正交**：传输保证「引擎拿到的是 trainer 的权重」，一致性保证「拿到之后两边算出的概率相同」。Miles 的 disk-delta 校验和 true-on-policy alignment 是两条不同的保证，前者防漏写、后者防数值分歧。
 - 与 [KV cache 层](kv-cache-layer.md) **正交**：那边管缓存如何 offload、跨查询复用、跨引擎传输；这边管权重本身。两者在异步 RL 里会交叉——权重广播触发 KV-cache reset（Laguna）或让引擎 weight version 前进（Miles）。
 - **与部署拓扑强耦合**：三种异步治理粒度（Miles 的 staleness 上限 + buffer、Laguna 的 GPU 配比 + 每 2 step 同步、Ring-2.6 的 staleness manager）表面上是调度选择，实际上也是权重同步成本的函数——同步越贵，越倾向于拉长 cadence 并靠 staleness 治理兜底。
-- **LoRA 把这一层变小一个数量级**：同步的是 adapter 而不是整个模型，训练 step 与权重更新两处同时变轻；代价是 P2P / disk-delta 两条更激进的传输不可用。
+- **LoRA 把这一层变小一个数量级**：同步的是 adapter 而不是整个模型，训练 step 与权重更新两处同时变轻；代价是 P2P / disk-delta 两条更激进的传输不可用。adapter 的更省增量方案，报告没有给。pause 长度、staleness 上限与同步 cadence 的联合调参方法，报告也没有给。
 
 ## 待追问
 
-- **需实验或作者披露**：disk-delta 与 LoRA 被明确判为不兼容；adapter 的增量传输有没有更省的方案？
-- **需实验或作者披露**：权重同步造成的 pause 长度、staleness 上限与同步 cadence 三者如何联合调参？Miles 给出了一整套 staleness 指标但没有调参方法。
-- **需补外部来源**：权重同步的 pause 在异步运行里必然是一个全局屏障。有没有把「pause 期间继续跑旧权重轨迹」的代价显式建模进调度目标的公开工作？
-
-## 相关追问
-
-主记录：[新架构 P2P 权重映射成本](../sources/miles-v0-1.md#待追问)。
+- **需补外部来源**：权重同步的 pause 在异步运行里必然是一个全局屏障。有没有把「pause 期间继续跑旧权重轨迹」的代价显式建模进调度目标的公开工作？2026-10-11 检索未找到：Miles v0.1（`raw/2609.08368v1.pdf` §2.2、§4.3）只在安装新权重时 pause，staleness 是缓冲丢弃阈值；Laguna 的权重更新会 block 在途 rollout。外部看过、处理的是别的问题：AReaL（https://arxiv.org/abs/2505.24298，新权重到达后中断并用新权重重算 KV）、PipelineRL（https://arxiv.org/abs/2509.19128，in-flight 换成新权重）、LlamaRL（https://arxiv.org/abs/2505.24034）、StreamRL（https://arxiv.org/abs/2504.15930）、BiDiRL（https://arxiv.org/abs/2607.09207）、CadenceRL（https://arxiv.org/abs/2609.36899）。arXiv 查询 `all:"weight synchronization" AND all:staleness AND all:scheduler` 与 `all:"old policy" AND all:"weight update" AND all:pause AND all:rollout` 无命中。
 
 ## 相关页面
 

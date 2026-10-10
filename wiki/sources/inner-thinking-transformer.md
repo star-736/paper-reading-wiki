@@ -95,13 +95,12 @@ Table 3 以 ITT ×4 的 PPL 10.25 为基准：去掉 RTC 为 11.02，去掉 ATR 
 - **大模型数字冲突**：Table 8 的 50B-token PPL 为 6.00 → 5.68，紧邻文字却写 8.00 → 7.00；10B 行也与文字不符。大规模收益暂不作为核心结论。
 - **消融数字冲突**：步骤编码的 10.56 − 10.25 = 0.31，与正文相符，但 Table 3 括号写 +0.22；Table 2 相同 50% 选择率配置的 10.47 与 Table 3 的 10.25 也未交代差异。
 - **理论边界**：§3.4 / §A.3 依赖小残差、误差收缩等条件。小更新本身不足以保证向目标收缩；本页不将其写成实际 Transformer 必然几何收敛的定理。此判断是本页的数学审读，不是作者自行承认的限制。
+- 原文没有这项实验/对照：没有真实 prefill／decode 时延、吞吐与 KV 内存测量，也没有在相同总 FLOPs 下比较固定 Top-K、统一循环、ATR 和逐 token 停机。
 
 ## 待追问
 
-- **需补外部来源**：ATR 的序列级 Top-K 在自回归训练／解码中如何保持因果一致？只处理选中 token 时，其 attention 能访问哪些未选中 token 的 KV？Algorithm 1 的 KV 参数不足以确定缓存实现。
-- **需实验或作者披露**：层内循环的 router、选择／散射和缓存读写开销会不会抵消 FLOPs 优势？需要真实 prefill／decode 时延、吞吐与 KV 内存测量。
-- **需实验或作者披露**：正式版摘要、Table 8、消融表和 benchmark 数量的冲突仍没有勘误。2026-10-10 能找到的公开仓库 [udapy/inner-thinking-transformer](https://github.com/udapy/inner-thinking-transformer) 只有一条 arXiv 链接，不能用来对齐这些数字。在勘误出现前不采用更大模型的强宣传结论。
-- **需实验或作者披露**：固定 Top-K 预算与真正 learned halting 的收益如何区分？能否在相同总 FLOPs 下比较统一循环、ATR 和逐 token 停机？
+- **需补外部来源**：ATR 的序列级 Top-K 在自回归训练／解码中如何保持因果一致？只处理选中 token 时，其 attention 能访问哪些未选中 token 的 KV？Algorithm 1 的 KV 参数不足以确定缓存实现。2026-10-11 检索未找到：ACL 2025 正式 PDF（https://aclanthology.org/2025.acl-long.1369.pdf，Algorithm 1、Eq. 6、附录 ATR）与 arXiv:2502.13842v2；GitHub 仓库检索仅有 https://github.com/udapy/inner-thinking-transformer （README 只有 arXiv 链接）。
+- **数字相互矛盾**：正式版摘要、Table 8、消融表和 benchmark 数量的冲突仍没有勘误。2026-10-10 能找到的公开仓库 [udapy/inner-thinking-transformer](https://github.com/udapy/inner-thinking-transformer) 只有一条 arXiv 链接，不能用来对齐这些数字。在勘误出现前不采用更大模型的强宣传结论。
 
 ## 相关页面
 

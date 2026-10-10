@@ -30,7 +30,7 @@ resource: "../../raw/2306.08543v6.pdf"
 
    $$\nabla \mathcal{L}(\theta) = -\mathbb{E}_{x\sim p_x,\;y\sim q_\theta(\cdot|x)}\left[\sum_{t=1}^{T}\left(R_t - 1\right)\nabla \log q_\theta(y_t|y_{<t},x)\right],\quad R_t=\sum_{t'=t}^{T}\log\frac{p(y_{t'}|y_{<t'},x)}{q_\theta(y_{t'}|y_{<t'},x)}$$
 
-   即把 token 级 log-ratio 的累积 $R_t$ 当作 reward、减 1 作 baseline。这与 wiki 第一层记的 `advantage = sg(log π_T/π_θ)` 是同一族形式，但 MiniLLM 用的是**累积量**而非单 token 比值（`§待追问` 记口径差异）。
+   即把 token 级 log-ratio 的累积 $R_t$ 当作 reward、减 1 作 baseline。这与 wiki 第一层记的 `advantage = sg(log π_T/π_θ)` 是同一族形式，但 MiniLLM 用的是**累积量**而非单 token 比值（见下文「与 GKD、近代 OPD 的关系」）。
 3. **三个技巧治 PG 的三个病**（`§2.2`，消融见 `Table 4`）：single-step decomposition（把 $r_t$ 从 $R_t$ 拆出、直接对词表求和，降方差）、teacher-mixed sampling（采样分布 $\tilde p = \alpha p + (1-\alpha)q_\theta$，α=0.2，治 reward hacking）、length normalization（治长度偏置）。消融显示去掉 length normalization 与 teacher-mixed sampling 后验证集 R-L 从 27.4 掉到 17.4 / 22.3。
 4. **训练是两阶段、整体像 RLHF**（`Algorithm 1`、`§B.1`）：先在指令数据上 SFT 并取验证 loss 最低的 checkpoint 作起点，再跑 on-policy 优化；同时加一项预训练语料的语言建模损失 $\mathcal{L}_{PT}$ 以保住 canonical NLP 任务能力（`Table 7`）。
 5. **主结论**：在 5 个指令跟随评测集上全面优于 SFT w/o KD、KD（word-level）、SeqKD（`Table 1`）；student 覆盖 120M–7B、teacher 到 13B；多处 student 的 R-L 反超 teacher（作者归因于 teacher 自身训练时的 exposure bias）；ExAccErr 随生成长度不累积（`Figure 6`）、ECE 更接近 teacher（`Table 2`）、长回答子集优势更大（`Figure 7`），且 4-gram 多样性与语言建模 loss 基本不掉（`Table 3`）。
@@ -139,20 +139,16 @@ OPD 与 RL 的 reward / entropy 对照实际出现在 [nrehiew 博客](nrehiew-s
 
 - **两篇是 concurrent work，且互相点名**：MiniLLM 的 `§4` 把 GKD 列为 concurrent（`[AVS+23]`，即 arXiv:2306.13649）；[GKD](generalized-knowledge-distillation.md) 的 `§Related Work` 也把 MiniLLM 列为 concurrent work，并主张自己更简单稳定（不对采样过程反传）、更通用（发散度可换）。分工可以这样记：**GKD 把「on-policy 数据比例」和「发散度」都做成超参、优化方式接近监督学习；MiniLLM 直接选定 reverse KLD 作为目标，因此必须自己解决 PG 的高方差、reward hacking 与长度偏置。**
 - **两篇的 mode-seeking 论据落在同一个连续 toy 上**：MiniLLM `Figure 2`（`§2.1`）用单个高斯拟合高斯混合分布来展示 forward KLD 与 reverse KLD 的差别；[GKD](generalized-knowledge-distillation.md) `Figure A.16`（`§A.7`）是同类设置。[AKL](akl.md) 已收原文，把这条刻画降级到连续单峰 \(q\)；离散 softmax 上两边同驻点。AKL 实验刻意不和本篇比数字（本篇用了额外预训练语料）。
-- **与现代 token-level OPD 的形式关系**：MiniLLM 的 advantage 是**累积到序列尾**的 $R_t - 1$；[MiMo MOPD](../models/mimo-v2-flash.md) / [GLM-5](../models/glm-5.md) 与现代 token-level OPD 用的是**单 token** 的 $\mathrm{sg}[\log \pi_T - \log \pi_\theta]$。两者同族但并非同一估计器，本页不做等价换算（见待追问）。
+- **与现代 token-level OPD 的形式关系**：原文把单步奖励写成 \(r_{t'}=\log\frac{p(y_{t'}\mid y_{<t'},x)}{q_\theta(y_{t'}\mid y_{<t'},x)}\)，\(R_t\) 是从 \(t\) 累加到序列尾的这些 \(r\)。策略梯度里用的是 \((R_t-1)\nabla\log q_\theta\)（约第 3 页）。公式 3 再把 \(r_t\) 从 \(R_t\) 里拆出来，分成 \((\nabla\mathcal{L})_{\mathrm{Single}}\) 和带 \(R_{t+1}\) 的 \((\nabla\mathcal{L})_{\mathrm{Long}}\)。现代 token-level OPD 的 \(\mathrm{sg}[\log\pi_T-\log\pi_\theta]\) 只对应其中的当前项 \(r_t\)。丢掉未来项不是减一个与动作无关的 baseline，也不是把同一条和式重写成 telescoping。两套估计器同族，不是同一个。
 - **训练栈差异**：MiniLLM 保留了预训练语言建模损失 $\mathcal{L}_{PT}$ 以保住 canonical 任务能力（`Table 7`），并沿用 PPO clipping；近代 OPD 走 GRPO/PPO 的 advantage 折入路线，不再单独保留 $\mathcal{L}_{PT}$。
 
 ## 证据边界与阅读提示
 
 - **摘要的「120M 到 13B」是口径混装**：student 最大是 LLaMA-7B（teacher 才是 13B），论文摘要把两侧规模合起来说了。引用时必须分开写。
 - **没有多 teacher 与大规模 student 的实验**：MiniLLM 全是单 teacher、student ≤ 7B，无法直接回答 MOPD 场景下的问题。
-
-## 待追问
-
-- **现有材料待核**：**$R_t$ 累积 vs 单 token 比值是否等价**：MiniLLM 的 $R_t$ 累加 $t$ 之后所有 token 的 log-ratio，现代 OPD 只用当前 token 的 $\log(\pi_T/\pi_\theta)$。两者在数学上是否只差一个 telescoping / baseline 处理，本页未在原文层面核对，引用时不要当作同一形式。
-- **需实验或作者披露**：**teacher-mixed sampling 与「on-policy 纯度」的张力**：α=0.2 意味着采样分布不是纯 student 分布，论文用 importance weight 修正后**近似**成单步比值 $w_t \approx q_\theta/\tilde p$（`Eq 5`），这个近似带来的偏差在大规模设置下没有被评估；而 2026 各家 OPD 都是纯 student 采样，没有对应项。是这一项在规模上不重要，还是被 α 的鲁棒性掩盖了？
-- **需实验或作者披露**：**短回答子集上 forward 与 reverse KLD 表现相近**（`§3.3`、`Figure 7`）与「reverse KLD 普遍更优」的流行表述存在张力，论文自己给的情境化解释（输出空间小 → student 能覆盖 teacher 多数 mode）没有被单独消融验证。
-- **需实验或作者披露**：**「student 反超 teacher 是 exposure bias 所致」是作者解释而非实验结论**：论文以 teacher 也是 teacher-forcing 微调为由推断，没有做 teacher 的 on-policy 重训对照。
+- 原文没有评估 `Eq 5` 把 importance weight 近似成单步比值之后的偏差。
+- 原文没有单独消融「短回答上 forward 与 reverse KLD 相近，是因为输出空间小」。
+- 原文没有把 teacher 做 on-policy 重训、用来检验 student 反超是否来自 exposure bias 的对照。
 
 ## 相关页面
 

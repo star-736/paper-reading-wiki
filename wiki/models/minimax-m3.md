@@ -84,13 +84,7 @@ MSA 论文（2024）对 MiniMax-M3 的实验版本（约 109B 总参 / 6B 激活
 ## 证据边界与阅读提示
 
 - NeMo AutoModel 当前 context parallel 只支持到 **128K**，与 M3 号称的 1M context 之间存在工具链差距，1M 推理需要走 SGLang / vLLM 路径。
-
-## 待追问
-
-- **需实验或作者披露**：已确认发布版 MiniMax-M3 是 **428B / 22B-active** 的更大规模版本（NVIDIA blog 规格表），不是 MSA 论文里的 109B 实验版。但 MiniMax 是从 109B 实验配置直接放大的、还是中间又改了 routing / attention 设计？目前没有公开的 release-grade technical report 给出端到端训练流程。
-- **需实验或作者披露**：M3 是否有 MiniMax 自己发布的 instruct / RL 检查点？2026-10-10 的 [MiniMaxAI](https://huggingface.co/MiniMaxAI) 列表有 `MiniMax-M3` 与 `MiniMax-M3-MXFP8`，没有 M3-Instruct 或对应 M2.7 的后训练版。NeMo 侧能做 RL fine-tune 不等于官方已发布该检查点。
-- **需实验或作者披露**：M3 与 M2 是否会合流？两条路线在 MiniMax 内部资源上的优先级目前不清楚。
-- **需实验或作者披露**：公开 [MSA kernel](https://github.com/MiniMax-AI/MSA) 已经针对 NVIDIA Blackwell（SM100）重写并支持 FP8 / NVFP4 / FP4；NVIDIA blog 也确认部署精度是 **BF16 / MXFP8**，但 H800 上的部署精度和性能数字仍未公开。
+- 没有公开的 release-grade 技术报告说明 109B 实验配置如何放大到 428B。截至 2026-10-10，[MiniMaxAI](https://huggingface.co/MiniMaxAI) 列表有 `MiniMax-M3` 与 `MiniMax-M3-MXFP8`，没有 M3-Instruct。M2 与 M3 的内部优先级、以及 H800 上的部署精度，都没有公开材料。这些不再追。
 
 ## 相关页面
 

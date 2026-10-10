@@ -79,13 +79,11 @@ Figure 6 显示，从头训练的 Mobius-7B 专家激活较均匀；由 Qwen3.5 
 ## 证据边界与阅读提示
 
 - **自演化、world model、科学发现和 SSD–GPU 分层部署**：§5 都是作者定位或潜力展望，报告也承认需要系统、数据、训练和硬件协同验证，尚无实证。
+- 原文没有这项实验/对照：没有按 prefill / decode、同输出长度、batch、硬件和 kernel 拆开的效率对照；没有写明 Table 1 的 Qwen3.5 是否经过等量继续训练和相同 SFT/RL。latent loop 的单独消融，架构节已写明原文没有。
 
 ## 待追问
 
-- **需实验或作者披露**：**BRC 的可操作定义**：共享 FFN 参数本身不等于同一次 forward 的深层 activation 回流；Reasoner 对 Memory 的具体 query/key/value、跨层同步方式和梯度路径尚未公开。
-- **需实验或作者披露**：**效率分解**：报告同时称 shared Memory 会提高 retrieval 压力，又报近 4× 端到端速度。需要按 prefill / decode、同输出长度、batch、硬件和 kernel 拆分，才能判断收益主要来自结构还是更短输出。
-- **需实验或作者披露**：**公平的 conversion 基线**：Qwen3.5 checkpoint 转 Mobius 后继续训 1T tokens，而 Table 1 的 Qwen3.5 对照是否也经过等量继续训练、相同 SFT/RL，报告未明确。
-- **需实验或作者披露**：**latent reasoning 的因果证据**：没有 loop次数 / latent-step / MTP acceptance 的 ablation；Table 2 只是一个正确样本，不能证明内部 latent 过程取代了必要的外显 deliberation。
+- **需作者披露**：**BRC 的可操作定义**：共享 FFN 参数本身不等于同一次 forward 的深层 activation 回流；Reasoner 对 Memory 的具体 query/key/value、跨层同步方式和梯度路径尚未公开。
 
 ## 相关页面
 

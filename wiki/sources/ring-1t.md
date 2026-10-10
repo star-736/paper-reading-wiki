@@ -130,6 +130,8 @@ C3PO++ 扩展 C3PO（Ring-lite，arXiv:2506.14731）：用 token budget $\Phi$ �
 | 每步 | 480 prompt × 8 rollout | 80 question × 8 output |
 | 最大长度 | 65,536 | 32,768 |
 
+General RL 只写改回 GRPO。报告没有写这一阶段是否还试过 IcePop，也没有写 mismatch 在 RLHF 数据上是否仍然存在。
+
 ### ASystem（§2.5）
 
 SingleController + SPMD，把控制流与数据流拆开。组件：
@@ -168,15 +170,13 @@ IMO-2025（§3.3、Appendix E）：接入 [AWorld](https://github.com/inclusionA
 ## 证据边界与阅读提示
 
 - Limitations 把 MoBA 与「advanced linear attention」列为未来推理效率方向；本报告的 Ring-1T 仍是 GQA，不要和 Ring-2.6 的 Lightning Attention retrofit 混成同一代架构。
+- Eq. 2 在区间内乘的是 $k$。原文没有「只做 0/1 mask、不乘 $k$」的消融。IcePop 与 GSPO / SAPO / DIS 的可组合性只有 Appendix 定性句，原文没有组合实验。
 
 ## 待追问
 
-- **需实验或作者披露**：IcePop 的 $M(k)=k$ 是重要性采样校正，还是只是把 mask 写成乘子？Eq. 3 把 $M(\pi_{\mathrm{train}}/\pi_{\mathrm{infer}})$ 直接乘在 $\nabla\log\pi_{\mathrm{train}}$ 上，但没有消融「只做 0/1 mask、不乘 $k$」。
-- **需实验或作者披露**：Reasoning RL 用 IcePop，General RL 改回 GRPO：是对齐阶段不再怕 mismatch，还是 IcePop 在 RLHF 数据上没有试？报告没写。
-- **需实验或作者披露**：Figure 6 的 +IcePop 从约 300 step 才出现：是中途切入，还是两条 run 的对齐方式不同？
-- **需实验或作者披露**：AState 同步延迟：§2.5 写万亿参数 <10 s，§2.5.1 写 sub-second。哪一个是 Ring-1T 实测？
-- **需实验或作者披露**：SFT 域比例正文 46/26/20/8 与 Figure 14 饼图（Math 43%、Code 18%、Physics 13% …）对不齐。
-- **需实验或作者披露**：IcePop 与 [GSPO](group-sequence-policy-optimization.md) / [SAPO](soft-adaptive-policy-optimization.md) / [DIS](single-rollout-asynchronous-optimization.md) 的可组合性只有 Appendix 定性句，没有实验。
+- **需核对原文**：Figure 6 的 +IcePop 从约 300 step 才出现：是中途切入，还是两条 run 的对齐方式不同？
+- **需核对原文**：AState 同步延迟：§2.5 写万亿参数 <10 s，§2.5.1 写 sub-second。哪一个是 Ring-1T 实测？
+- **需核对原文**：SFT 域比例正文 46/26/20/8 与 Figure 14 饼图（Math 43%、Code 18%、Physics 13% …）对不齐。
 
 ## 相关页面
 

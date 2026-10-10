@@ -59,11 +59,13 @@ resource: "../../raw/Bai 等 - 2025 - Qwen3-VL Technical Report.pdf"
 
 - Qwen2-VL 原版 MRoPE 把 embedding 维度切成 **t / h / w 三个不交叠子空间**，每子空间有独立 RoPE 频率——结果**每条轴各自频谱不均**，长视频上明显退化。
 - 改法（沿 Huang et al., 2025）：**把 t / h / w 在 embedding 维度上交错分布**，每条轴均匀覆盖高低频段，spectral bias 消失。
+- **通道数不在报告正文里。** 2026-10-11 读取的六档 Instruct `config.json` 都是 `mrope_interleaved: true`、`mrope_section: [24, 20, 20]`、`head_dim: 128`（字段摘录在 `raw/hf-weight-configs-2026-10-11/qwen3-vl-instruct-fields-2026-10-11.json`；30B-A3B 的完整文件在同目录）。这是权重配置，不是 PDF 原文确证。Transformers 的 `recomposition_frequencies`（[commit 812a950d](https://github.com/huggingface/transformers/blob/812a950d7037ba93bb624b154030e9068afdce4d/src/transformers/models/qwen3_vl/modeling_qwen3_vl.py)）作用在 64 个频率通道（`head_dim/2`）上：先整段取时间轴，再按步长 3 写回高度和宽度。高度占 `slice(1, 60, 3)` 的 20 个通道，宽度占 `slice(2, 60, 3)` 的 20 个通道；时间轴留下前 60 个里每隔 3 个的 20 个通道，再加上末尾 4 个，合计 24。前 60 个通道按 t、h、w 循环，最后 4 个只留给时间轴。`[24, 20, 20]` 就是这三组通道数，和为 64。
 
 ### DeepStack（§ 2.2）
 
 - 借鉴 DeepStack（Meng et al., 2024）。原版栈不同 scale 的视觉输入；Qwen3-VL **改为栈 ViT 不同层的特征**（low-level / mid-level / high-level）。
 - 选 ViT 的 **3 个不同层级**特征 → 经 3 个专用 merger 投影 → **直接 residual add 到 LLM 前 3 层的 hidden state**（注意是只前 3 层，不是每层都注，避免视觉信号在深层被冲淡同时不增加上下文长度）。
+- **层号同样只在权重配置里。** 报告只写 three distinct levels。同一批 Instruct config 的 `deepstack_visual_indexes` 是 0-based，和实现里 `enumerate(self.blocks)` 一致：2B / 4B 的 ViT `depth` 24、`hidden_size` 1024，层号 `[5, 11, 17]`；8B / 32B / 30B-A3B / 235B-A22B 的 ViT `depth` 27、`hidden_size` 1152，层号 `[8, 16, 24]`。这和正文「2B/4B 用 SigLIP2-Large、其余用 SigLIP2-SO-400M」对得上，但仍是配置证据。特征按索引顺序收集，再加到 LLM 的 `layer_idx` 0、1、2。Thinking 权重这次没有另存。
 
 ### Video Timestamp：T-RoPE → 文本时间戳（§ 2.3）
 
@@ -151,12 +153,10 @@ RL 用 3 个互补 reward：
 - **OCR**：Figure 2 自建测试集 39 语言，32 种 > 70% 准确率。
 - **3D / Counting**：RefSpatialBench / RoboSpatialHome / CountBench / ODinW-13 全面参与，输出 JSON point/bbox。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：**DeepStack 选 ViT 哪 3 层？** 论文只说 "three distinct levels"，未指定层号；HF 实现 / config 可能给具体数。
-- **需补外部来源**：**Interleaved MRoPE 的具体 dim 分配方案**：论文称沿 Huang et al., 2025，但未给本作具体每多少维度切 t/h/w 周期。
-- **需补外部来源**：**Square-root reweighting 公式**：摘要 + 引言点到，正文未给完整 loss 形式。
-- **需实验或作者披露**：**与 Qwen3.5-Omni 的分工**：Omni 走 Qwen3-Next/3.5 hybrid backbone + 文本+图像+视频+音频；VL 走 Qwen3 标准 backbone + 文本+图像+视频。两条线**LLM backbone 不同**--为何不统一？是否暗示 hybrid stack 在视觉任务上有劣势？正文未触及。
+- square-root reweighting 在摘要和引言里只写成从 per-sample loss 改为按样本 token 数平方根归一的 per-token loss，正文没有完整损失公式。机制已经能读懂，不再追公式。
+- 报告没有讨论为何不与 Qwen3.5-Omni 共用 hybrid 骨干。两条线并存不能推出 hybrid 栈在视觉任务上更弱。
 
 ## 相关页面
 

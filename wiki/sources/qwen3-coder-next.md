@@ -37,10 +37,29 @@ Qwen3-Coder-Next 是一个 **80B 总参 / 3B 激活** 的开源编码模型，�
 - 它和 [Kimi Linear](kimi-linear.md) 是同尺度（80B-A3B vs 48B-A3B）、同思路（线性层 + 少量全局层）但不同全局层选择的对照：Qwen3-Next 系的全局层是**带输出门的 full attention**，Kimi Linear 把它换成了 **MLA**（见 [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md) 的跨报告信号）。
 - agentic coding 训练这一支与已有的 [Agentic engineering](../concepts/agentic-engineering.md)、[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) 相关。
 
-## 待追问
+## 评测要点
 
-- **现有材料待核**：80B-A3B 在 SWE-Bench 上的确切分数与对照模型，可作为「小激活 + 强 agentic 训练」主张的证据补充。
-- **现有材料待核**：它和主线 [Kimi K2.5](kimi-k2.5.md)、GLM-5 等更大 agentic 模型在编码 benchmark 上的可比性，需要统一口径才能对比。
+§5.1 的 SWE 数字是**作者在各 scaffold 上重跑**的，最大 300 轮，并按 §4.2.4 去掉 remote、branch、tag，避免 agent 读到未来 commit。表里的 `80A3` 是 80B 总参 / 3B 激活。短横线表示该格作者没能稳定测出，不是零分。本报告没有 GLM-5；和 [Kimi K2.5](kimi-k2.5.md) 的可比性只限于下表这一套自复现，不能拿 K2.5 或 GLM 论文原表对减。
+
+SWE-Bench Verified（Table 3，%）：
+
+| 模型 | 规模 | SWE-Agent | MiniSWE-Agent | OpenHands |
+| --- | --- | ---: | ---: | ---: |
+| DeepSeek-V3.2 | 671A37 | 70.2 | 67.2 | 72.6 |
+| GLM-4.7 | 358A32 | 74.2 | 70.4 | 70.6 |
+| MiniMax-M2.1 | 230A10 | 74.8 | 70.4 | 71.0 |
+| Kimi-K2.5 | 1000A32 | 73.2 | 70.8 | – |
+| **Qwen3-Coder-Next** | **80A3** | **70.6** | **71.1** | **71.3** |
+
+SWE-Bench Multilingual / Pro（Table 4，%）。Pro 没有 OpenHands 列。
+
+| 模型 | 规模 | Multi SWE-Agent | Multi MiniSWE | Multi OpenHands | Pro SWE-Agent | Pro MiniSWE |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Kimi-K2.5 | 1000A32 | 63.7 | 62.3 | – | 47.3 | 42.8 |
+| GLM-4.7 | 358A32 | 63.7 | 61.8 | 60.8 | 45.1 | 39.4 |
+| **Qwen3-Coder-Next** | **80A3** | **62.8** | **56.2** | **64.3** | **42.7** | **38.7** |
+
+同协议下 80A3 的 Verified 与 1000A32 的 Kimi-K2.5 差几个点（SWE-Agent 70.6 vs 73.2；MiniSWE 71.1 vs 70.8），Pro 低一截（42.7 vs 47.3）。这支持「小激活在这套 agentic 训练和 scaffold 下可以接近更大开源模型」，不能外推成任意 harness 上的排序。Terminal-Bench 2.0（Table 5）上 Qwen3-Coder-Next 为 Terminus2-xml 34.2、Terminus2-json 36.2、ClaudeCode 30.9、QwenCode 25.8；Kimi-K2.5 同列为 38.8、49.4、9.0、27.5，ClaudeCode 一格两边都不好读成稳定排序。
 
 ## 相关页面
 

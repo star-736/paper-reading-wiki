@@ -80,7 +80,7 @@ V=\{\mathrm{Advance},\mathrm{Continue},\mathrm{Reobserve},\mathrm{Replan},\mathr
 
 - **Planner**：指令 + 当前视觉 → 有序、可执行的语义 subgoal；subgoal 写「要到达什么物理状态」，不把 simulator 控制细节写进高层计划（§4.1）。
 - **低层 VLA**：用 subtask-level demonstration 单独适配。每条样本是（观察、本体、active subgoal、对应动作序列）。部署时走同一 Execute 接口，吐 bounded chunk（§4.1、§5.1）。
-- **高层 scheduler**：对 [Qwen3-VL](../models/qwen3-vl.md) 做 SFT，**冻结低层 VLA**。样本边界与部署一致：任务、可见图像、压缩 runtime 状态、当前相可接受的 skills、近期有序历史；loss 只打在组件自己生成的 token 上（§4.1–4.2、Eq. 15）。原文没有写 Qwen3-VL 的具体尺寸。
+- **高层 scheduler**：对 [Qwen3-VL](../models/qwen3-vl.md) 做 SFT，**冻结低层 VLA**。样本边界与部署一致：任务、可见图像、压缩 runtime 状态、当前相可接受的 skills、近期有序历史；loss 只打在组件自己生成的 token 上（§4.1–4.2、Eq. 15）。原文没有写尺寸、Instruct 还是 Thinking，也没有写 planner / verifier 是否共享 adapters。缺这些配置不改变 AgentLoop 的合同，不再追。
 
 可选闭环适应走同一轨迹接口。作者写了 group-relative policy optimization（组内标准化优势 + masked clipped objective，Eq. 17–18），但明确：**episode-level attribution 粗糙，online 优化不是 Table 2–3 那些 headline 数字的来源**（§4.3）。有可靠环境 evaluator 时才启用；基础设施失败和 agent-policy 失败分开记账。
 
@@ -158,19 +158,15 @@ Stack Blocks Three 是极端例子：Full 92，w/o Verify / w/o Subtask / 1 chun
 
 这是成功案例，不是失败模式分析。
 
+§4.3 把 GRPO 标成 optional refinement，§5 没有 online 数字，视为没有这份结果。§6 已写明合同挡得住 schema 非法，挡不住语义像样但物理上错的 grounding；遮挡时验证同样失效。没有定量校准，50 个 specialist 相对 generalist 的训练 / 存储 / 部署成本也只有定性 Limitations，没有真机，也没有 latency 表。这些不再追。
+
+## 证据边界与阅读提示
+
+- Headline 的 +3.46 / +0.55 来自与 LingBot-VA 的 π0.5 参考、官方 OpenPI 的比较。原文没有在同一 checkpoint 上开关六相环、把这两处增益从任务特化 fine-tune 里拆出来的实验。
+
 ## 待追问
 
-- **需实验或作者披露**：Headline 的 +3.46 / +0.55 能否从「任务特化 fine-tune」里拆出 AgentLoop 的贡献？Table 2 对照的是 LingBot-VA 的 π0.5 参考，不是同一 checkpoint 开关六相环。
-- **需实验或作者披露**：LIBERO 的「VLA policy instantiation」是每 suite 一份 specialist，还是一份模型打四套？原文只对 RoboTwin 写了「a separate π0.5 policy for each of the 50 tasks」（§5.1）。
-- **需实验或作者披露**：高层 Qwen3-VL 用了哪个尺寸、Instruct 还是 Thinking、scheduler 与 planner/verifier 是否共享 adapters？原文只写 "Qwen3-VL-based agent components"（§1、§4.1）。
-- **需实验或作者披露**：可选 GRPO 有没有实际跑出过数字？§4.3 把它标成 optional refinement，§5 没有 online 结果。
-- **需实验或作者披露**：合同只能挡住 schema 非法，挡不住「语义上像样但物理上错」的 grounding / subgoal；遮挡和视觉歧义时验证同样失效（§6）。校准缺口有多大，没有定量。
-- **需实验或作者披露**：50 个 specialist 的训练 / 存储 / 部署成本相对 generalist 的账，原文只定性写进 Limitations，没有表。
-- **需实验或作者披露**：没有真机实验。延迟来自额外 VLM 调用和动作后重观察（§6），也没有 latency 表。
-
-## 相关追问
-
-主记录：[四类具身技能机制的组合](../concepts/embodied-skill-self-evolution.md#待追问)。
+- **需核对原文或代码**：LIBERO 的「VLA policy instantiation」是每 suite 一份 specialist，还是一份模型打四套？原文只对 RoboTwin 写了「a separate π0.5 policy for each of the 50 tasks」（§5.1）。97.40 的读法依赖这一层，原文没写。
 
 ## 相关页面
 

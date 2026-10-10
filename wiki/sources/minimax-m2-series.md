@@ -48,10 +48,4 @@ Forge 把 agent RL 建模为：LLM completion 是 action，工具、context mana
 
 报告重点展示 M2.7。代表性结果包括 SWE-bench Pro 56.2、SWE-bench Multilingual 76.5、Multi-SWE-bench 52.7、Terminal-Bench 2.0 57.0、BrowseComp 77.8、GDPval-AA 50.0、Toolathlon 46.3、AIME 2026 94.2 和 GPQA-Diamond 89.8。
 
-这些数字应理解为“模型 + interleaved thinking + agent scaffold + 工具环境”的整体结果，而不只是裸模型能力。
-
-## 待追问
-
-- **需实验或作者披露**：M2.7 的提升中，数据管线、Forge RL、interleaved thinking 和 self-evolution 各自贡献多少？
-- **需实验或作者披露**：full attention 在 192K context 下成本很高；低激活 MoE 是否足以抵消长上下文 attention 的部署压力？
-- **需实验或作者披露**：black-box agent 支持是否会成为不同 agent 框架迁移 RL 的通用接口？
+这些数字应理解为“模型 + interleaved thinking + agent scaffold + 工具环境”的整体结果，而不只是裸模型能力。报告没有把数据管线、Forge RL、interleaved thinking 和 self-evolution 拆成受控贡献。192K 上 full attention 的部署成本、以及低激活 MoE 能否抵消它，报告没有给。black-box agent 被写成支持的接口，不是已证实的跨框架通用层。

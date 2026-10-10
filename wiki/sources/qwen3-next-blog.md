@@ -42,9 +42,9 @@ resource: "../../raw/Qwen%20Team%20-%202025%20-%20Qwen3-Next%20blog%20%28Towards
 - RULER 上 Qwen3-Next-80B-A3B-Instruct 在各长度超过层数更多的 Qwen3-30B-A3B-Instruct-2507，256K 内甚至超过 Qwen3-235B-A22B-Instruct-2507——官方称这「proves the strength of the Gated DeltaNet + Gated Attention hybrid design」。
 - Instruct 版整体接近旗舰 Qwen3-235B-A22B-Instruct-2507；Thinking 版多项基准超过 Gemini-2.5-Flash-Thinking。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：博客只给「3:1、选 GDN」的结论，未公开支撑「GDN > SWA/Mamba2」的消融数字。**部分补上**：[Qwen3.8-Next 架构报告](qwen3.8-next.md) Table 1 在 25B-A3B（400B@4K + 80B@32K）上 GDN hybrid 平均 53.81 vs SWA hybrid 51.15 vs full attention 49.87；作者写明这只能 motivate hybrid，不能拆开每一项增益。Mamba2 对照仍缺。该表是 3.8 的消融，不是 2025-09 的 Qwen3-Next 原实验。
+- 原文没有这项实验/对照：博客没有公开 GDN 相对 SWA / Mamba2 的消融表。核心结论已写明只有对比结论、没有对照表。[Qwen3.8-Next](qwen3.8-next.md) 的表是另一篇报告，不是 2025-09 这篇博客的实验。
 
 ## 相关页面
 

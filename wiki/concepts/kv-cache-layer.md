@@ -69,12 +69,13 @@ GLM-5 的 DP-aware routing（同一 rollout 钉在同一 DP rank，避免工具�
 3. **PD disaggregation 的瓶颈经常是 page-by-page 传输，不是 NCCL 拓扑。** LMCache 与 vLLM native PD 的差距主要在传输粒度（Figure 14）。
 4. **KV 需要一等 API。** pin / move / lookup 让 router 和行业应用（钉财报、压 KV 再跨节点）能显式管缓存；没有这层，上层只能猜 GPU 里还剩什么。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：Connector 对 MLA / DSA / CSA-HCA / GDN 等非标准 KV 的适配是「改翻译」还是要改 chunk 对齐？本 wiki 的长上下文模型几乎都不是纯 GQA paged KV。
-- **需实验或作者披露**：Load vs prefill 的带宽–长度 crossover 有没有在线策略，还是只是评测观察？
-- **需实验或作者披露**：压缩 API 存在但无评测：lossy KV 压缩进这一层之后，和模型侧 CSA/HCA 压缩是替代还是叠加？
-- **需实验或作者披露**：多租户下 pin 住热文档会不会把 CPU / 远程容量钉死，驱逐策略如何与 vLLM 自己的 prefix cache 协同？
+§8.7 / Figure 15 的 load vs prefill crossover 是评测观察：32 Gbps 下要超过 256K 才比 naive prefill 快。论文没有在线切换策略，不再追。
+
+- 原文没有 Connector 在 MLA / DSA / CSA-HCA / GDN 上的适配实验。
+- 压缩 API 没有质量评测，也没有和模型侧 CSA/HCA 的替代或叠加对照。
+- 原文没有多租户 pin 与 vLLM prefix cache 驱逐如何协同的实验。
 
 ## 相关页面
 

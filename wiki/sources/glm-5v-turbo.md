@@ -48,11 +48,11 @@ MMTP 是 [MTP](../concepts/multi-token-prediction.md) 的多模态扩展，核�
 | 全部遮蔽视觉 token | MTP head 输入遮蔽所有视觉 token，退化为 text-only MTP | 简单但丢失视觉信息 |
 | 共享 learnable `<\|image\|>` token | 保留视觉位置信息，但用共享可学习特殊 token 替代视觉 token | **最终采用**：无需跨阶段传播视觉 embedding，兼容 sequence/context parallelism，0.5B 消融显示训练 loss 更低、收敛更稳 |
 
-报告假设 `<\|image\|>` token 方案更优的原因是 MTP head 通常轻量，可能没有足够建模能力吸收分布与文本 embedding 差异较大的视觉表示；用统一形式输入缓解了优化难度。
+报告假设 `<\|image\|>` token 方案更优的原因是 MTP head 通常轻量，可能没有足够建模能力吸收分布与文本 embedding 差异较大的视觉表示；用统一形式输入缓解了优化难度。本报告没有写这些 MTP 头是否与 GLM-5 的 MTP 层共享参数。CogViT 到 LLM 的 projector 结构也没有展开；后文只在重计算里点到 ViT 和 projector。这两项不再追。
 
 ### 多模态 RL
 
-GLM-5V-Turbo 在 30+ 任务类别上做联合 RL 优化，涵盖感知、推理和 agentic 能力。关键技术包括 UI-to-code 任务中的 relative visual policy optimization。报告观察到 RL 相比 SFT 的一个核心特性：跨域干扰更弱——多域可同时稳定提升，而 SFT 常见跨域 trade-off。在窄分布单任务 RL 易振荡的场景下，多任务协同训练通过暴露更丰富的策略分布使优化更稳定。推理行为模式可跨域迁移：一个域学到的推理行为有时在另一个域产生可测量的收益。
+GLM-5V-Turbo 在 30+ 任务类别上做联合 RL 优化，涵盖感知、推理和 agentic 能力。30+ 类的清单和各自 reward 没有列全，不再追。它点名 UI-to-code 用了 relative visual policy optimization，但算法不在本报告里。被引的 [UI2Code^N](https://arxiv.org/abs/2511.08195)（`raw/2511.08195.pdf`，§2.3）把 RVPO 写成：不对渲染结果打绝对视觉分，而在一组候选里做成对视觉比较，用胜场（平局记 1/2，渲染失败记 −1）当奖励，再套 GRPO。本报告没有写是否原样沿用锦标赛、候选数 N 或 polishing 的零分规则。报告观察到 RL 相比 SFT 的一个核心特性：跨域干扰更弱——多域可同时稳定提升，而 SFT 常见跨域 trade-off。在窄分布单任务 RL 易振荡的场景下，多任务协同训练通过暴露更丰富的策略分布使优化更稳定。推理行为模式可跨域迁移：一个域学到的推理行为有时在另一个域产生可测量的收益。
 
 RL 基础设施层面有四项工程改进：
 
@@ -69,7 +69,7 @@ RL 基础设施层面有四项工程改进：
 
 ### ImageMining：视觉中心深度搜索 benchmark
 
-ImageMining 是报告自建的视觉中心深度搜索评测，217 个测试用例覆盖 7 个领域（社交/娱乐/产品/地点/富文本/自然/科学）和 5 类推理（通用识别/时空推理/事件推理/文本推理/视觉搜索）。与传统 VQA 不同，ImageMining 要求模型通过多步工具调用主动挖掘视觉输入（如局部裁剪放大细节再搜索），核心约束是 \"Visual Jump\"：发现过程中的中间推理跳必须涉及视觉转换，迫使模型解析图像而非依赖文本捷径或参数知识。
+ImageMining 是报告自建的视觉中心深度搜索评测，217 个测试用例覆盖 7 个领域（社交/娱乐/产品/地点/富文本/自然/科学）和 5 类推理（通用识别/时空推理/事件推理/文本推理/视觉搜索）。与传统 VQA 不同，ImageMining 要求模型通过多步工具调用主动挖掘视觉输入（如局部裁剪放大细节再搜索），核心约束是 \"Visual Jump\"：发现过程中的中间推理跳必须涉及视觉转换，迫使模型解析图像而非依赖文本捷径或参数知识。217 题和自动判定过程没有随报告公开，不再追。
 
 ## 评测要点
 
@@ -120,13 +120,8 @@ RL 阶段相比 SFT 的增益（§ 2.3 原文）：RefCOCO-avg +4.8%、PointBenc
 
 **已据原文核实（`supported`）**：§2.4 的 “Topology-aware partitioning and dynamic load balancing for visual inputs” 把 CP/TP 分片提前到数据加载阶段，按 downsample groups 对齐，跨 DP groups 均衡后用异步 all-to-all 派发；还按序列长度与 ViT token 数做联合 bin-packing。对象是视觉张量和 micro-batch 工作负载，不是 token 选择哪位 MoE 专家。
 
-重读 §2 的模型、训练和基础设施描述，并检索全文后，**本报告未说明**LLM expert router 的 bias 更新或 expert-level auxiliary loss 配方。也不能由正文称其语言基座为 GLM-5-Turbo，就补出与 GLM-5 完全相同的专家均衡策略。缺失配方继续记录于 [负载均衡主追问](loss-free-balancing.md#待追问)。
+重读 §2 的模型、训练和基础设施描述，并检索全文后，**本报告未说明**LLM expert router 的 bias 更新或 expert-level auxiliary loss 配方。也不能由正文称其语言基座为 GLM-5-Turbo，就补出与 GLM-5 完全相同的专家均衡策略。缺失配方继续记录于 [负载均衡主追问](loss-free-balancing.md#跨报告信号从方法论文到生产标准)。
 
 ## 待追问
 
-- **需补外部来源**：报告未披露总参数量、激活参数量、训练 token 数、LLM backbone 架构细节（是否沿用 GLM-5 的 DSA + MoE），这些信息可能在 GLM-5 主报告或 HF config 中。
-- **需补外部来源**：CogViT 的参数量（Figure 1 显示 CogViT-L 为 403M）与 LLM backbone 的连接方式（projector 结构）未详细说明。
-- **需补外部来源**：MMTP 的 `<\|image\|>` token 方案与 GLM-5 的参数共享 MTP 层如何配合？是否同样共享参数？
-- **需补外部来源**：relative visual policy optimization 的具体算法形式（引用 [45] UI2Code^n）未展开。
-- **需实验或作者披露**：RL 的 30+ 任务类别清单和各自 reward 设计未完整列出。
-- **需补外部来源**：ImageMining 的 217 个测试用例是否开源？\"Visual Jump\" 的自动化检测如何实现？
+- **架构身份仍开放**：总参数、激活参数和训练 token 数，正文已经写明未披露，不再单列。仍未写死的是 LLM backbone 是否沿用 [GLM-5](glm-5.md) 的 DSA + MoE。GLM-5 主报告不描述 5V-Turbo，也没有公开的 GLM-5V-Turbo 权重 config。不能从评测表里的纯文本基座 GLM-5-Turbo 把 DSA 补进来。

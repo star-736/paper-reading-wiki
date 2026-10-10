@@ -46,12 +46,7 @@ RL / MOPD 基建用 SGLang + Megatron。§4.6.1 采用 [R3](r3.md)（Ma et al., 
 
 报告给出的后训练结果包括 SWE-bench Verified 73.4、SWE-bench Multilingual 71.7、BrowseComp 45.4、带 context management 的 BrowseComp 58.3，以及 tau2-Bench 中 Telecom 95.3、Retail 79.5、Airline 66.0。
 
-推理效率方面，3-layer MTP 在 16K 输入 / 1K 输出设置下，根据 batch size 和 acceptance length 的不同，报告测得约 1.86-2.70 倍解码加速。
-
-## 待追问
-
-- **需实验或作者披露**：混合 SWA/GA 设计简单高效，但在更强对抗性的长上下文推理中是否稳定？
-- **现有材料待核**：MOPD 的收益高度依赖 teacher 质量和任务覆盖；后续应与 GLM-5 的 cross-stage distillation 对照。
+推理效率方面，3-layer MTP 在 16K 输入 / 1K 输出设置下，根据 batch size 和 acceptance length 的不同，报告测得约 1.86-2.70 倍解码加速。报告没有在更强的对抗性长上下文上另做稳定性实验；这不是已公开混合注意力机制缺了的一块配方，不再追。MOPD 与 GLM-5 cross-stage distillation 的对照已经写在 [OPD 比较页](../comparisons/on-policy-distillation.md)，不在本页留一条「后续应对照」。
 
 ## 相关页面
 

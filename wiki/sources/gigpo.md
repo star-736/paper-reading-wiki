@@ -142,17 +142,8 @@ verl-agent 宣称的能力包括：step-wise 多轮（不拼接全历史）、�
 ## 证据边界与阅读提示
 
 - Figure 6 的秒数与正文「< 0.002%」数量级不一致；应把开销读成「相对 rollout 可忽略」，不要引用 0.002% 这个精确值。
-- 没有 coding agent / 真实浏览器 / 生产 harness 实验；ALFWorld 与 WebShop 的 admissible action 集合比开放工具集干净得多。
-
-## 待追问
-
-- **需实验或作者披露**：Anchor 依赖状态匹配。网页 DOM、终端 transcript、代码仓库状态几乎不会精确相等；相似度阈值 0.9 只在 search QA 上试过。换 embedding 或结构等价后，$A^S$ 还稳不稳？
-- **需实验或作者披露**：论文自己的下界是「无重复则退回 GRPO」。真实 SWE / GUI 长轨迹里重复率是否仍有 Figure 5 那种 >65%？
-- **需实验或作者披露**：$\omega=1$ 未对主表调参；WebShop 扫参峰值在 0.8。主结果对 $\omega$ 的敏感度只有这一张 1.5B 表。
-
-## 相关追问
-
-主记录：[GiGPO 与 ARPO 的同预算对照](../concepts/group-in-group-policy-optimization.md#待追问)。
+- 没有 coding agent / 真实浏览器 / 生产 harness 实验；ALFWorld 与 WebShop 的 admissible action 集合比开放工具集干净得多。相似度阈值 0.9 只用于 search QA。原文没有更换 embedding 或结构等价后的 $A^S$ 实验，也没有 SWE / GUI 长轨迹上复现 Figure 5 重复率的实验。$\omega$ 未对主表调参；WebShop / 1.5B 的扫参已写在正文。
+- 原文没有与 ARPO 的同预算对照。
 
 ## 相关页面
 

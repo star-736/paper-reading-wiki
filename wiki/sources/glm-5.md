@@ -33,7 +33,7 @@ GLM-5 使用 DeepSeek Sparse Attention（DSA）实现 [高效长上下文注意�
 
 已重读本报告 §2.1 架构、§2.4 基础设施及 §4.1 的 DP-aware routing，并检索全文相关表述。**本报告未说明**专家路由使用 auxiliary loss、统计 bias 还是二者混合，也未给 bias 更新规则或 expert-level 辅助损失系数。这只限定该 PDF 的披露范围，不是模型没有均衡机制的证据。
 
-**已据原文核实（`supported`）**：§2.4 讨论 pipeline 阶段内存分配、DP/PP 长序列工作负载重排；§4.1 的 DP-aware routing 用 rollout ID 保持 DP rank 亲和性、复用 KV，并在 hash 空间做动态再均衡。这些都是系统调度层面的负载问题，不能据此确定 MoE 专家分配的训练目标。专家级配方继续留在 [负载均衡主追问](loss-free-balancing.md#待追问)。
+**已据原文核实（`supported`）**：§2.4 讨论 pipeline 阶段内存分配、DP/PP 长序列工作负载重排；§4.1 的 DP-aware routing 用 rollout ID 保持 DP rank 亲和性、复用 KV，并在 hash 空间做动态再均衡。这些都是系统调度层面的负载问题，不能据此确定 MoE 专家分配的训练目标。专家级配方继续留在 [负载均衡跨报告信号](loss-free-balancing.md#跨报告信号从方法论文到生产标准)。
 
 ## 后训练
 
@@ -50,7 +50,4 @@ GLM-5 使用 DeepSeek Sparse Attention（DSA）实现 [高效长上下文注意�
 ## 证据边界与阅读提示
 
 - DSA 降低成本，但 RL 稳定性依赖 deterministic top-k，这可能是复现和部署时的关键约束。
-
-## 待追问
-
-- **需实验或作者披露**：GLM-5 的 agentic 增益中，架构、数据、RL 环境和推理框架各自贡献多少？
+- 报告没有隔离架构、数据、RL 环境与推理框架对 agentic 增益的贡献。缺这项拆分不改变各机制的公开定义。

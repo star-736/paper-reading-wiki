@@ -62,7 +62,7 @@ Table 8 的 SimPO 超参：
 | Llama-3-Base | 2.0 | 1.0 | $6\times10^{-7}$ |
 | Llama-3-Instruct | 2.5 | 1.4 | $1\times10^{-6}$ |
 
-§3 说 $\beta\in[2.0,2.5]$、$\gamma\in[0.5,1.5]$ 在各组都不错。Table 8 的 Mistral-Instruct $\gamma=0.3$、Mistral-Base $\gamma=1.6$ 落在这个区间外，以表为准。附录 B 写所有离线方法都做了超参搜索，包括 DPO。
+§3 说 $\beta\in[2.0,2.5]$、$\gamma\in[0.5,1.5]$ 在各组都不错。Table 8 的 Mistral-Instruct $\gamma=0.3$、Mistral-Base $\gamma=1.6$ 落在这个区间外，以表为准。附录 B 写所有离线方法都做了超参搜索，包括 DPO。附录 A 把自动决定 margin 留给后续；已公开的是按设定搜索，不是一条选择公式。
 
 Gemma-2 沿用 Instruct 的造对方式，但排序模型换成 `RLHFlow/ArmoRM-Llama3-8B-v0.1`（脚注 5、Appendix J）。放出检查点的学习率是 $8\times10^{-7}$（Table 17 的 *）。
 
@@ -105,10 +105,9 @@ Chatbot Arena（LMSYS）：Gemma-2-9B-it-SimPO 把原 it 检查点从第 36 名�
 
 附录 A：Table 9 上各偏好方法相对 SFT，知识（MMLU）掉得少，阅读和常识（ARC、HellaSwag）多数上升；GSM8K 一类推理任务则普遍下降，SimPO 有时与 DPO 相当或更低。作者的一个解释是奖励间隙拉开了，偏好序列的似然却没有升高；改一个 token 就能翻转数学标签时这会妨碍学习。他们引用的补法是加回带参考模型的 SFT 项，本方法没有接上。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：$\gamma$ 要手调。附录 A 把「自动决定 margin」和更严格的理论留给后续。Table 8 的四个 $\gamma$ 从 0.3 到 1.6，没有选择规则。
-- **需实验或作者披露**：附录 A 观察到推理任务上偏好优化普遍掉点，并指出把参考模型校准的 SFT 项加回去可能缓解。SimPO 的主损失没有这一项，PDF 里没有这条补丁的实验。
+- 附录 A 观察到推理任务上偏好优化普遍掉点，并提到可加回参考模型校准的 SFT 项。主损失没有这一项，原文没有这条补丁的实验。
 
 ## 相关页面
 

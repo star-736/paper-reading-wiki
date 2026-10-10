@@ -67,12 +67,12 @@ Qwen 来源页未引用 Engram（本页检索 `wiki/sources/qwen3.8-next.md` 无
 - **长上下文收益可以来自「别占用注意力」而不是改注意力。** Engram 不稀疏 attention，但 Multi-Query NIAH 从 84.2 到 97.0（32K RULER）。这和 DSA / QSA / 线性混合是正交轴，见 [高效长上下文注意力](efficient-long-context-attention.md)。
 - **主机内存上的参数有两类。** 条件记忆是 *可预取的 embedding 行*；[端侧 MoE serving](edge-native-moe-serving.md) 是 *路由之后才知道的 expert 块*。前者通信体积随 active 槽而非常驻表大小，后者必须跟动态路由赛跑。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：**重分配 vs 外加表**：同一 iso-param 问题，Engram 与 Qwen Table 8 结论相反。需要在同一 backbone、同一模块件上复现，才能判断是 Engram 的 tokenizer compression / 门控 / 双层插入把 U 形托起来，还是评测噪声。 对照还需控制多头哈希、mHC 与评测协议。
-- **需实验或作者披露**：**生产集成的独立收益有多大。** [V4.1](../sources/deepseek-v41-flash.md) 已确认 196B Engram，但尚需固定 backbone / 数据 / 后训练的增量消融。
-- **需实验或作者披露**：**RL / tool 交错下预取还成不成。** index 依赖完整 input ID；生成中途插入工具观察后，后续 $N$-gram 的预取窗口如何切，两边报告都没测。
-- **需实验或作者披露**：**事实知识是否真的「存在表里」。** Figure 6 的 post-hoc 消融有 train–test mismatch；没有定位到具体槽→具体事实的编辑实验（对比 ROME/MEMIT 那条 FFN 知识文献）。
+- Engram 与 Qwen 的 iso-param 结论相反，但两篇都没有同一 backbone、同一模块的对照。
+- [V4.1](../sources/deepseek-v41-flash.md) 已确认 196B Engram；该报告没有隔离增益的增量消融。
+- 两边报告都没有工具观察插入之后的 $N$-gram 预取实验。
+- Engram Figure 6 是关掉模块输出的 post-hoc 消融；原文没有把事实定位到具体槽的编辑实验。
 
 ## 相关页面
 

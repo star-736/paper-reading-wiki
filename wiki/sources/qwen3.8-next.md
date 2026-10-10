@@ -150,6 +150,8 @@ GR 把残差加成 $n_r=4$ 支，再和 GatedNorm 合成一个读算子。加宽
 
 Table 11 是 base 模型、14 项预训练基准，对照 Qwen3.8-27B-Base（27B dense）和 Qwen3.7-Plus-Base（397B / 17B 激活）。Flash-Next 14 项全胜 27B；对 397B 旗舰 8 胜 6 负，最大分差 2.59（MultiPL-E）。
 
+摘要的 “397B-A17B predecessor”、引言的 “previous generation’s 397B-A17B flagship (Qwen Team, 2026)”、以及 Table 11 的 Qwen3.7-Plus-Base，在本报告里是同一个对照：§4 用这张表说明模型保住上一代 397B-A17B 旗舰的质量，参考文献把 Qwen Team 2026 指到 2026-02 的 Qwen3.5 博客。报告没有另写一份 397B 模型，也没有说博客权重文件与 Plus-Base 逐字节相同。
+
 | 项 | Flash-Next 125B/6B | 27B dense | 397B/17B |
 | --- | ---: | ---: | ---: |
 | MMLU | 90.36 | 87.51 | **90.43** |
@@ -164,14 +166,13 @@ SWEBench-Pretrain 是作者自建的预训练变体：给 base 题面和相关�
 
 QSA 的 1M 数字是 RULER / 8-needle MRCR，不是 agent 长轨迹。效率数字是 attention kernel，不是完整 decode 系统。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**生产模型的层数、hidden、expert 数、路由与负载均衡未披露。** 125B/6B 只有总量；消融用过 25B-A3B 与 156B-A7B，不能外推专家配置。
-- **需补外部来源**：摘要里的「397B-A17B predecessor」在 Table 11 写作 Qwen3.7-Plus-Base，引言又引 2026-02 的 Qwen3.5 博客。两者是否同一权重、只是发布名不同，原文没写清。
-- **需实验或作者披露**：QSA 只在 CPT 从 dense 全局层改过来，没有 from-scratch sparse；RL 下 top-k 是否要像 GLM-5 那样冻 indexer、用 deterministic topk，完全没测。
-- **需实验或作者披露**：GR vs Full AttnRes 在 28 层 loss 打平，生产为什么选 GR：报告给的是去掉 $H_{res}$ 的访存和门的稳定性，没有同预算的下游 head-to-head。
-- **需实验或作者披露**：n-gram 51B 的实际命中率、主机预取延迟和多机分片，只有「可 prefetch」的设计陈述。
-- **需实验或作者披露**：组织段承诺的 post-trained 评测没有出现。
+- 生产模型只公开 125B/6B 总量。层数、hidden、expert 数、路由和负载均衡没有写出，消融用过的 25B-A3B 与 156B-A7B 不能外推。缺这些数字不阻碍阅读已公开的混合与门控机制，不再追。
+- n-gram 51B 只写了可 prefetch。命中率、主机预取延迟和多机分片没有数字，不再追。
+- 组织段写了 post-trained models，§4 只有 base 表。后训练分数没有出现，不再追。
+- QSA 只在 CPT 里从 dense 全局层改过来；原文没有 from-scratch 稀疏训练，也没有 RL 下 top-k 的稳定性实验。
+- 28 层上 GR 与 Full AttnRes 的 loss 打平。原文没有同预算的下游对照。
 
 ## 相关页面
 

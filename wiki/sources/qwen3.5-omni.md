@@ -45,7 +45,7 @@ Serving 上，Qwen3.5-Omni 这类「Thinker / Talker / codec decoder」全模态
 
 ## 待追问
 
-- **需补外部来源**：Qwen3.5-Omni 用的是哪个尺寸档（397B-A17B / 122B-A10B / 35B-A3B / 27B dense）——报告未明说，HF 上 Omni 也未作为独立仓库公开，需 Omni 自身配置才能定档。
+- **架构身份仍开放**：报告只写 hundreds of billions，并区分 Plus / Flash，没有对应到 Qwen3.5 文字模型的 397B-A17B、122B-A10B、35B-A3B 或 27B。公开的 Omni 权重 config 仍缺，不能把那四档里的某一档写成本模型。
 
 ## 相关页面
 

@@ -47,11 +47,9 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 - 成本：同一 GPU 显存与同一组 rollout；新增 grouping / $A^S$ 在 Figure 6 上是 0.01s / 0.53s 量级。
 - 正交性：接上 DAPO recipe 后 WebShop 成功率继续涨；Qwen2.5-VL-3B 的 Sokoban / EZPoints 作为 VLM 补充，不是主结论。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：开放工具、GUI、仓库编辑里状态几乎不精确重复时，相似度 grouping 会不会把不同决策情境错误对齐？
-- **需实验或作者披露**：GiGPO 与 ARPO 同一 rollout / 环境预算下的对照仍然缺失：把探索预算花在高熵分叉，还是同状态对照，哪种更划算？
-- **需实验或作者披露**：$\omega$ 与 $\gamma$ 在主实验未扫；折扣回报在终局二元奖励下，等价于「越晚成功的正确动作 advantage 越大」，这是否会惩罚必要的早期探索？
+- 原文没有开放工具、GUI 或仓库编辑上的相似度分组实验，没有与 ARPO 的同预算对照，也没有主实验上扫 $\gamma$、或检验折扣回报是否惩罚早期探索的对照。$\omega$ 的 WebShop / 1.5B 扫参已写在来源页。
 
 ## 相关页面
 
@@ -62,5 +60,3 @@ GiGPO 的可执行假设是：**只要 group 内初始状态相同，环境转�
 - [Agentic 模型的后训练](post-training-for-agentic-models.md)
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - [Agentic 评测体系](agentic-evaluation-benchmarks.md)
-
-关联提问页：[Group-in-Group Policy Optimization（GiGPO）](../sources/gigpo.md#相关追问)。

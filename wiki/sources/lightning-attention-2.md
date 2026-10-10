@@ -3,7 +3,7 @@ type: Source
 title: "Lightning Attention-2"
 description: "OpenNLPLab 的因果线性注意力 tiling/kernel：块内走 (QK^T⊙M)V，块间走 Q(KV) 右乘并递推固定大小 KV；标量衰减 λ，不是 delta rule。Triton 实现后训练吞吐几乎不随长度掉。FlashLinearAttention 是后来的实现库，不是另一种机制。"
 tags: ["source", "lightning-attention-2", "linear-attention"]
-timestamp: 2026-09-12
+timestamp: 2026-10-11
 resource: "../../raw/2401.04658v2.pdf"
 ---
 
@@ -55,6 +55,14 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 
 和同代工作的边界（§3.2.2 Discussion）：GLA（Yang et al., 2023；[来源页](gated-linear-attention.md) 已入库）是**数据相关衰减**的线性注意力，也做 chunk tiling，但按块并行、显存更高；RetNet 的 chunk-wise retention 接近本页前向，但不谈 IO-aware，也没有后向。作者致谢 Songlin Yang。这些都仍在「线性递推 + 分块」里，不是 delta rule。
 
+## TransNormerLLM 中的衰减
+
+外部佐证（[TransNormerLLM 技术报告](https://arxiv.org/abs/2307.14995v2)，`raw/2307.14995v2.pdf`，arXiv:2307.14995v2，2024-01-19，§3.1.1 Eq. 2，PDF 第 3 页）：模型里的 $\lambda$ **不可学习**，按头和层用闭式给出。设共有 $H$ 个头、$L$ 层，第 $h$ 个头、第 $l$ 层为
+
+$$\lambda=\exp\left(-\frac{8h}{H}\times\left(1-\frac{l}{L}\right)\right).$$
+
+最后一层的衰减率设为 1，使该层每个 token 都能看到全局信息。同一小节把 LRPE 的频率 $\theta$ 设为可学习；作者写明一旦让 $\lambda$ 可学习，梯度会不稳定并出现 NaN。带复数旋转的 LRPE-d 只用在第一层，其余层只保留指数衰减。Lightning Attention-2 正文把 $\lambda\in\mathbb{R}_+$ 当作 kernel 的 decay rate，没有写出这套按头、按层的取值。
+
 ## 评测要点
 
 模块级（Figure 3，单卡 A100）：Lightning-2 的 forward/backward 墙钟近似随长度线性，FlashAttention-2 与 Lightning-1 二次增长；显存也更省。
@@ -73,14 +81,11 @@ $O_i=O_{\mathrm{intra}}+O_{\mathrm{inter}}$ 在 SRAM 相加再写回 HBM。后�
 
 短序列上 LA2 的 TGS 有时略低于 LA1（0.4B@1K：38615 vs 41789），长序列才拉开。3B 在 65K 仍 OOM——「unlimited」受显存限制。
 
-质量：TNL 0.4B、2K、100k step，LA1 loss 2.229 vs LA2 2.228（Table 2）。1B/3B、30B token 上 TNL-LA2 的训练 loss 略低于 LLaMA-FA2 / HGRN / TNN（Figure 4）。15B TransNormerLLM（42 层 / 40 head / dim 5120，计划 1.3T@6144，当时 1620 TGS）中段 checkpoint 对 Pythia-12B 的 CSR 大约高 2 个点（Table 3）；这是载体模型数字，不是 kernel 消融。
+质量：TNL 0.4B、2K、100k step，LA1 loss 2.229 vs LA2 2.228（Table 2）。1B/3B、30B token 上 TNL-LA2 的训练 loss 略低于 LLaMA-FA2 / HGRN / TNN（Figure 4）。15B TransNormerLLM（42 层 / 40 head / dim 5120，计划 1.3T@6144，当时 1620 TGS）中段 checkpoint 对 Pythia-12B 的 CSR 大约高 2 个点（Table 3）；这是载体模型数字，不是 kernel 消融。完整 1.3T 结果不在本 PDF。本页也不审计后来 FLA 仓库相对文中 Triton kernel 是否逐行等价。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：$\lambda$ 在 TransNormerLLM 里是固定超参还是可学，正文没给生产配置。
-- **需实验或作者披露**：与 GDN 的 chunkwise parallel form 同属「块内密集、块间传状态」，但状态方程不同。本页没有和 GDN/KDA 的同协议对照。
-- **需补外部来源**：15B 只报了训练中段；完整 1.3T 结果不在本 PDF。
-- **需补外部来源**：FLA 仓库后来加了哪些算子、和本页 Triton kernel 是否逐行等价，本页未核源码。
+- 原文没有这项实验/对照：没有和 GDN / KDA 的同协议对照。
 
 ## 相关页面
 

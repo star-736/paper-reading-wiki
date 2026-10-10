@@ -93,9 +93,9 @@ MT-Bench：Figure 4 与结论写 α / β 为 **7.23 / 7.32**。§2 的句子写�
 
 [SimPO](simpo.md) Table 4 在另一套协议里重调了 ORPO。AlpacaEval 2 length-controlled win rate：Mistral-Base 14.7（DPO 15.1），Mistral-Instruct 24.5（26.8），Llama-3-Base 12.2（18.2），Llama-3-Instruct 28.5（40.3）。四格都低于同表 DPO。那次比较换了数据构造和超参搜索，不能拿来改写 Table 2–3 的 OPT 奖励模型胜率。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：Limitations 把「超过 7B」和「更多对齐算法的对照」留给后续。本 PDF 的 7B 榜单对照不是同 epoch、同实现的 DPO；Appendix C 的 10 epoch 选择也没有对应的公开 DPO 复跑。
+- Limitations 把超过 7B 和更多对齐算法的对照留给后续。7B 榜单不是同协议 DPO，已写在核心结论。原文没有与 Appendix C 的 10 epoch 选择对齐的公开 DPO 复跑。
 
 ## 相关页面
 

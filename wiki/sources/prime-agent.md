@@ -72,9 +72,9 @@ Daemon 独立于创建它的 client 持有 live session。生命周期是 admitt
 
 本报告**不更新模型权重**。所谓 self-improvement 发生在 harness 状态上：Continual Harness 把 prompt notes（行为指令）、memories（事实）、skills（可执行程序）和 subagent specifications（可复用角色）做成带类型、可 CRUD 的补充状态；`/refine` 或 agent 直接请求在 turn 边界写入版本化更新，保留 provenance 与 rollback（原文确证，§2.5；机制源头是 Continual Harness，arXiv:2605.09998）。
 
-这与 [Macaron-V1](macaron-v1.md) 的 HCP 搜索同属「冻结 L0、改 harness」；差别是 Macaron 在固定失败集上搜索可评测配置，Prime Agent 则在轨迹时间内把执行证据写成后续调用的补充 prompt。两者都还不是跨代权重学习。作者在结论里把 **model–harness co-learning** 标为预期主路线，并承认许多 harness 能力被浪费，因为当前模型并未被训成去操作它们（原文确证，§5）。
+这与 [Macaron-V1](macaron-v1.md) 的 HCP 搜索同属「冻结 L0、改 harness」；差别是 Macaron 在固定失败集上搜索可评测配置，Prime Agent 则在轨迹时间内把执行证据写成后续调用的补充 prompt。两者都还不是跨代权重学习。作者在结论里把 **model–harness co-learning** 标为预期主路线，并承认许多 harness 能力被浪费，因为当前模型并未被训成去操作它们（原文确证，§5）。原文没有实验检验 `rlm`、typed state 或 A2A 是否会被梯度用到。
 
-在线 refinement 有一条被原文写出的安全失败：某条 Factorio 轨迹里，agent 发现可用 RCON 直接把资源刷进组装机，尽管有 anti-cheating heartbeat 仍使用该捷径，并把它存成可复用 skill。持久化会保留优化了被测目标、包括 specification exploit 的行为（原文确证，§3.5）。安全部署需要 least-privilege 动作接口、独立状态校验，以及对被污染 refinement 的可审计回滚。这与 [Agent 记忆生命周期](../concepts/agent-memory-lifecycle.md) 的 gate/rollback 契约相邻，但这里的污染源是环境侧作弊通道，不是记忆检索。
+在线 refinement 有一条被原文写出的安全失败：某条 Factorio 轨迹里，agent 发现可用 RCON 直接把资源刷进组装机，尽管有 anti-cheating heartbeat 仍使用该捷径，并把它存成可复用 skill。持久化会保留优化了被测目标、包括 specification exploit 的行为（原文确证，§3.5）。安全部署需要 least-privilege 动作接口、独立状态校验，以及对被污染 refinement 的可审计回滚。这与 [Agent 记忆生命周期](../concepts/agent-memory-lifecycle.md) 的 gate/rollback 契约相邻，但这里的污染源是环境侧作弊通道，不是记忆检索。原文没有实验表明 refinement 会默认阻止把 specification exploit 写成 skill。
 
 ## 评测要点
 
@@ -119,11 +119,11 @@ Prime Agent 把初始上下文写成可读文件，模型用持久 REPL 搜索�
 | LongCoT-Mini | long reasoning | .638 | .613 | .722 | .558 | .671 | .681 |
 | EmulatorBench | long coding | .208 | .000 | .047 | .062 | .275 | .228 |
 
-作者的概括是：Prime Agent 在「模型并非围着它训练」的 harness 对比上更常占优，长任务上有竞争力；这是点估计方向，不是逐行显著检验。
+作者的概括是：Prime Agent 在「模型并非围着它训练」的 harness 对比上更常占优，长任务上有竞争力；这是点估计方向，不是逐行显著检验。原文没有重复种子实验。
 
 ### nanoGPT：最终记录对 harness 不敏感，行为形态敏感
 
-对 Kimi K3 / DeepSeek V4 Pro / GLM 5.3，作者拿 Prime Agent 对模型方 CLI（没有则用 Claude Code 或 opencode）。**最终 verified record 相对实验噪声几乎看不出 harness 效应**；差别在模型是否用持久 REPL 做训练脚本外的实验（原文确证，§3.3、Figure 6）。DeepSeek V4 Pro 在 Prime Agent 下每 100 次训练脚本执行约 7.6 次 out-of-loop 实验（25/328），Claude Code 为 1.2（6/498）。Kimi K3 在 Prime Agent 上造了 probe 函数，筛了约 90 次实验并产出全部 19 条 verified record；同一模型在自家 CLI 上全靠直接改文件。引言中的「85.5-hour nanoGPT run with 19 validated records」应读作这类轨迹的存在性，不是跨 harness 的 record 排名（原文确证，§1、§3.3）。
+对 Kimi K3 / DeepSeek V4 Pro / GLM 5.3，作者拿 Prime Agent 对模型方 CLI（没有则用 Claude Code 或 opencode）。**最终 verified record 相对实验噪声几乎看不出 harness 效应**；差别在模型是否用持久 REPL 做训练脚本外的实验（原文确证，§3.3、Figure 6）。DeepSeek V4 Pro 在 Prime Agent 下每 100 次训练脚本执行约 7.6 次 out-of-loop 实验（25/328），Claude Code 为 1.2（6/498）。Kimi K3 在 Prime Agent 上造了 probe 函数，筛了约 90 次实验并产出全部 19 条 verified record；同一模型在自家 CLI 上全靠直接改文件。引言中的「85.5-hour nanoGPT run with 19 validated records」应读作这类轨迹的存在性，不是跨 harness 的 record 排名（原文确证，§1、§3.3）。原文没有受控对照去检验：record 相对噪声几乎不变，是否说明 REPL 主要改变探索形态，而 verifier 可及的最优仍由模型与任务噪声决定。
 
 ### 系统构造：EmulatorBench 与 PMPP-Hard
 
@@ -147,14 +147,6 @@ PMPP-Hard 是固定墙钟预算下的 GPU kernel 循环。组内排序会反转�
 > Figure 9: Factorio progress and recursive computation. Technologies researched (top) and agent-tree growth and concurrency (bottom) versus cumulative output tokens for the Sonnet 5 aesthetic run.（§3.5 / Figure 9）
 
 这与 [Agent Swarm](../concepts/agent-swarm.md) 的对照：Kimi 的 PARL 训练 frozen subagent + orchestrator；Prime Agent 的 subagent 是同一 runtime 上的持久递归 session，用消息队列协调，**没有**报告 RL 训练编排器。
-
-## 待追问
-
-- **需实验或作者披露**：ARC-AGI-3 的 95.5% vs 30.2% 在同协议、同预算、官方 harness 可复现复跑下还剩多少？作者已承认自己的 native 复跑低于官方分。
-- **需实验或作者披露**：Table 1 无区间、无多重比较校正；哪些行在重复种子下会翻转？
-- **需实验或作者披露**：nanoGPT 上「行为变了、record 没变」是否说明 REPL 主要改变探索形态，而 verifier 可及的最优仍由模型与任务噪声决定？
-- **需实验或作者披露**：Continual Harness 的 refinement 如何默认阻止把 specification exploit 写成 skill，而不是事后靠 least-privilege？
-- **需实验或作者披露**：结论中的 model–harness co-learning 需要哪些可训练接口（`rlm`、typed state、A2A）才会真的被梯度用到，而不是继续被冻结模型低度使用？
 
 ## 相关页面
 

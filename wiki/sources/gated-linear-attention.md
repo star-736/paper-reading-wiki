@@ -89,12 +89,9 @@ Table 2（零样本；末列是准确率类任务平均）：
 
 ## 证据边界与阅读提示
 
-- Table 1 把 RWKV-6 写成与 GLA 同结构的 $\alpha_t^\top\mathbf{1}$。RWKV-4 原文的 WKV 不是这块；RWKV-7 的 generalized delta 更不在本页。
-
-## 待追问
-
-- **需实验或作者披露**：低秩门投影秩固定 16、$\tau=16$，有没有随宽度放大的规则？原文没给 7B+ 配置。
-- **需实验或作者披露**：本页 FlashLinearAttention 的 Triton kernel 与 Lightning-2 的 kernel 是否在无门、标量衰减设定下数值等价，两边都没有对照。
+- Table 1 把 RWKV-6 写成与 GLA 同结构的 $\alpha_t^\top\mathbf{1}$。RWKV-4 原文的 WKV 不是这块。generalized delta 见 [RWKV-7](rwkv-7.md)，不在本页。
+- §4.4 把低秩门的秩和温度都固定为 16（$W_\alpha^1\in\mathbb{R}^{d\times 16}$，$W_\alpha^2\in\mathbb{R}^{16\times d_k}$，$\tau=16$）。实验写到 1.3B，没有随宽度放大的规则，也没有 7B+ 配置。缺这条规则不改变已写出的参数化。
+- 原文没有这项实验/对照：没有在无门、标量衰减设定下比较本页 Triton kernel 与 Lightning-2 kernel 是否数值等价。
 
 ## 相关页面
 

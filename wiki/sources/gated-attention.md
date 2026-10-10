@@ -66,7 +66,7 @@ resource: "../../raw/Qiu%20%E7%AD%89%20-%20Gated%20attention%20for%20large%20lan
 
 Dense 实验（§3.2.2、Table 2）**通过缩小 FFN 宽度保持总参数不变**，因此“1.7B 加门后仍是 1.7B”不表示门没有参数，而是把预算从 FFN 分给门。MoE 表的新增参数口径与 dense 表的固定总参数口径必须分开。
 
-**延迟证据的范围**：§3.1 在实验设置中自报 gating 带来的 wall-time latency 小于 2%。这支持论文设置下低开销的描述，但该句没有给独立的 prefill / decode、batch、硬件与上下文长度分项测量。不能把它当成任意服务场景下“推理开销恒小于 2%”的保证；部署成本仍见待追问。
+**延迟证据的范围**：§3.1 在实验设置中自报 gating 带来的 wall-time latency 小于 2%。这支持论文设置下低开销的描述，但该句没有给独立的 prefill / decode、batch、硬件与上下文长度分项测量。不能把它当成任意服务场景下“推理开销恒小于 2%”的保证。原文没有同一硬件、模型、batch 与上下文下的 prefill / decode 延迟、吞吐和峰值显存曲线。
 
 ## 与已有沉淀的关系
 
@@ -75,10 +75,12 @@ Dense 实验（§3.2.2、Table 2）**通过缩小 FFN 宽度保持总参数不�
 - attention sink 的消除对长上下文外推有用，与 [高效长上下文注意力](../concepts/efficient-long-context-attention.md) 关心的长上下文质量有交集，但本文不改注意力复杂度（仍是 full softmax），所以它是「质量/稳定性」改进而非「效率」路线。
 - **采用谱系**：G1 输出门已落到 Qwen3-Next、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3.8-Flash-Next](qwen3.8-next.md)（均与 [GDN 线性层](gated-delta-net.md) 配成 3:1 混合栈），以及非 Qwen 的 Trinity Large（常规全注意力栈）。3.8 还把同类 sigmoid 门用在残差读（Gated Residual）。完整采用表见 [注意力门控](../concepts/attention-gating.md) 的跨报告信号。
 
+## 证据边界与阅读提示
+
+- 原文没有这项实验/对照：去 sink 之后的长度外推只做到本报告的 15B MoE 与 1.7B dense，没有更大尺度的专门复测。
+
 ## 待追问
 
-- **需实验或作者披露**：G1 elementwise / headwise 的参数已由 Table 1/7 核实；还需同一硬件、模型、batch 与上下文下的 prefill / decode 延迟、吞吐及峰值显存曲线。§3.1 的 wall-time <2% 自报没有这些分项，不能直接外推到更大生产模型。
-- **需实验或作者披露**：attention sink 消除后，原本被认为「sink 是有用的注意力垃圾桶」的那派观点（registers/StreamingLLM）在这个框架下如何解释？论文给的是经验观测，机制论证可再深挖。
-- **需实验或作者披露**：该门已进 Qwen3-Next 系（含 Qwen3-Coder-Next、Qwen3.5-Omni）和 Trinity Large，但论文消融只到 15B 尺度；更大尺度上「去 sink → 长度外推增益」是否同样成立，这些采用方的报告**继承而非重新验证**该收益，仍缺大尺度的专门复测数据。Qwen3.5 已到 397B 级；Qwen3.8-Flash-Next 的新增门控证据集中在稳定性（GatedNorm / GR），不是重新统计 attention sink。
+- attention sink 消除后，原本被认为「sink 是有用的注意力垃圾桶」的那派观点（registers/StreamingLLM）在这个框架下如何解释？论文给的是经验观测，机制论证可再深挖。
 
 关联提问页：[注意力门控](../concepts/attention-gating.md#相关追问)。

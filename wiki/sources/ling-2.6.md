@@ -83,6 +83,8 @@ Ling-2.6 和 Ring-2.6 是 Inclusion AI 在万亿参数规模上的 agentic intel
 
 **QK Norm 不兼容**：QK Norm 是非线性操作，阻碍 MLA 推理需要的 KV 权重吸收。解法是基于 RMSNorm 数学性质，用校准数据集统计 per-dimension 统计量，把 QK Norm 参数 $\gamma_Q, \gamma_K$ 近似融合进 $W_q, W_k$ 投影权重。mini 规模实验中这步使 test perplexity 从 6.65 升到 11.13，但可控可恢复。
 
+§2.1.3 原句是 “Leveraging the mathematical properties of RMSNorm, we approximately fuse the QK Norm parameters”。公式 (1)(2) 把校准集上的 query/key 放进 RMS 分母 $\sqrt{\frac{1}{Nd}\sum q_{ij}^2+\epsilon}$（没有减均值），再逐维乘 $\gamma_Q,\gamma_K$。Ling-2.0 的 QK Norm 在这次吸收里就是 RMSNorm。报告没有写它和 Qwen3 QK-Norm 的差异。
+
 **Partial RoPE 不兼容**：TransMLA 原生支持 Full RoPE，而 Ling-2.0 用 Partial RoPE（仅部分 head dim 接 RoPE）。解法是解耦 RoPE 模块：把受 RoPE 影响的维度与不受影响的维度分离，仅对 RoPE 影响维度做 PCA-based weight rotation，再拼接重构。
 
 ### 多阶段预训练
@@ -191,12 +193,9 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 
 4×H20 部署，batch size 32，4 TP ranks，64K output：decode throughput 为 Nemotron-3-Super 的 1.3×、Qwen3.5-122B-A10B 的 2.4×、GLM-4.5-Air 的 4.3×。BF16 BS=1 下 MTP+linghe fused kernel 比 baseline +60%，FP8 BS=1 下 +119%。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。[MiniMax-M1](minimax-m1.md) 更早用过 7 Lightning : 1 softmax，不要把 7:1 写成 Ling-2.6 独有，也不要把 M1 的全局 softmax 写成 MLA。
-- **需实验或作者披露**：KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
-- **需实验或作者披露**：异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？
-- **现有材料待核**：MLA 转换中的 QK Norm absorption 公式基于 RMSNorm 性质——这是否意味着 Ling-2.0 原本的 QK Norm 是 RMSNorm 类型？与 Qwen3 的 QK-Norm（LayerNorm 类型）有何差异？
+- 原文没有这项实验/对照：没有把 7:1 与 Kimi Linear / Qwen3-Next 的 3:1 放在更大模型上再比；没有 KPop 与 GSPO / SAPO 的组合实验；也没有 token budget $\Phi$ 与轨迹数量阈值哪个更优的对照。M=16 退化已在比例表里。MiniMax-M1 更早的 7:1 用的是 softmax 全局层，不是 MLA，见相关页面。
 
 ## 相关页面
 

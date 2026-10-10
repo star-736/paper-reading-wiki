@@ -17,6 +17,8 @@ resource: "raw/2607.00248v1.pdf"
 - 页数：87
 - 模型页：[Seed2.0](../models/seed2.md)
 - 开源（外部佐证，2026-10-10）：[ByteDance-Seed](https://huggingface.co/ByteDance-Seed) 的公开模型有 [Seed-OSS-36B-Base](https://huggingface.co/ByteDance-Seed/Seed-OSS-36B-Base) 与 Instruct，没有 Seed2.0 检查点。同名检索落到的是第三方蒸馏仓库。
+- 前代 Seed-1.8 模型卡（本卡参考文献 [1]，原文指向的 PDF）：`raw/2603.20633v3.pdf`（arXiv:2603.20633v3，Bytedance Seed，2026-04-17）。重读后没有参数量、MoE 或架构章节；文中 parameter 出现在科学软件案例的 `param.ccl`，不是模型规格。
+- 前代 Seed1.6 官方技术博客（外部佐证，不是 Seed2.0 的架构）：[Introduction to techniques used in Seed1.6](https://seed.bytedance.com/en/blog/introduction-to-techniques-used-in-seed1-6)，快照 `raw/seed1.6-techniques-blog.md`。博客写 Seed1.6 沿用 Seed1.5 的稀疏 MoE，预训练为 23B 激活 / 230B 总参，长上下文持续训练把最大序列从 32K 延到 256K，后训练包含 AdaCoT。这些数字只属于 Seed1.6。
 
 ## 核心结论
 
@@ -62,6 +64,24 @@ Seed 模型定位为 **workflow-oriented MaaS foundation**，而非轻量对话�
 
 Seed2.0 的 token 定价比 frontier 模型低约一个数量级。Pro 面向复杂推理和长上下文，Lite 面向通用应用，Mini 的 decode 定价低于 $0.50/1M tokens，面向高吞吐、延迟敏感场景。
 
+Table 1 表注写明：对有 interval pricing 的 Seed2.0，表中只报一个代表价。Gemini 的区间被脚注写成 context tiers；Seed2.0 这一列没有写成 context tier。§2.3 的 tiered options 指的是 Pro / Lite / Mini 三档产品，不是上下文分档。
+
+火山方舟价格页把部署名 `doubao-seed-2.0-pro` / `lite` / `mini` 按输入长度分档（外部佐证，2026-10-11 快照 `raw/volcengine-ark-model-pricing.md`，来源页 [模型价格](https://docs.volcengine.com/docs/ark/model-pricing?lang=zh)）。下面是在线推理（常规）的非音频输入与输出，单位是元/百万 token，长度单位是千 token。同页还有音频、缓存列。低延迟是另一张更贵的表；低优约为常规的 50%（该页自己的说明）。模型卡里的 ¥3.41/¥17.04、¥0.64/¥3.83、¥0.22/¥2.24 与当前最低档接近，但不是同一个数，不能当成同一单元格。
+
+| 部署名 | 输入长度（千 token） | 输入（非音频） | 输出 |
+| --- | --- | --- | --- |
+| doubao-seed-2.0-pro | [0, 32] | 3.2 | 16.0 |
+| doubao-seed-2.0-pro | (32, 128] | 4.8 | 24.0 |
+| doubao-seed-2.0-pro | (128, 256] | 9.6 | 48.0 |
+| doubao-seed-2.0-lite | [0, 32] | 0.6 | 3.6 |
+| doubao-seed-2.0-lite | (32, 128] | 0.9 | 5.4 |
+| doubao-seed-2.0-lite | (128, 256] | 1.8 | 10.8 |
+| doubao-seed-2.0-mini | [0, 32] | 0.2 | 2.0 |
+| doubao-seed-2.0-mini | (32, 128] | 0.4 | 4.0 |
+| doubao-seed-2.0-mini | (128, 256] | 0.8 | 8.0 |
+
+`https://www.volcengine.com/docs/82379/1544106` 的抓取没有展开正文，上表不来自那个 URL。
+
 ## 评测框架
 
 报告建立四维评测框架，每维针对真实世界复杂任务的一个核心方面：
@@ -96,6 +116,8 @@ Seed2.0 Pro 在数学竞赛达到国际领先组水平：
 ### 视觉能力
 
 Seed2.0 Pro 在 50 个图像 benchmark 和 24 个视频 benchmark 上评测。MathVision 88.8、MathKangaroo 90.5、MathCanvas 61.9 均 SOTA。VLMsAreBlind 98.6、VLMsAreBiased 77.4 均领先。视频理解在 VideoReasonBench 77.8、VideoMME 89.5 等多个 benchmark 上 SOTA。
+
+VideoCut（原文确证，Video Tool-Use: VideoCut / Table 10）：全系列默认带这个工具。处理长视频或需要高帧率感知时，对相关片段以更高 FPS 重放。Table 10 的列是 Gemini-3-Pro、Seed1.8、Seed1.8 w/ VideoCut、Seed2.0、Seed2.0 Pro w/ VideoCut。平均时长与分数：CGBench 1624 秒，65.5 / 62.4 / 65.9 / 65.0 / 66.8；LVBench 4104 秒，Gemini 空缺，73.0 / 78.9 / 76.4 / 80.0；ZeroVideo 1672 秒，14.3 / 6.9 / 18.8 / 14.5 / 27.9。报告没有写片段如何被选中，也没有写具体 FPS。内部选择规则不再追问。
 
 ### Agentic 能力
 
@@ -143,12 +165,11 @@ Seed2.0 Pro 在五场 ICPC 官方赛事（2025 World Finals + 西安 / 成都 / 
 
 这些 case study 的价值不在于证明 Seed2.0 比其他模型好（缺乏对照），而在于展示模型在跨学科长周期任务中的推理深度和工程能力。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：Seed2.0 的架构是什么？参数量？是否 MoE？训练数据规模？--Model Card 完全未披露，需等待技术报告或开源。
-- **需补外部来源**：前代 Seed1.6/1.8 的技术细节是否已公开？--Seed-1.8 Model Card 被引用为 [1]，但未在 raw/ 中。
-- **需补外部来源**：定价仅为 Pro/Lite/Mini 各一个代表价，是否有按 context tier 分阶定价？--Gemini 有分阶，Seed2.0 只给单一价格。
-- **需补外部来源**：视频理解使用 VideoCut 工具的具体机制是什么？--Table 10 提到 VideoCut 工具提升长视频理解，但未描述工具设计。
+本文件是 Model Card。架构、参数量、是否 MoE、训练数据规模都没有写。这里没有可核验的机制问题，不再把「请披露架构」留在待追问，也不把 Seed1.6 博客里的 23B 激活 / 230B 总参写成 Seed2.0 的架构。
+
+[Xiaomi-GUI-0](xiaomi-gui-0.md) 参考文献 [6] 把本卡标成 arXiv:2603.11103，该编号对应的是 Understanding by Reconstruction；本卡是 arXiv:2607.00248。对方 RealMobile 表里 Seed 2.0 Pro 的 80.0% / 88.1% 只是 Xiaomi 表内数字，不能当作本卡原文确证。
 
 ## 相关页面
 

@@ -87,12 +87,9 @@ Teacher 不一致的消融只报 AIME 2024（Table 4）。8B、Lightning：SFT �
 - **[Many Faces](many-faces-opd.md)**、**[Revisiting OPD](revisiting-opd.md)**：改的是 Top-K 估计器。本文的 advantage 仍是采样 token 的 log-ratio，改的是轨迹分布和 teacher 是否同一人。
 - **生产报告**（MiMo、V4、GLM-5）：多 teacher 按 prompt 路由，SFT 数据的生成者通常不是后来的 OPD teacher。按本文的定义，那些流水线违反 teacher consistency。本文没有在那些规模上测过这个偏差有多大。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **已另页核实**：[Lightning OPD 2.0](lightning-opd-2.md) 在跨 teacher 的冻结 replay 上减掉可预测分歧。它不取消本页的 \(G\sigma_\Delta\) 上界，也不把分数补回一致 teacher 的最优点。评测条数与本页不同。
-- **需实验或作者披露**：支撑覆盖在 150 step 之后是否仍成立。学生可以走出 \(\pi_{\mathrm{ref}}\) 几乎不走的 token，定理 3.5 的换元就不再严格。
-- **需实验或作者披露**：生产多 teacher 流水线里，SFT 生成者和 OPD teacher 不是同一人时，偏差是 Table 4 这种几个点，还是会被路由冲掉。本文只做了单 teacher 的 4B/8B 交叉。
-- **现有材料待核**：Table 1 的 ExOPD 行不是同一协议。4B 代码均分离线略低于在线，不能写成每一列都打平。
+- 原文没有检验 150 step 之后，学生轨迹是否仍落在 \(\pi_{\mathrm{ref}}\) 的支撑里。支撑覆盖只在初始化时自然成立。
 
 ## 相关页面
 

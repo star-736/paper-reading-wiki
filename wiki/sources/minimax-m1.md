@@ -66,6 +66,8 @@ $\hat r=\mathrm{clip}(r,\,1-\varepsilon_{\mathrm{IS}}^{\mathrm{low}},\,1+\vareps
 
 > Figure 2（原文截图，§3.1）："Comparison of GRPO, DAPO, and our proposed CISPO on AIME 2024, based on Qwen2.5-32B-base. CISPO outperforms both GRPO and DAPO in terms of performance at the same number of training steps, and achieves comparable performance to DAPO using 50% of the training steps."
 
+这个 2× 是 dense softmax、按 step 数算的对照，不是 456B hybrid 上相对 DAPO 的墙钟。生产 run 有没有再比 GRPO / DAPO，报告没有写。
+
 ### Hybrid 架构上的 RL 工程
 
 Lightning Attention 降低 rollout 成本，但大规模 RL 另有坑：
@@ -97,7 +99,7 @@ Lightning Attention 降低 rollout 成本，但大规模 RL 另有坑：
 
 第一轮 RL 输出上限 40K，再按 48 / 56 / 64 / 72 / 80K 扩窗。切下一档看生成序列 PPL 是否收敛、长度 99 分位是否贴近当前窗（§5）。
 
-后期易 pattern collapse：负样本比正样本更快顶满窗口，GRPO 标准化 + token-level loss 让后半段堆过大负梯度。对策：(1) 重复早停；(2) **sample-level loss 与 token-level 归一化并用**；(3) 降低梯度 clip 与 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$。合成推理数据在长上下文 RL 里易重复，80K 阶段降采样（§5）。
+后期易 pattern collapse：负样本比正样本更快顶满窗口，GRPO 标准化 + token-level loss 让后半段堆过大负梯度。对策：(1) 重复早停；(2) **sample-level loss 与 token-level 归一化并用**；(3) 降低梯度 clip 与 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$。两套 loss 各用在哪一段、权重多少，原文没有写。合成推理数据在长上下文 RL 里易重复，80K 阶段降采样（§5）。
 
 ![Figure 4：RL step 上 AIME 2024 / 2025 与 LiveCodeBench v5 的准确率与生成长度同涨；AIME 2024 约 68%→80%，均长超过 20K。](../assets/minimax-m1/fig4-rl-scaling.png)
 
@@ -130,13 +132,7 @@ Table 2 摘录（MiniMax-M1-80k）：
 ## 证据边界与阅读提示
 
 - 后续 [MiniMax-M2 Series](minimax-m2-series.md) 在前沿规模改回 full attention。那是后作判断，不是本页对 hybrid 的否定。
-
-## 待追问
-
-- **需实验或作者披露**：原文只说 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$，**没写具体数字**。[Laguna](laguna-m1-xs2.md) 的 $(c_{low},c_{high})=(1,4)$ 不能回写成 M1 配方。
-- **需实验或作者披露**：80K 阶段改成 sample-level + token-level 混用，等于部分收回 CISPO 主文的纯 token-level 设定。两套 loss 各用在哪一段、权重多少，原文没给。
-- **需实验或作者披露**：Figure 2 的 2× 是 Qwen2.5-32B dense softmax 上的对照，不是 456B hybrid 上相对 DAPO 的墙钟。生产 run 有没有再比 GRPO/DAPO，没写。
-- **需实验或作者披露**：16 轮 off-policy / generation 是 CISPO 成立的关键工况；同步、少步更新时「不丢 token」还值多少，没有消融。
+- 16 轮 off-policy / generation 是正文里的工况。原文没有同步、少步更新下「不丢 token」还值多少的消融。
 
 ## 相关页面
 

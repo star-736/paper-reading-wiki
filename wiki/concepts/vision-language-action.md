@@ -3,7 +3,7 @@ type: Concept
 title: "Vision-Language-Action"
 description: "把预训练视觉语言模型接到机器人控制：看图、读指令、输出动作。动作头仍是三条：离散 token / π0 连续 flow / π0.5 开世界 co-training。FAST 是离散动作的压缩分词，不是第四种动作头。π0.7 仍停在连续 flow 上，但换成 Gemma 3 + MEM + 860M expert，不再是 PaliGemma + FAST→flow。AtomicVLA 是 SG-MoE 技能路由，不是第四种动作头。"
 tags: ["concept", "vla", "robotics"]
-timestamp: 2026-09-13
+timestamp: 2026-10-11
 ---
 
 # Vision-Language-Action
@@ -37,7 +37,7 @@ VLA 不是「多模态聊天 + 另外写个脚本控机器人」：动作在同�
 - **[π0](../sources/pi0.md)（RSS 2025，连续 flow + action expert）**：PaliGemma 3B + 300M flow matching 专家；观察是多路 RGB + 语言 + 本体感觉，输出 \(H=50\) 连续动作块，最高 50 Hz。预训练约 10,000 小时、7 种配置 × 68 任务，外加 OXE。原文把 OpenVLA 重训到同一混合物：自回归离散化撑不住 chunk 与高频，out-of-box 全面落后（§VI-A、Figure 7）。这是 **原文对照**，不是后文推断。新技能仍要 fine-tune；高层语言是外挂 VLM，不是自己的 subtask 头。
 - **[FAST](../sources/fast.md)（2025，动作分词器，不是新 VLA）**：DCT + 量化 + BPE 把 **1 秒**动作 chunk 压成离散 token；相对 OpenVLA 式逐步 256-bin 改的是分词层，不是第四种动作头。FAST+ 是约 1M 真实轨迹上的 universal tokenizer。接到 π0 骨干上的 π0-FAST 匹配 diffusion VLA、训练最多 5× 更快——那是 FAST 论文的数字，不是 π0 原文。
 - **[π0.5](../sources/pi0.5.md)（2025，开世界 co-training）**：骨干仍是 π0 的 PaliGemma + flow expert。改动是 [FAST](../sources/fast.md) 离散预训练再长 expert、**同一模型**先预测 semantic subtask，以及异构数据（MM 约 400 小时 / ~100 家 + ME/CE/HL/WD/VI）。评测在训练未见的厨房/卧室；97.6% 预训练样本不是目标平台家务（§I）。InternVLA-A1.5 真机表与 LIBERO-Plus 拿它当对照。
-- **[InternVLA-A1.5](../sources/internvla-a1.5.md)（2026，MoT + latent foresight）**：不是把 OpenVLA 换个 backbone，也不是 π0.5 换 Qwen。VLM 是 Qwen-3.5 2B（3:1 GDN:full attention），旁边 460M unified expert 只在 full attention 层交互。Stage 1 用 [FAST](../sources/fast.md) 离散 token；Stage 2 起 flow-matching chunk（size 50）+ 从冻结 WAN2.2 蒸馏的 foresight token。语义侧继续 VQA / subtask。评测协议、数据（1.2M episodes + 3M 多模态）不可与 OpenVLA 附录 E 或 π0.5 家庭进度条直接横比。
+- **[InternVLA-A1.5](../sources/internvla-a1.5.md)（2026，MoT + latent foresight）**：不是把 OpenVLA 换个 backbone，也不是 π0.5 换 Qwen。VLM 是 Qwen-3.5 2B（3:1 GDN:full attention），旁边 460M unified expert 只在 full attention 层交互。Stage 1 用 [FAST](../sources/fast.md) 离散 token；Stage 2 起 flow-matching chunk（size 50）+ 从冻结 WAN2.2 蒸馏的 foresight token。语义侧继续 VQA / subtask。评测协议、数据（1.2M episodes + 3M 多模态）不可与 OpenVLA 附录 E 或 π0.5 家庭进度条直接横比。外部佐证（官方训练代码，commit `e6fc904`，2026-07-20）：`FASTInternVLAA15ActionTokenizerTransformFn` 默认 `action_tokenizer_name="physical-intelligence/fast"`，`AutoProcessor.from_pretrained` 读取该仓库的 `tokenizer.json`，不调用 `.fit()`；`internvla_a15_pretrain.sh` 打开 `use_fast_action_tokens=true` 后，配置把这个 transform 放进数据管线。因此发布的训练代码在 Stage 1 加载的是已发布 FAST+，不是另训的 1024 BPE。快照：[internvla-a-series-fast-tokenizer-2026-07-20.md](../../raw/internvla-a-series-fast-tokenizer-2026-07-20.md)。
 - **[ASPIRE](../sources/aspire.md) 已 ingest，但不是第四种动作头**：它写/改 code-as-policy 程序，把验证过的修复写入 skill library；仿真 coder 是冻结的 Claude Opus 4.6，不更新 VLA 权重。LIBERO-Pro 表里 OpenVLA / π0 / π0.5 是对照，不是前作。入口见 [具身 skill 自进化](embodied-skill-self-evolution.md)。
 - **[EmbodiedSkills](../sources/embodied-skills.md) 已 ingest，也不是第四种动作头**：它把 π0.5 这一代低层包进 guarded AgentLoop。skill 是 typed 执行合同，policy 只提出 proposal，runtime 先验后验。RoboTwin 2.0 86.20% / LIBERO 97.40% 是**任务特化低层策略**的执行成绩；环本身的证据是消融（去验证 −38.0 pp、去 subtask −51.8 pp）。不要和 ASPIRE 的程序库、[EmbodiSkill](../sources/embodiskill.md) 的技能正文混名。
 - **[EmbodiSkill](../sources/embodiskill.md) 已 ingest，同样不是动作头**：training-free，冻结 Qwen 执行器，进化模型改自然语言技能正文；执行偏差只进附录。ALFWorld 93.28% 是文本家务、不是 VLA 闭环。三条 skill 路见 [具身 skill 自进化](embodied-skill-self-evolution.md)。
@@ -58,17 +58,19 @@ VLA 不是「多模态聊天 + 另外写个脚本控机器人」：动作在同�
 
 - 后续 skill 论文若把「技能」也写成 token：它们是叠在 OpenVLA 的 7D bin 之上，还是替换成 π0/π0.5 的连续专家，或另做原子动作库？[AtomicVLA](../sources/atomicvla.md) 的答案是：**技能是 SG-MoE 路由，低层仍是 π0 连续专家**，不是第四种动作头。[EmbodiedSkills](../sources/embodied-skills.md) 的低层是 π0.5 连续专家，技能本身是 runtime 合同不是 token。[EmbodiSkill](../sources/embodiskill.md) 的技能是自然语言正文，执行器不是 VLA。[ASPIRE](../sources/aspire.md) 走的是程序库。
 - **已闭合**：π0.6 / π0.6-MEM / π\*0.6 不建独立页。架构以那些原文为准；不能用 [π0.7](../sources/pi0.7.md) 的柱图反推。
+- 离散 bin 在高频、双臂、接触丰富任务上的量化误差，RT-2、OpenVLA、π0 和 [FAST](../sources/fast.md) 原文都没有同协议测量。π0 的对照是把 OpenVLA 重训到 π 混合物；FAST 写的是自己的分词协议。不要回填 OpenVLA 的 Bridge 表。
 
 ## 待追问
 
-- **需实验或作者披露**：离散 bin 的量化误差在高频、双臂、接触丰富任务上有多大？RT-2 报 55B 1–3 Hz、均匀 bin；OpenVLA §6 只点了推理频率和 action chunking；π0 的对照是把 OpenVLA 重训到 π 混合物，不是 RT-2 / OpenVLA 自己的协议。[FAST](../sources/fast.md) 把失败写成「逐步 token 边际信息趋零」，并用 DCT+BPE 换分词；那是 FAST 协议，不要回填 OpenVLA 的 Bridge 表。
-- **需补外部来源**：**分词方法 vs 词表权重（部分可答）。** [OpenVLA](../sources/openvla.md) 的逐步 256-bin **不是** [FAST](../sources/fast.md)。FAST 原文是 **1 秒 action chunk** 上 DCT + 量化 + BPE（§V-B、Fig. 4），不是逐步 bin。[π0.5](../sources/pi0.5.md) 预训练、[InternVLA-A1.5](../sources/internvla-a1.5.md) Stage 1、[π0.7](../sources/pi0.7.md) Knowledge Insulation 都引用这篇当 FAST tokenizer；π0.5 的 \(H=50\) 在 50 Hz 上与 1 秒设计一致，InternVLA 也是 chunk 50 但没写控制频率。三种**用法**不同：π0.5 是 FAST→flow 两阶段，InternVLA 是 Stage 1 离散 / Stage 2 flow，π0.7 只拿 FAST 当 VLM 的 KI 训练信号。**不能从对照表确认它们是否共用发布的 FAST+ 权重**，还是各自重训了 BPE。 π0.7 的 KI 具体 chunk 长度也未披露；这些配置需逐个核对权重或实现，不能互填。
+- **已闭合**：InternVLA Stage 1 的训练代码加载发布的 FAST+。见上方跨报告信号；依据是 `physical-intelligence/fast` 的 `tokenizer.json`，不是论文里的词表大小 2048 单独外推。单数据集 BPE 1024、发布词表 2048、openpi 只在 `ModelType.PI0_FAST` 上使用这份词表，这三句保持不变。
+- **需补外部来源**：π0.5 的离散预训练、π0.7 的 Knowledge Insulation，是否加载发布的 FAST+ merges？π0.5 / π0.7 正文没写词表大小；π0.5 的名字 π0-FAST+Flow 不是 FAST+ 词表。π0.7 的 KI chunk 长度也未披露。openpi 的 `ModelType.PI05` 仍走 `PaligemmaTokenizer`（[config.py](https://github.com/Physical-Intelligence/openpi/blob/main/src/openpi/training/config.py)）。2026-10-11 检索未找到：官方权重或代码没有写出这两处的 merges 来源。[openpi tokenizer.py](https://github.com/Physical-Intelligence/openpi/blob/main/src/openpi/models/tokenizer.py)、[openpi config.py](https://github.com/Physical-Intelligence/openpi/blob/main/src/openpi/training/config.py)、[Knowledge Insulation 项目页](https://www.physicalintelligence.company/research/knowledge_insulation)、[KI 论文](https://arxiv.org/abs/2505.23705)。`raw/2504.16054v1.pdf` 与 `raw/2604.15483v2.pdf` 只写 FAST tokenizer / FAST tokens。
 
 ## 相关页面
 
 - 分层 LLM planner，不是动作头：[SayCan](../sources/saycan.md)
 - 语言反馈闭环，仍不是动作头：[Inner Monologue](../sources/inner-monologue.md)
 - VLA 定义、封闭离散 token：[RT-2](../models/rt-2.md) · [来源](../sources/rt-2.md)
+- RT-2-X 与跨本体数据集，不是厨房原版：[Open X-Embodiment](../sources/open-x-embodiment.md)
 - 开源离散 token 基线：[OpenVLA](../models/openvla.md) · [来源](../sources/openvla.md)
 - 离散动作的压缩分词，不是第四种动作头：[FAST](../sources/fast.md)
 - 连续 flow + action expert：[π0](../models/pi0.md) · [来源](../sources/pi0.md)

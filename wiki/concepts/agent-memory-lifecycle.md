@@ -51,10 +51,13 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 
 ## 跨报告信号
 
-- **与 [agentic-engineering](agentic-engineering.md) 的关系**：Mi-Memory 的 procedural hooks（ProcedureEntry）与 agentic engineering 中的 tool-skill memory 概念相邻，但 scope 更窄——限定于个性化对话行为，非通用工具技能。论文明确区分：preference memory 记录用户想要什么，procedural entry 记录助手应如何响应。
+- **与 [agentic-engineering](agentic-engineering.md) 的关系**：Mi-Memory 的 procedural hooks（ProcedureEntry）与 agentic engineering 中的 tool-skill memory 概念相邻，但 scope 更窄——限定于个性化对话行为，非通用工具技能。论文明确区分：preference memory 记录用户想要什么，procedural entry 记录助手应如何响应。ProcedureEntry 是 design-only 的操作指导，没有独立 benchmark，本库不再追它和 tool-skill library 的进一步边界细写。
+- **Outlook 里的标准契约**（原文确证，§9 Research Outlook）：作者把「社区缺少类似 function-calling schema 的 shared memory contract」写成研究方向，并问最小契约要支持哪些系统。这是已写明的展望，本库不再把它留成待追问。
+- **Layer-A 的部署读法**（原文确证，§6 与 Appendix F）：evidence annotation 与 source-id 完整时，诊断才声称最早责任阶段；部署式设定里同一逻辑是 heuristic 且 audit-assisted，不是确定性的 earliest-loss。论文停在这个边界，本库不再追生产环境里另给一套维持可信度的配方。
 - **D2ACCI 与 `systematic-debugging`（本页类比） 的同构**：D2ACCI 的「Hypothesis → Diagnosis → Patch → Verification」四步与 systematic-debugging skill 的四阶段方法论（understand → reproduce → isolate → fix）高度同构，都是将 ad-hoc 调试转化为可证伪的迭代。区别在于 D2ACCI 额外要求 paired comparison + per-category non-regression gate。
 - **E2MEND 与 RL policy optimization 的类比**：E2MEND 搜索文本策略空间而非连续参数空间，但面临类似风险（proxy metric 优化 / over-exploiting 单维度 / drift 累积）。论文用三层防御（hard constraint gate / soft Critic review / best-ever rollback）类比 RL governance，但不声称证明 RL-style reward hacking。
-- **LiteMem 与 repository-native agent memory**：LiteMem 把 L0/L1/L2/SM 信息映射为 local profile/session/entity/knowledge/daily-event 文件 + Git provenance，与 Git-of-Thoughts / Git Context Controller / LightMem 等工作属同一部署导向线。关键差异是 LiteMem 测试的是 Mi-Memory 审计契约的迁移可行性，而非仅检索接口变更。
+- **LiteMem 与 repository-native agent memory**：LiteMem 把 L0/L1/L2/SM 信息映射为 local profile/session/entity/knowledge/daily-event 文件 + Git provenance，与 Git-of-Thoughts / Git Context Controller / LightMem 等工作属同一部署导向线。关键差异是 LiteMem 测试的是 Mi-Memory 审计契约的迁移可行性，而非仅检索接口变更。原文没有 file-count 规模化时的 latency/recall 曲线。
+- **MemFuse 的 conflict arbitration**（见[来源页](../sources/mi-memory.md)）：33.3% 对 mem0 的 45.3%。原文没有检验这是不是因果图表示的固有局限。
 - **Prime Agent Continual Harness**：[Prime Agent](../sources/prime-agent.md) 把 L3 磁盘状态（history / memories / skills / prompts / subagent specs）做成轨迹时间内可 CRUD 的 typed state，用 refinement 版本化更新，不改 L0 权重。这与本页的 Structure（分层可检索）+ Evolution（策略变更要有版本与 rollback）相邻，但对象是 **agent runtime 的补充 prompt**，不是 Personal AI 的跨设备记忆。Factorio 轨迹里 RCON 作弊被写成可复用 skill，是本页 gate/rollback 缺失时的失败模式：持久化会保存优化了被测目标、包括 specification exploit 的行为。层级数字不要混读——Prime Agent 的 L0–L3 是「权重 / 上下文 / REPL / 磁盘」，Mi-Memory 的 L0–L2 是 atomic fact / summary / profile。
 - **ASPIRE skill library**：[ASPIRE](../sources/aspire.md) 把跨任务的机器人修复写成可检索 skill（失败签名 + when-to-apply + 程序草图），coordinator 只晋升通过 debug 验证的可复用条目——这是 Structure + 一层 admission gate。它还没有本页意义上的 rollback / pruning：原文 §5 写明库变大后条目会过时、过特、冗余或误导，Table 6 的零样本随 \(N\) 非单调就是这个缺口。对象是具身 code-as-policy，不是 Personal AI 记忆；入口见 [具身 skill 自进化](embodied-skill-self-evolution.md)。
 
@@ -64,13 +67,6 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 2. **审计契约作为集成原语**：异构模块（分层存储 / 多模态 grounding / 因果融合 / 策略演化 / 仓库部署）通过共享 artifact families 对齐，而非通过统一架构。这允许每个 track 独立进展同时保持 claim boundary 一致。
 3. **证据分级诚实**：论文显式区分 controlled reference / module-level / preliminary-internal / transfer-feasibility / design-only 五级证据成熟度，并为每个数值声称标注 statistical qualifier 是否满足。避免了 memory 领域常见的 leaderboard 混淆。
 4. **与 proactive service 的关联**：Mi-Memory 的 Human-Car-Home 场景（跨设备证据链、定时/事件触发、用户纠正进入 gated update）与 proactive service 的触发-判断-执行模式有直接映射。记忆生命周期的 stage-local diagnosis 能力是 proactive service 可靠性的前提——如果助手主动发起的建议基于过时/错误/丢失的证据，用户信任会快速崩塌。
-
-## 待追问
-
-- **需实验或作者披露**：Mi-Memory 的 lifecycle audit contract 是否可以泛化为跨 agent 系统的标准接口？论文自己在 outlook 中指出社区缺乏类似 function-calling schema 的 shared memory contract。
-- **需实验或作者披露**：D2ACCI 的 Layer-A 诊断在 evidence annotation 不完整时退化为 heuristic——production 环境中如何维持诊断可信度？
-- **需实验或作者披露**：MemFuse 的 conflict arbitration 弱于 mem0（33.3% vs 45.3%）指向一个更深问题：graph-fusion 目标如何平衡 causal coverage 与 contradiction handling？这是否是因果图表示的固有局限？
-- **需实验或作者披露**：LiteMem 的 progressive disclosure 在 file-count 规模化时的 latency/recall trade-off 曲线尚未测绘，当前 transfer-feasibility setting 之外仍未验证。
 
 ## 相关页面
 
@@ -82,5 +78,3 @@ Mi-Memory 明确区分了三个常被混为一谈的对象：
 - [具身 skill 自进化](embodied-skill-self-evolution.md)——程序库技能 vs VLA 权重
 - [Agent harness](agent-harness.md)——执行膜上的 typed state / refinement / rollback
 - [Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)——proactive harness 把 event / affair / profile / feedback memory 分开，用批准与忽略校准介入时机；不是全生命周期审计系统，只覆盖 Expansion（通知作证据）和一层轻量 Evolution（反馈改阈值）
-
-关联提问页：[Mi-Memory: A Lifecycle Memory Framework for Personal AI](../sources/mi-memory.md#相关追问)。

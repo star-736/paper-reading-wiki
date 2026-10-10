@@ -56,6 +56,8 @@ $$
 
 Listing 1 给出原生 PyTorch 实现（`segsum` 造 1-SS 掩码 + 四步 einsum）。这是算法，不是另一条状态方程。
 
+**对角 $A_t$ 的后续（外部佐证）。** §10.1 写：对角 $A_t$（Mamba-1 的 S6）与标量恒等 SSD 理论效率同阶，但二次对偶失去单张注意力式解释、更难算；作者只猜想结构化矩阵算法可以收到一般对角 SSM。本页已引用的 [Gated DeltaNet](gated-delta-net.md) 与 [Lightning Attention-2](lightning-attention-2.md) 仍是标量衰减，没有这条算法。Hu 等把对偶和一条线性算法公开了：[On Structured State-Space Duality](https://arxiv.org/abs/2510.04944)（`raw/2510.04944v2.pdf`，arXiv:2510.04944v2，2025-12-23；文首 Last Update 2025-12-11）。§4.1：对角 $A_t$ 的转移矩阵 $M$ 等于 $N$ 个 1-半可分掩码注意力之和，每个对角模式一头。§4.3 Algorithm 1 对每个模式做 $Z_n=b_n\odot X$、标量扫描 $H_n=g(a_n,Z_n)$、$Y_n=c_n\odot H_n$，再对 $n$ 求和；总 FLOPs $O(NTd)$。作者称这与 Dao & Gu 标量 SSD 的线性代价同阶（他们所引 Theorem 3.8），常数也同量级（Remark 4.2：每步 $NTd$、合计 $4NTd$）。Remark 4.3 写当时没有直接加速对角 SSD 的专用 kernel，并留给以后；Remark 4.4 写更一般 SSD 的快速算法仍然缺乏。附录 B.6–B.7 的实现是按时间展开的显式对角 scan。配套仓库 [MAGICS-LAB/state_space_daulity](https://github.com/MAGICS-LAB/state_space_daulity) 是数值对照，用来核对对角 SSM 与 $N$ 个 1-SS 头之和。截至 2026-10-11，arXiv 上对 “diagonal SSD”、“diagonal-SSD” 以及 `2510.04944` 的检索没有更晚的对角块分解；官方 [mamba2.py](https://github.com/state-spaces/mamba/blob/36b16d4715ed2d753697167d65da5e6abba22017/mamba_ssm/modules/mamba2.py) 把 `A` 初始化为长度 `nheads` 的向量。
+
 ## 架构与训练
 
 ![Mamba-2 Figure 6：左 Sequential Mamba Block——先投影出 X 与门，Conv 之后再从 X 分出 A/B/C 进 SSM；右 Parallel Mamba Block——块头一次投影同时给出 A/X/B/C，Conv 只作用在 X 支，SSM 后加 Norm（N）再与门相乘、输出投影。图例：绿=Linear projection，蓝=Sequence transformation，圆=非线性。](../assets/mamba-2/fig6-architecture.png)
@@ -79,7 +81,7 @@ Proposition 7.2：Mamba 的 S6 就是 $P=1$ 的 multi-value attention——$B,C$
 
 ## 评测要点
 
-**MQAR**（Figure 8，更难设定：随机填充、更多 KV 对、更小模型）：Mamba-1（$N=16$）几乎做不成；Mamba-2 同 $N=16$ 已明显更好，$N=64/256$ 在 256/512/1024 长度上达到或超过 softmax attention。作者把增益同时归到更大状态和架构，未拆开。
+**MQAR**（Figure 8，更难设定：随机填充、更多 KV 对、更小模型）：Mamba-1（$N=16$）几乎做不成；Mamba-2 同 $N=16$ 已明显更好，$N=64/256$ 在 256/512/1024 长度上达到或超过 softmax attention。作者把增益同时归到更大状态和架构，未拆开。原文没有这项实验/对照：没有把 MQAR 增益拆成状态维 $N$ 和并行 block / MVA。
 
 **缩放**（Figure 9，~125M–1.3B @ 8192）：Mamba-2 在 perplexity / FLOPs / 墙钟上 Pareto 压过 Mamba 与 Transformer++。
 
@@ -100,14 +102,7 @@ Proposition 7.2：Mamba 的 S6 就是 $P=1$ 的 multi-value attention——$B,C$
 
 > Figure 10（原文截图，§9.3）："(Left) Our SSD is 2−8× faster than a Mamba fused scan for large state expansion ($N=64$) and faster than FlashAttention-2 for sequence length 2k and above. (Right) Sequence length 4K: Increasing state expansion slows down the Mamba optimized scan implementation linearly. SSD can handle much larger state expansion factors without much slowdown."
 
-作者也写：短序列上**整网**未必快过 Transformer——同参数 Transformer 有一半 MLP，Mamba-2 默认是 $L$ 层 SSD；可改成 SSD+MLP 交错换短序列吞吐（§9.3）。
-
-## 待追问
-
-- **需实验或作者披露**：对角 $A_t$（Mamba-1 S6）的 SSD 算法作者只给了猜想（§10.1），本页未核后续是否做成。
-- **需实验或作者披露**：MQAR 的增益有多少来自 $N$、多少来自并行 block / MVA，原文未拆。
-- **现有材料待核**：与 [Gated DeltaNet](gated-delta-net.md) 的同协议对照在 GDN 原文，不在本 PDF。
-- **现有材料待核**：Nemotron 3 Ultra 的 Mamba-2 层是否逐项等同本页默认（$P$、分组、$A$ 参数化、Norm 位置），见该报告，不能从本页外推。
+作者也写：短序列上**整网**未必快过 Transformer——同参数 Transformer 有一半 MLP，Mamba-2 默认是 $L$ 层 SSD；可改成 SSD+MLP 交错换短序列吞吐（§9.3）。与 GDN 的同协议数字在 [Gated DeltaNet](gated-delta-net.md)，不在本 PDF。Nemotron 3 Ultra 的 $P$、分组、$A$ 参数化和 Norm 位置不能从本页默认外推。
 
 ## 相关页面
 

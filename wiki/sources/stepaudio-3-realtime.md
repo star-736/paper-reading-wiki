@@ -3,7 +3,7 @@ type: Source
 title: "StepAudio 3 Realtime 技术报告"
 description: "StepFun 的音频语言全双工模型：用户语音与自身语音一起进 AuT，每 320 ms 跟一个状态 token。Think-While-Speaking 用同一模型的两次并发调用边说边想。推理模式 StepAudioChat 宏均分 73.0，实时交互 70.4。"
 tags: ["source", "stepaudio", "full-duplex", "realtime", "think-while-speaking", "asr"]
-timestamp: 2026-10-03
+timestamp: 2026-10-11
 resource: "../../raw/2609.14005v2.pdf"
 ---
 
@@ -38,13 +38,13 @@ resource: "../../raw/2609.14005v2.pdf"
 
 ### 系统：MoE 解码器，双流音频，文本另路进入
 
-原文确证（§3.1、Figure 3）：语言解码器是 MoE。正文没有总参数、激活参数、专家数或注意力类型。音频前端是 Qwen3-Omni 的 Audio Transformer（AuT），再用 adapter 投进语言模型的表示空间。本报告没有给出 AuT 的层数、下采样率或帧率，不能从后来的 Qwen Omni 页抄这些数。
+原文确证（§3.1、Figure 3）：语言解码器是 MoE。正文没有总参数、激活参数、专家数或注意力类型，不再追这些身份数字。音频前端是 Qwen3-Omni 的 Audio Transformer（AuT），再用 adapter 投进语言模型的表示空间。本报告没有给出 AuT 的层数、下采样率或帧率，不能从后来的 Qwen Omni 页抄这些数，也不再追 320 ms 一块对应多少 token。
 
 ![Figure 3：左侧 Full-duplex 同时接收上方的用户语音波形和下方的模型语音波形，经 Audio encoder 与 Adapter，和上方单独的 Text 一起进入 LLM decoder，再进入 Generator。Generator 的输出沿右侧箭头回到模型语音流。](../assets/stepaudio-3-realtime/fig3-system-architecture.png)
 
 > Figure 3，PDF p.4。原图注：LLM decoder 经音频编码器和 adapter 接收音频表示，并另有文本输入。用户音频与模型音频构成两路全双工流，生成器输出回到模型音频流。波形是示意。
 
-生成器逐段产出带语气和节奏的语音，正文把停顿和犹豫算进表达。生成器内部（codec、采样率、token 率）没有写。
+生成器逐段产出带语气和节奏的语音，正文把停顿和犹豫算进表达。生成器内部（codec、采样率、token 率）没有写，不再追。
 
 ![Figure 2：圆环中央是 Step-Audio 3 Realtime 的对话状态。左侧用户流与模型流进入环；右侧流出流式语音。环上标着深度感知、无缝双工、边说边想（自适应思考与 Medusa MTP）和流式行动。](../assets/stepaudio-3-realtime/fig2-conversational-loop.png)
 
@@ -66,7 +66,7 @@ resource: "../../raw/2609.14005v2.pdf"
 | 配比 | 提高纯文本比例，以保住基座语言模型的通用能力，供后面的推理和 agent 训练使用 |
 | mid-training | 感知、合成对话、voice-agent 数据；上下文扩到 128K，用来装更长历史、更早的用户要求和中间工具结果；提高音频理解与 agent 交互的占比 |
 
-基座语言模型的名字、初始化方式和 MoE 负载均衡都没有写。
+基座语言模型的名字、初始化方式和 MoE 负载均衡都没有写，不再追。Realtime SFT 是否像转写分支那样冻结 AuT，正文也没写，不再追。
 
 ### 全双工：每 320 ms 音频块后跟一个状态或文本 token
 
@@ -98,7 +98,7 @@ ASR Max 把样本打包到最长 32K。时间–频率掩码遵循 SpecAugment �
 
 原文确证（§6.3、Figure 7）：机制沿 Mind-Paced Speaking（Donghang Wu 等，arXiv:2510.09592）。Formulation Brain 写私下推理；Articulation Brain 按目前已经写出的推理、以及已经说出的回答，产生短的应答片段。两次调用的是同一个音频模型。
 
-播放进度决定片段何时放出去，推理继续并行。推理写完之后，剩余回答可以用完整推理状态。开头若基于不完整推理，最后还可以补一句或改口。默认 Speak-First：不等第一段推理前缀就开始说。Think-First 则先等一段短的推理前缀。
+播放进度决定片段何时放出去，推理继续并行。推理写完之后，剩余回答可以用完整推理状态。开头若基于不完整推理，最后还可以补一句或改口。默认 Speak-First：不等第一段推理前缀就开始说。Think-First 则先等一段短的推理前缀。分场景的切换条件没有写，不再追。
 
 ![Figure 7：上半 Adaptive Thinking 把用户轮次分成两条路：不需要显式推理就走空 think 块并立即回答；需要则进入下半。下半同一步里，Formulation Brain 产 thought stream，Articulation Brain 同时看到先前与当前的 think 和 response。右侧 MTP 只加速这条私下思考。底部是输入音频和流式输出音频。](../assets/stepaudio-3-realtime/fig7-think-while-speaking.png)
 
@@ -145,7 +145,7 @@ Instruction Following 从基线 64.15 降到 61.21–62.73；Reasoning 与 Memor
 \theta_{\mathrm{merge}}=\sum_i \alpha_i \theta_i,\qquad \alpha_i\ge 0,\ \sum_i \alpha_i=1.
 \]
 
-报告模型用四名教师，归一化权重 3:1:1:1。系数在覆盖对话、音频理解和通用文本的留出评测上选定。合并不增加模块，推理时也不路由。这是参数空间的加权平均。教师数据可以分开开发，再合成，不必在数据并集上重训一个模型。
+报告模型用四名教师，归一化权重 3:1:1:1。系数在覆盖对话、音频理解和通用文本的留出评测上选定。表 8 没有把 Teacher 1–4 标成四种数据配比，不再追编号和配比的对应，也不再追留出集上的搜索过程。合并不增加模块，推理时也不路由。这是参数空间的加权平均。教师数据可以分开开发，再合成，不必在数据并集上重训一个模型。
 
 Table 8 的宏平均（域内各行等权；对话列是推理模式）：
 
@@ -169,7 +169,7 @@ Table 8 的宏平均（域内各行等权；对话列是推理模式）：
 
 ## 评测要点
 
-原文确证（§8）。六个域：转写、音频理解、对话与推理、全双工、agent 任务完成、通用文本。ASR 基线（豆包 2.0 ASR、Seed 2.0 Lite、HY3.0 ASR Preview）用同一测试音频和计分流程重跑。其余域只写对照记录里的模型版本和 effort 标签，正文没有逐项声明都由作者重跑。
+原文确证（§8）。六个域：转写、音频理解、对话与推理、全双工、agent 任务完成、通用文本。ASR 基线（豆包 2.0 ASR、Seed 2.0 Lite、HY3.0 ASR Preview）用同一测试音频和计分流程重跑。其余域只写对照记录里的模型版本和 effort 标签，正文没有逐项声明都由作者重跑，不再追逐项清单。
 
 ### 转写只属于 ASR Max
 
@@ -256,16 +256,14 @@ Table 3。Overall 使用基准自己的聚合，正文明确不用这四项的�
 
 Table 10 的通用文本与 Table 8 的合并列一致：HMMT 2026 Feb 86.8（豆包 73.9，Gemini 3 Flash 85.9），GPQA Diamond 83.0（豆包 82.4，Gemini 3 Flash 90.3），MultiChallenge 59.7（豆包 60.8，Gemini 3 Flash 68.1）。§8.3 规定这三项不取平均。表头没有给这三项加上 “Interactive”。结合 §6.4，这三项评的是合并后的推理模型，不是开口条件下的语音接口测量。
 
+## 证据边界与阅读提示
+
+- Formulation 与 Articulation 两次并发调用的延迟和显存，原文没有这项测量。正文写明两次调用是同一个音频模型。
+
 ## 待追问
 
-- **需实验或作者披露**：MoE 的总参数、激活参数、专家数和注意力类型是什么？基座语言模型从哪一个检查点初始化？
-- **需实验或作者披露**：Generator 的采样率、codec 和 token 率是什么？320 ms 音频块在 AuT 之后对应多少 token？
-- **需实验或作者披露**：Realtime 的 SFT 是否像 ASR Max 那样冻结 AuT？正文只写了转写分支冻结编码器。
-- **需实验或作者披露**：Teacher 1–4 各对应哪一种数据配比，3:1:1:1 在留出集上怎么选中？表 8 没有给教师贴能力名。
-- **需实验或作者披露**：Formulation 与 Articulation 两次并发调用的延迟和显存是多少？Speak-First 与 Think-First 的切换规则只有默认值，没有分场景的触发条件。
-- **需实验或作者披露**：Table 5 的全思考列和 Table 4 的推理模式是否同一检查点？分数对不齐，正文没有说明差在哪一次训练。
-- **需实验或作者披露**：音频理解、对话、全双工和 τ-Voice 的闭源基线，哪些是作者重跑、哪些是引用记录分数？正文只把重跑协议写在 ASR 上。
-- **现有材料待核**：AA Full-Duplex 的 Overall 公式是什么？正文拒绝用四项简单平均代替官方 Overall，但没有写出权重。98.9 与 Pause Handling 的 98.9 数值相同，是否巧合并未说明。
+- **数字对不齐**：Table 5 的全思考列和 Table 4 的推理模式不是同一列数，正文已经说不能并成一个 checkpoint，但没有说明差在哪一次训练。
+- **需补外部来源**：Artificial Analysis Full-Duplex 的 Overall 公式。正文拒绝用四项简单平均代替官方 Overall，但没有写出权重。98.9 与 Pause Handling 的 98.9 数值相同，是否巧合仍未说明。2026-10-11 检索未找到：方法页列出 Pause Handling、Turn Taking、User Interruption Handling、Backchannel Handling，并写出 Speech to Speech Index 的等权，但没有写这四项合成 Full-Duplex Overall 的系数。榜单把 Conversational Dynamics 称为四项的 weighted average，同样没有系数，因此不能判断两个 98.9 是否同一口径。[方法页](https://artificialanalysis.ai/methodology/speech-to-speech-benchmarking)、[榜单](https://artificialanalysis.ai/speech-to-speech)、[Conversational Dynamics 视图](https://artificialanalysis.ai/speech-to-speech?conversational-dynamics=blended-score)。
 
 ## 相关页面
 

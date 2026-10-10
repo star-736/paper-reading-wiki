@@ -80,7 +80,7 @@ resource: "https://arxiv.org/abs/2506.20670"
 
 **Search Balancing**：先用 base 模型跑 8 rollouts 分类每道题为 search-required / search-free，按类型均衡采样。这一步对塑造按需搜索行为至关重要。
 
-知识分类学覆盖 8 大类（Arts / Place / People / Industry / Science / Nature / Entities / Events），训练集按类别均匀分布。
+知识分类学覆盖 8 大类（Arts / Place / People / Industry / Science / Nature / Entities / Events），训练集按类别均匀分布。FVQA-auto-vc 从 MetaCLIP Metadata 的 head 和 tail 两侧共抽 10,000 个概念再生成问答，不是只采分布头部（§3）。search penalty 0.1 只有「去掉之后搜索率升到约 90%」的开关消融，没有取值扫描，不再追 0.1 怎么选定。图像搜索限制在第 1 轮、检索的是输入图；裁剪搜索是后作才加的。工具失败率对训练的影响没有受控测量，不再追。
 
 ## 评测要点
 
@@ -138,14 +138,7 @@ resource: "https://arxiv.org/abs/2506.20670"
 ## 证据边界与阅读提示
 
 - 论文声称"首个端到端 RL 多模态搜索"，但 DeepResearcher / Search-R1 等纯文本工作早于此——"首个"的限定是"多模态"维度。
-
-## 待追问
-
-- **需实验或作者披露**：图像搜索只允许在第 1 轮使用，且只能搜原图——后续 DeepMMSearch-R1 解决了裁剪搜索问题，但 MMSearch-R1 本身的局限是什么？
-- **现有材料待核**：search penalty 因子 0.1 是如何选定的？是否有 sensitivity analysis？
-- **需实验或作者披露**：FVQA 数据集的 MetaCLIP Metadata 采样策略是否引入了偏差（偏向常见视觉概念）？
-- **需实验或作者披露**：搜索工具的稳定性问题（image search 0.2% 失败率，text search 1% 失败率）对训练的影响有多大？
-- **需实验或作者披露**：通用 VQA 的"无退化"结论是否在更大模型上也成立？
+- 通用 VQA「无退化」只在 7B 上报告。更大模型上是否仍成立，原文没有这项对照。
 
 ## 相关页面
 

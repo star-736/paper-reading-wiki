@@ -21,6 +21,7 @@
 - [MiMo-V2-Flash 技术报告](sources/mimo-v2-flash.md) - MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。
 - [MiMo-V2.6 技术报告](sources/mimo-v2.6.md) - 全模态 Pro 1.02T/42B 与 Flash 310B/15B：一次混合 agentic RL、冻结 router、groupwise grading，以及 Multi-Prefix MOPD2。
 - [DeepSeek-V2 技术报告](sources/deepseek-v2.md) - DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。
+- [DeepSeek-V3 技术报告](sources/deepseek-v3.md) - DeepSeek-V3 的 arXiv 论文：五个 MLA 宽度与 V2 相同；相对 V2 点名的架构例外是 auxiliary-loss-free 与 MTP。
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。
 - [DeepSeek-V4 技术报告](sources/deepseek-v4.md) - DeepSeek-V4 的技术报告，重点是百万 token 上下文效率。正文据 Hugging Face PDF；arXiv:2606.19348v1 的摘要数字与之相符，两份 PDF 未逐页对照。
 - [MiniMax-M2 Series 技术报告](sources/minimax-m2-series.md) - MiniMax-M2/M2.7 的 arXiv 技术报告，重点是低激活 MoE、Forge RL 和 self-evolution。
@@ -40,6 +41,7 @@
 - [Gated Linear Attention](sources/gated-linear-attention.md) - Yang 等 ICML 2024：数据相关 channel-wise 门 $\mathrm{Diag}(\alpha_t)$，写入仍是外积，没有 delta。KDA 细门的前身。FlashLinearAttention 算法名出在本篇。
 - [DeltaNet](sources/delta-net.md) - Yang 等 NeurIPS 2024：把 Schlag 的 delta rule 做成 WY Householder 的 chunkwise 并行训练；1.3B/100B 上 ppl 与零样本超过 Mamba/GLA，召回受状态尺寸限制。GDN 的 delta 前作，没有遗忘门。
 - [RWKV](sources/rwkv.md) - Peng 等 EMNLP 2023：AFT 收成 RNN。WKV 是 channel-wise 指数衰减加权，推理 $O(d)$，不是矩阵 $S$、不是 delta rule。发布 169M–14B、Pile 330B。
+- [RWKV-7](sources/rwkv-7.md) - Peng 等 2025（arXiv:2503.14456）：把 delta rule 推广成向量衰减加秩一修正的状态转移，转移矩阵不是 Householder。0.19B–2.9B，常数内存推理。
 - [Qwen3-Coder-Next 技术报告](sources/qwen3-coder-next.md) - 基于 Qwen3-Next 的 80B-A3B 编码 agent 模型，继承 GDN + gated attention 混合栈，主打 agentic coding 训练。
 - [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen3.5 代全模态报告：Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。下一代见 Qwen3.8-Omni。
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
@@ -71,6 +73,7 @@
 - [SayCan](sources/saycan.md) - Robotics at Google 的分层接地（CoRL 2022）：LLM 打「有没有用」× 技能 value function 打「能不能做」；厨房 101 条指令规划 84%、执行 74%。不是 VLA，LLM 不输出末端动作。
 - [Inner Monologue](sources/inner-monologue.md) - Robotics at Google 的语言反馈闭环（CoRL 2022）：成功检测 / 场景 / 人类回答写成文字注入冻结 LLM；厨房实验叠在 SayCan affordance 上，120 次 30.8%→60.4%。不是 VLA。
 - [RT-2](sources/rt-2.md) - Google DeepMind 的 VLA 定义文（CoRL 2023）：动作写成 text token，PaLI-X / PaLM-E 与互联网 VQA co-fine-tune；未见平均 62% vs RT-1 32%。不是 OpenVLA 对照的 RT-2-X。
+- [Open X-Embodiment](sources/open-x-embodiment.md) - 21 家机构的开放机器人数据集与 RT-X：约 1M+ 真实轨迹、22 个本体；RT-2-X 是在该混合物上 co-fine-tune 的 55B VLA，不是厨房原版 RT-2。
 - [OpenVLA](sources/openvla.md) - 开源 7B VLA（CoRL 2024）：Prismatic-7B 把 7 维动作写成 256-bin token，Open X-Embodiment 约 970k 真实轨迹全量 fine-tune；29 任务上以 7B 超过 RT-2-X 55B。
 - [π0](sources/pi0.md) - Physical Intelligence 的 VLA flow 模型（RSS 2025）：PaliGemma + 300M flow matching action expert，跨单臂/双臂/移动操作，预训练约 10,000 小时。
 - [FAST](sources/fast.md) - Physical Intelligence 的动作分词器（arXiv:2501.09747v1）：DCT + 量化 + BPE 压缩 1 秒动作 chunk；不是新 VLA 基座。相对 OpenVLA 式逐步 256-bin 改的是分词层；FAST+ 是 1M 真实轨迹上的 universal tokenizer。接到 π0 骨干上匹配 diffusion VLA、训练最多 5× 更快（本页数字）。
@@ -117,11 +120,13 @@
 - [Mi-Memory 技术报告](sources/mi-memory.md) - 小米 Darwin Agent Team 的 Personal AI 记忆全生命周期框架：Structure（MemStack 分层记忆）/ Expansion（MemSense IKB + MemFuse 跨设备因果融合）/ Evolution（D2ACCI 诊断环 + E2MEND 有界策略搜索）/ Deployment（LiteMem Markdown/Git 仓库原生基底），共享审计契约四类工件贯穿全链路。
 - [nrehiew 博客：SFT, RL, and OPD Through a Distributional Lens](sources/nrehiew-sft-rl-opd.md) - 分布视角统一 SFT / RL / OPD 三方法。核心论点：on-policy 数据（非 RL 本身或显式 KL 惩罚）是抗遗忘承重墙。关键实验：OPD student 不论从 SFT 还是 RL teacher 蒸馏结果几乎一致。覆盖 OPSD 变体（其 reverse-KL 转述已由 [OPSD 原文](sources/opsd.md) 校准）、RL 抗遗忘三解释审视、student 超越 teacher 机制、pipeline 趋势（GLM-5 / DeepSeek-V4 最终 checkpoint 不经 RL）。
 - [Kimi K3 技术报告](sources/kimi-k3.md) - Moonshot AI 首个开源 3T 级模型（2.8T/104B 激活），KDA scaled sigmoid + Attention Residuals + Stable LatentMoE + 原生视觉 + 1M 上下文，2.5× scaling efficiency，9-专家 RL + MOPD + AgentENV microVM 沙箱。
+- [Attention Residuals 技术报告](sources/attention-residuals.md) - Kimi Team 的深度残差：softmax 选择前层输出，Block AttnRes 把跨层状态收到约 N 个 block；Table 2 是 N=8、激活 194M–528M 的对照，48B/3B 集成在 Kimi Linear，没有 93 层、2.8T 的 N 扫描。
 - [Nemotron 3 Ultra 技术报告](sources/nemotron-3-ultra.md) - NVIDIA 的 550B/55B hybrid Mamba-Attention MoE：NVFP4 预训练 20T、1M 上下文、统一 RLVR + 两轮 MOPD co-evolution；按域恢复率 Terminal Bench 172.7% / HLE 16.9%。
 - [Laguna M.1/XS.2 技术报告](sources/laguna-m1-xs2.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程（M.1 后五周交付 XS.2）、AutoMixer 数据混合、3:1 SWA/GA + softplus 门控、WSD 缩放律、CISPO agentic RL、合成代码环境贯穿 SFT/RL。
 - [DynamixSFT 技术报告](sources/dynamix-sft.md) - MSRA + UMich + KAIST 的 SFT 指令微调数据集动态混合优化：把数据集采样建模为 Multi-Armed Bandit，Prior-scaled Boltzmann Exploration 软锚定原始比例 + 1-Step Look-ahead Reward 反映当前训练动力学，TÜLU-2/3 上 +5.1%/+5.3% 且仅 +12.7% 开销；与 DoReMi/RegMix/TANDEM 的 proxy-model 谱系范式分叉。
 - [Aioli 技术报告](sources/aioli.md) - Stanford + NYU 的数据混合统一框架（LMO），把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例，发现现有方法失败原因是参数 A_t 估计不准（对角 vs 完整矩阵、静态 vs 时变）；AIOLI 在线方法用交错训练从当前训练历史拟合 A_t，无需额外 run，6/6 设置优于 stratified。
 - [Loss-Free Balancing 技术报告](sources/loss-free-balancing.md) - DeepSeek-AI + PKU 的 MoE 负载均衡方法论文（arXiv:2408.15664）：top-K 前加 expert-wise bias 按历史负载 sign 更新，不产生干扰梯度；1B/3B 上 perplexity 与 MaxVio 双赢，并证明 Expert Choice 的未来 token 泄漏。V3/V4、K2 系、MiMo、Ling-2.6 的 bias 路由一手出处；M2 引用该文，但报告描述的是联合优化 bias，不能等同原算法。
+- [Demons in the Detail](sources/demons-in-the-detail.md) - Qwen 团队 2025 的 MoE load-balancing loss 实现论文（arXiv:2501.11873）：micro-batch LBL 几乎是序列级约束，会抑制领域专家专业化；改为同步 $\bar f_i$ 的 global-batch LBL。Qwen3 引用此文，不是 Loss-Free 的 sign update。
 - [YaRN](sources/yarn.md) - Nous Research + EleutherAI 的 RoPE 扩展方法：NTK-by-parts 按维切分频率 + attention temperature；微调不足 0.1% 预训练数据把 Llama 2 推到 128K，Dynamic-YaRN 无微调可超 2×。Qwen3 / Qwen3-Next 推理外推的一手定义。
 - [Dual Chunk Attention](sources/dual-chunk-attention.md) - HKU + 阿里的 training-free 长上下文扩展：把 RoPE 注意力按 chunk 拆成 Intra / Inter / Successive 三路位置重映射，不改权重、兼容 Flash Attention；Llama2 70B 外推过 100k，并可与 PI / NTK / YaRN 正交叠加。Qwen3 公开推理配方的 DCA 一手出处。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
@@ -152,6 +157,11 @@
 - [Lightning OPD](sources/lightning-opd.md) - NVIDIA（arXiv:2604.13010v3）：teacher log-prob 预计算在 SFT 参考策略的 rollout 上，训练不再开 teacher server。SFT 与 OPD 必须是同一个 teacher。Qwen3-8B-Base 的 AIME 2024 为 69.9%，全流程 30 GPU 时，相对在线 OPD 的 120 GPU 时是 4.0×。30B-A3B 上在线 OPD 单机 OOM。
 - [Lightning OPD 2.0](sources/lightning-opd-2.md) - NVIDIA（arXiv:2607.28449v1）：跨 teacher 时从 teacher–reference 对数差里减掉跨 rollout 可预测的一项。1.0 在这个设定下数学几乎不动。Klear-8B-SFT 的 AIME 2024 从 81.3 到 82.4，LCB v5 从 58.5 到 63.0。评测条数与 1.0 不同。
 - [OPD 综述](sources/opd-survey.md) - 腾讯（arXiv:2604.00626v4，89 页，Ongoing Work）：OPD 是学生轨迹上的 f-divergence 最小化，按目标、信号来源、训练动态三条轴归类。DAgger 的 O(εT) 在 teacher 被学生前缀带偏时不自动成立。缩放式被标成未验证猜想。v4 早于 Lightning OPD 2.0。
+- [ListOPD](sources/listopd.md) - NTU（arXiv:2605.08737v1）：把 ExOPD 的 reward-extrapolation λ 接到近确定的 listwise JSON。闭式 clip-safe 阈值 λ⋆ 之上，训练从保格式变成塌格式。这个 λ 是 ExOPD 的 reward scale，不是 GKD 的数据混合比例。
+- [Rock Tokens](sources/rock-tokens.md) - UMBC 等（arXiv:2605.09253v4）：OPD 饱和后仍有一类高损失 token。词表约占 6%，输出频率至多约 18%。因果干预里多数对推理贡献可忽略，其中约 1.5%–3.5% 被标成真正的 pillar。综述引用的是 v1。
+- [Local teachability collapse](sources/local-teachability-collapse.md) - 浙大 + 美团 LongCat（arXiv:2605.13643v2）：强到弱 OPD 里，轨迹后段的 teacher 局部对比度会掉下去，尽管平均 advantage 还可以非零。释放规则在句段 margin 的 BIC 下变点处停掉稠密监督。Qwen3-1.7B 上数学均分 36.8→40.1。不是「teacher 仍然校准」。
+- [Healthcare AI GYM 与 TT-OPD](sources/healthcare-ai-gym.md) - Upstage / Jeong（arXiv:2605.02943v1）：多轮医疗 agent 上的自蒸馏。周期把 teacher 权重复制成学生时，KL 从 2.637 掉到 0.343，因为两套权重变成同一份。这不是学生前缀把 teacher 带离分布。
+- [Gemma 2 技术报告里的蒸馏](sources/gemma-2.md) - Google DeepMind（arXiv:2408.00118v3）：2B/9B 预训练是语料上下文上的 teacher 软标签，不是学生 rollout。后训练 SFT 另写在学生分布上向 teacher 蒸馏，同时引用 GKD 与 MiniLLM；散度方向和 on-policy 比例都没有写。
 - [Prune-OPD](sources/prune-opd.md) - HKUST(GZ) 等（arXiv:2605.07804v3）：top-k 重叠比低于阈值就累计衰减后续 OPD reward，并按可靠长度改下一步的最大回复长度。低兼容四组 overlap 的时间降幅是 40.6% / 68.0% / 37.6% / 52.6%；Skywork 高兼容对只降 2.9%。正文的 35.7% 与表不符。
 - [f-OPD](sources/f-opd.md) - 港理工（arXiv:2605.17862v1）：异步 OPD 的目标差拆成 rollout drift 与 teacher 上下文的 supervision drift，用样本新鲜度做 ReLU 加权、rollout 锚定和缓冲刷新。Coding 子集上同步 resolve 41.8、异步 26.8、f-OPD 39.4，吞吐 1.46×。异步的 post-patch 回归两表是 12.1 和 7.4。
 - [Uni-OPD](sources/uni-opd.md) - 浙大 + 深圳 Loop + 腾讯（arXiv:2605.03677v2）：学生侧均衡难度和对错比，教师侧用结果奖励把轨迹回报的顺序拉开。Qwen3-4B 多教师数学 47.0→48.5、代码 60.2→63.6。主实验是 Mean 模式的 margin shift，和正文的 MinMax 公式不是同一默认。
@@ -280,25 +290,26 @@
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。同日入库 SDPO 与 SDFT，关闭 OPSD 页那条外部来源。SDFT 页新增 3 条实验类待追问；OPSD 与 SDPO 上各改写成 1 条跨设定对照。同日核对发布状态：关掉 7 条已有公开页面或配置可答的外部来源，另有 8 条改记为需作者披露。当前剩余 **635 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。同日入库 SDPO 与 SDFT，关闭 OPSD 页那条外部来源。SDFT 页新增 3 条实验类待追问；OPSD 与 SDPO 上各改写成 1 条跨设定对照。同日核对发布状态：关掉 7 条已有公开页面或配置可答的外部来源，另有 8 条改记为需作者披露。2026-10-11 重数各页「待追问」下的列表项，当前剩余 **59 条**；其中未标签 52 条，不并入下面三类。这是外部来源检索之后的重数。需作者补实验的追问已从队列删除，证据边界保留「原文没有这项实验」；留下的主要是同篇数字矛盾，以及要回论文、配置或仓库核对的条目。下表为当日计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
-| 现有材料待核 | 34 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
-| 需补外部来源 | 64 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 537 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 现有材料待核 | 0 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
+| 需补外部来源 | 7 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
+| 需实验或作者披露 | 0 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 未标签 | 52 | 条目上没有上述三类标签。2026-10-11 的重数不把它们并入「需实验或作者披露」。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 635 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此 2026-10-11 重数后的 59 仍是条目数（含未标签 52 条），不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
 | 主题 | 核查入口 | 可完成的下一步 |
 | --- | --- | --- |
-| MLA 后续演进与选型动机 | [MLA](concepts/multi-head-latent-attention.md#待追问) | 投影形状与 D.2 已闭合；仍需核对 V2→V3→V3.2→V4 演进和 MSA 选择 GQA 的动机。 |
-| 线性门控的剩余材料问题 | [GDN](sources/gated-delta-net.md#待追问)、[KDA](concepts/linear-attention-and-delta-rule.md#待追问) | G1 参数与 GDN 规模已核；仍需核对 GDN 标量门的选型依据、KDA 门投影的精确配置。 |
-| 小激活编码模型评测 | [Qwen3-Coder-Next](sources/qwen3-coder-next.md#待追问) | 补 SWE-bench 数字、对照对象与协议。 |
-| 附录中的具体设置 | [Inner Monologue](sources/inner-monologue.md#待追问)、[SayCan](sources/saycan.md#待追问)、[RWKV](sources/rwkv.md#待追问) | 分别补描述器、启用技能数量及附录任务明细。 |
+| MLA 后续演进与选型动机 | [MLA](concepts/multi-head-latent-attention.md) | 已完成：投影形状与 D.2 早已闭合；V2→V3→V3.2→V4 的增量已写入概念页（V3 宽度与 V2 相同，V3.2 只加 DSA，V4 改为压缩 entry 上的 Shared-KV MQA）；MSA 选 GQA 是为了复用栈并从 GQA 检查点转换，不是与 MLA 的质量对打。 |
+| 线性门控的剩余材料问题 | [GDN](sources/gated-delta-net.md#机制已据原文核实)、[KDA](concepts/linear-attention-and-delta-rule.md#kda-的硬件效率已据-kimi-linear-原文核实) | 已完成：GDN 标量门是 Mamba2 式 weight decay 加可并行实现，不是相对 GLA 的消融胜出；KDA 低秩门的秩等于 head dimension。 |
+| 小激活编码模型评测 | [Qwen3-Coder-Next](sources/qwen3-coder-next.md#评测要点) | 已完成：SWE-bench 数字、对照与 300 轮协议已写回。 |
+| 附录中的具体设置 | [Inner Monologue](sources/inner-monologue.md#评测要点)、[SayCan](sources/saycan.md#低层技能bc-出动作rl-出-affordance)、[RWKV](sources/rwkv.md#评测要点) | 分别补描述器、启用技能数量及附录任务明细。 |
 
 ### 需要新来源的明确入口
 
-可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)。IPO / ORPO / SimPO、SDPO、SDFT 已入库，OPSD 页那条外部来源已关闭。OPD 综述仍缺一手页：[ListOPD / Rock Tokens / local teachability](sources/opd-survey.md#待追问)，以及 Jeong 的 KL 重置和 Gemma 2 是否为学生 rollout 上的 OPD。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。CTPO 的环境 token mask 已按 VERL 实现写回比较页。
+RT-2-X / Open X-Embodiment 已入库为 [Open X-Embodiment](sources/open-x-embodiment.md)（arXiv:2310.08864）。Qwen3 负载均衡原论文已入库为 [Demons in the Detail](sources/demons-in-the-detail.md)（arXiv:2501.11873）。IPO / ORPO / SimPO、SDPO、SDFT 已入库，OPSD 页那条外部来源已关闭。OPD 综述所缺的一手页已入库：[ListOPD](sources/listopd.md)、[Rock Tokens](sources/rock-tokens.md)、[local teachability collapse](sources/local-teachability-collapse.md)、[Healthcare AI GYM](sources/healthcare-ai-gym.md) 与 [Gemma 2](sources/gemma-2.md)。Gemma 2 预训练是语料软标签，不是学生 rollout；Jeong 的 KL 2.637→0.343 是权重复制，不是前缀失准。Qwen3-VL 的层号与维度配置已完成：DeepStack 与 Interleaved MRoPE 已按权重配置写回 [Qwen3-VL](sources/qwen3-vl.md)，证据等级是 config 不是报告正文。FAST 词表：单数据集 BPE 1024 与发布的 FAST+ vocab 2048 已分开；merges 是否同一份仍开放，入口仍是 [Vision-Language-Action](concepts/vision-language-action.md)。CTPO 的环境 token mask 已按 VERL 实现写回比较页。

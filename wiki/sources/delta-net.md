@@ -54,7 +54,9 @@ $$
 
 > Figure 1（原文截图，§3.2）："Speed-up of the chunkwise parallel form vs. the recurrent form." 脚注：本页 recurrent kernel 已比 Schlag 原 CUDA 快约 2×。
 
-**层设计（§3.3）。** 宏观跟 Transformer++：DeltaNet 层约 $4d^2$，SwiGLU 约 $8d^2$，$\beta$ 的参数可忽略。q/k 用 SiLU + **L2Norm**（不是 Schlag 的 ELU+1 + L1）；$\beta_t=1$ 时 $I-kk^\top$ 是投影，擦一个子空间、留 $d-1$ 个。输出投影前加 RMSNorm。短卷积是 hybrid 实验里加的，不是这条递推的一部分。
+**层设计（§3.3）。** 宏观跟 Transformer++：DeltaNet 层约 $4d^2$，SwiGLU 约 $8d^2$，$\beta$ 的参数可忽略。q/k 用 SiLU + **L2Norm**。Schlag 等 2021（`raw/2102.11174v3.pdf`，§4.2 Eq. 29、§5.2 Eq. 30、Table 2）的语言建模配方是另一套，不能用本页 340M 消融反推：特征是 Katharopoulos 的 ELU+1（因为他们的 Delta Network 就是 Linear Transformer 加上 delta 更新）；$\varphi(k)$、$\varphi(q)$ 除以分量之和，Schlag 称为 sum normalisation，非负特征下即 L1，Yang 等在本页称之为 L1。更新是 $W^{(i)}=W^{(i-1)}+\beta^{(i)}(v^{(i)}-\bar v^{(i)})\otimes\varphi(k^{(i)})$，$\beta=\sigma(W_\beta x)$。WikiText-103 上 small（约 40M，$D=128$，$L=256$）valid/test 为 34.1/35.5，对照 Linear Transformer 37.1/38.3、Transformer 33.0/34.1；medium（约 90M，$D=256$，$L=384$）为 29.7/31.5，对照 31.1/33.0 与 27.9/29.6。门只多 16K / 33K 参数。本页 340M 的 L1+ELU 消融是 SlimPajama 上的再实现，不是这组数字。
+
+$\beta_t=1$ 时 $I-kk^\top$ 是投影，擦一个子空间、留 $d-1$ 个。输出投影前加 RMSNorm。短卷积是 hybrid 实验里加的，不是这条递推的一部分。
 
 **两种 softmax 混合（§3.4）。** 线性层缺位置、也不擅长局部移位。Sliding Attn：隔层插 SWA。Global Attn：只把第 2 层和第 $N/2+1$ 层换成全局注意力。
 
@@ -96,11 +98,9 @@ MAD 上 Fuzzy Recall 35.7，高于 Transformer 29.8，但 Memorize 只有 52.8�
 - **混合「隔层 SWA / 只换两层全局」是本页的实验，不是后来的 3:1。** GDN-H1/H2、Kimi 3:1、Qwen3-Next 3:1 是后作把混合做成默认栈。
 - **FlashLinearAttention 仍是 [GLA](gated-linear-attention.md) 的算法名。** 本页说「adapt FLASHLINEARATTENTION 实现 Eq. 8–9」，不是另起一个名字。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：Schlag 等 2021（arXiv:2102.11174）的小规模数字与「ELU+1 + L1」原配方，不能用本页 340M 消融反推。
-- **需实验或作者披露**：块对角 Householder、把 head 做大同时塞进 SRAM，§5.3 只作为可行方向，没有实验。
-- **需实验或作者披露**：3B / 1T 相对 PowerLM 的差距有多少来自缺门、多少来自状态尺寸，本页没有拆。
+- 原文没有这项实验/对照：§5.3 把块对角 Householder、加大 head 并塞进 SRAM 只写成可行方向；3B / 1T 相对 PowerLM 的差距也没有拆成缺门和状态尺寸。
 
 ## 相关页面
 

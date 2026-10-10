@@ -65,7 +65,7 @@ $$
 \sum_{t=0}^{\infty}\lambda_{policy}^{t}\approx\frac{1}{1-\lambda_{policy}}=\alpha l,
 $$
 
-再解出 $\lambda_{policy}=1-1/(\alpha l)$。因此 response 越长，$\lambda_{policy}$ 越接近 1，终局 reward 能向更远 token 传播；较短 response 保持更强 bootstrap，以换取较低方差（§4.2）。
+再解出 $\lambda_{policy}=1-1/(\alpha l)$。因此 response 越长，$\lambda_{policy}$ 越接近 1，终局 reward 能向更远 token 传播；较短 response 保持更强 bootstrap，以换取较低方差（§4.2）。$\alpha=0.05$ 时，$l\le 20$ 会使 $\lambda_{policy}\le 0$。论文没有写 clip、最短长度，也没有写 $l$ 是否按 padding 计。缺这三项不改变「越长越接近 1」的公开机制。
 
 ### Positive-example LM loss 与 group sampling
 
@@ -83,7 +83,7 @@ $$
 
 > 论文 Figure 1：AIME 2024 scores of VAPO on the Qwen2.5-32B base model，与 DAPO / DeepSeek-R1-Zero-Qwen-32B 对比。（摘要页）
 
-Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AIME avg@32”，但不能单凭一张单 benchmark 曲线推出跨任务的 value-based PPO 普遍优越性。
+Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AIME avg@32”，但不能单凭一张单 benchmark 曲线推出跨任务的 value-based PPO 普遍优越性。论文比较的是 gradient update steps，没有报告 wall-clock、token throughput 或总 FLOPs。sample / step 效率不能读成更低算力成本。
 
 ![VAPO Figure 2：VAPO 与 DAPO 的训练动态。VAPO 的平均 response length 增长到约 6,500，reward curve 更平滑且最终更高；generation entropy 早期降至约 0.13 后回升到约 0.38，整体低于 DAPO 后期约 0.5。](../assets/vapo/fig2-training-dynamics.png)
 
@@ -91,13 +91,9 @@ Figure 1 支持“在论文报告的同一设置下，VAPO 更快达到更高 AI
 
 论文把更长 response、较快 reward 增长与较低后期 entropy 分别解释为 length scaling、value model 的细粒度信号与稳定性。但“更长 response 代表更强泛化”只是作者在 §5.3 的解释，论文没有提供长度控制或跨分布泛化实验；应把曲线当训练动态证据，而不是机制因果证明。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：$\lambda_{policy}=1-1/(\alpha l)$ 在短 response 上可能取到很小甚至负值；实现是否做了 clipping、最小长度或 padding-based $l$ 定义，论文未说明。
-- **需实验或作者披露**：Positive-example LM loss 会强化当前 policy 已经偶然找到的模式；在 verifier 有误判或答案风格单一时，是否会放大 reward hacking / mode collapse？
-- **需实验或作者披露**：VAPO 的 value model 增加了参数、显存与训练 FLOPs；论文比较 gradient update steps，没有报告端到端 wall-clock、token throughput 或总计算成本，因而“更高 sample / step efficiency”不能直接等价为更低算力成本。
-- **需实验或作者披露**：代码任务迁移、多领域 reasoning、MoE backbone 与多轮 agent trajectory 上是否仍优于 value-model-free 方法，当前没有实证。
-- **需实验或作者披露**：Value-Pretraining / Decoupled-GAE / Length-Adaptive GAE 三项强耦合；需要 factorial ablation 才能区分各自增益和交互效应。
+- 原文没有 positive-example LM loss 在 verifier 误判或答案风格单一时的实验，也没有多领域 reasoning、MoE backbone 或多轮 agent 轨迹上的对照。代码任务与 factorial ablation 的缺失已写在核心结论。
 
 ## 相关页面
 

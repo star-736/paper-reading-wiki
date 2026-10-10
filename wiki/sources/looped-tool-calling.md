@@ -64,12 +64,9 @@ Ouro-2.6B 在完整 NESTful 上的 SFT Win Rate 为 0.371，较其 base 的 0.19
 
 这篇论文把 [Looped Transformers](../concepts/looped-transformers.md) 的收益边界从 LoopCoder-v2 的 coding / PLT 诊断扩展到 **tool-call DAG 的节点组合与依赖边维护**：额外 loop 可以修正调用数、顺序、函数名、参数名和中间变量引用。它与 [Agentic engineering](../concepts/agentic-engineering.md) 的关系是内部算力分配，而非新增 planner、retriever 或 harness；它也提醒 [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) 把循环深度 / adaptive exit 当作可比性变量。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**真实交互是否成立**：论文只跑静态、single-turn 的 BFCL non-live 和离线 NESTful / API-Bank；多轮执行失败后的恢复、工具观测噪声和 live API 漂移尚未测量（原文确证，§7）。
-- **需实验或作者披露**：**原生训练还是后置循环更关键**：retrofit 能改善部分组合任务，但在深层 NESTful 工作流上明显弱于原生 Ouro；需要同预训练配方的 recurrent / non-recurrent pair 才能量化这一差距。
-- **需实验或作者披露**：**退出 gate 的可靠性**：adaptive frontier 的证据仅来自 Ouro 已有 gate。retrofit 模型没有 learned halting，尚不知更通用的退出准则能否在工具调用中复现节省。
-- **需实验或作者披露**：**与 PLT 的关系**：本文使用 Ouro / retrofitted recurrence，不使用 LoopCoder-v2 的 CLP + shared-KV PLT；工具调用的最优 loop depth 能否迁移到低延迟 PLT，仍未回答。
+- 原文没有这项实验/对照：没有多轮恢复、工具观测噪声或 live API 实验；没有同预训练配方的 recurrent / non-recurrent pair；retrofit 模型没有 learned halting 的复现实验；也没有把工具调用的 loop depth 迁到 PLT 的对照。Ouro 缺少匹配的 non-looped counterpart，评测要点已写明。
 
 ## 相关页面
 

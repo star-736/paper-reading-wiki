@@ -158,14 +158,11 @@ Table 3。Gemini 行未再写 No skill，该列只依赖执行器。Qwen3.5-27B 
 - 没有真机，也没有 VLA 后端。ALFWorld 是文本交互家务，EmbodiedBench 是视觉仿真。不要把它写成 [π0](pi0.md) / [π0.5](pi0.5.md) 的低层替换。
 - 近邻不要混名（**已闭合**）：[ASPIRE](aspire.md) 写/改程序并扩张库；[EmbodiedSkills](embodied-skills.md) 固定 typed 合同 + AgentLoop；本页冻结 LLM 改技能正文。[AtomicVLA](atomicvla.md) 技能是 SG-MoE 路由，低层仍是 π0 连续专家，ALFWorld 93.28% 不能填它的 LIBERO 表。[SayCan](saycan.md) 是固定技能表 × value function。
 - **已闭合**：[Inner Monologue](inner-monologue.md) 是 SayCan 的语言反馈闭环，技能库仍固定，只把成功/场景写成文字给 LLM。不能从本页推出，也不要把本页的技能正文改写写成那篇的闭环。
-
-## 待追问
-
-- **现有材料待核**：技能正文的具体格式、初始技能从哪来、\(B\) 的数值，正文只给了 \(K=1\) 和 10 个 stage。附录是否公开完整技能快照，本页未逐条核。
-- **需实验或作者披露**：进化模型是 GPT-5.2 / Gemini-3-flash，执行器是开源 Qwen。更小进化模型能不能做同一套受限编辑，原文没验证。
-- **需实验或作者披露**：8B Navigation Long 仍是 0。长程视觉导航缺的是技能条款、观察、还是执行器本身，表分不开。
-- **需实验或作者披露**：Qwen3.5-27B + Gemini 的 skill-aware 边际只有 +1.49 pp。是 Gemini 已经把粗更新做得够稳，还是反思类型在这个组合上失效？
-- **需实验或作者披露**：原文没有独立 Limitations 节。技能文档膨胀、过时条款、附录噪音，都没有机制消融。
+- 技能格式已在 §3.1：\(S=(\mathrm{body},\mathrm{app})\)。初始技能只写成 \(S^{(0)}\)，没有说来源。修订间隔 \(B\) 没有数值。全文 15 页，没有技能快照附录。这三项不再追。
+- 进化模型只报了 GPT-5.2 / Gemini-3-flash。原文没有更小进化模型做同一套受限编辑的对照。
+- 8B Navigation Long 的 Ours-GPT 与记忆基线都是 0（Table 2）。原文没有把技能条款、观察和执行器拆开的对照。
+- Qwen3.5-27B + Gemini 的 \(\Delta_{\mathrm{aware}}\) 为 +1.49 pp（Table 3）。原文没有对照区分这是粗更新已经够稳，还是反思类型失效。
+- 原文没有独立 Limitations，也没有技能文档膨胀、过时条款或附录噪音的机制消融。
 
 ## 相关页面
 

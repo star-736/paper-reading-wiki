@@ -71,7 +71,7 @@ Mi-Memory 将 Personal AI 的记忆从「对话缓存」重新定义为**全生�
 
 **Context assembly**：reserved slice 保护 L2 profile 和 forget/update 约束 → L0/L1 evidence 按 fused rank 填充 → 超出 budget B 的项记录 overflow trace 而非静默丢弃。
 
-**可选 procedural hooks**（design-only）：`ProcedureEntry = (trig, p, c, v)`——trigger condition、ordered procedure、constraint set、validation rule。与 preference memory 不同：preference 记录用户想要什么，procedural entry 记录助手在用户重复场景中应如何可靠响应。仅在事实检索通过 provenance + confidence gates 后注入为操作指导，不作为事实证据。本报告不单独 benchmark。
+**可选 procedural hooks**（design-only）：`ProcedureEntry = (trig, p, c, v)`——trigger condition、ordered procedure、constraint set、validation rule。与 preference memory 不同：preference 记录用户想要什么，procedural entry 记录助手在用户重复场景中应如何可靠响应。仅在事实检索通过 provenance + confidence gates 后注入为操作指导，不作为事实证据。本报告不单独 benchmark。它不是 tool-skill library 的入库记录，论文没有再给对照，本库不再追这条边界的细写。Hermes 的 memory / fact store / cronjob 不是本报告的实验对象；D2ACCI 与 systematic-debugging 的同构已写在[概念页](../concepts/agent-memory-lifecycle.md)，本库不再单开一份 Hermes 产品对照。
 
 ### Expansion：MemSense + MemFuse 证据纳入（Section 5）
 
@@ -116,7 +116,7 @@ Mi-Memory 将 Personal AI 的记忆从「对话缓存」重新定义为**全生�
 
 **D2ACCI 四步迭代**：(1) Hypothesis——工程师提出可证伪声明（如「single-hop temporal 问题失败是因为 BM25 无法解析日期表达式」）；(2) Diagnosis——AI agents 运行 harness，产生 per-question diagnostic traces，Layer-A 分类器路由到最早 responsible stage；(3) Patch——实现 bounded fix scoped to hypothesized stage；(4) Verification——align by question key，partition into improved/regressed/both-wrong/both-correct，apply gate。如果假设预测与观测到的 category movement 匹配且无 category 回退超阈值，接受。
 
-**E2MEND Observe-Improve-Verify 三阶段**：Observe 评估当前策略 + Layer-A root cause 归因；Improve 只 mutate 声明策略维度；Verify 做 scope checks / 5-Gate / Critic / targeted screen / paired comparison / rollback safeguard。Rollback 触发条件：当前 accuracy 低于 all-time best 超过 3pp。
+**E2MEND Observe-Improve-Verify 三阶段**：Observe 评估当前策略 + Layer-A root cause 归因；Improve 只 mutate 声明策略维度；Verify 做 scope checks / 5-Gate / Critic / targeted screen / paired comparison / rollback safeguard。Rollback 触发条件：当前 accuracy 低于 all-time best 超过 3pp。证据级别是 controlled offline。原文没有在无 ground-truth labels 的生产环境里评在线演化。
 
 **5-Gate fail-fast pipeline**：Structure gate（schema 合法性）→ Novelty gate（路径是否已 exhausted）→ Range gate（值是否在合法范围）→ Prompt-integrity gate（required markers 是否保留）→ Replay gate（stable-correct probe 是否回退）。Critic 做声誉驱动软审查，不能覆盖 hard gates。
 
@@ -136,7 +136,7 @@ Mi-Memory 将 Personal AI 的记忆从「对话缓存」重新定义为**全生�
 
 ## 评测要点
 
-论文明确区分 **evidence level**（harness 成熟度）和 **statistical qualifier**（重复运行/置信区间/paired test），未显式报告 p-value/CI/variance 的数值差异仅作 descriptive evidence。
+论文明确区分 **evidence level**（harness 成熟度）和 **statistical qualifier**（重复运行/置信区间/paired test），未显式报告 p-value/CI/variance 的数值差异仅作 descriptive evidence。各模块分轨评测，原文没有 memory 指导下游动作的闭环评测。
 
 ### Structure：MemStack controlled reference（Figure 4）
 
@@ -167,6 +167,8 @@ LoCoMo 窄幅反映 parity-level 竞争力；LongMemEval 和 PersonaMem-V2 报�
 
 > Figure 7 Mem-Gallery overall accuracy comparison. Baselines 使用统一 Qwen-2.5-VL-7B backbone（Mem-Gallery 论文报告），MemSense 使用 GPT-4.1-mini + GPT-4o-mini judge。backbone 差异排除直接数值排名；图仅提供 contextual positioning。§ 5.3 Validation: Evidence Coverage in Realistic Daily Scenarios。
 
+主文没有共享 backbone 的 IKB-first routing 对标准 VLM/RAG 受控消融，89.15% 对 82.29% 不能直接归因于 IKB。
+
 **MemFuse（MemFuseBench，preliminary/internal）**：
 
 | System | Causal Reasoning | Information Fusion | Conflict Arbitration | Multi-User Synthesis | Cross-User Query | Perspective Difference | Overall |
@@ -176,7 +178,7 @@ LoCoMo 窄幅反映 parity-level 竞争力；LongMemEval 和 PersonaMem-V2 报�
 | RAG k=20 | 33.3% | 24.4% | 41.3% | 31.4% | 28.8% | 16.3% | 27.9% |
 | **MemFuse k=20** | **41.4%** | **42.2%** | 33.3% | 25.5% | 34.4% | **30.6%** | **35.2%** |
 
-MemFuse 在 causal reasoning / information fusion / perspective difference / overall 得分最高（+4.7pp over mem0）。但 conflict arbitration 低于 mem0（33.3% vs 45.3%）、multi-user synthesis 低于 Direct LLM（25.5% vs 32.3%），表明当前 graph-fusion 目标过度优先 causal/link coverage，对矛盾证据的 ownership/recency/user attribution 建模不足。MemFuseBench 是内部 benchmark，结果为 preliminary descriptive evidence。
+MemFuse 在 causal reasoning / information fusion / perspective difference / overall 得分最高（+4.7pp over mem0）。但 conflict arbitration 低于 mem0（33.3% vs 45.3%）、multi-user synthesis 低于 Direct LLM（25.5% vs 32.3%），表明当前 graph-fusion 目标过度优先 causal/link coverage，对矛盾证据的 ownership/recency/user attribution 建模不足。MemFuseBench 是内部 benchmark，结果为 preliminary descriptive evidence。原文没有 human upper bound、inter-annotator agreement 或 oracle-fusion ceiling，也没有进一步实验去解释 conflict arbitration 为何弱于 mem0。
 
 ### Evolution：E2MEND staged strategy search（LoCoMo）
 
@@ -208,19 +210,6 @@ MemFuse 在 causal reasoning / information fusion / perspective difference / ove
 | Raw chunk-retrieval | 55.28% | None | Naive file-split | Low |
 
 LiteMem 保留 90.0% 的服务端改善（(90.81−65.83)/(93.59−65.83) = 90.0%），97.0% absolute score ratio vs full MemStack。Direct recall 和 temporal localization 较强，multi-hop relation traversal 是主要限制。
-
-## 待追问
-
-- **需实验或作者披露**：**MemFuseBench 外部验证**：当前为内部 benchmark，无 human upper bound / inter-annotator agreement / oracle-fusion ceiling，外部验证 pending。conflict arbitration 弱于 mem0 的机制需要进一步分析。
-- **需实验或作者披露**：**IKB ablation 缺失**：MemSense 的 IKB-first routing vs 标准 VLM/RAG 的 controlled ablation（共享 backbone）未在主文中报告，89.15% vs 82.29% 的差距不能直接归因于 IKB。
-- **需实验或作者披露**：**端到端闭环评测**：各模块分轨评测，尚无 memory guides downstream actions 的 closed-loop personal AI benchmark（MemoryArena / WorldMemArena 等被引为方向）。
-- **需实验或作者披露**：**在线增量演化**：E2MEND 目前仅 offline bounded automation，production 环境无 ground-truth labels 的在线演化未评测。
-- **需实验或作者披露**：**procedural hooks**：design-only，无独立 benchmark。ProcedureEntry 与 agent skill memory / tool-skill library 的边界需进一步明确。
-- **需补外部来源**：**与 Hermes 的结构对比**：Mi-Memory 的 lifecycle audit contract（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）与 Hermes 的 memory/fact_store/cronjob 体系有可类比之处，值得做机制层而非仅概念层的对比。D2ACCI 的「hypothesis → diagnose → patch → verify」与 systematic-debugging skill 的四阶段方法论高度同构。
-
-## 相关追问
-
-主记录：[LiteMem 文件规模与时延召回](../concepts/agent-memory-lifecycle.md#待追问)。
 
 ## 相关页面
 

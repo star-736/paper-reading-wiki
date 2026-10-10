@@ -79,8 +79,8 @@ Stage 2 用 flow-matching 做连续动作预测（替代 Stage 1 的离散 [FAST
 | Action chunk | 50 | 50 | 50 |
 | 精度 | bfloat16 | bfloat16 | bfloat16 |
 
-- **Stage 1（VLM Transferring）**：VLM backbone 在 VQA + 机器人数据上联合训练，统一 tokenized 格式，单一 next-token cross-entropy loss 监督 subtask 描述 + [FAST](fast.md) 动作 token。动作 token 加到 VLM 词表、共享 embedding 表和输出投影。分解 $\pi_\theta(a_{t:t+H}, \hat l | o_t, l) = \pi_\theta(a_{t:t+H}|o_t, \hat l)\pi_\theta(\hat l|o_t, l)$（公式 1-2）。action chunk 50 与 [FAST](fast.md) 的 1 秒 chunk 同量级，但本页没有写控制频率，也没有对照表说明用的是数据集特化 FAST 还是发布的 FAST+ 权重。
-- **Stage 2（Foresight and Action Generation）**：引入 unified expert + foresight reasoning。总 loss $= \mathcal{L}_{\text{stage1}} + \alpha\mathcal{L}_{\text{video}} + \beta\mathcal{L}_{\text{action}}$，$\alpha=1, \beta=10$（公式 8）。
+- **Stage 1（VLM Transferring）**：VLM backbone 在 VQA + 机器人数据上联合训练，统一 tokenized 格式，单一 next-token cross-entropy loss 监督 subtask 描述 + [FAST](fast.md) 动作 token。动作 token 加到 VLM 词表、共享 embedding 表和输出投影。分解 $\pi_\theta(a_{t:t+H}, \hat l | o_t, l) = \pi_\theta(a_{t:t+H}|o_t, \hat l)\pi_\theta(\hat l|o_t, l)$（公式 1-2）。action chunk 50 与 [FAST](fast.md) 的 1 秒 chunk 同量级，但本页没有写控制频率。动作词表大小写成 **2048**，与发布的 FAST+ 相同。外部佐证：官方训练代码默认加载 `physical-intelligence/fast` 的 `tokenizer.json` 且不调用 `.fit()`，见 [Vision-Language-Action](../concepts/vision-language-action.md#待追问)。
+- **Stage 2（Foresight and Action Generation）**：引入 unified expert + foresight reasoning。总 loss $= \mathcal{L}_{\text{stage1}} + \alpha\mathcal{L}_{\text{video}} + \beta\mathcal{L}_{\text{action}}$，$\alpha=1, \beta=10$（公式 8）。\(\mathcal{L}_{\text{stage1}}\) 仍是 VLM 的 next-token 交叉熵；摘要写 backbone “keeps training on VQA and subtask prediction”。视频损失的梯度只更新 foresight tokens 和 unified expert（WAN 冻结）。因此 Stage 2 **继续用 \(\mathcal{L}_{\text{stage1}}\) 训练 VLM**，不是只训 expert。原文没有另给一份 “freeze VLM” 开关。
 - **Post-training**：同 Stage 2 配方，视频生成分支可选保留以在下游演示上微调 foresight tokens。
 
 ### Attention masking
@@ -128,11 +128,7 @@ Figure 10 训练效率：InternVLA-A1.5 的 SFT loss 收敛快于 π0.5 和 Inte
 
 Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧预测，在标准和 zero-shot 场景下都能准确跟踪机器人运动和物理一致的场景演化（如液位变化）。
 
-## 待追问
-
-- **需实验或作者披露**：Foresight tokens 数量 $M=50$ 的选择依据未给消融；是否存在质量/成本的 sweet spot。
-- **需实验或作者披露**：WAN2.2-5B 的预训练覆盖 embodied 场景的程度如何（论文 limitation 承认 priors 受限于视频模型预训练覆盖面）。
-- **需补外部来源**：Stage 1 到 Stage 2 过渡时 VLM 是否继续训练（论文说 Stage 2 保留 $\mathcal{L}_{\text{stage1}}$，但没明确 VLM 权重是否更新）。
+Foresight token 数 \(M=50\) 没有消融。WAN2.2-5B 的具身场景覆盖面，论文 limitation 只承认先验受视频模型预训练覆盖限制，没有给出覆盖比例；那是视频模型的数据配方，不再追。
 
 ## 相关追问
 
@@ -144,7 +140,7 @@ Figure 11：frozen WAN 模型在 foresight embedding 条件下生成的未来帧
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)（通用 VLA 定义；本页是 2026 的 MoT + flow-matching 实例，不是入门定义）
 - VLA 定义出处：[RT-2](rt-2.md) · [模型](../models/rt-2.md)
 - 开源离散动作 token 基线：[OpenVLA](../models/openvla.md) · [来源](openvla.md)（7 维 × 256-bin 自回归；与本页 Stage 1 的 [FAST](fast.md)、Stage 2 连续动作都不是同一套）
-- Stage 1 用的压缩分词，不是本页动作头：[FAST](fast.md)（1 秒 chunk 上 DCT+BPE；本页未声明是否 FAST+ 权重）
+- Stage 1 用的压缩分词，不是本页动作头：[FAST](fast.md)（1 秒 chunk 上 DCT+BPE；论文未写 merges 文件名，官方训练代码加载发布的 FAST+）
 - 真机/LIBERO-Plus 对照的开世界 VLA：[π0.5](pi0.5.md) · [模型](../models/pi0.5.md)（PaliGemma + flow expert + 异构 co-training；本页数字是重测）
 - 另一套 RoboTwin 2.0 数字，协议不同勿横比：[EmbodiedSkills](embodied-skills.md)（50 个任务特化 π0.5，macro 86.20；本页是 93.2 vs LingBot-VA 92.2）
 - 在 π0 / π0.5 上做技能专家路由，不是本页 MoT：[AtomicVLA](atomicvla.md)

@@ -27,17 +27,12 @@ Hierarchy-of-Groups Policy Optimization（HGPO）是 [HGPO 论文](../sources/hi
 
 这也给系统设计一条直接约束：memory 的表现形式决定能否建组。截断但可序列化的 observation-action history 可精确 hash；摘要 memory、检索 memory 或 latent state 则不能直接按文字前缀匹配。不能把 HGPO 在 ALFWorld / WebShop 的结果直接外推成“摘要 memory 一定适合层次分组”。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：实际 prompt 若含 task instruction、tool schema、action history 和摘要，$C_k$ 只匹配 state 是否会漏掉关键条件？ 最深的 $G_K^H$ 是否接近 Oracle，还取决于 system prompt、memory 实现和最近 $K$ 个 state 以外的条件。
-- **需实验或作者披露**：最优深度与权重是否可从 group size、return variance 或 estimator uncertainty 自适应学习，而非手调 $K,\alpha$？
-- **需实验或作者披露**：当 state 只可语义近似匹配时，错误合并引入的 bias 会否大于 history-aware grouping 消除的 bias？
-- **需实验或作者披露**：ARPO 的局部 re-rollout、GiGPO 的 state collision 和 HGPO 的 history hierarchy 在同一 token / 环境预算下如何取舍？
+- 原文没有检验 $C_k$ 只匹配 state 时是否漏掉 task instruction、tool schema 或摘要。没有从 group size、return variance 或 estimator uncertainty 学习 $K,\alpha$ 的实验，也没有语义近似匹配下错误合并 bias 的实验。与 ARPO、GiGPO 的同预算对照原文没有；上文已写两篇尚无直接比较。
 
 ## 相关页面
 
 - 来源：[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)
 - 概念：[Group-in-Group Policy Optimization](group-in-group-policy-optimization.md)、[Agentic 模型的后训练](post-training-for-agentic-models.md)
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-
-关联提问页：[Hierarchy-of-Groups Policy Optimization（HGPO）](../sources/hierarchy-of-groups-policy-optimization.md#相关追问)。

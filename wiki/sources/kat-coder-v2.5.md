@@ -30,7 +30,7 @@ KAT-Coder-V2.5 的核心论点是：**coding agent 的瓶颈不在模型规模�
 
 ### 与 V2 的关系
 
-V2.5 不是架构升级，而是**训练基础设施和方法论的系统性重构**。报告明确说 RL 训练基础设施与 V2 相似（三模块：Rollout Engine / Train Engine / KwaiEnv），但新增了 Gateway Server、harness scaling、reliability-hardened sandbox、asymmetric PPO、harness-oriented reward framework 等组件。V2 的 MCLA 和 Tree Training 在 V2.5 中未被作为独立贡献再述，但训练基础设施描述与 V2 一致。
+V2.5 不是架构升级，而是**训练基础设施和方法论的系统性重构**。基座架构、参数量，以及是否沿用 V1 的同一 base，报告没有写。报告明确说 RL 训练基础设施与 V2 相似（三模块：Rollout Engine / Train Engine / KwaiEnv），但新增了 Gateway Server、harness scaling、reliability-hardened sandbox、asymmetric PPO、harness-oriented reward framework 等组件。V2 的 MCLA 和 Tree Training 在 V2.5 中未被作为独立贡献再述，但训练基础设施描述与 V2 一致。
 
 ### Environment Scaling Engine
 
@@ -94,7 +94,7 @@ V2.5 的关键工程发现：**训练失败的主因不在 RL 算法，而在沙
 
 V2.5 从 V2 的 GRPO 变体（turn-level GSPO adaptation）切换到 **PPO** 作为 RL backbone，理由三点：(1) 生产级 harness 常从同一 session 产生结构分裂样本（compaction / sub-agent splitting / query rewriting），共享最终结果但 prefix 不同，trajectory-level group baseline 难一致定义，PPO 的 per-token gradient contribution 更自然；(2) 保留 Critic 可注入训练时特权信息（final rewards / test outcomes / patch-level signals）降低方差；(3) PPO + GAE + reward shaping 支持 turn-level credit assignment。
 
-**Hindsight-Augmented Critic**：Actor rollout 时只看交互历史；训练时 Critic 额外接收 hindsight context $c_t$（final pass/fail reward / unit-test outcome distribution / coverage signals / patch-level differences / task metadata / trajectory statistics / subsequent turns）。Asymmetric value function $V_\psi(s_t, c_t)$ 用同一 MSE 目标训练。推理时 Critic 和 hindsight context 丢弃，只部署 Actor。
+**Hindsight-Augmented Critic**：Actor rollout 时只看交互历史；训练时 Critic 额外接收 hindsight context $c_t$（final pass/fail reward / unit-test outcome distribution / coverage signals / patch-level differences / task metadata / trajectory statistics / subsequent turns）。Asymmetric value function $V_\psi(s_t, c_t)$ 用同一 MSE 目标训练。推理时 Critic 和 hindsight context 丢弃，只部署 Actor。Critic 相对 Actor 的宽度，以及 $c_t$ 的维度和编码，报告没有写。
 
 ### Harness-Oriented Reward Framework
 
@@ -104,7 +104,7 @@ V2.5 从 V2 的 GRPO 变体（turn-level GSPO adaptation）切换到 **PPO** 作
 - **Standard Behavior Constraints**：内容重复率 / 乱码内容率 / 工具调用准确性 / 异常工具调用位置 / 重复单轮工具调用 / 工具调用并行度 / debug artifact 清理 -- 全程辅助惩罚。
 - **Failed Trajectory Incentives**：文件搜索准确率（F2 score）/ 单元测试通过率 -- 给部分进展的失败轨迹正向奖励，densify 稀疏奖励。
 
-Model-based reward 补充：rule-based 对上下文依赖行为（测试充分性 / 策略适配 / 失败覆盖）不够，引入 trajectory-level rubric 的 model-based judge。Rubric 从真实轨迹人工失败分析提取，覆盖 bug reproduction / post-fix validation / execution strategy 三维度。GRM（Generative Reward Model）用 RL 训练专用 judge model 做一致 rubric violation 检测，reward 为 recall-based（最大化 GT 覆盖 + 惩罚 false prediction）。
+Model-based reward 补充：rule-based 对上下文依赖行为（测试充分性 / 策略适配 / 失败覆盖）不够，引入 trajectory-level rubric 的 model-based judge。Rubric 从真实轨迹人工失败分析提取，覆盖 bug reproduction / post-fix validation / execution strategy 三维度。GRM（Generative Reward Model）用 RL 训练专用 judge model 做一致 rubric violation 检测，reward 为 recall-based（最大化 GT 覆盖 + 惩罚 false prediction）。训练数据量和 RL 配置，报告没有写。
 
 ### Multi-Teacher On-Policy Distillation
 
@@ -114,7 +114,7 @@ V2.5 的 MOPD 与 V2 的 OPD 在算法骨架上一致（reverse-KL + on-policy�
 
 两个稳定化机制：
 
-1. **Off-policy cold start**：MOPD 前用专家生成轨迹初始化 student（标准 NLL），预对齐 student 与 teacher 分布，减少早期前缀偏离。
+1. **Off-policy cold start**：MOPD 前用专家生成轨迹初始化 student（标准 NLL），预对齐 student 与 teacher 分布，减少早期前缀偏离。用了哪些专家、冷启动多少步，报告没有写。
 2. **Drift-aware dynamic truncation**：沿用 [Prune-OPD](prune-opd.md) 的 top-k overlap，定义 teacher-student 在 token $t$ 的兼容性 $\rho_t = |T_t^k \cap S_t^k| / k$。$\rho_t$ 高时 teacher 监督可靠；低时降权或截断。连续 $m$ 个 token 低于阈值则截断轨迹停止后续 backprop。截断只做 gradient masking 而非显式优化目标，保留截断前所有有效 prefix token，用 length-stratified batching 避免长度偏差。Prune-OPD 原文是累计低重叠次数的线性衰减，再改下一步的最大长度；这里的 \(w_t\) 是 \(\rho_t\) 的单调函数，截断发生在当前轨迹内。
 
 ## 评测要点
@@ -134,11 +134,8 @@ V2.5 的 MOPD 与 V2 的 OPD 在算法骨架上一致（reverse-KL + on-policy�
 
 ## 待追问
 
-- **需实验或作者披露**：V2.5 的 backbone 架构和参数量未公开（与 V2 一样）。是否沿用 V1 的同一 base model？
-- **需实验或作者披露**：Asymmetric PPO 的 Critic 网络规模与 Actor 的比例？hindsight context $c_t$ 的具体维度和编码方式？
-- **需实验或作者披露**：V2 的 MCLA + IcePop 在 V2.5 中是否仍使用？报告只说训练基础设施与 V2 相似，但 RL 算法从 GRPO 变体换成了 PPO。
-- **需实验或作者披露**：GRM（model-based judge）的训练数据量和 RL 配置？与策略模型的训练是否同步迭代？
-- **需实验或作者披露**：Cold start 阶段用的专家轨迹是哪些专家的？Cold start 持续多少步后才切到 on-policy MOPD？
+- **需核对原文**：V2 的 MCLA + IcePop 在 V2.5 中是否仍使用？报告只说训练基础设施与 V2 相似，但 RL 算法从 GRPO 变体换成了 PPO，也没有把 MCLA / IcePop 再写成独立贡献。
+- **需核对原文**：GRM 与策略模型的训练是否同步迭代，报告没有写。
 
 ## 相关页面
 

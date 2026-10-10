@@ -119,9 +119,6 @@ DSpark-5（$\gamma=5$，Markov head，parallel backbone = 3 层 MoE + mHC + slid
 ## 证据边界与阅读提示
 
 - **与 V4 报告里"MTP-1"措辞的对照**：[DeepSeek-V4 技术报告](deepseek-v4.md) 自身在架构与训练里写的是 "MTP depth 1"（即 V3 风格 single-step MTP），并未提及会被 DSpark 替换；这是**两份报告时间差**导致的——V4 preview 报告先发，DSpark 报告两周后跟上并替换。这是 V4 模型页"production 服务速度"主张的真正出处。
-
-## 待追问
-
-- **需实验或作者披露**：**难样本 unrecoverable draft cost**（§ 5.4 Limitations）：confidence scheduler 只能省 target 端验证，**draft 端 γ-token block 的 parallel backbone 是固定开销**。对于接受率天然极低的复杂请求，这一档算力无法回收；论文留作 future work（difficulty-aware early exit in draft model）。
-- **需实验或作者披露**：**Sequential head 与 [Gated DeltaNet / KDA](gated-delta-net.md) 这类 token-mixer 选择是否正交**：Markov head 走的是 low-rank transition bias，不是 attention 也不是 SSM；与混合线性注意力（KDA / GDN）一类的 backbone 选择应是**正交**的，但论文未做对比。
-- **现有材料待核**：**与 Multi-Teacher OPD 训练栈的关系**：DSpark 训练里 target 模型 100% 冻结、走的是 hidden-state caching + full-vocab supervision 思路，跟 [DeepSeek-V4 用的 full-vocab OPD](deepseek-v4.md#后训练opd-替代-mixed-rl)（也是 hidden-state caching + FP4 inference + TileLang KL kernel）共享同一套 HAI-LLM 工程地基；后续如果要写"DeepSeek-V4 的 distillation-as-infrastructure"主题，DSpark 是同一栈在 inference 端的延伸。
+- DSpark 与 [V4 的 full-vocab OPD](deepseek-v4.md#后训练opd-替代-mixed-rl) 都写了缓存 target hidden state、再在本地做全词表监督。两份报告没有互指同一套训练代码。这不是待核的机制问题，不再留作主题页提纲。
+- §5.4 写明 confidence scheduler 只省 target 端验证，draft 端 γ-token block 是固定开销；接受率极低时这档算力收不回。difficulty-aware early exit 原文没有实验。
+- 原文没有 Sequential head 与 Gated DeltaNet / KDA 的对照。

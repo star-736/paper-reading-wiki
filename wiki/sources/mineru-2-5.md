@@ -39,7 +39,8 @@ MinerU2.5 是 1.2B 参数文档解析 VLM，核心是 **coarse-to-fine 解耦两
 
 | Stage | 阶段 | 数据 / 规模 |
 | --- | --- | --- |
-| Stage 0 | 模态对齐 | 建立基础视觉-语言对齐和 OCR 能力（[MinerU2.5-Pro](mineru-2-5-pro.md) 从此 checkpoint 初始化） |
+| Stage 0a | Language-Image Alignment | 只训 patch merger 的两层 MLP；图文来自 LLaVA-Pretrain，**558K**，1 epoch，序列 4096（§3.3.1、Table 1） |
+| Stage 0b | Visual Instruction Tuning | 全参；数据来自 LLaVA-Instruct，**665K**，1 epoch，序列 4096。不是 MinerU2-VLM 的对齐数据 |
 | Stage 1 | 文档解析预训练 | 6.9M samples/epoch × 2 epochs（[MinerU2.5-Pro](mineru-2-5-pro.md) 扩到 65.5M） |
 | Stage 2 | 文档解析微调 | 630K samples × 3 epochs：43K layout + 300K text + 147K formula + 140K table |
 
@@ -56,7 +57,7 @@ MinerU2.5 是 1.2B 参数文档解析 VLM，核心是 **coarse-to-fine 解耦两
 
 > Figure 3: Overview of the Data Engine（§ 4.1）。三阶段：Data Curation → Pre-training Preparation → Fine-tuning Construction。
 
-Data Engine 三阶段（**注意：三阶段独立运作，未联合优化**——这正是 [MinerU2.5-Pro](mineru-2-5-pro.md) 改进的痛点）：
+Data Engine 三阶段在本报告里写成正向流水线。§4 没有自评「采样不被难度告知、标注精修不分难度、IMIC 挖出的 hard case 标注仍不可靠」。这些是后作 [MinerU2.5-Pro](mineru-2-5-pro.md) 的批评，不是本报告的原文。
 
 ### (1) Data Curation
 
@@ -78,7 +79,7 @@ Data Engine 三阶段（**注意：三阶段独立运作，未联合优化**—�
 
 > Figure 7: IMIC strategy（§ 4.3）。三任务（Layout/Table/Formula）各自的一致性阈值。
 
-**核心原理**：利用模型推理的随机性。对一样本多次随机推理，若模型已学会该样本则输出一致（easy），若未学会则输出分歧大（hard）。低一致性样本 = hard case = 送人工标注。
+**核心原理**（原文确证，§4.3）：利用开启 stochastic sampling 的多次推理。Figure 7 写 Inference Three Times。论文没有把随机性写成 dropout，也没有给温度。若模型已学会该样本则输出一致（easy），分歧大则为 hard。低一致性样本送人工标注。Figure 7 给出 PageIoU / CDM / TEDS 阈值，没有写如何选定，不再追标定过程。
 
 | 任务 | 一致性指标 | Hard 阈值 | Easy 阈值 |
 | --- | --- | --- | --- |
@@ -102,13 +103,9 @@ OmniDocBench（1,355 页，平均 >1100 token/页）上 SOTA，超通用和专�
 
 部署优化：vLLM 异步后端批处理页级请求；按 Stage I 检测的布局类型动态调 frequency/presence penalty 抑制退化重复（文本段高惩罚、表格低惩罚）；调 max_num_batched_tokens / max_num_seqs / cuda graph sizes 提批利用率和 kernel 效率。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：**IMIC 的随机性来源**：多次推理的随机性来自采样温度还是 dropout？论文未明确。不同随机源对 hard case 识别稳定性影响几何？
-- **需实验或作者披露**：**IMIC 阈值的依据**：PageIoU 0.8/0.9、CDM 0.3/0.7、TEDS 0.6/0.9 的阈值如何确定？是否按任务难度校准？MinerU2.5-Pro 的 CMCV 沿用任务特定指标但改三档划分，未沿用这些阈值。
-- **需补外部来源**：**Stage 0 模态对齐的数据规模**：Stage 0 是 MinerU2.5-Pro 的初始化点，但本报告对 Stage 0 数据描述较少，是否就是 MinerU2-VLM 的对齐数据？
-- **需实验或作者披露**：**OTSL 与 GLM-OCR 的 MTP 是否兼容**：OTSL 把表格结构 token 从 28+ 压到 5，序列缩短 50%——这与 [GLM-OCR](glm-ocr.md) MTP 多 token 预测是否可叠加？OTSL 的极简 token 集可能让 MTP 接受率更高。
-- **现有材料待核**：**Data Engine 三阶段独立运作的具体表现**：MinerU2.5-Pro 批评「采样不被难度告知、标注精修不分难度、IMIC 挖的 hard case 标注仍不可靠」——本报告是否承认这些局限？§4 描述偏工程流水线，缺对三阶段协同不足的自评。
+OTSL 把表格结构 token 压短，和 [GLM-OCR](glm-ocr.md) 的 MTP 能否叠加，是跨系统猜测，不是本报告留下的机制缺口，不再追。
 
 ## 相关页面
 

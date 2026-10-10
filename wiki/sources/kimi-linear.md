@@ -38,7 +38,13 @@ $$S_t = \left(I - \beta_t k_t k_t^\top\right)\mathrm{Diag}(\alpha_t)\,S_{t-1} + 
 
 **硬件效率**：细粒度门一般要求用 Diagonal-Plus-Low-Rank（DPLR）转移矩阵，但通用 DPLR 算力贵。KDA 用一个**专门化的 DPLR 变体**——把低秩两支 $a,b$ 都绑定到 $k$——配合 chunkwise-parallel 算法（WY representation + UT transform），把二级 chunk 矩阵计算从 4 次降到 2 次、再省掉 3 次矩阵乘，算子效率比通用 DPLR 提升约 **100%**，同时保持与经典 delta rule 一致。
 
-**神经参数化**（每个 KDA head）：q/k/v 都先过 ShortConv + Swish；q、k 再做 L2Norm 稳定特征值；channel 衰减 $\alpha_t$ 由低秩投影 + 衰减函数 $f(\cdot)$ 给出；输出端用 head-wise RMSNorm + **data-dependent 输出门**（低秩参数化的 sigmoid 门，缓解 attention sink——与 [注意力门控](../concepts/attention-gating.md) 同源思路）。
+**神经参数化**（每个 KDA head，§4）：q/k/v 都先过 ShortConv + Swish；q、k 再做 L2Norm。实验里 $d_k=d_v=128$。遗忘门是
+
+$$
+\alpha^h_t=f(W^\uparrow_\alpha W^\downarrow_\alpha x_t)\in[0,1]^{d_k},\qquad \beta^h_t=\mathrm{Sigmoid}(W^h_\beta x_t)\in[0,1]
+$$
+
+低秩投影的秩**等于 head dimension**。$f(\cdot)$ 只写「与 GDN / Mamba 同类」，本段没有把 negative-Softplus 再展开。$\beta$ 仍是每 head 一个标量。输出门同样低秩：$\mathrm{Sigmoid}(W^\uparrow_g W^\downarrow_g x_t)$，作者说这是为了和遗忘门做公平的参数对比，效果与满秩门相当，并用来缓解 attention sink（Eq. 10）。论文没有单列「只换门」相对 GDN 的参数字节或端到端显存差；kernel 对照是相对通用 DPLR 约 2×（Figure 2），不是相对 GDN。输出门与 [注意力门控](../concepts/attention-gating.md) 是同一族思路的独立实例。
 
 **混合策略**：
 - **layerwise** 混合（整层交替）而非 headwise（层内混头），理由是基础设施更简单、训练更稳。
@@ -66,7 +72,7 @@ $$S_t = \left(I - \beta_t k_t k_t^\top\right)\mathrm{Diag}(\alpha_t)\,S_{t-1} + 
 - **短上下文**：MMLU-Pro（4k）51.0，领先 full MLA（47.2）和 GDN-H（47.9），且速度相当。
 - **长上下文**：RULER（128k）84.3，Pareto 最优，兼得 3.98× 加速；Table 5 显示在多个长上下文 benchmark 上平均分最高。
 - **效率**：1M context 下 KV cache 降最多 75%，decode 吞吐最多 6.3×（更低 TPOT 还允许更大 batch）。
-- **RL**：报告声称在 RL-style post-training 上同样追平/超过 full attention，但这是混合线性注意力此前的薄弱环节，是其主要卖点之一。
+- **RL**（§5 后半）：prompt 来自数学、代码、STEM，并预先筛到起始 checkpoint 的中等难度；数据是 K2 配方的子集。算法与 K1.5 相同，另加截断 importance sampling（缓解训练/推理精度不一致）以及动态 KL 与 mini-batch。同时加 PTX loss，在 RL 过程中对推理和通用数据做并发 SFT。和 full MLA 的对照是同一套算法与超参、K2 的内部数学 RLVR，测试集举例为 AIME 2025 与 MATH500。Figure 6 的训练/测试准确率曲线上 Kimi Linear 整段高于 MLA，不是只在终点打平。正文没有分析固定状态是否在长轨迹里丢掉中间信息。
 
 ## 与已有沉淀的关系
 
@@ -74,12 +80,11 @@ $$S_t = \left(I - \beta_t k_t k_t^\top\right)\mathrm{Diag}(\alpha_t)\,S_{t-1} + 
 - 它**仍然依赖 [MLA](../concepts/multi-head-latent-attention.md)** 作为那 1/4 的全局层，所以不是「抛弃 MLA」而是「把 MLA 稀释到 1/4 层、其余换 KDA」。这跟 DSA/CSA「在 MLA 上加稀疏选择」是不同的省法。
 - 输出门缓解 attention sink 的做法与 [注意力门控](../concepts/attention-gating.md)（Qwen 团队的 Gated Attention）是同一族思想的两个独立实例。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **现有材料待核**：报告称 RL 阶段也追平 full attention，但具体 RL 配方、任务和稳定性细节（线性注意力的有限状态会不会在长 trajectory RL 上掉链子）正文给的篇幅有限，值得回原文 § 5 后半段细读。
-- **需实验或作者披露**：3:1 比例是在 48B/1.4T 这个尺度上选出的；更大尺度（如 1T 级）这个比例是否仍最优，论文未给。
-- **需实验或作者披露**：NoPE 把位置编码全压给 KDA 层，这在超过训练长度的极端外推（如 4M+）下是否仍稳，报告未覆盖。
+- 原文没有这项实验/对照：3:1 没有在 48B/1.4T 上重选比例；NoPE 也没有超过训练长度的极端外推实验。固定状态是否丢掉长轨迹里的中间信息，评测要点已写明正文没有这项分析。
 
-## 相关追问
+## 相关页面
 
-主记录：[KDA 门投影参数与显存开销](../concepts/linear-attention-and-delta-rule.md#待追问)。
+- 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（KDA 低秩门的秩等于 head dimension）
+- 前作：[Gated DeltaNet](gated-delta-net.md)、[Gated Linear Attention](gated-linear-attention.md)、[DeltaNet](delta-net.md)

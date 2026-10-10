@@ -124,7 +124,7 @@ $$r_t = F_t\bigl(w_{\mathrm{type}} C_t + w_{\mathrm{arg}} C_t Q_t - \lambda_{\ma
 
 其中 $F_t$ 是格式合法，$C_t$ 是动作类型正确，$Q_t$ 是参数质量（像素距离 / 词面相似 / tag / LLM），$S_t$ 和 $L_t$ 罚错误敏感动作和历史重复。训练中观察到 token entropy 下降、推理变短，因此加 entropy 正则并给 reasoning 长度上下界。
 
-行为侧（原文确证，§4.3 / Table 12–13）：相对无 Action RL，任务成功率 **+7% 以上**，reasoning token **−21.3%**，交互步数 **+8.4%**。五类错误专用测试集均涨：易混 grounding 72.8→79.1，循环 72.9→82.4。长尾动作从数据占比 19.9% 提到约 40%，reward 71.5→77.9。
+行为侧（原文确证，§4.3 / Table 12–13）：相对无 Action RL，overall task SR 提高 more than 7%，reasoning token −21.3%，交互步数 +8.4%。这句 more than 7% 没有点名评测集，也没有绝对前后值。点名了的是五类错误专用测试集的绝对成功率：易混 grounding 72.8%→79.1%，排序 76.6%→80.4%，多目标完整性 80.0%→84.4%，过早完成 81.0%→86.2%，重复循环 72.9%→82.4%（Table 12；对照是有无 Action RL）。长尾动作（如 `ask_user`、`long_press`）在原始数据中占 19.9%，Action RL 把它在训练数据中的比例提到约 40%，reward 71.5→77.9；频繁动作占 80.1%，reward 88.3→92.3（Table 13）。
 
 ### Online RL：长程终局
 
@@ -132,7 +132,7 @@ Action RL 管局部，不管「当前看起来合理、未来把任务做死」�
 
 课程把任务难度当成当前策略的动态属性：中等成功率进 active pool 拿满预算；当前全败的留在 monitoring pool 小预算；一旦开始出现成功就晋升；已掌握的也小预算盯回退（原文确证，§2.4.3）。
 
-行为侧（原文确证，§4.4）：含至少一次验证动作的轨迹 **+14.7%**，false-stop（自报成功但 verifier 失败）**−11.2%**；GUI 动作份额 +6%，同时用 GUI 和 Bash 的轨迹 +10.6%；Bash 改状态后接只读 GUI 检查的 execution–verification 转移 40.2%→52.4%。作者把后一模式概括成 **Bash as hands, GUI as eyes**，并写明没有显式 modality-coordination 目标。OSWorld 全约束满足 +8.6%，BrowseComp-ZH +7.5%。
+行为侧（原文确证，§4.4）：OSWorld 聚合轨迹上，相对 Online RL 之前，含至少一次验证动作的轨迹比例 +14.7%，false-stop（自报成功但终局 verifier 失败的比例）−11.2%。这两个是相对变化，没有绝对前后值。同一节里，GUI 动作份额 +6%，同时使用 GUI 和 Bash 的轨迹 +10.6%，Bash 改状态后接只读 GUI 检查的 execution–verification 转移 40.2%→52.4%；这三项的段落没有点名评测集。作者把后一模式概括成 **Bash as hands, GUI as eyes**，并写明没有显式 modality-coordination 目标。全约束满足的比例在 OSWorld 上 +8.6%，在 BrowseComp-ZH 上 +7.5%，对照同样是 Online RL 前后。
 
 ## Harness：主动服务与跨平台
 
@@ -169,15 +169,11 @@ Table 9 把 27B 与 [Qwen3.5-27B](../models/qwen3.5.md) 对照，表注写「pre
 ## 证据边界与阅读提示
 
 - 35B-A3B 的 CUA / DeepSearch 训练发稿时未完成，OSWorld / BrowseComp 没有该变体数字。
-
-## 待追问
-
-- **需实验或作者披露**：报告里的 27B / 35B-A3B / 4B 用的是哪一个视觉编码器。公开 HF 上的 MAI-UI-2B 与 8B 不是这三档；这三档的仓库和 `base_model` 还没有放出来。
-- **需实验或作者披露**：AutoJudge 92.8% 一致率意味着真机 SOTA 仍带 judge 噪声；没有公开与 Xiaomi RealMobile 同一任务集的对照。
-- **需实验或作者披露**：Harness 的 proactive / 跨平台增益没有「同一权重开关膜」的成对实验，和 [UI-Mate DemoCUA](ui-mate.md) / [Prime Agent](prime-agent.md) 的隔离程度不同。
-- **需实验或作者披露**：Action RL 的 +7% 任务成功率未写清评测集；Online RL 的验证/false-stop 百分比未给绝对基数。
-- **需补外部来源**：高保真合成环境已造、但未进本报告模型；环境合成方法声称将开源（§7）。
-- **需补外部来源**：正文 `ask_user` 与 Limitations 的 `call_user` 是否同一动作未说明。
+- 三档都写从 corresponding base checkpoints 初始化（原文确证，§3.1）。27B 在 Table 9 里对照的是 Qwen3.5-27B。报告没有单独点名视觉编码器。公开权重仍不是这三档。编码器型号不再追问。
+- OSWorld 上验证动作 +14.7% 与 false-stop −11.2% 的绝对前后值未给。定义和对照已经写明，不再追问基数。
+- Table 1 与 Figure 2 的用户交接动作是 `ask_user`。§7 另写 `call_user`，没有把它定义成第二个动作。不再追问两个标识是否同一。
+- §7 写高保真合成环境已经造出，但没有进入本报告的模型，合成方法留到 future work。2026-10-11 检索 [Tongyi-MAI/Qwen-UI-Agent](https://github.com/Tongyi-MAI/Qwen-UI-Agent)、[Tongyi-MAI/MAI-UI](https://github.com/Tongyi-MAI/MAI-UI)、[项目页](https://tongyi-mai.github.io/Qwen-UI-Agent) 和 [arXiv:2607.28227](https://arxiv.org/abs/2607.28227)，没有找到这份方法的发布。不再把「即将开源」留成追问。
+- 原文没有 MobileWorld-Real / AndroidDaily 与 RealMobile 的同一任务集对照。
 
 ## 相关页面
 

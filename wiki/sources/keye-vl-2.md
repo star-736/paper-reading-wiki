@@ -59,7 +59,9 @@ $$I_{t,s} = \sum_{j=1}^{H_I} w^I_{t,j} \cdot \text{ReLU}(q^I_{t,j} \cdot k^I_s)$
 
 Top-k token 组成稀疏索引集 $\Omega_t$（top-k = 2048，§ Inference Optimization, p17，与 DeepSeek-V3.2 和 GLM-5 一致）。MQA 共享 key 大幅减少 indexer 的计算和访存，配合 FP8 实现和 ReLU 打分函数，即使数十万 token 也能高效运行。
 
-**§2.3.2 GQA Sparse Aggregation**：在 GQA backbone 侧，每个 GQA group 在 indexer 选出的 top-k token 集上独立做 dense attention，但各 group 的 attention 分布归一化独立。这样 indexer 是 MQA（全局共享），sparse aggregation 是 GQA（per-group 独立），两者配合。
+**§2.3.2 GQA Sparse Aggregation**（原文确证）：GQA 的 query head 分成 G 组，组内共享该组的 KV head。稀疏索引集是同一个 $\Omega_t$，所有 group 共用 indexer 选出的那一组 top-k，不是各组再选一套子集。第 $g$ 组只在这组 token 上做 attention：$u_{t,g}=\mathrm{Attn}(h_{t,g},\{c_{s,g}\mid s\in\Omega_t\})$。
+
+各组单独归一化出现在 **§2.3.3 的 dense warm-up**，不是稀疏推理的 top-k。对每个 group 把 dense attention 在视觉和文本 token 上归一化，得到目标分布 $p_{t,:,g}$，再用 KL 对齐共享 indexer 的 softmax（Eq. 4）。warm-up 的目标是 per-group 的，选出的 $\Omega_t$ 仍然是一份。
 
 **§2.3.3 Dense Warm-up and Sparse Adaptation**：沿用 DeepSeek-V3.2 引入的两阶段训练范式：
 
@@ -182,12 +184,11 @@ TimeLens 三子集 mIoU 全部最优，验证 scene-wise dense caption + diverse
 
 τ2-Bench 和 VitaBench 最优，BFCL-V4 第二。30B-A3B 在 tool-use 上全面超过 GPT-5-mini。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **现有材料待核**：GQA Sparse Aggregation 中各 group 的 attention 分布归一化是独立做的，这是否意味着不同 group 可能关注不同的 top-k 子集？还是共享同一个 indexer 选出的 top-k？
-- **需实验或作者披露**：13 个 domain teacher 的具体配置（参数量、训练数据量）未披露。teacher 路由是静态规则还是 learned router？
-- **需实验或作者披露**：Top-k overlap estimator 中 $\Omega_{i,t}$ 为空时 $A_{i,t} = 0$，这种零 advantage token 的比例有多高？是否影响训练效率？
-- **需实验或作者披露**：Pre-training Stage 3 的 500B tokens 中长视频占比多少？256K 上下文的 sample 占比多少？
+- 13 个 domain teacher 的参数量、数据量，以及路由是静态规则还是学出来的，报告都没写。MOPD 的按任务路由和 token-level KL 已经能读懂，不再追教师配方。
+- $\Omega_{i,t}$ 为空时 $A_{i,t}=0$ 的 token 比例没有披露，不再追。
+- Stage 3 的 500B token 里，长视频占比和 256K 样本占比没有披露。正文已写长:短 = 1:1，不再追更细的混合。
 
 ## 相关页面
 

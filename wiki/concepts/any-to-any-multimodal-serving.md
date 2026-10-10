@@ -96,12 +96,19 @@ vLLM-Omni 关注的 disaggregation 范围更宽：不仅有 prefill→decode 的
 
 6. **和 KV cache 层正交但同源。** [LMCache](../sources/lmcache.md) 是 vLLM PD KV transfer 的生产实现：搬的仍是 paged K/V，用 chunked DMA 吃满带宽。vLLM-Omni 的 unified connector 把同一「边上传中间态」扩到 hidden / codec / 音视频 tensor。先问这条边传的是 KV 还是别的激活。见 [KV cache 层](kv-cache-layer.md)。
 
-## 待追问
+## ARIA 与 streaming stage output 不是同一层
 
-- **需实验或作者披露**：Any-to-any serving 的统一 benchmark 应该只看 JCT / RTF，还是也要纳入流式 TTFT、tail latency、输出质量、跨 stage backpressure？
-- **需实验或作者披露**：当 stage graph 很深或有分支时，scheduler 是否需要类似数据流系统的全局优化，而不仅是每 stage 独立 batching？
-- **现有材料待核**：Qwen3.5-Omni 的 ARIA / streaming speech generation 与 vLLM-Omni 的 streaming stage output 能否一一对应，哪些是模型设计、哪些是 serving 设计？
-- **需实验或作者披露**：DiT stage 的质量是否完全不受 serving engine 优化影响？如果开启缓存 / graph compilation / parallelism，是否会改变 deterministic / stochastic sampling 行为？
+两份已入库 PDF 对得上，不能把它们收成同一个开关。
+
+- **模型设计**：[Qwen3.5-Omni](../sources/qwen3.5-omni.md) 的 ARIA 在 Talker 内部。它把 Qwen3-Omni 的双轨文本/语音输入收成单流交错，并加一条前缀约束：任意前缀的语音/文本 token 比不超过该样本的全局比（原文确证，[`raw/Team - 2026 - Qwen3.5-omni technical report.pdf`](../../raw/Team%20-%202026%20-%20Qwen3.5-omni%20technical%20report.pdf) 摘要与 §2.4）。同报告的流式语音还有 MTP 预测 RVQ、causal ConvNet 逐帧合成。这些决定 token 怎么对齐。
+- **服务设计**：[vLLM-Omni](../sources/vllm-omni.md) 的 streaming stage output 是 stage graph 的调度：下游 stage 不必等上游产出完整序列。Figure 4 的例子是 Qwen2.5-Omni（Thinker → Talker → Vocoder），正文写 Qwen3-Omni 类似。该文没有 ARIA。Vocoder 提前开工，不决定文本和语音 token 的交错比。
+
+Qwen3.5-Omni Table 2 的延迟是在内部 vLLM 上测的首包路径，不是 vLLM-Omni 论文的 stage graph 实验。两篇报告没有规定统一 benchmark 必须包含哪些项，不再把「基准该怎么设计」留成追问。
+
+## 证据边界
+
+- 原文没有深图或分支 stage graph 上、全局调度相对逐 stage batching 的对照。
+- 原文没有检验缓存、graph compilation 或并行是否改变 DiT 采样或生成质量。
 
 ## 相关页面
 

@@ -145,13 +145,9 @@ R=2 的 7B 模型在 SWE-bench Verified 上达到 64.4%，超过 Kimi-Dev-72B（
 
 论文建议用 effective-rank trajectory 作为轻量诊断：如果候选 loop 处 effective rank 仍在上升（表征多样性未饱和），追加 loop 可能有真实收益；如果 rank 开始下降，说明 narrowing 开始，之后追加 loop 主要增加固定 CLP offset 成本而无补偿收益。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**18T tokens 1:1 text:code 的代表性**：代码占比 50% 远高于一般 LLM 预训练，loop-count 最优值是否依赖数据组成？纯文本训练的 PLT 是否也饱和在 R=2？
-
-## 相关追问
-
-主记录：[PLT 自适应 CLP offset](../concepts/looped-transformers.md#待追问)；[PLT 与 MTP 的互补性](../concepts/looped-transformers.md#待追问)；[PLT 最优循环数跨规模迁移](../concepts/looped-transformers.md#待追问)。
+- 原文没有这项实验/对照：没有改数据组成或改成纯文本后再看 loop-count 是否仍停在 R=2。PLT 与稀疏注意力、MTP、自适应 offset、以及更大参数量上的循环数，概念页证据边界已记为原文没有这些实验。
 
 ## 相关页面
 

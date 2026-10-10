@@ -3,7 +3,7 @@ type: Source
 title: "Qwen3.8-Omni 技术报告"
 description: "Qwen3.8-Omni-Flash：继承 Qwen3.8-Next 稀疏 MoE 的 Thinker–Talker 全模态 agent。多模态预训练后再做 QSA，Thinker 用多教师轨迹蒸馏加统一 RL；另开 Qwen-MM-Plugins 与 Qwen-Live-Harness。"
 tags: ["source", "qwen3.8-omni", "omni", "qsa", "thinker-talker", "agent-harness"]
-timestamp: 2026-10-03
+timestamp: 2026-10-11
 resource: "../../raw/2609.25611v1.pdf"
 ---
 
@@ -30,7 +30,13 @@ resource: "../../raw/2609.25611v1.pdf"
 2. **长视频理解被改成按需取证。** 同一模型在 Qwen Code 里做规划、调工具、分段核对后，LVOmniBench 从 63.3 到 73.6，OmniVideoBench 的每问 token 从 145,736 降到 79,117（Table 7–8）。这是执行设置的增益，不是换了一套权重。
 3. **系统缺口用开源 harness 补，而不是再训一个端到端产品。** Qwen-MM-Plugins 把音视频能力接到已有 agent harness；Qwen-Live-Harness 把实时交互写成上下文、记忆、工具和子 agent 的编排。
 
-摘要另有两句正文没有展开的账：相对 Qwen3.5-Omni-Plus，29 项音频推理 / 音视频推理 / 音视频 agent 评测的平均分「提高 25% 以上」；每小时音频与音视频的 API 输入成本估计下降「98% 以上」和「93% 以上」。29 项清单和成本公式都没有出现在正文。这两句保持摘要声称，不能当成已复核的表。
+摘要相对 [Qwen3.5-Omni-Plus](qwen3.5-omni.md) 的两句账，正文仍然没有逐项分数表。外部佐证是阿里云官方发布博客（2026-09-20，快照 [Alibaba Cloud - 2026 - Qwen3.8-Omni-Flash blog.md](../../raw/Alibaba%20Cloud%20-%202026%20-%20Qwen3.8-Omni-Flash%20blog.md)）。脚注把「提高 25% 以上」的范围写成 29 项名称，不是 29 行分数：
+
+- 音频推理 17 项：AliMeeting-test、AISHELL-4、MagicData-RAMC、MLC-SLM (en)、WenetSpeech (Net | Meeting)、FLEURS-60 ASR、FLEURS-60 S2TT、SpotSoundBench、MMAU、MMAR、MMSU、MuchoMusic-RUL、HumMusQA、MusTBench、Audio-MultiChallenge、WildSpeech、VoiceBench。
+- 音视频推理 9 项：DailyOmni、WorldSense、AVUT、JointAVBench、OmniCloze、OmniCap-IF、QIVD、OmniVideoBench、StreamingBench。
+- 音视频 agent 3 项：WildClawBench-MM、UniClawBench、OmniGAIA。
+
+同一脚注给出小时输入价的估算：每小时音频或音视频输入价按两分钟素材输入成本的 30 倍计算；音视频输入为 720p、1 fps；其余 API 参数取默认值。技术报告摘要把「−98% 以上 / −93% 以上」放在与前代的比较下。博客没有给出可复算的单价表，所以 +25% 与这两个降幅仍是官方声称，不是本页重算的结果。
 
 ## 架构与训练
 
@@ -250,21 +256,17 @@ Table 10 的脚注级说明：Realtime 为了响应速度走 non-thinking。因�
 ## 证据边界与阅读提示
 
 - 视觉编码器出处自相矛盾：§2.1 写采用自 Qwen3.8-Next，S1 写采用自 Qwen3.5。[架构报告](qwen3.8-next.md) 是纯文本模型，没有视觉编码器。本页不选边。
-- GR、n-gram、Muon、3:1、$K=2048$、$r=4$ 都没有在本 PDF 复述。继承骨干不等于这些超参已被 Omni 复测。
+- GR、n-gram、Muon、3:1、$K=2048$、$r=4$ 都没有在本 PDF 复述。继承骨干不等于这些超参已被 Omni 复测，也不再追它们是否原样保留。Thinker RL 的 clip 和组大小同样没有写，不再追这两个数。
 - Thinker 的 Stage 1 是轨迹蒸馏，不是点名的 on-policy KL。Talker 的 MOPD 引用的是 Ma et al. 2026，不是 MiMo 报告里的那套实现。
-- 摘要的 +25% 与 API 成本 −98% / −93% 没有正文表。OmniEchoBench 与 OmniVChat-Bench 的正文句子和表不一致，以表为准。
+- 摘要的 +25% 与 API 成本 −98% / −93% 仍没有正文分数表。29 项名称和小时价估算来自官方博客脚注，见核心结论；本页不重算这两个百分比。OmniEchoBench 与 OmniVChat-Bench 的正文句子和表不一致，以表为准。
 - CI、Qwen-VASD、Qwen-VAED 未定义。Table 1 标题里的 Flash-Plus 不另立模型。
 - 多说话人 DER 的量级落差、Autoresearch 的单次 12 小时运行、§5 的生产工作流，都没有外部复现或对照协议说明。
 
 ## 待追问
 
-- **需实验或作者披露**：1M 窗口是在后训练之后用什么方法扩的？预训练停在 262,144，正文没有继续训练 token 数或位置编码改动。
-- **需实验或作者披露**：S1 的 LLM 初始化是 Qwen3.8-Next 的 pre-QSA 还是 post-QSA？S2 是否把已经稀疏的层重新打开成 dense？
-- **需实验或作者披露**：Omni 是否保留 Gated Residual 和 51B 主机 n-gram？本报告只点名 GDN 与 QSA。
-- **需实验或作者披露**：Thinker RL 的算法、clip 和组大小；QSA indexer 在 RL 中是否冻结、top-k 是否确定。架构报告留下的 RL 稳定性问题这里仍没有测量。
-- **需补外部来源**：摘要 29 项平均 +25% 的清单，以及每小时 API 输入成本 −98% / −93% 的计价口径。
-- **现有材料待核**：视觉编码器到底来自哪一版权重。两句原文互相排斥，架构报告也帮不上忙。
-- **需实验或作者披露**：AliMeeting 一类 DER 从约 90 降到个位数，前代是否用了同一 diarization 协议。
+- **机制未写明**：1M 窗口是在后训练之后用什么方法扩的。预训练停在 262,144，正文没有继续训练 token 数或位置编码改动。
+- **架构身份仍开放**：S1 的 LLM 初始化是 Qwen3.8-Next 的 pre-QSA 还是 post-QSA。S2 是否把已经稀疏的层重新打开成 dense，正文没有写。
+- **缺测量**：Thinker RL 的算法名，以及 QSA indexer 在 RL 中是否冻结、top-k 是否确定。架构报告留下的 RL 稳定性问题，这里仍没有测量。
 
 ## 相关页面
 

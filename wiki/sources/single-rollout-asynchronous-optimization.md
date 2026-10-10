@@ -145,13 +145,9 @@ OpenHands、最多 300 交互、128k。Qwen3-30B-A3B 23.0 → GRPO (w/ DIS) 27.0
 ## 证据边界与阅读提示
 
 - SWE-Bench Verified 29.8 是 Qwen3-30B-A3B + OpenHands 的算法对照，不是 GLM-5.2 的生产分。
-
-## 待追问
-
-- **需实验或作者披露**：Frozen-attention critic 依赖「不稳定来自 Full Attention、MoE 投影可训」；dense 模型或非 MoE 上这条还成不成立？
-- **需实验或作者披露**：Value 预训练「显著加大」没有规模数字，无法判断 critic 冷启动的真实成本。
-- **需实验或作者披露**：与 GSPO / SAPO / CISPO 的 ratio 形状没有组合实验；DIS 的硬 mask 和 SAPO 的 soft gate 是否可叠加？
-- **需实验或作者披露**：compaction 只出现在 GLM-5.3 博客，本 PDF 未定义。
+- Value 预训练被写成加大语料，正文没有步数、token 或 FLOPs。冷启动成本因此不可与主训练步比较。
+- compaction 只出现在 GLM-5.3 博客，本 PDF 未定义该词。
+- 原文没有 frozen-attention critic 在 dense 或非 MoE 上的实验，也没有 DIS 硬 mask 与 GSPO / SAPO / CISPO 的组合实验。
 
 ## 相关页面
 
@@ -159,5 +155,3 @@ OpenHands、最多 300 交互、128k。Qwen3-30B-A3B 23.0 → GRPO (w/ DIS) 27.0
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻算法：[VAPO](vapo.md)、[DAPO](dapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
 - 模型 / 发布：[GLM-5](../models/glm-5.md)、[GLM-5.3](../models/glm-5-3.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)
-
-关联提问页：[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md#相关追问)。

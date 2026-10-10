@@ -38,7 +38,13 @@ MoE 部分相对 Qwen2.5-MoE 的改动：
 - **global-batch load balancing loss**（[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)，*Demons in the Detail: On Implementing Load Balancing Loss…*）替换 micro-batch 平衡，鼓励专家专业化。（注意这是 **aux-loss 路线**，与 DeepSeek 系的 auxiliary-loss-free bias 路线对照——谱系见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。）
 - 128 总专家 / 8 激活。
 
+报告正文对 QK-Norm 只写「引入 QK-Norm（Dehghani et al., 2023）」，没有写归一化是 RMSNorm 还是 LayerNorm，也没有写 head-wise 还是整张 Q/K。上面「在 Q 和 K 上各加一个 RMSNorm」需要按实现侧理解：Hugging Face `transformers` 的 `Qwen3Attention` 在线性投影之后、RoPE 之前，把 Q/K reshape 成 `(..., num_heads, head_dim)`，再对各 head 的 `head_dim` 做 `Qwen3RMSNorm`。构造函数注释写明 unlike olmo, only on the head dim。这是外部实现佐证，不是本 PDF 的原文确证。（来源：[modeling_qwen3.py](https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3/modeling_qwen3.py)，2026-10-11 读取的 `main`）
+
+global-batch load balancing loss 的公式不在本报告里。Qiu 等 v2（[Demons in the Detail](demons-in-the-detail.md)，Eq. 2–6）把 $\mathrm{LBL}=N_E\sum_i f_i P_i$ 从各并行组自己的 $f_i^j$ 改成跨组同步的 $\bar f_i$，使平衡发生在 global batch 而不是近乎序列级的 micro-batch。Qwen3 只引用该文来说明自己采用这一口径以鼓励专家专业化，没有把对方 Table 1 的 PPL 写成 Qwen3-235B 的增益。
+
 Tokenizer：Qwen 自家 BBPE，词表 151,669。
+
+从本报告的标准 GQA 栈到 Qwen3-Next 的 3:1 hybrid，动机在 [Qwen3-Next 官方博客](qwen3-next-blog.md)，不在本 PDF。Qwen3-VL 沿用本报告的 Qwen3 backbone。两套栈是先后发布的不同架构，本报告没有解释视觉线为何不换 hybrid。
 
 ### 变体表（已据报告 Table 1 / Table 2 核实）
 
@@ -85,7 +91,8 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 ### Stage 2：Reasoning RL
 
 - 仅 **3,995 query-verifier 对**（精挑：未在 cold-start 用过、对冷启 model 可学、尽量难、覆盖广）。
-- 算法 **GRPO**（Shao et al., 2024）。
+- 算法 **GRPO**（Shao et al., 2024）。这是本报告 Stage 2 的算法。
+- **外部佐证，不是本报告的实验**：2025-07-27 的 GSPO 博客把 “latest Qwen3 models” 点名为 Instruct、Coder、Thinking，并写 GSPO 用于它们的大规模 RL。博客没有 checkpoint 或分阶段消融。依据是 `raw/Qwen Team - 2025 - GSPO blog.md`，算法页见 [Group Sequence Policy Optimization](group-sequence-policy-optimization.md)。不要把这三个产品线回写成上面 3,995 query 或 170 步实验。
 - 工程 insight：大 batch + 单 query 多 rollouts + off-policy 训练提样本效率；显式控熵稳定增长或持平。
 - 结果：单跑 170 步、零手调超参，Qwen3-235B-A22B 在 AIME'24 上 **70.1 → 85.1**。
 
@@ -153,15 +160,13 @@ Tokenizer：Qwen 自家 BBPE，词表 151,669。
 
 ## 待追问
 
-- **需补外部来源**：**QK-Norm 具体加在哪**（softmax 之前对 Q 和 K 各做 RMSNorm？head-wise 还是整张矩阵？）——报告只引用 Dehghani et al., 2023，未给实现细节。
-- **需补外部来源**：**Global-batch load balancing loss 公式**：[Qiu et al., 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail*）是同期 Qwen 团队论文，本报告未自带推导，若要复用需回那篇核。
-- **需实验或作者披露**：**Thinking Budget 截断指令为何由系统插入而非显式训练**——论文称是 "emerges naturally"，但模型靠什么信号识别 "</think>\n\n" 后切换到 response？是 chat template + non-thinking 训练数据里的空 think 块带的隐式 grammar，还是另有机制？正文未展开。
-- **现有材料待核**：**从 Qwen3 到 Qwen3-Next 的架构换代动机**：本报告全 GQA 标准栈，Qwen3-Next 引入 3:1 GDN+gated-attention 是另一篇博客的事。两条路线为何能并存（Qwen3.5 走 hybrid、Qwen3-VL 走标准 GQA Qwen3 backbone），待[Qwen3-VL 来源页](qwen3-vl.md) / Qwen3-Next 博客横向对比。
+- **机制未写明**：**Thinking Budget 截断指令为何由系统插入而非显式训练**——论文称是 "emerges naturally"，但模型靠什么信号识别 "</think>\n\n" 后切换到 response？是 chat template + non-thinking 训练数据里的空 think 块带的隐式 grammar，还是另有机制？正文未展开。
 
 ## 相关页面
 
 - 模型：[Qwen3](../models/qwen3.md)
 - 同家族后续：[Qwen3-Next 官方博客](qwen3-next-blog.md)、[Qwen3.5](../models/qwen3.5.md)、[Qwen3-Coder-Next](qwen3-coder-next.md)、[Qwen3.5-Omni](qwen3.5-omni.md)、[Qwen3-VL](qwen3-vl.md)
+- MoE 平衡损失的公式页：[Demons in the Detail](demons-in-the-detail.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)（官方 YaRN+DCA 4× 与 Jet-Long 对照）
 - 零样本长上下文：[YaRN](yarn.md)（推理 YaRN 的一手定义；S3 的 ABF 按该文是 NTK-aware）、[Dual Chunk Attention](dual-chunk-attention.md)（官方配方的另一半；位置重映射，不是 YaRN）、[Jet-Long](jet-long.md)
 - 外部后训练算法：[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)（用 Qwen3-8B/14B 做 deep search RL backbone，但不是 Qwen3 官方报告的一部分）

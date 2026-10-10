@@ -37,7 +37,7 @@ MiniCPM-o 4.5 是**首个全双工全模态 LLM**（9B 总参数），能同时�
 
 架构由三部分组成，通过 token-level hidden state 端到端可微连接（约 9B 可学习参数）：
 
-1. **多模态编码器**：视觉编码器（继承 MiniCPM-V 4.5 的 LLaVA-UHD 图像分区 + SigLIP）+ 音频编码器（Whisper Medium 0.3B，chunk-based 流式，50 token/s → 5× 压缩 → 10 audio token/s）
+1. **多模态编码器**：视觉编码器（继承 MiniCPM-V 4.5 的 LLaVA-UHD 图像分区 + SigLIP）+ 音频编码器（Whisper Medium 0.3B，chunk-based 流式，50 token/s → 5× 压缩 → 10 audio token/s）。MiniCPM-V 4.5 自己的报告（arXiv:2509.18154v1，`raw/2509.18154v1.pdf`，§2.1.1）写：按输入分辨率估计切片数，选每片分辨率最接近视觉编码器预训练设置的那一档划分；448×448 的例子是 64 个 query token。该报告没有写出 SigLIP 参数量。
 2. **LLM backbone**：Qwen3-8B，生成文本 token + hidden state。关键设计决策：LLM 只生成文本域 token（3-4 step/s，人类语速），不直接生成语音 token（通常 ~25 token/s），避免效率瓶颈和语言能力退化
 3. **语音解码器**：interleaved speech token decoder（~0.3B Llama 架构）将 LLM hidden state + speech decoder hidden 相加生成 S3 语音 token；streaming flow-matching decoder 将语音 token 转为音频波形（基于参考音频支持 voice cloning）
 
@@ -112,13 +112,9 @@ Table 7（omni-modal 理解）：Daily-Omni / WorldSense / Video-Holmes / JointA
 
 Table 11：vLLM on RTX 4090，BF16 下 Qwen3-Omni-30B-A3B OOM，MiniCPM-o 4.5 154.3 tokens/s / 19GB；INT4 下 212.3 tokens/s / 11GB。Table 12：自研 llama.cpp-omni 框架，INT4 RTX 4090 RTF 0.21 / 11GB，DGX Spark RTF 0.20 / 11GB，跨 macOS / Windows / Linux 兼容。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：Omni-Flow 的 chunk size 1.0s 对延迟敏感场景是否足够？论文承认长时动态流式交互的鲁棒性仍需提升（Limitations）。
-- **需实验或作者披露**：全双工语音生成在 TAIL 模式下英文 WER（3.93）反而高于固定交错（2.38），流式对齐与语音质量的 trade-off 如何进一步优化？
-- **需实验或作者披露**：主动行为（提醒/评论）目前"相对简单"（Limitations 自述），更丰富的 context-aware planning 留给未来工作——主动行为的训练数据和奖励设计具体如何构造？
-- **需实验或作者披露**：语音生成在流式模式下偶尔不稳定（误发音、中英无意混用），与 LLM backbone 只生成 text token 的设计选择是否有关？
-- **需补外部来源**：MiniCPM-V 4.5 是 VL 基座，其视觉编码器细节（SigLIP 参数量、LLaVA-UHD 分区策略参数）在本报告中未完整给出——需追溯 MiniCPM-V 4.5 报告。
+Limitations 已经写长时动态流式交互的鲁棒性仍需提升，1.0 秒 chunk 是否够用不再追。TAIL 英文 WER 3.93 高于固定交错 2.38 是已报告结果，怎么再优化不再追。主动行为被写成相对简单并留给未来，当前的训练数据和奖励配方不再追。原文没有把误发音、中英混用和「LLM 只生成 text token、语音另走 decoder」放在一起的对照。
 
 ## 相关页面
 

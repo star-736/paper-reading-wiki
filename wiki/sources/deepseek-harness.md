@@ -18,12 +18,12 @@ resource: "../../raw/deepseek-harness-readme.md"
 - 仓库：[deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)
 - 开发者文档：[deepseek-harness.github.io](https://deepseek-harness.github.io/deepseek-harness/en/reference/)
 - 团队：DeepSeek-AI；citation 是 GitHub `@misc`，**没有**独立技术报告
-- 内核论文（本页不当一手）：[A Programming Paradigm for Spatiotemporal Composability](https://arxiv.org/abs/2608.25512)（Cordis，北大 + DeepSeek，cs.PL）
+- 内核论文：[A Programming Paradigm for Spatiotemporal Composability](https://arxiv.org/abs/2608.25512)（Cordis，北大 + DeepSeek，cs.PL）；本地 PDF：`raw/2608.25512v1.pdf`。它解释可撤销 effect 的边界，不能把演算定理升级成 coding-agent 实验结果。
 - 未建模型页：这是 harness，不是模型。评测数字来自 [DeepSeek-V4.1-Flash](deepseek-v41-flash.md)，不是本页实验。
 
 ## 这页在本 wiki 的定位（重要）
 
-这是 **2026 的插件核产品文档**，developer preview，官方写明会破兼容。机制主张以落地页和架构文档为**原文确证**。Cordis 论文解释「卸载如何精确撤销副作用」，是 **PL 内核**，不能把演算定理升级成 coding-agent 实验结果。
+这是 **2026 的插件核产品文档**，developer preview，官方写明会破兼容。机制主张以落地页和架构文档为**原文确证**。Cordis 论文给出 revertible effect 的系统边界，是 **PL 内核**，不能把演算定理升级成 coding-agent 实验结果。
 
 它补的是 [Agent harness](../concepts/agent-harness.md) 里缺的一条轴：Pi 把核心留小、能力赶到 extension；DeepSeek Harness 宣称 **没有特权核心可打补丁**，连 agent loop 都是插件。
 
@@ -50,7 +50,7 @@ resource: "../../raw/deepseek-harness-readme.md"
 - 层序：profile 列出的 bundle → profile 的 `cordis.patch.yml` → home 级 patch → `--patch`
 - `dsh-base` 是 web/headless/sdk/acp 的共享第一层；**`sdk-minimal` 故意不套 `dsh-base`**
 
-核心包仍在，但都挂在 `ctx` 上当服务：`ctx.sessions`（append-only `SessionEvent`）、`ctx.systemPrompt`、`ctx.tools`、`ctx.agents`、`ctx.agentLoop`（「唯一的具体循环插件」）、`ctx.llm`。架构文档把 `agent-loop` 写成 default driver，**同时仍是插件**（原文确证，§ Core packages）。
+核心包仍在，但都挂在 `ctx` 上当服务：`ctx.sessions`（append-only `SessionEvent`）、`ctx.systemPrompt`、`ctx.tools`、`ctx.agents`、`ctx.agentLoop`（「唯一的具体循环插件」）、`ctx.llm`。架构文档把 `agent-loop` 写成 default driver，**同时仍是插件**（原文确证，§ Core packages）。同一张 core 表没有第二个具体循环插件。卸载语义是 registrations unwind，文档没有另列不可卸载残余，也没有「卸掉 agent-loop 后仍跑完一轮」的官方示例。本库不再追「还有没有第二实现」。
 
 ### 四种 runtime mode
 
@@ -86,14 +86,11 @@ resource: "../../raw/deepseek-harness-readme.md"
 | Pi | 66.2 | 86.1 |
 | Claude Code | 69.8 | 88.0 |
 
-读法：Minimal ≈ mini-SWE，且高于 Pi / Claude Code；加上 Standard 的 plan/subagent/web 之后 **DeepSWE 和 Terminal-Bench 都下降**。这支持「工具面越大，同一模型在这些短台上不一定更强」，但不能写成 DSH 全面优于 Pi——任务分布、开箱工具和 DeepSeek 是否过拟合自家 Minimal 都没隔离。
+读法：Minimal ≈ mini-SWE，且高于 Pi / Claude Code；加上 Standard 的 plan/subagent/web 之后 **DeepSWE 和 Terminal-Bench 都下降**。这支持「工具面越大，同一模型在这些短台上不一定更强」，但不能写成 DSH 全面优于 Pi——任务分布、开箱工具和 DeepSeek 是否过拟合自家 Minimal 都没隔离。Table 4 没有训练–评测 harness 交叉。原文没有把 PTC 的 `run_code` 与 SoL-Pi 的 Action Fusion 做成交叉实验。
 
-## 待追问
+### Cordis 可撤销的是边界内的 context 变换
 
-- **需补外部来源**：「没有特权核心」在实践里还剩什么不可卸载？`agent-loop` 仍是「唯一的具体循环插件」，换 loop 有没有官方第二实现？
-- **需实验或作者披露**：Minimal 的高分有多少来自和 V4.1 后训练同一分布，而不是膜本身？Table 4 没有训练–评测 harness 交叉。
-- **需实验或作者披露**：PTC 把多步收到 `run_code` 里，和 SoL-Pi 的 Action Fusion（一次 edit 带 then_run）是不是同一类「少一轮模型往返」？两边都没有交叉实验。
-- **需补外部来源**：Cordis 的 revertible effects 是否真的覆盖 bash / 文件系统副作用，还是只覆盖进程内注册表？论文是 PL 演算，本页不能代答。
+Cordis 把 temporal composability 定义成：组件移除时，运行时持有逆操作的 context 变换可以撤销（原文确证，Abstract 与 §6.1）。边界按位置划分。仅系统独占、并能恢复修改前状态的位置在边界内，记入 Γ。其他进程也会写的内存，以及其他程序也会读写的文件路径，在边界外，操作记为 idΓ，不跟踪、不撤销。§6.1 把一次越界操作拆成两段：open / malloc / fork 装上的描述符、内存块或子进程记录可以是可撤销 effect；write 交给文件的字节和 send 放到线路上的数据是发射，落在边界外。要收回发射，论文只列出暂扣到提交、或应用自己提供的补偿（删掉刚创建的文件、退款），并写明补偿用的是更粗的等价，原有交换性定理不自动成立。§6.3 写明：依赖声明和拦截可以限制组件能碰到哪些路径；宿主沙箱是另一套外部机制。因此 Cordis 没有把 bash 或任意文件系统副作用收成可自动撤销的 effect。dsh 产品是否把某次 bash 接进了这条边界，这篇 PL 论文没有实验。
 
 ## 相关页面
 

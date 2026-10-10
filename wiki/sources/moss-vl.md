@@ -89,12 +89,12 @@ XRoPE 的 64 个 RoPE frequency pairs 按 `(t,h,w)=(24,20,20)` 分配。这里�
 
 该比较使用同一 Qwen3-8B language backbone、单张 H200、BF16、SGLang、相同生成长度上限，每点为五次独立 cold start 均值（§6.3）。匹配 ViT output 时，TTFT 优势从 2.8× 扩至 5.1×，端到端优势从 1.9× 扩至 4.3×；相同视频与帧数时，MOSS-VL 为逐帧即时编码而不做 temporal compression，视觉 token 约为对手两倍，仍保持领先。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**L5 的可复现定量评测怎样设计？** 论文明确说现有公开基准只到 L2--L4；“生成中被新证据推翻后正确修订/截断”的 counterfactual 轨迹、延迟阈值和判分协议仍缺失。
-- **需实验或作者披露**：**门控 cross-attention 的视觉遗忘如何受控？** 报告说明持续追加 KV，但未披露在接近 262K context 或超长 live stream 下的视觉 cache 管理、淘汰与精度曲线。
-- **需实验或作者披露**：**Realtime-SFT 与 RL 是否互补？** 作者公开路线图提到后续 RL；但如何在避免 false alarm 的同时维持主动发言频率、以及会否破坏离线能力，尚无消融。
-- **需实验或作者披露**：**离线强项和实时机制之间的因果关系？** temporal-reasoning 离线优势发生在不含实时语料的 Instruct checkpoint，但报告没有隔离视觉 cross-attention、时间数据与训练规模各自的贡献。
+- L5「生成中被新证据推翻后修订或截断」的可复现定量协议，原文没有这项实验。公开基准只覆盖到 L2--L4。
+- 接近 262K 或超长直播流上的视觉 cache 淘汰与精度曲线，原文没有这项测量。
+- Realtime-SFT 与强化学习是否互补，原文没有这项消融。后训练两阶段不用强化学习；文末把 RL 列为后续路线。
+- 离线 temporal-reasoning 优势里，视觉 cross-attention、时间数据与训练规模各自的贡献，原文没有这项对照。
 
 ## 相关页面
 

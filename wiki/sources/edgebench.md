@@ -31,7 +31,7 @@ $$S(t)=\frac{S_{\max}}{1+(t_{\mathrm{mid}}/t)^{\beta}}$$
 
 公开释放 **51** 题和完整评测框架；全量 134 需申请。GUI / 纯视觉任务被排除，以免把感知天花板和迭代学习搅在一起（原文确证，§2.2、Abstract）。
 
-[SoL-Pi](sol-pi.md) 把这 51 个公开题当 held-out，并声明不用 EdgeBench 数据或 verifier 当训练环境模板。官方榜用的是 Codex / Claude Code 原生 harness；SoL-Pi 数字在 Pi 扩展上，**不能和这篇的模型榜直接横比**。
+[SoL-Pi](sol-pi.md) 把这 51 个公开题当 held-out，并声明不用 EdgeBench 数据或 verifier 当训练环境模板。官方榜用的是 Codex / Claude Code 原生 harness；SoL-Pi 数字在 Pi 扩展上，**不能和这篇的模型榜直接横比**。原文没有 51 题公开子集与 134 题平均曲线的同分布对照。
 
 ![五条 12 小时平均学习曲线（左，线性时间）和同一数据的 log-time sigmoid 拟合（右）。表内给出每模型 R²、Smax、β、tmid；Opus 4.8 的 tmid=0.8h，GLM-5.1 的 tmid=4.8h。](../assets/edgebench/fig1-log-sigmoid.png)
 
@@ -74,21 +74,26 @@ $$S(t)=\frac{S_{\max}}{1+(t_{\mathrm{mid}}/t)^{\beta}}$$
 
 所以这篇的模型排序混进了原生 harness 差异。SoL-Pi 在 Pi 上跑 EdgeBench，测的是另一张膜。
 
+§5.3 在 42 题子集上只换 Opus 4.8 的上下文，harness 家族不变（原文确证，Figure 12）：
+
+| 检查点 | 200k | 1M | 差 |
+| --- | ---: | ---: | ---: |
+| 2h | 33.8 | 39.6 | +5.8 |
+| 6h | 42.6 | 48.0 | +5.5 |
+| 12h | 48.0 | 52.5 | +4.4 |
+
+两条曲线近似平行，log-sigmoid 的 \(R^2\) 都是 0.998；拟合 \(S_{\max}\)（图上 0–100 刻度）是 81.5 对 97.8。作者的结论是：外部 workspace、compaction 和 notes 已经在时，更长窗口仍有稳定优势，差距最多略收窄。这组消融用的是分数，不是 §4.2 的「两小时学习速度」，所以还不能算出代际翻倍里有多少来自换膜。
+
+SoL-Pi 的 Evidence-Preserving Reducer 是 agent 侧的日志压缩：超长日志交给更便宜的模型，引用必须对上归档原文。EdgeBench 的 outer loop 是 work 容器与 judge 容器隔离之后的 hidden judge。二者不在同一层，reducer 不替换 judge。本库不再把「评测语义是否仍等价」留成待追问。
+
 ## 评测要点
 
 - **群体拟合很紧，单题不是。** Figure 4 的 18 条代表曲线有平滑爬升、平台、突变和回退。作者强调 log-sigmoid 是跨任务平均后的结构（原文确证，§3.1–3.2）。
 - **六族各自仍能拟合同一形式**（Figure 5），尽管 \(t_{\mathrm{mid}}\) 差一个数量级（Games / Formal 上部分模型 \(t_{\mathrm{mid}}\) 到十几小时甚至上百小时的外推）。
-- **更长窗仍稳：** 28h（80 题、四模型）和 72h（18 题、两模型）\(R^2\ge 0.993\)（Figure 6）。前 6.5h 拟合能预报 6.5–12h，held-out RMSE < 1 分（Figure 7）。
+- **更长窗仍稳：** 28h（80 题、四模型）和 72h（18 题、两模型）\(R^2\ge 0.993\)（Figure 6）。前 6.5h 拟合能预报 6.5–12h，held-out RMSE < 1 分（Figure 7）。原文没有把 Figure 12 的拟合 \(S_{\max}\) 与 134 题、12h 的渐近对齐；72h 拟合只覆盖 18 题、两个模型。
 - **相对其他 S 曲线：** 作者比较 log-probit / log-Gompertz / Weibull / log-linear，log-sigmoid RMSE 最低；他们仍按机制理由偏好它，而不是「只有这一种 S 形」（原文确证，§3.2）。
 - **学习速度：** 自 2025-09 以来的前沿模型，环境学习速度大约每三个月翻倍（原文确证，§1 第四条观察）。这是跨代拟合，不是单次对照实验。
 - **连续经验 vs 独立重启：** 长周期表现依赖怎么用累积经验，不只是尝试次数；连续经验优于独立重启，更长 context 改善保留（原文确证，§1）。
-
-## 待追问
-
-- **需实验或作者披露**：官方榜的 Codex / Claude Code 混用，有多少「模型代际翻倍」其实是 harness × context window？
-- **需实验或作者披露**：SoL-Pi 用的 51 公开题子集，和这篇 134 题平均曲线是否同分布？博客没给 51 vs 134 的对照表。
-- **需实验或作者披露**：\(S_{\max}\) 是拟合天花板，12h 实分仍低于它（Opus \(S_{\max}=0.55\)，曲线 12h 约 51）。外推到 72h 的 \(S_{\max}\) 是否稳定，作者只在子集上试过。
-- **需实验或作者披露**：work–judge 隔离能挡住 git-history 作弊一类攻击，但 SoL-Pi 的 reducer 把日志交给另一个模型，评测语义是否仍等价于这篇的 outer loop？
 
 ## 相关页面
 

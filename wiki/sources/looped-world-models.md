@@ -135,14 +135,8 @@ Table 5 是相对 gemini-3-flash-preview-thinking 的 ScienceWorld 全任务平�
 
 - **模态**：架构图画了像素观测；公开表是文本环境；§6 的 continuous visual environments 只有「loss 可下降」。
 - **弹幕图与主文脱节**：Figure 2–3 的任务、对照模型名、LWM 缩写都与 §4 主表不一致，目前只能当未与主实验对齐的额外材料。
-
-## 待追问
-
-- **需实验或作者披露**：**同族基线**：正文贡献句写 competitive or superior to existing world model architectures，但结果表只有通用 LLM。LoopWM vs 固定深度 Transformer vs RSSM / Dreamer，在同一 ScienceWorld 协议上差多少？
-- **需实验或作者披露**：**未披露配方**：约 1B 之外，$L_\mathcal{P}/L_\mathcal{R}/L_\mathcal{C}$、隐维、词表、$\mu_{\mathrm{rec}}$、训练数据、优化器、步数均未给。§6 写「intentionally selective in disclosure scope」。
-- **需实验或作者披露**：**谱约束的经验后果**：$\rho(\bar A)<1$ 是构造事实；非线性残差是否仍会炸、长程误差是否真低于固定深度，正文没有曲线。
-- **需实验或作者披露**：**延迟解码的因果**：Tables 5–44 相对 Gemini，不隔离「去掉中间解码」这一项。
-- **需实验或作者披露**：**与 Qwen-AgentWorld 的边界**：两者都叫 world model。Qwen-AgentWorld 是 7 域 native language world model，评 AgentWorldBench / Sim RL；LoopWM 是 Dreamer 式 latent dynamics + 循环核，评五步文本 next-state。还没有同一协议上的对照。
+- **配方选择性未披露**：约 1B 之外，$L_\mathcal{P}/L_\mathcal{R}/L_\mathcal{C}$、隐维、词表、$\mu_{\mathrm{rec}}$、训练数据、优化器和步数都没有给。§6 写 intentionally selective in disclosure scope。缺这些不改变已公开的循环结构。
+- 原文没有这项实验/对照：没有和固定深度 Transformer、RSSM 或 Dreamer 的同协议对照；非线性残差没有长程误差曲线；延迟解码没有有/无中间解码的配对消融（正文已写 Tables 5–44 只相对 Gemini）；也没有和 Qwen-AgentWorld 的同一协议对照。平均 $T$ 与退出分布未给，架构节已写明。
 
 ## 相关页面
 

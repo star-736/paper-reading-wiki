@@ -174,16 +174,10 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 - [StepAudio 3 Realtime](../sources/stepaudio-3-realtime.md)：如何把分域教师合成进一个会说话的模型，而不在数据并集上重训。四名同基座教师按归一化 3:1:1:1 做参数平均，推理时没有额外模块或路由。对话宏平均 73.0，低于最强对话教师 74.2；文本宏平均 76.5，为四者最高。Adaptive Thinking 按轮决定要不要显式推理：Reasoning 类从全思考到强制不思考掉 11.37 分，思考率却只有 59.5%。实时开口是同一权重的两次并发调用，这是推理日程，不是新的 RL 目标。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：异步 RL 的 off-policy 偏差和 MOPD 的 teacher-student gap 是否能统一建模？
-- **需实验或作者披露**：ARPO 的 entropy-based branching 能否嵌进 Forge / GLM-5 这类大规模 agent RL 系统，还是只适合较小规模 search/Python 工具实验？
-- **需实验或作者披露**：VAPO 的 value-based credit assignment 在多轮工具轨迹上是否仍稳定，还是 verifier 稀疏、环境随机性和 critic 成本会抵消 AIME 上的优势？
-- **需实验或作者披露**：DAPO 的 recipe、GSPO 的 sequence-level ratio、SAPO 的 soft gate 能否组合成同一个训练栈，还是彼此在 loss reduction / ratio 单元 / clipping 形状上有冲突？
-- **需实验或作者披露**：Agentic benchmark 的 reward 是否足够可靠，还是会过拟合 harness？
-- **需实验或作者披露**：“保留 thinking”提升长周期任务的同时，会不会带来隐私、延迟或上下文污染问题？
-- **需实验或作者披露**：Agent Swarm 这类运行时并行策略，应该训练进模型，还是保留在外部 agent framework 中？
+- 原文没有这些实验：异步 off-policy 偏差与 MOPD teacher-student gap 的统一模型；ARPO 分叉嵌进 Forge / GLM-5；VAPO 在多轮工具轨迹上的稳定性；DAPO recipe、GSPO sequence-level ratio 与 SAPO soft gate 合成同一训练栈；agentic reward 是否过拟合 harness；保留 thinking 的隐私、延迟或上下文污染；Agent Swarm 训练进模型还是留在外部框架。
 
 ## 相关追问
 
-主记录：[GiGPO 开放状态重复率与 ARPO 预算对照](../comparisons/llm-rl-policy-optimization.md#待追问)；[HGPO 的记忆表示与自适应权重](../comparisons/llm-rl-policy-optimization.md#待追问)；[RL 的 Maj@K 与 Pass@K 外推](../comparisons/llm-rl-policy-optimization.md#待追问)；[离线偏好方法的生产采用因果](../comparisons/llm-rl-policy-optimization.md#待追问)。
+主记录：[离线偏好方法的生产采用因果](../comparisons/llm-rl-policy-optimization.md#待追问)。

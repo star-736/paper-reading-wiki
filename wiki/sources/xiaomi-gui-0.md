@@ -48,7 +48,7 @@ Xiaomi-GUI-0 是一个面向**真实移动环境**的 native end-to-end multimod
 
 训练数据分三个渐进层级 + 一个 error-driven flywheel：
 
-1. **高频任务数据**（§ 3.1）：针对单应用、短路径、目标明确的头部功能。每个功能由多条自然语言 query 实例化，每条 query 采集多条功能等价轨迹覆盖不同入口。强调中间页数据增强（正确路径上的中间页 / 同应用错误页 / 跨应用相似功能页）和应用上下文标注（每步截图标注前台应用名，消除跨应用视觉相似页的歧义）。另采约 5000 样本覆盖 14 类异常态。
+1. **高频任务数据**（§ 3.1）：针对单应用、短路径、目标明确的头部功能。每个功能由多条自然语言 query 实例化，每条 query 采集多条功能等价轨迹覆盖不同入口。强调中间页数据增强（正确路径上的中间页 / 同应用错误页 / 跨应用相似功能页）和应用上下文标注（每步截图标注前台应用名，消除跨应用视觉相似页的歧义）。另采约 5000 样本覆盖 14 类异常态（原文确证，§3.1）。14 类 handoff 语义见 Appendix B.1，各类样本量未给。
 2. **高泛化数据**（§ 3.2）：面向长尾意图。以五级 function tree 为索引，引入 **behavior buckets**（用户意图级抽象，每个应用 8–10 个 bucket）做两轴采样：behavior bucket 为主轴保证 query 自然性，function tree 为辅轴保证长尾覆盖。query 后处理三阶段：LLM-judge 三轴打分（realism / completability / complexity）、自然语言润色、function-point 回标。轨迹清洗分两层：trajectory-level（子任务分解 + VLM judge 逐步判定，320 条上与人抽查 94% 一致）和 step-level（检测重复段并从训练标签中剥离但保留为历史证据，转化为反思导向监督）。
 
 ![Figure 2: 高泛化数据构造 pipeline——从 function tree construction 到 behavior-bucket query synthesis，再到混合基础设施上的 trajectory rollout 与 trajectory/step-level cleaning。](../assets/xiaomi-gui-0/fig2-data-pipeline.png)
@@ -60,9 +60,9 @@ Xiaomi-GUI-0 是一个面向**真实移动环境**的 native end-to-end multimod
 
 这是报告的核心创新之一。GUI 执行是序列决策过程：第 i 步的错误 tap 改变第 i+1 步的状态分布，效应可能级联到整条轨迹。静态语料有两个结构性局限——off-policy（标注数据不匹配模型当前执行分布）和 success-biased（训练数据过度代表正确状态下的正确动作）。Flywheel 围绕模型自身的错误分布构建，包含两个互补阶段：
 
-**交互式标注**（§ 3.4）：标注者在平台 UI 中回放失败轨迹，定位**首个关键错误**（first-key-error），提供纠正动作 + 错误原因 + 错误类型。GUI 失败通常级联——早期错误 tap 误置页面后所有后续动作都基于错误状态——因此只标注首个关键错误既降低成本又不丢失级联信息。纠正动作作为该错误步的监督标签，前缀作为历史；原始错误步不丢弃而保留为历史，供后续 recovery 训练使用。
+**交互式标注**（§ 3.4）：失败候选来自脱敏生产日志、内部自动回归环境和 gated-rollout 评测；账号、姓名、电话、订单号在进入标注前被清除（原文确证，§3.4）。这是标注语料的来源。后文 Agentic RL 的任务池没有被写成同一批脱敏请求。标注者在平台 UI 中回放失败轨迹，定位**首个关键错误**（first-key-error），提供纠正动作 + 错误原因 + 错误类型。GUI 失败通常级联——早期错误 tap 误置页面后所有后续动作都基于错误状态——因此只标注首个关键错误既降低成本又不丢失级联信息。纠正动作作为该错误步的监督标签，前缀作为历史；原始错误步不丢弃而保留为历史，供后续 recovery 训练使用。
 
-**Teacher 打分与接管**（§ 3.4）：将纠正监督扩展到人工标注之外。Student 在集群上 rollout 时，teacher 模型每步接收截图 + 历史 + 任务目标 + student 动作，返回质量分 + 文本理由。连续多步低于阈值时，teacher 接管有限步数，产生从错误状态回到可行路径的恢复动作，之后控制权还给 student。
+**Teacher 打分与接管**（§ 3.4）：将纠正监督扩展到人工标注之外。Student 在集群上 rollout 时，teacher 模型每步接收截图 + 历史 + 任务目标 + student 动作，返回质量分 + 文本理由。报告没有点名 teacher。连续多步低于阈值时，teacher 接管有限步数，产生从错误状态回到可行路径的恢复动作，之后控制权还给 student。
 
 ![Figure 5: Teacher 打分与接管——student 持续 rollout，teacher 每步打分；持续低于阈值触发有界接管，产生 deviation–diagnosis–recovery 段后控制权返回 student。](../assets/xiaomi-gui-0/fig5-teacher-takeover.png)
 
@@ -104,7 +104,7 @@ Xiaomi-GUI-0 是一个面向**真实移动环境**的 native end-to-end multimod
 | L4 | LLM-as-judge consistency | 推理、动作描述、tool call 语义或因果不对齐 | −0.5 |
 | Pass | All levels | 全部通过 | 1.0 |
 
-top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-as-judge 只在已验证 well-formed 的响应上调用，约束评估成本。三值 reward（−1.0 / −0.5 / 1.0）。
+top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-as-judge 只在已验证 well-formed 的响应上调用，约束评估成本。三值 reward（−1.0 / −0.5 / 1.0）。报告把这套三值写成「决定哪一级检查生效、以什么成本生效」，而不是细粒度打分（原文确证，§4.3）。没有多层级或连续 reward 的消融。L3/L4 由单独部署的 reward model 执行（原文确证，§6.1），未点名。
 
 效率优化两轴：rollout throughput（异步 rollout 抑制 batch 内长尾延迟 + FP8 rollout 加速 + curriculum scheduling 对齐 prompt 与当前 policy 能力）和 sample efficiency（[DAPO](dapo.md) 的 dynamic sampling 丢弃 degenerate advantage group——全组相同 reward 无梯度）。
 
@@ -125,14 +125,15 @@ top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-a
 
 **Curriculum sampling**（遵循 STEP）：每个任务 q 维护平滑成功率估计 SR_q，打分 `score_q = α·log(SR_q) + β·log(1−SR_q)`，softmax over scores 得采样概率。温度 η 控制集中度，α/β 训练中调整以从易到难迁移采样质量。
 
-- 数据：数千任务，轨迹在线生成
+- 数据：several thousand 任务，轨迹在线生成（原文确证，§6.1）。没有更精确的条数，也没有写成脱敏线上请求。
 - 超参：16 responses/prompt, lr 1e-6, clip (3e-4, 4e-4), batch 32 prompts, max prompt 8192, SR decay 0.9, α: 1.5→0.5, β: 1.0→2.0, η=1.0
 
 ### 实验设置
 
 - 硬件：64× NVIDIA H100（8 节点 × 8 GPU）
 - 框架：verl（RL）+ Megatron-Core（训练后端）+ SGLang（rollout engine）
-- 所有数字为 4 次运行均值（benchmark 评测方差较大）
+- 基座：采用 Qwen3-VL-30B-A3B-Instruct 为 backbone，SFT 从该 Instruct checkpoint 起训（原文确证，§6.1）。未写视觉编码器或 adapter 是否相对该 checkpoint 改动。
+- 所有数字为 4 次运行均值，用来对付报告所称相对较大的评测方差（原文确证，§6.2）。未给标准差，也未比较跨应用与单应用方差。
 
 ## 评测要点
 
@@ -191,14 +192,11 @@ top-down early-exit：L1/L2 rule-based 低成本拒绝畸形响应，L3/L4 LLM-a
 
 **14 类异常语义**（Fail.type 的合法值，Appendix B.1）：LOGIN_REQUIRED / USE_GUIDANCE / CAPTCHA_VERIFICATION / RESULT_NOT_FOUND / BLUETOOTH_CONNECTION_REQUIRED / NETWORK_ERROR / PAYMENT_AUTHENTICATION / TASK_CANT_FULFILLED / REPEAT_OPERATION / PERMISSION_REQUEST / PASSWORD_REQUIRED / TAKEOVER_EXIT / TEMPORARY_TAKEOVER / MANUAL_VERIFICATION_REQUIRED。将线上 50+ 种异常态归并为 14 种 handoff 语义，每种对应一种预期行为（停止 / 暂停 / 交还用户）。系统 prompt 中还有 loop breaker：连续三步无可见变化或同一动作循环时先自纠正（Back 或换目标），失败再调 Fail。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：报告未披露 Qwen3-VL-30B-A3B-Instruct 之外是否有视觉编码器/adapter 的修改——是否完全复用原 backbone 的视觉前端？
-- **需实验或作者披露**：Error-driven flywheel 的 teacher 模型是什么——是否是更强版本的 Xiaomi-GUI-0 或外部闭源模型？teacher 打分的 LLM-as-judge 部分（cascade reward L3/L4）用什么模型实现？
-- **需实验或作者披露**：5000 异常态样本的 14 类分布如何——是否某些类别样本过少导致学习不充分？
-- **需实验或作者披露**：Agentic RL 阶段"数千任务"的具体规模和来源——是否包含线上真实用户请求的脱敏版本？
-- **需实验或作者披露**：Step RL 的 cascade reward 三值设计（−1.0 / −0.5 / 1.0）是否限制了 reward 信号的表达力——是否有尝试更多层级或连续 reward 的消融？
-- **需实验或作者披露**：RealMobile 的 100 任务是否足够稳定——4 次运行均值的方差是多少？跨应用任务的评测方差是否显著高于单应用？
+下列事项报告未写。缺了它们，读者仍然能读懂已公开机制（真机基础设施、error-driven 恢复监督、三值 cascade、四次均值），不再追问：视觉编码器或 adapter 是否改动；teacher 与 L3/L4 reward model 的名字；约 5000 条异常样本的 14 类计数；Agentic RL 任务的精确条数；cascade 的多层级或连续 reward 消融；RealMobile 四次运行的标准差，以及跨应用与单应用方差。
+
+参考文献 [6] 把 Seed2.0 Model Card 标成 arXiv:2603.11103，该编号对应的是 Understanding by Reconstruction；Seed2.0 卡是 arXiv:2607.00248（见 [Seed2.0 Model Card](seed2.md)）。RealMobile 上 Seed 2.0 Pro 的 80.0% / 88.1% 只是本报告表内数字，不能当作 Seed 原文确证。
 
 ## 相关页面
 

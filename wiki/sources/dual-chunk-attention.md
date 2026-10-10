@@ -125,12 +125,12 @@ Passkey（Appendix A.1）：Llama2 13B + DCA 在 18k 内各深度 100%（Figure 
 ## 证据边界与阅读提示
 
 - 70B 的「>100k」是摘要口径；严格 +0.56 PPL 只写到 96k。实用 QA / 摘要评测截在 16k。
+- Algorithm 1 用各支路 `map.sum` 归一化；原文没有报告这次合并的数值误差。
+- 原文没有 MLA 上的实验，没有 256K / 1M，也没有与 DSA 叠加的实验。
 
 ## 待追问
 
-- **需实验或作者披露**：Eq. 6 左端写成 $P_q^{\mathrm{Intra}}$ 却等于 $c-1-P_k[j]$。分段公式与 $P_q^{\mathrm{Inter}}$ 定义一致，但没有勘误。
-- **需实验或作者披露**：Algorithm 1 用各支路 `map.sum` 做归一化；全局 softmax 的严格合并应走 LSE。[Jet-Long](jet-long.md) 后来用 inclusion–exclusion + LSE，并批评过对数域减法。DCA 这套 FA 合并的数值误差没有报。
-- **需实验或作者披露**：没有 MLA / GQA 以外架构、没有 256K / 1M、没有与 DSA 叠加的实验。
+- **需核对原文**：Eq. 6 左端写成 $P_q^{\mathrm{Intra}}$ 却等于 $c-1-P_k[j]$。分段公式与 $P_q^{\mathrm{Inter}}$ 定义一致，但没有勘误。
 
 ## 相关页面
 

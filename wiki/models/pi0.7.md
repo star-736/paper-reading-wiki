@@ -19,7 +19,7 @@ timestamp: 2026-09-12
 | 字段 | 值 |
 | --- | --- |
 | **总参数** | 约 5B（§IV、Fig. 2） |
-| **VLM backbone** | Gemma 3 4B（含约 400M 视觉编码器；Figure 2 标 SigLIP 400M + Gemma 4B） |
+| **VLM backbone** | Gemma 3 4B（含约 400M 视觉编码器）。Figure 2 的 SigLIP 400M 就是这座塔，不是再叠一座；Gemma 3 Table 1 把 4B 的视觉塔记为 417M |
 | **历史** | MEM-style 视频历史编码器；最多 4 路相机 × 6 帧 |
 | **Action expert** | **860M** flow matching；50 token chunk；adaptive RMSNorm 注入时间 |
 | **模态** | 多模态（**多路 RGB + 历史** + **任务/子任务语言** + **本体感觉** + **可选 subgoal 图** + **episode metadata** → **连续动作块**）。**无**音频 |

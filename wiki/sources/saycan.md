@@ -61,7 +61,7 @@ Algorithm 1（§4 原文）：每步对全部技能算 \(p^{\mathrm{LLM}}_\pi = 
 
 作者写：当前数据阶段 **BC 策略成功率更高**，但 RL 的 value function 才是把控制能力翻译成场景语义的那一层（§4）。动作空间包括末端 6-DoF、夹爪、移动底座 x-y 与 yaw、以及 terminate。
 
-技能库存：提出 **551** 条，覆盖七个技能族、17 种物体（pick / place / 重排、开关抽屉、导航、特定放置）。评测实际用的是「适合组合、且当前采集质量够高」的子集（§4、Appendix D），不要把 551 写成 101 条指令上全部上线。
+技能库存：提出 **551** 条，覆盖七个技能族、17 种物体（pick / place / 重排、开关抽屉、导航、特定放置）。评测**没有**给出这 551 条里实际上线多少条的整数，Figure 11 的 “hundreds of instructions” 是策略采集期间的评测增长，不是 SayCan 的选项集 \(\Pi\)。Appendix D.2 写明主实验用的族：pick（一条多任务语言条件 BC，value 来自 RL）、go to（已知坐标的经典导航）、place（脚本运动规划，affordance 设为 1）、terminate（affordance 0.1）。明确不用 “move object near object” 和 “knock object over”；抽屉技能当时不够稳，主表 101 条不用，Appendix E.3 再加。场景是 15 个物体、5 个地点。Appendix E.1 把 101 条指令按 Table 1 的七个族逐条列出，并定义了每一族在测什么（同义名词、同义动词、结构化复述、体现状态、众包、长程）。
 
 ![SayCan Figure 2：value function 把当前观测映成各原语的可行性。(b) 桌上有红牛和苹果时，对应 pick 分高；(c) 空地导航时所有 pick 都低。](../assets/saycan/fig2-value-functions.png)
 
@@ -137,11 +137,7 @@ Appendix Table 6 还在纯生成（无 value function、USE 投影）上比了 P
 
 - **已闭合**：闭环语言反馈见 [Inner Monologue](inner-monologue.md)。本页每步只通过当前 value function 看世界；那篇的 Success/Object 文字不从本 PDF 推出。厨房数字不能和本页 101 条 84%/74% 横比。
 - Code as Policies 把技能写成可执行程序，[ASPIRE](aspire.md) 再把程序库做成自进化；[EmbodiSkill](embodiskill.md) 从轨迹改技能正文。和本页「固定技能表 + value function」差在哪一层，不能用本页 84% 去填那些表。EmbodiSkill §2.2 把本页写成选已有技能、不从轨迹修订。
-
-## 待追问
-
-- **需实验或作者披露**：[EmbodiedSkills](embodied-skills.md) 的 proposal × runtime 先验后验，和本页 LLM × affordance 是不是同一因式分解换了实现，两边原文都没对照。
-- **现有材料待核**：551 条技能里评测实际启用了多少条，Appendix D 未在本页逐条核对。
+- [EmbodiedSkills](embodied-skills.md) 的 proposal × runtime 与本页 LLM × affordance，两边原文都没有对照实验。
 
 ## 相关页面
 

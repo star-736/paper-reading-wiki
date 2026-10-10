@@ -80,7 +80,7 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 
 **RL 阶段（GRPO）：** SFT 之后加 RL 优化每秒策略。关键设计：
 
-- **Answer-centered window sampling**：长流会展开成数百个 mostly-silent turn，直接做 rollout 不可行。对每个 gold response 构建一条保持流式因果性但只保留与 timing 相关 turn 的轨迹，把 horizon 从数百压缩到个位数。
+- **Answer-centered window sampling**：长流会展开成数百个 mostly-silent turn，直接做 rollout 不可行。对每个 gold response 构建一条保持流式因果性但只保留与 timing 相关 turn 的轨迹，把 horizon 从数百压缩到个位数。确切窗口长度没有写，不再追。
 - **奖励**：正确且在正确窗口内的 response 得分；恰当 silence 得分；恰当委托得分。惩罚 false alarm、mistimed response、degenerate always-respond。
 - **委托两部分打分**：是否把真正难的子任务委托（而非简单问题）、是否在后台返回后用好结果（包括 pending 期间保持响应）。
 - **LLM judge** 对 response 内容按 task-specific rubric 打分。
@@ -111,7 +111,7 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 
 ### 后台 bridge
 
-后台 brain 默认对接用户自己的大模型 API，也可是任意 agent（论文提到 Hermes Agent [16] 和 OpenClaw [18]）。bridge 暴露 **background-agnostic text contract**：前台发出 tagged query，bridge 归一化为 task-id + 委托问题 + 前台备注 + 有界帧快照，在固定超时下异步执行；结果以 started/ready/error 事件返回，完整产物留在 context 外，只有有界摘要织回交互模型。由此闭合"从看到做"的循环。
+后台 brain 默认对接用户自己的大模型 API，也可是任意 agent（论文提到 Hermes Agent [16] 和 OpenClaw [18]）。bridge 暴露 **background-agnostic text contract**：前台发出 tagged query，bridge 归一化为 task-id + 委托问题 + 前台备注 + 有界帧快照，在固定超时下异步执行；结果以 started/ready/error 事件返回，完整产物留在 context 外，只有有界摘要织回交互模型。附录 Listing 3 是训练样本，不是另一份系统规范。字段级协议不再追。由此闭合"从看到做"的循环。
 
 ### 长程记忆
 
@@ -123,7 +123,7 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 | 中期 | 最多 $M$ 条过去短期 chunk 的文本摘要 | $T_m = MT_s$ 秒 |
 | 长期 | 最多 $L$ 条从 $M$ 条中期摘要合并的高度压缩块 | $T_l = LMT_s$ 秒 |
 
-三层合计覆盖约 **2 小时**上下文。因为短期以上各层存为文本，记忆形成稳定的 per-chunk prefix，vLLM 可直接 cache 复用。
+三层合计覆盖约 **2 小时**上下文。$T_s$ / $M$ / $L$ 的具体取值没有写，不再追。因为短期以上各层存为文本，记忆形成稳定的 per-chunk prefix，vLLM 可直接 cache 复用。论文声称 sub-second latency，但没有系统级延迟分解，不再追 breakdown。
 
 ### vLLM-native serving
 
@@ -165,13 +165,9 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 - 长程记忆中约半数 case 超出 Doubao（约 5 分钟自动挂断）和 Gemini（约 2 分 15 秒）的会话限制，baseline 根本不在场
 - JoyAI-VL-Interaction 自身失利仅限于 quality（如解说时偶尔幻觉），归因于 8B 参数规模
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**RL 的 answer-centered window sampling 的具体窗口大小？** 论文只说"压缩到个位数 turn"，未给确切窗口长度。
-- **需实验或作者披露**：**三段式记忆的 $T_s$ / $M$ / $L$ 具体取值？** 论文给出结构但未公开参数。
-- **需实验或作者披露**：**2 小时上下文的延迟实测数据？** 论文声称 sub-second latency 但未给系统级延迟 breakdown。
-- **需实验或作者披露**：**与 TML interaction model 的直接定量对比？** 论文只做定性对比（vision-first vs audio-video），未在同一 benchmark 上对打。
-- **需补外部来源**：**委托的 background-agnostic protocol 的完整格式？** Appendix 给了 delegation 训练数据示例（Listing 3），但系统侧 protocol 规范需查 repo。
+- 与 TML interaction model 在同一 benchmark 上的定量对打，原文没有这项对照。论文里的讨论是 vision-first 与 audio–video 的定性对比。
 
 ## 相关页面
 

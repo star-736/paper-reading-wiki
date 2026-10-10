@@ -39,6 +39,10 @@ GDN 把两者合成 **gated delta rule**，一个规则同时拥有「快速清�
 
 直觉（原文 § 1）：gated delta rule 让记忆控制变得灵活——令 $\alpha_t\to 0$ 可瞬间清空记忆；令 $\alpha_t\to 1$ 则退化成纯 delta rule，只定向更新某条内容而不动其他。
 
+**标量门不是相对 GLA 对角门的消融胜出。** Eq. 10 的 $\alpha_t\in(0,1)$ 是标量。Table 1 把它放进在线学习目标 $\lVert S_t-\alpha_t S_{t-1}\rVert_F^2$：$\alpha_t$ 是自适应 weight decay，用来放松「新状态必须贴近旧状态」的正则，从而在状态饱和时还能忘掉一些内容（§3.1）。§3.4 脚注写明 $\alpha$ 用 Mamba2 的参数化，正文省略。硬件路径是把这个标量乘进 DeltaNet 的 WY chunkwise 形式，和 Mamba2 把标量衰减乘进线性注意力是同一类改法（§3.3）。
+
+作者知道更细的门存在，但没有拿它和标量门比。§2.1 写：若把衰减从标量扩成矩阵，在外积结构下仍有高效算法，并引用 Yang et al. 2024a（即 [GLA](gated-linear-attention.md)）的细粒度 decay。附录 Table S.1 消融的是短卷积、输出门、归一化和 head dimension，没有 scalar vs diagonal。§5 把并发的 [RWKV-7](rwkv-7.md) 记成更松的 diagonal-plus-low-rank 转移，当时脚注是 GitHub 树。所以「仍选标量」是这条 gated delta 的定义和可并行实现，不是一份证明标量优于对角门的实验。
+
 **为什么线性注意力需要遗忘**：线性 Transformer 本质是外积形式的 key-value 关联记忆，能存的正交 key-value 对数受限于模型维度；序列长度超过维度时「memory collision」不可避免，精确检索失效（原文引 Schlag 等）。门控 + delta rule 正是为缓解这个有限状态瓶颈。
 
 **硬件效率**：在 DeltaNet 用 WY representation 并行化 delta 计算的基础上，GDN 把门控项也纳入 chunkwise 并行形式，保持线性时间训练。
@@ -83,13 +87,12 @@ Figure 3 是 **1.3B、单张 H100 的训练吞吐**对照。§4 报 GDN 与 Delt
 - **channel-wise 门的一手是 [GLA](gated-linear-attention.md)，不是本页。** GLA 有 $\mathrm{Diag}(\alpha_t)$、没有 delta。KDA 才把 GLA 的细门接到本页的 gated delta 上。
 - **混合思路同源**：GDN 论文自己就提出「GDN 层 + 滑窗注意力 / Mamba2 层」的混合架构；Kimi Linear（GDN-style 线性 + MLA）、Qwen3-Next（GDN + gated attention）都是这一思路在生产模型上的放大。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **现有材料待核**：GDN 的标量门是 head-wise；KDA 改成 channel-wise，细门原文是 [GLA](gated-linear-attention.md)。本报告有没有讨论过为何不直接用 GLA 的对角门、仍选标量？需读 § 方法与消融。
-- **需实验或作者披露**：论文做的混合是 GDN + SWA / Mamba2；与后来 Kimi Linear 选 GDN-style + MLA、Qwen3-Next 选 GDN + gated full attention 相比，混合「另一支」用什么差异有多大？
+- 原文没有这项实验/对照：混合实验只做了 GDN + SWA / Mamba2，没有和后来 MLA 或 gated full attention 作全局层的对照。
 
 ## 相关页面
 
 - 前作：[DeltaNet](delta-net.md)（delta 并行训练，无门）、[Mamba-2](mamba-2.md)（标量门，无 delta）、[Gated Linear Attention](gated-linear-attention.md)（细门，无 delta）
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
-- 后作：[Kimi Linear](kimi-linear.md)（KDA = 本页 delta + GLA 细门）
+- 后作：[Kimi Linear](kimi-linear.md)（KDA = 本页 delta + GLA 细门）、[RWKV-7](rwkv-7.md)（并发的向量衰减 + 秩一转移，不是本页的标量 Householder）

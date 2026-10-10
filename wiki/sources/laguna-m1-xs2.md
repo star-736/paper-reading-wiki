@@ -3,7 +3,7 @@ type: Source
 title: "Laguna M.1/XS.2 技术报告"
 description: "Poolside 的 Laguna M.1（225.8B/23.4B）与 XS.2（33.4B/3B）MoE agentic coding 模型，重点是 Model Factory 工业化流程、AutoMixer 数据混合优化、3:1 SWA/GA + softplus 门控、CISPO agentic RL。"
 tags: ["source", "moe", "agentic-coding", "data-mixture", "model-factory"]
-timestamp: 2026-07-30
+timestamp: 2026-10-11
 resource:
   type: pdf
   ref: "arXiv:2605.27605v1"
@@ -37,7 +37,7 @@ Poolside 用一套内部称为 **Model Factory** 的工业化流程，在 M.1 �
 | expert 调制 | 无 | routed expert × 2.5 系数 + shared（类 DeepSeek-V3 / Nemotron 3） |
 | 底部 dense 层 | 3 | 1 |
 
-**XS.2 注意力细节**（这是和现有 wiki 多个概念页的交叉点）：GQA 8 KV heads、head dim 128、**softplus-based per-head gating** [67]（[67] 即 [Gated Attention 报告](gated-attention.md)，Qwen 团队 NeurIPS 2025 Best Paper）；RoPE。全局层（GA）48 Q-heads、θ=500,000、partial RoPE 仅作用前 50% head dim；SWA 层窗口 512、64 Q-heads、θ=10,000。第一层 dense 保稳定。路由用 linear+sigmoid，top-k 后做 score normalization；负载均衡用 [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail: On Implementing Load Balancing Loss…*）的 global-batch aux loss（只在非 padding token 上算）。
+**XS.2 注意力细节**（这是和现有 wiki 多个概念页的交叉点）：GQA 8 KV heads、head dim 128。报告写 softplus-based per-head gating，引用 [67]（[Gated Attention 报告](gated-attention.md)）。重读该 PDF：乘性门用 sigmoid，加性门用 SiLU，全文没有 softplus。这是换了激活，不是同一扇门。RoPE。全局层（GA）48 Q-heads、θ=500,000、partial RoPE 仅作用前 50% head dim；SWA 层窗口 512、64 Q-heads、θ=10,000。第一层 dense 保稳定。路由用 linear+sigmoid，top-k 后做 score normalization；负载均衡用 [Qiu et al. 2025](https://arxiv.org/abs/2501.11873)（*Demons in the Detail: On Implementing Load Balancing Loss…*）的 global-batch aux loss（只在非 padding token 上算）。
 
 M.1 → XS.2 的四项改动都经 16B MoE proxy 消融选出（见附录 A.2 / Table 9）：(1) 3:1 SWA/GA 替换 M.1 的逐层 global attention；(2) WSD 替换 cosine；(3) 加 routed expert modulation；(4) 底部 dense 层 3→1。其中 SWA 消融链 Table 9 显示：dense GA + full RoPE + full gating 为基线（4K Avg 0.5389），逐步加 SWA-1024（3:1）、per-head gating + θ_swa=1e4、GA partial RoPE(50%)、SWA-512、48 GA/64 SWA Q-heads + k_dense=1，最终架构 4K Avg 0.5455、32K Avg 0.305、128K Avg 0.296。
 
@@ -181,20 +181,19 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - **量化质量掉点先在 agentic coding 显形**：传统单轮 benchmark 不够敏感，严格格式的 agentic 任务才是量化副作用的放大镜。
 - **CISPO 落地**：Laguna 是继 MiniMax-M1 之后又一家在生产 agentic RL 上用 CISPO（asymmetric clipping (1,4)）的团队，且公开了 vs GRPO/GSPO 的消融选择理由。
 
+## 证据边界
+
+原文没有：WSD 式 (1) 在更多外部 MoE 上的交叉验证；AutoMixer 的 proxy 总成本、\(\lambda\) 和 sensitivity；与 MiniMax-M1 的同协议 clip 对照（Laguna 写的 \((1,4)\) 不是 M1 报告里的数字）；Moonlight scaling 在 M.1 关 RL、XS.2 开 RL 的依据；256K 相对 128K 的单独评测。
+
 ## 待追问
 
-- **需实验或作者披露**：WSD 缩放律式 (1) 在 LAuna 自己的 4 尺寸拟合外，外部交叉验证只有 Kimi K2 一个点且偏差 ~1.75×——是否能在更多外部 MoE 上验证？$N$ 用激活参数而非总参是否对低激活 MoE（如 MiniMax-M2 9.8B 激活）合理？
-- **现有材料待核**：softplus-based per-head gating [67] 与 [Gated Attention 报告](gated-attention.md) 的 head-specific sigmoid 门——报告写「softplus」而非「sigmoid」，是同一机制的不同激活选择，还是变体？需核对 [67] 原文是否同时给 softplus 选项。
-- **需实验或作者披露**：AutoMixer 的 ~60 个 0.5B proxy 训 ~60B tokens 的总成本未披露；KL 正则 $\lambda$ 的取值与 sensitivity 未给。
-- **需实验或作者披露**：CISPO：Laguna 的 $(1,4)$ **不是** [MiniMax-M1](minimax-m1.md) 原文数字——M1 只写 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大、只调上界，没有给具体 $\varepsilon_{\mathrm{high}}$。两边没有对照表。Moonlight scaling 在 M.1 RL 关 / XS.2 RL 开的依据未详述。
-- **需补外部来源**：合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2505.04034) 等的规模可比性未对照。
-- **需补外部来源**：Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？
-- **需实验或作者披露**：256K 靠纯 RoPE scale 翻倍无训练即得——其长程任务真实表现（vs 128K 训练过的）未单独评测。这条末端零样本缩放与 [Jet-Long](jet-long.md) 的动态分组是同一轴上的不同旋钮，见 [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)；Laguna 没有同协议对照。
+- **需补外部来源**：合成代码环境的 ~30–60k 任务相对 ~236k commits 的保留率（~13–25%）与 [SWE-Smith](https://arxiv.org/abs/2504.21798) 等的规模可比性未对照。2026-10-11 检索未找到：Laguna §4.3.1 只有 commit 到任务这一侧。SWE-Smith 是 arXiv:2504.21798；https://arxiv.org/abs/2505.04034 是脉冲神经网络论文，不是 SWE-Smith。Table 1 的 Yield 是合成 bug candidate 打破既有测试的比例，分母不是原始 commit 池，与 Laguna 的 commit 保留率不是同一口径，所以规模对照仍留在本条，未写对照数字。
+- **需补外部来源**：Figure 2 的 dispatch overlap kernel 是否开源 / 是否依赖特定 CUTLASS 版本？2026-10-11 检索未找到：原文第 7 页写 fuse 进 PyTorch 所用的标准 CUTLASS grouped GEMM，并写可接到任何暴露 tile scheduler 与 epilogue 的 kernel，未给版本号和代码入口。查过 https://github.com/orgs/poolsideai/repositories 、https://github.com/poolsideai/cutlass （相对 https://github.com/NVIDIA/cutlass `main`，ahead 0）、https://github.com/poolsideai/pytorch 的 `poolside-main` 与 `poolside-changes.md`（变更是 NCCL/CI）、org 代码搜索 `CUTLASS` 与 `grouped GEMM`（0 条）、https://huggingface.co/collections/poolside/laguna-xs2 。报告中的 https://github.com/vllm-project/vllm/pull/35208 是 parser。
 
 ## 相关页面
 
 - [数据混合优化](../concepts/data-mixture-optimization.md) — AutoMixer 是 DoReMi/DoGE/RegMix/TANDEM 谱系的产业落地变体
-- [注意力门控](../concepts/attention-gating.md) — XS.2 用 softplus per-head gating [67]=Gated Attention 报告
+- [注意力门控](../concepts/attention-gating.md) — XS.2 写 softplus per-head gating；[67] 是 Gated Attention 报告，激活换成了 softplus，不是同一扇门
 - [高效长上下文注意力](../concepts/efficient-long-context-attention.md) — 3:1 SWA/GA 混合（vs Gemma 4 的 5:1）+ 消融
 - [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md) — 128K 的 YaRN（仅 GA 层）和 256K 的 RoPE scale 翻倍都属于这一轴
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md) — M.1 225.8B/23.4B、XS.2 33.4B/3B

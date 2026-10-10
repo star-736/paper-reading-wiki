@@ -13,7 +13,7 @@ resource: "../../raw/2603.25562v2.pdf"
 
 - 原始 PDF：[`raw/2603.25562v2.pdf`](../../raw/2603.25562v2.pdf)
 - 标题：Revisiting On-Policy Distillation: Empirical Failure Modes and Simple Fixes
-- 版本 / 日期：arXiv:2603.25562v2，2026-04-27（v1 2026-03-26）。页眉为 Preprint, under review；脚注标明 work in progress
+- 版本 / 日期：arXiv:2603.25562v2，2026-04-27（v1 2026-03-26）。页眉为 Preprint, under review；脚注标明 work in progress。2026-10-11 查 arXiv API，`2603.25562` 的最新条目仍是 v2（updated 2026-04-27），没有晚于 v2 的版本。脚注仍是 work in progress，\(K\)、top-p、mask 以后会不会改，v2 没有回答
 - 作者：Yuqian Fu、Haohuan Huang（共同一作）、Kaiwen Jiang、Yuanheng Zhu、Dongbin Zhao（中科院自动化所 / 国科大；Zhu、Zhao 为通讯）；Jiacai Liu（复旦）；Zhuo Jiang（独立）
 - 代码：<https://github.com/hhh675597/revisiting_opd>
 - 博客：<https://yuqianfu.notion.site/revisiting-opd>
@@ -125,13 +125,6 @@ WebShop，student 换成 Qwen2.5-1.5B-Instruct，teacher 是同一基座上的 G
 - **[MiniLLM](minillm.md) / [ExOPD](exopd.md)**：序列级梯度里的未来 log-ratio 之和，和这两页写下的 reward-to-go 是同一分解。本文的重点是把 \(\gamma=0\) 的那一档再从单 token 换成 top-K。ExOPD 被本文相关工作点名为「更灵活的 reward」，没有进实验。
 - **[Thinking Machines Lab 博客](thinking-machines-on-policy-distillation.md)**、MiMo-V2-Flash、GLM-5、Qwen3：被引为 sampled-token / on-policy 流水线的工业出处，不是本文的复现对象。
 - **[GiGPO](gigpo.md)**：ALFWorld 与 WebShop 的 teacher checkpoint 来自这篇的作者框架 verl-agent。本文不改 GiGPO 的 advantage，只把 OPD 的蒸馏项换掉。
-
-## 待追问
-
-- **需实验或作者披露**：和 full-vocab reverse KL、以及 Nemotron 那种 top-k logit matching，在同一学生、同一任务上差多少。本文的偏置讨论停在「支撑外没有梯度」。
-- **需实验或作者披露**：AIME pass@1 没有误差条。单任务 AIME24 上 mask 后的 sampled-token（26.7）高于本方法（23.3），均分只差 1 分。+19.8% 不能写成稳定的全任务增益。
-- **现有材料待核**：脚注写 work in progress。\(K\)、top-p、mask 的组合在 v2 之后是否还是同一配方，要以新版本为准。
-- **需实验或作者披露**：top-p rollout 和训练前向的 mismatch，作者自己标成未做。400 step、7B、一个数学 teacher 加一个 ALFWorld teacher，离 V4 的多 teacher 全词表不是同一规模。
 
 ## 相关页面
 

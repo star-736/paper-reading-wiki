@@ -57,7 +57,7 @@ OpenVLA 的 VLM 不是凭空搭的，而是 fine-tune 已有的 Prismatic-7B（�
 - 训练目标是标准 next-token 交叉熵，**只在动作 token 上计 loss**，不计输入图像/指令 token。
 - 推理：模型吐出动作 token → Action De-Tokenizer 反量化成连续控制，闭环执行（Figure 2、§3.5）。
 
-这是后续 flow-matching / 扩散动作头论文要对照的**开源离散动作 token 基线**。它是逐步、逐维 256-bin，**不是** [FAST](fast.md) 那种 1 秒 chunk 上 DCT+BPE。OpenVLA 原文没有比较那些连续动作配方，也没有 FAST；差异见 [待追问](#待追问)。
+这是后续 flow-matching / 扩散动作头论文要对照的**开源离散动作 token 基线**。它是逐步、逐维 256-bin，**不是** [FAST](fast.md) 那种 1 秒 chunk 上 DCT+BPE。OpenVLA 原文没有比较那些连续动作配方，也没有 FAST。
 
 ### 数据：Open X-Embodiment 约 970k
 
@@ -138,20 +138,20 @@ LIBERO 是附录 E 的**目标套件监督微调**（不是 zero-shot），每�
 - 测试任务成功率通常 **<90%**，可靠性仍不够。
 - 未回答：更大 VLM 是否更好、机器人数据与互联网图文 co-training 是否必要、何种视觉特征最适合 VLA。
 
-256-bin 离散化本身会限制动作分辨率；原文把分位数离散化写成「避免离群点降低有效粒度」（§3.2），但**没有**把它与后来的 flow-matching 连续动作头做对比——那是后文推断，见待追问。
+256-bin 离散化本身会限制动作分辨率；原文把分位数离散化写成「避免离群点降低有效粒度」（§3.2），但**没有**把它与后来的 flow-matching 连续动作头做同协议对比。跨论文的精度差记在 [Vision-Language-Action](../concepts/vision-language-action.md#证据边界与阅读提示)。[π0](pi0.md) §VI-A 和 [FAST](fast.md) 的叠 T 恤都是各自协议，不要回填 Table 4/6。
 
-## 待追问
+后续论文改的也不只是后训练。[π0](pi0.md) 换成多相机、本体感觉和连续 chunk；[FAST](fast.md) 在 OpenVLA 骨干上把逐步 256-bin 换成 1 秒 DCT+BPE，并改成多图之后叠 T 恤才训得起来。那是换动作表示和观察，不是在本页 Bridge 协议上加 chunking。
 
-- **需实验或作者披露**：离散 256-bin 自回归动作头，相对后续 flow-matching 连续动作到底损失了多少精度与高频控制能力？OpenVLA 原文没有这场比较。[π0](pi0.md) §VI-A 把 OpenVLA 重训到 π 混合物，归因于「不支持 action chunking / 高频」——那是 π 协议，不是本页 Bridge/Google robot 表。[FAST](fast.md) 把本页的逐步 256-bin 写成 naive tokenization，并在叠 T 恤上给 OpenVLA 骨干换 FAST+ 才能训起来——那是 FAST 协议，不要回填 Table 4/6。256-bin ≠ FAST。
-- **需实验或作者披露**：§6 自己问的 action chunking：加上之后能否补齐相对 Diffusion Policy 的灵巧度，而不放弃语言接地优势？
-- **需补外部来源**：RT-2-X 在 semantic generalization 上仍领先，是不是必须做互联网图文 co-training 才能保住 VLM 先验？OpenVLA 只在机器人数据上 fine-tune（§5.1）。原版 [RT-2](rt-2.md) Table 6 已显示同 backbone 上 co-fine-tune > 只 fine-tune。先补 RT-2-X 的来源：Open X-Embodiment（Padalkar et al., [arXiv:2310.08864](https://arxiv.org/abs/2310.08864)），本库尚未单独 ingest；读完仍需区分已有配方证据与“必须如此”的因果主张。
-- **需实验或作者披露**：单臂 7D 末端 + 单第三人称图这条数据约束，后续 skill / 双臂 / 长周期组合论文要改哪一层（观察、动作空间，还是只改后训练）？
+## 证据边界与阅读提示
+
+- §6 点了 action chunking。原文没有在本页 256-bin 上加 chunk、并对照 Diffusion Policy 灵巧度与语言接地的实验。[FAST](fast.md) 换的是分词，不是这场对照。
+- Fig. 3 里 RT-2-X 的 semantic generalization 领先。原文没有 55B 上「持续和网页 co-fine-tune vs 只 fine-tune」的对照。[Open X-Embodiment](open-x-embodiment.md) Table II 的 55B 行全部开着 co-fine-tune；5B 上「网页初始化后只 fine-tune」与「继续 co-fine-tune」接近，从零训则崩。这不能解释本页 55B 对照。OpenVLA 自己只在机器人数据上 fine-tune（§5.1）。
 
 ## 相关页面
 
 - 模型：[OpenVLA](../models/openvla.md)
 - 概念：[Vision-Language-Action](../concepts/vision-language-action.md)
-- VLA 定义、封闭离散 token 前作：[RT-2](rt-2.md) · [模型](../models/rt-2.md)（本页对照的是后续 RT-2-X，不是原版厨房 RT-2）
+- VLA 定义、封闭离散 token 前作：[RT-2](rt-2.md) · [模型](../models/rt-2.md)（本页对照的是 [RT-2-X](open-x-embodiment.md)，不是原版厨房 RT-2）
 - 连续 flow + action expert：[π0](pi0.md) / [模型](../models/pi0.md)（原文 §VI-A 在 π 混合物上对照过本模型）
 - 压缩分词，不是本页 256-bin：[FAST](fast.md)
 - 开世界 co-training：[π0.5](pi0.5.md)

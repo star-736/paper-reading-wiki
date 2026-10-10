@@ -17,7 +17,7 @@ timestamp: 2026-09-12
 | 字段 | 值 |
 | --- | --- |
 | **总参数** | 与 π0 同级：PaliGemma VLM + ~300M action expert（Appendix A-E） |
-| **VLM backbone** | PaliGemma（Figure 3：SigLIP 400M + Gemma 2.6B；附录写 2B VLM，配置同 π0） |
+| **VLM backbone** | PaliGemma。Figure 3 预训练框 SigLIP 400M + Gemma 2B，后训练框写成 Gemma 2.6B；附录 E 写 2B VLM，配置同 π0。2.6B 没有进一步解释 |
 | **Action expert** | ~300M；后训练阶段才加入，随机初始化 |
 | **模态** | 多模态（**最多四路 RGB** + **语言指令** + **本体感觉（文本 token）** → **subtask 文本** + **连续动作块**）。预训练还吃 caption / VQA / 检测。**无**音频 |
 | **动作表示** | 预训练：FAST 离散 token；后训练/推理：flow matching 连续 chunk（长度 50，10 步去噪），50 Hz |

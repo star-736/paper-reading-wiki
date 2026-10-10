@@ -97,12 +97,12 @@ Table 1，平均 pass@1。
 - **[Many Faces](many-faces-opd.md)**：那篇把 style token 的高 KL 写成 OPSD 的经验现象，并用 clipping 处理。这里的 \(\hat b\) 是跨 rollout 的查表均值，不是词表项上的 pointwise clip，也不是把 token 标成风格。
 - **生产多 teacher**：MiMo / V4 的 OPD teacher 通常不是 SFT 演示的生成者。2.0 给出一条不必重做 SFT 的校正，但实验只有单 teacher、两份 SFT、Qwen 家族 tokenization。没有测按 prompt 路由的多 teacher。
 
-## 待追问
+\(B_{\mathrm{pos}}\)、\(B_{\mathrm{ref}}\)、\(\xi_{\max}\) 和稀有组的平滑强度没有写进正文。缺这些查表常数也不改变「减掉可预测分歧」这个机制，不再追。Klear 的诊断模型不是 DeepSeek-R1-0528，71.9% 的相对下降不能读成回到原始生成者。
 
-- **现有材料待核**：\(B_{\mathrm{pos}}\)、\(B_{\mathrm{ref}}\)、\(\xi_{\max}\) 和稀有组的平滑强度没有写进正文。复现查表需要这些数，或等代码。
-- **需实验或作者披露**：减掉 \(\hat b\) 之后，定理 3.8 的 \(G\sigma_\Delta\) 还剩多少。本文没有重证离线梯度偏差，只给了和诊断信号的绝对偏差。
-- **需实验或作者披露**：Klear 的诊断不是 DeepSeek-R1-0528。71.9% 的相对下降不能当成「回到原始生成者」。
-- **需实验或作者披露**：多 teacher 路由、非 Qwen tokenizer、以及一致 teacher 下再减 \(\hat b\) 会不会伤信号。结论自己把范围限定在这两项任务和 Qwen 家族。
+## 证据边界与阅读提示
+
+- 原文没有在减掉 \(\hat b\) 之后重证离线梯度偏差还剩多少，只给了和诊断信号的绝对偏差。
+- 原文没有在一致 teacher 上再减 \(\hat b\) 的对照。
 
 ## 相关页面
 

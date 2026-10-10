@@ -229,7 +229,7 @@ Qwen2.5-7B-Instruct 全参数。科学问答新任务 32.1→70.2，六项先前
 1. **OPD 监督更精准**：teacher 在 student 自己的 prefix 上给建议，而非 teacher 生成的轨迹。student 的错误不一定是 teacher 的错误--off-policy 蒸馏可能在 student 很少访问的分布区域给监督。
 2. **KL matching ≠ reward maximization**：teacher 分布含 style、不确定性、替代路径、推理结构等信息。匹配它能在不复制 teacher greedy 行为的前提下重塑 student 分布，改善采样行为。即使 teacher 的采样输出不更好，student 仍能进步。
 
-**熵曲线需要限定出处与范围**：[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md#熵曲线的出处与适用范围) 展示的特定训练曲线中，两条 OPD 曲线比 RL 更早陡降到低熵区域；作者用 mode collapse 解释能力变化，但明确称其为推测。这不是“OPD 普遍比 RL 熵坍缩更剧烈”的定律。[MiniLLM](../sources/minillm.md#熵与多样性的证据边界) 没有做这组熵曲线对照；其 Table 3 测的是 distinct 4-gram 和测试集语言建模 loss，结果接近 SFT / teacher。**本页综合**：mode-seeking 倾向、训练期 token entropy 与答案多样性是不同层面的陈述，不能互相替代；在同协议下的关系仍见[主追问](../sources/nrehiew-sft-rl-opd.md#待追问)。
+**熵曲线需要限定出处与范围**：[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md#熵曲线的出处与适用范围) 展示的特定训练曲线中，两条 OPD 曲线比 RL 更早陡降到低熵区域；作者用 mode collapse 解释能力变化，但明确称其为推测。这不是“OPD 普遍比 RL 熵坍缩更剧烈”的定律。[MiniLLM](../sources/minillm.md#熵与多样性的证据边界) 没有做这组熵曲线对照；其 Table 3 测的是 distinct 4-gram 和测试集语言建模 loss，结果接近 SFT / teacher。**本页综合**：mode-seeking 倾向、训练期 token entropy 与答案多样性是不同层面的陈述，不能互相替代。同协议下的联合测量原文没有，见 [nrehiew 证据边界](../sources/nrehiew-sft-rl-opd.md#证据边界与阅读提示)。
 
 ## 报告中的结果
 
@@ -342,15 +342,21 @@ MOPD 融合效果（Table 3）展示三种模式：(1) Reasoning 的 **capabilit
 
 ## 综述的三条轴
 
-[OPD 综述](../sources/opd-survey.md)（arXiv:2604.00626v4，2026-06-18）把 OPD 收成学生轨迹上的 f-divergence，再按目标、信号来源、训练动态分轴。它是地图，不是新实验。DAgger 从 \(O(\epsilon T^2)\) 降到 \(O(\epsilon T)\) 的那一步，在 teacher 被学生前缀带偏时不自动成立。缩放律公式被作者标成未验证的猜想。v4 早于 Lightning OPD 2.0。已有一手页的数字不要改成综述的转述。
+[OPD 综述](../sources/opd-survey.md)（arXiv:2604.00626v4，2026-06-18）把 OPD 收成学生轨迹上的 f-divergence，再按目标、信号来源、训练动态分轴。它是地图，不是新实验。DAgger 从 \(O(\epsilon T^2)\) 降到 \(O(\epsilon T)\) 的那一步，在 teacher 被学生前缀带偏时不自动成立。缩放律公式被作者标成未验证的猜想。v4 早于 Lightning OPD 2.0。已有一手页的数字不要改成综述的转述。ListOPD、Rock Tokens、local teachability 和 Jeong 的 KL 重置已有一手页：[ListOPD](../sources/listopd.md) 的 \(\lambda\) 与 ExOPD 同根；[Healthcare AI GYM](../sources/healthcare-ai-gym.md) 的 2.637→0.343 是权重复制，不是前缀失准。
+
+KAT-Coder-V2.5 的公开报告定义了兼容性 \(\rho_t\)，没有写出截断阈值、连续低兼容 token 数 \(m\) 和 cold start 步数。这些数缺了也不妨碍读已公开的掩码机制，不再追。
+
+## 证据边界与阅读提示
+
+- 各家报告没有「粗粒度领域标错会不会负迁移」的对照。
+- MiMo-V2.6 没有把前缀蒸馏和整段 MOPD 拆开贡献的消融。
+- 公开报告没有「连续低兼容截断盖住长轨迹后段时，剩余梯度是否还够完成任务」的实验。
+- 各家报告没有「teacher 数量增加时，student 容量是否够留住全部能力」的对照。
 
 ## 待追问
 
-- **需实验或作者披露**：MOPD 的 domain routing 如何定义？粗粒度领域错误是否会导致负迁移？
-- **现有材料待核**：MiMo-V2.6 的 MOPD2 是否仍用 token-level reverse KL，以及前缀蒸馏和整段 MOPD 各贡献多少，本 PDF 没有写。
-- **需实验或作者披露**：Teacher 数量增加时，student 容量是否足够保留所有能力？
-- **需实验或作者披露**：KAT-Coder-V2.5 的 drift-aware dynamic truncation 中，top-k overlap 阈值 $\rho_t$ 和连续低兼容性 token 数 $m$ 如何调参？截断比例过高是否会导致长轨迹训练信号不足？cold start 阶段的步数选择依据是什么？
+- **要回报告找定义**：各家把 MOPD 的 domain routing 外包给数据 curation，本页没有一条可引用的路由规则。这是回报告核对写法，不是补实验。
 
 ## 相关追问
 
-主记录：[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#待追问)；[on-policy 优势的任务边界](../sources/nrehiew-sft-rl-opd.md#待追问)；[三类 OPD 稳定化机制对比](../sources/nrehiew-sft-rl-opd.md#待追问)；[OPD 熵下降与多样性](../sources/nrehiew-sft-rl-opd.md#待追问)。
+这些实验缺口已收进证据边界，不再单列追问：[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#证据边界与阅读提示)；[on-policy 优势的任务边界](../sources/nrehiew-sft-rl-opd.md#证据边界与阅读提示)；[OPD 熵下降与多样性](../sources/nrehiew-sft-rl-opd.md#证据边界与阅读提示)。OPSD clipping、KAT 轨迹掩码和 Keye 的 overlap 门已经对过，不是同一件稳定化，见 [nrehiew 证据边界](../sources/nrehiew-sft-rl-opd.md#证据边界与阅读提示)。

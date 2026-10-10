@@ -117,14 +117,9 @@ SFT+RL 训练后，OCRBench / MMVet / AI2D / MathVista / MMBench / DocVQA / Info
 
 > 论文 Figure 2 原文标题："(top) DeepMMSearchVQA Data Generation Pipeline... (bottom) DeepMMSearchVQA Statistics: Knowledge taxonomy, Distribution of examples across different numbers of conversational turns, Proportion of questions with text search, image search and cropped image search."（§2）
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：论文用 in-house web/image search API，未公开具体实现；复现时需替换为公开搜索 API。
-- **需实验或作者披露**：Grounding DINO 作为 grounding 工具是固定组件还是可替换的？其他 grounding 模型（如 OWLv2）效果如何？
-- **需实验或作者披露**：奖励模型用 `gpt-5-chat-latest`，这是 black-box judge；改用 rule-based reward 是否可行？
-- **需实验或作者披露**：训练数据只有 10K SFT + FVQA，规模较小；扩展数据量是否能进一步提升？
-- **需实验或作者披露**：通用 VQA 的"无退化"结论是否在更大模型（32B）上也成立？
-- **需实验或作者披露**：与 Search-R1 / R1-Searcher 等纯文本 search RL 方法的直接对比缺失（论文称它们不是 true baselines 因为只支持文本搜索）。
+搜索 API 是内部实现，复现时要换公开 API，这不是未解机制。Grounding DINO 是论文使用的裁剪工具，没有换模型的对照，不再追 OWLv2。奖励用 `gpt-5-chat-latest`，改成规则奖励是否可行，论文没做，不再追。10K 样本再放大能否继续涨分，同样不再追。论文把 Search-R1 / R1-Searcher 排除在 true baseline 之外，因为它们只有文本搜索，不再追直接对打。通用 VQA「无退化」写在 7B + LoRA 上。32B 或全参更新是否仍成立，原文没有这项对照。
 
 ## 相关页面
 

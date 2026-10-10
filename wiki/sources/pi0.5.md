@@ -49,7 +49,7 @@ resource: "raw/2504.16054v1.pdf"
 
 分布写成 \(\pi_\theta(a_{t:t+H},\hat\ell \mid o_t,\ell)=\pi_\theta(a_{t:t+H}\mid o_t,\hat\ell)\,\pi_\theta(\hat\ell\mid o_t,\ell)\)，底层动作**不直接**依赖总任务 \(\ell\)，只依赖预测出的 subtask \(\hat\ell\)（§IV-A）。注意力上，图像/prompt/连续动作块内双向；[FAST](fast.md) token 对前缀自回归；action expert **不看** FAST token，以免两种动作表示互漏；信息只从 VLM 流向 expert（Figure 18）。这是 **FAST→flow 两阶段**：预训练把 VLA 当普通 VLM 训，推理走 flow expert。不是 [FAST](fast.md) 论文里推理仍吐 FAST token 的 π0-FAST。
 
-Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “horizon of 50, i.e. \(H=49\)”），推理 10 步去噪，\(\tau\) 仍用强调低时间步的 Beta（\(s=0.999\)）。
+Flow 本身仍是 π0 那套：动作块长度 50。π0 把 \(H\) 定义成块长，\(A_t=[a_t,\ldots,a_{t+H-1}]\)、\(H=50\)（π0 §III）。本页附录 E 写 “an action horizon of 50, i.e. \(H=49\)”：作者用 “i.e.” 把 horizon 50 和符号 \(H=49\) 绑成同一块，不是少一步。推理 10 步去噪，\(\tau\) 仍用强调低时间步的 Beta（\(s=0.999\)）。
 
 ### 异构数据（Figure 4 / §IV-C）
 
@@ -104,12 +104,8 @@ Flow 本身仍是 π0 那套：chunk 长度 50（正文 \(H=50\)，附录写 “
 - [InternVLA-A1.5](internvla-a1.5.md) 真机表里的 π0.5 数字是 A1.5 论文的重测，不是本页 Figure 7 的家庭家务，不能直接当同一协议。
 - [π0.7](pi0.7.md) 已 ingest：**不再是** PaliGemma + [FAST](fast.md)→flow 两阶段。同系列连续专家，但骨干是 Gemma 3 + MEM，expert 860M，上下文加 metadata / subgoal。不要用本页家庭进度条去填那边的柱图。本库不建 π0.6 页。
 - [AtomicVLA](atomicvla.md) 的 AtomicVLA* 建在本页基座上做 SG-MoE，不是第四种动作头；它的 LIBERO 行里 π0.5 数字接近 OpenPI 官方表，不要和 [EmbodiedSkills](embodied-skills.md) 的 97.40 互相当复现。
-
-## 待追问
-
-- **需补外部来源**：附录写 action horizon「50，即 \(H=49\)」，与 π0 的 \(H=50\) 是否差一步，原文没有解释。
-- **需补外部来源**：Figure 3 / 附录对 Gemma 写成 2B 或 2.6B，与 π0 正文「PaliGemma 3B」并列时，视觉塔是否算进「3B」需以权重卡核实。
-- **需实验或作者披露**：VI 数据规模、HL 标注质量、100 个家庭如何抽样，都没有表。
+- Figure 3 预训练框写 SigLIP 400M + Gemma 2B，后训练框写 Gemma 2.6B。附录 E 写「2B VLM initialized from PaliGemma」，层配置与 [π0](pi0.md) Appendix B 相同，action expert 300M。π0 正文的「3B」是 PaliGemma 产品名，图里同样把视觉塔单列成 SigLIP 400M。2.6B 与 2B / 3B 的差额原文没有再解释；缺这个整数不改变「PaliGemma + 300M expert」的机制，不再追权重卡。
+- VI 的规模、HL 标注质量和 100 个家庭的抽样没有表。缺这些配方不改变已公开的 co-training 分项（MM / ME / CE / HL / WD），不再追。
 
 ## 相关追问
 

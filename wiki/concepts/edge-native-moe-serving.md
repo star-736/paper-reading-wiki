@@ -49,12 +49,12 @@ FreeToken 把 [GLM-5.2](../models/glm-5-3.md)（文中 753B / 40B active，NVFP4
 3. **Hybrid-attention 的 serving 成本不在 KV 体积，而在「编辑后从哪恢复」。** GDN / KDA / SWA 把过去压成少量状态，checkpoint 预算极紧；预算必须花在 harness 实际会切开的 semantic 边界上，否则每次 tool call 都要重算数千 token。
 4. **正确性与性能解耦。** CPU 池做 source of truth，GPU 缓存可在运行时缩小，使「浏览器突然占走几 GB VRAM」不再等于引擎崩溃——这是 datacenter 独占 GPU 假设里不存在的约束。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：$q^{\star}$ 在 batch>1、投机解码或多请求交织时是否仍是闭式最优，还是只对论文的单流 agent decode 成立？
-- **需实验或作者披露**：Semantic-anchor 集合是否绑定特定 harness 的 special token（OpenClaw / OpenCode / SWE-agent），换一套压缩策略要不要重锚？
-- **需实验或作者披露**：20+ 模型声称与三模型实验之间的泛化缺口：MLA+DSA、LatentMoE、7:1 Lightning 等未评架构会不会打穿 LRU 局部性假设？
-- **需实验或作者披露**：端侧 serving 有没有类似 SWE-bench 的任务完成率数字，还是只有 tok/s / TTFT？
+- 原文没有 batch>1、投机解码或多请求交织下 $q^{\star}$ 是否仍为闭式最优的实验。
+- 原文没有换 harness 特殊 token 或换压缩策略之后是否要重锚的实验。
+- 原文没有 MLA+DSA、LatentMoE 或 7:1 Lightning 上的 LRU 局部性实验。
+- 端侧数字是 tok/s 与 TTFT；原文没有 SWE-bench 一类任务完成率。
 
 ## 相关页面
 

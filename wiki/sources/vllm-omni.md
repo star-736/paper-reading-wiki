@@ -70,7 +70,7 @@ vLLM-Omni 的 unified connector 受 vLLM prefill-decode disaggregation 的 KV ca
 | Shared Memory | 5.49 ms | 0.53 ms |
 | Mooncake | 8.28 ms | 3.34 ms |
 
-论文还支持 **streaming stage output**：例如 Qwen-Omni 里 Vocoder 不必等 Talker 生成完整 audio token sequence，Talker 生成初始 tokens 后即可增量推给 Vocoder，从而 overlap stages、降低最终输出 TTFT，并支持流式响应。
+论文还支持 **streaming stage output**：例如 Qwen-Omni 里 Vocoder 不必等 Talker 生成完整 audio token sequence，Talker 生成初始 tokens 后即可增量推给 Vocoder，从而 overlap stages、降低最终输出 TTFT，并支持流式响应。这是 stage 之间何时开工。Qwen3.5-Omni 的 ARIA 是 Talker 内部的文本/语音交错，两套机制的分界见 [any-to-any serving](../concepts/any-to-any-multimodal-serving.md#aria-与-streaming-stage-output-不是同一层)。
 
 ## 评测要点
 
@@ -108,12 +108,13 @@ vLLM-Omni 还覆盖三类非 Qwen-Omni 模型：
 - 对 [百万 token 上下文服务](../concepts/million-token-context-serving.md) / [KV cache 层](../concepts/kv-cache-layer.md)：DeepSeek-V4 关注长上下文 KV / prefix / disk cache；[LMCache](lmcache.md) 是 PD KV transfer 的生产 I/O 层（chunked DMA，已被 vLLM production stack 等采用）。vLLM-Omni 把同一「边上传中间态」从 KV 扩到 hidden / embedding / codec / 音视频 tensor。
 - 对 [多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)：Kimi K2.5 页关注多模态 agent 如何训练；vLLM-Omni 是运行时基础设施：让「看、听、说、画」的多 stage 模型能高吞吐 serve。
 
-## 待追问
+Figure 4 写 Qwen3-Omni 与图中的 Qwen2.5-Omni stage graph 类似。Qwen3-Omni 原报告尚未入库，不再把「以后建模型页」留成追问。
 
-- **需实验或作者披露**：论文评测是 offline inference / JCT / RTF 为主；在线多用户 serving 下，stage graph scheduler 的 admission control、backpressure 与 tail latency 如何表现仍需更多数据。
-- **需补外部来源**：Qwen3-Omni 结果很强，但 Qwen3-Omni 本身尚未在本 wiki 作为模型页沉淀；后续若收 Qwen3-Omni 原报告，应把 Figure 4 的 stage graph 与模型结构一一对齐。
-- **需实验或作者披露**：论文把 DiT engine 纳入 stage graph，但不同 diffusion 模型的质量 / latency trade-off 是否受 engine 优化影响，当前只看 JCT，不看生成质量变化。
-- **需实验或作者披露**：Unified connector 的 Table 1 显示 overhead 小，但跨机 RDMA / Mooncake 在更大 batch、更长音视频 tensor、更多 stage 的情况下是否仍是小项，需要系统实验。
+## 证据边界与阅读提示
+
+- 评测是 offline inference / JCT / RTF；原文没有在线多用户下 admission control、backpressure 与 tail latency 的实验。
+- 原文把 DiT engine 纳入 stage graph，只报 JCT，没有生成质量是否随 engine 优化变化的实验。
+- Table 1 的 connector overhead 是小 payload 数字；原文没有更大 batch、更长音视频 tensor、更多 stage 上的 RDMA / Mooncake 实验。
 
 ## 相关页面
 

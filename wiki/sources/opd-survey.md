@@ -3,7 +3,7 @@ type: Source
 title: "OPD 综述：On-Policy Distillation for Large Language Models"
 description: "腾讯（arXiv:2604.00626v4，2026-06-18，89 页，预印本）：把 OPD 写成学生轨迹上的 f-divergence 最小化，按目标、信号来源、训练动态三条轴归类。DAgger 的 O(εT) 在 teacher 被学生前缀带偏时不自动成立。缩放律公式被作者标成未验证的猜想。v4 早于 Lightning OPD 2.0。不是新实验。"
 tags: ["source", "on-policy-distillation", "survey"]
-timestamp: 2026-10-03
+timestamp: 2026-10-11
 resource: "../../raw/2604.00626v4.pdf"
 ---
 
@@ -52,7 +52,9 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 
 这些判断是综述的综合。被点名的论文若本库已有一手页，以一手页为准。
 
-**DAgger 的 \(O(\epsilon T)\) 不会自动转移到 LLM**（`§2.2` Remark）。Ross et al. 2011 的交互专家要在任何状态给出合宜动作。White-box OPD 的 teacher 是在学生前缀上的下一 token 分布。前缀如果离 teacher 的训练分布太远，teacher 条件分布本身会失准，再逼学生去配它，就不满足交互模仿的假设。他们引 Jeong (2026)：无条件 token 匹配加上周期性把 teacher 硬重置，一次重置就能把 KL 从 2.637 打到 0.343，输出崩掉。本库里同一现象的测量是 [Revisiting OPD](revisiting-opd.md) 的不可靠 teacher，以及 [Many Faces](many-faces-opd.md) 的 GPQA 前缀实验（62.12%→45.96%）。综述把这三篇收进 `§7.2` 的 flawed prefix trap，没有重做实验。
+**DAgger 的 \(O(\epsilon T)\) 不会自动转移到 LLM**（`§2.2` Remark）。Ross et al. 2011 的交互专家要在任何状态给出合宜动作。White-box OPD 的 teacher 是在学生前缀上的下一 token 分布。前缀如果离 teacher 的训练分布太远，teacher 条件分布本身会失准，再逼学生去配它，就不满足交互模仿的假设。[Revisiting OPD](revisiting-opd.md) 的不可靠 teacher 和 [Many Faces](many-faces-opd.md) 的 GPQA 前缀实验（62.12%→45.96%）量的是这件事。
+
+综述在同一段引用 Jeong (2026) 的 KL \(2.637\to 0.343\)，并写成「输出崩掉」。[Healthcare AI GYM](healthcare-ai-gym.md) 的原文是另一件事：消融里把 teacher 权重复制成学生（\(\theta_T\leftarrow\theta_S\)），两套策略变成同一份，KL 在 step 10 从 2.637 掉到 0.343，蒸馏梯度被拆掉；准确率再从 56.9% 降到 49.3%。不要把这次权重复制和前缀失准收成同一次测量。数字以那一页的 `§6.1` 为准，不以综述的「输出崩掉」为准。
 
 **GKD、MiniLLM、DistiLLM 被放成早期三角**（`§2.3`）。GKD 的 \(\pi_{\mathrm{mix}}=\lambda p_\theta+(1-\lambda)p_{\mathrm{data}}\)，散度不固定。MiniLLM 把 reverse KL 做成 REINFORCE，reward 是 \(\log(p_T/p_\theta)\)。DistiLLM 用混合分布避免零概率。综述写「GKD 的实验里 \(\lambda=1\) 在他们测过的散度上都优于 off-policy，JSD 在翻译上最好」。[GKD 一手页](generalized-knowledge-distillation.md) 的口径更细：最优散度是 task-dependent，GSM8K 上 on-policy 比例低于 25% 时增益不稳。引用实验排序时用那一页，不用这段转述。
 
@@ -60,7 +62,13 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 
 **Full-vocab 与 Lightning**（`§4.1`）。综述转述 Thinking Machines 的 sampled-token advantage 方差高、丢掉未采样 token，并转述 DeepSeek-V4 用全词表 KL 更稳。工程细节和「10+ trillion」这类规模句不要从综述抄，以 [V4 来源页](deepseek-v4.md) 为准。Lightning OPD 被记成：在 teacher consistency 下预计算 SFT rollout 的 teacher log-prob，相对标准 OPD 有 4.0×。这与 [Lightning OPD](lightning-opd.md) 的 Table 2 一致（8B，120→30 GPU 时）。综述没有 2.0。
 
-**失败目录**（`§7.2`）按原因而不是按症状。除了 flawed prefix trap，还有：ListOPD 在结构化输出上给 \(\lambda>1\) 一个 clip-safe 阈值，超过就从保格式变成塌格式；Rock Tokens 称饱和后仍有至多 18% 的 token 损失下不来，因果干预说它们对推理贡献可忽略；Zhu et al. 就是 Many Faces 的三条（前缀错配、未归一化 Top-K 的有偏梯度、实例级 PI 上 OPSD 学到无 PI 的共识）；梯度 SNR 在通过率接近 0 时消失；自蒸馏缩短轨迹时会去掉 hedging（epistemic suppression）；strong-to-weak 上 teacher 仍校准、但 top-K 边际变平，叫 local teachability collapse。这些条目是文献归类。本库没有 ListOPD、Rock Tokens 和 local teachability 的一手页，引用时要带综述定位符，不要写成已经重读过那些 PDF。
+**失败目录**（`§7.2`）按原因而不是按症状。除了 flawed prefix trap，Zhu et al. 就是 [Many Faces](many-faces-opd.md) 的三条（前缀错配、未归一化 Top-K 的有偏梯度、实例级 PI 上 OPSD 学到无 PI 的共识）。其余已有一手页的条目不要再用综述转述代替：
+
+- [ListOPD](listopd.md) 的 \(\lambda\) 是 ExOPD 的 reward scale。Fashion JSON 上，闭式 clip-safe 标记 \(\lambda^\star=1.22\)（\(p_{\mathrm{typ}}=0.9993\)、\(c=5\)），五种子 onset 在 \([1.204,1.228]\)。过线之后掉的是严格解析率，解析后的 NDCG@1 跨 \(\lambda\) 持平。
+- [Rock Tokens](rock-tokens.md)（本库读的是 v4，综述引 v1）摘要写高损失 token 至多占输出的 18%，词表大约 6%。因果干预的「可忽略」要和后文 1.5%–3.5% pillar 一起读。Figure 2(b) 的两个中位数互相冲突，不要从综述选一个。
+- [Local teachability](local-teachability-collapse.md) 是强到弱轨迹后段的局部对比度下降。平均 advantage 仍可以非零。综述写的「teacher 仍校准」不是那篇的测量；文中 calibration 指的是 Uni-OPD 的结果校准。
+
+梯度 SNR 在通过率接近 0 时消失、自蒸馏缩短轨迹时会去掉 hedging，这两条本库还没有单独的一手页，引用时仍要带综述定位符。
 
 ## 开放问题里他们明确标成猜想的部分
 
@@ -81,12 +89,7 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 - **[Uni-OPD](uni-opd.md)**：同一张动态表写成 Dual-perspective data balancing。综述后文用「不会做」和「做错但看不出来」转述难度。原文是 8 次通过数的上采样、1:1 对错比，以及 \(G_{\mathrm{OPD}}\) 与 0/1 结果的 margin shift。均分以原文 Table 1–3 为准。
 - **v4 没收的后续**：Lightning OPD 2.0、以及 2026 年 6 月 18 日之后的预印本。清单仓库可能比 PDF 更新，不能用网页补进「综述已核实」。
 
-## 待追问
-
-- **现有材料待核**：引言把 Gemma 2 和 Qwen3、V4、MiMo 并列为采用 OPD 的系统。Table 2 的工业行如何描述 Gemma 2，本页没有逐格核对。Gemma 2 是否是学生 rollout 上的 OPD，要以 Gemma 技术报告为准。
-- **现有材料待核**：Jeong (2026) 的 KL 2.637→0.343 只出现在综述的转述里。本库没有那篇 PDF。
-- **需补外部来源**：ListOPD、Rock Tokens、local teachability collapse 只有综述级转述。
-- **需实验或作者披露**：猜想缩放式的指数，以及 \(C/D_{\mathrm{on}}^\gamma\) 与 teacher 规模是互相替代还是互相卡住。作者自己标成未验证。
+Gemma 2 已经按技术报告拆开，见 [Gemma 2](gemma-2.md)。Table 2 的工业行写的是 Gemma 2 27B 教 9B / 2B、「KD in pre-training」，对得上报告 `§3.2` 的语料软标签。引言把它和 Qwen3、V4、MiMo 并列成 OPD 系统，多出来的只有后训练 SFT 里那一句学生分布上的蒸馏。那一句没有 rollout 曲线。
 
 ## 相关页面
 
@@ -104,3 +107,8 @@ On-policy 的判据只看数据从哪来（`§2`，Defining “on-policy”）�
 - [f-OPD](f-opd.md)
 - [Uni-OPD](uni-opd.md)
 - [Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)
+- [ListOPD](listopd.md)
+- [Rock Tokens](rock-tokens.md)
+- [Local teachability collapse](local-teachability-collapse.md)
+- [Healthcare AI GYM / TT-OPD](healthcare-ai-gym.md)
+- [Gemma 2](gemma-2.md)

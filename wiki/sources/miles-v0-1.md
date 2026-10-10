@@ -89,7 +89,7 @@ resource: "../../raw/2609.08368v1.pdf"
 - MXFP8 / NVFP4 被实现成端到端精度契约，检查四个阶段：checkpoint 转换、trainer 前向、SGLang rollout、每次权重更新时的 live weight export。NVFP4 的细节：activation 按 token 量化（量化伪影不依赖 batch 组成），gate 与 up projection 一起量化（融合 rollout GEMM 只用外层权重 scale），rollout 保留 BF16 KV cache。两个 recipe 共用同一个 bit-exact quantizer。
 - 少量张量留在 BF16：末层 transformer、shared expert、MLA 的投影——它们的收缩轴与一维 scaling block 对不齐。契约允许按 layer range 与 tensor name 在四个阶段分别覆盖，但**覆盖必须四个阶段同时生效**。
 - 两个可选 NVFP4 细化，都通过环境变量选择：**dequantized backward**（只动训练侧，反向前向用从 NVFP4 值反量化出的 BF16 操作数）与 **four-over-six**（改的是量化值本身，因此属于契约而不属于 backward pass，须在 trainer 的 Transformer Engine kernel 与 SGLang 的 FlashInfer kernel 同时启用）。
-- 验证方式是比较 SGLang 与 Megatron-LM 对同一批采样 token 的 log-probabilities；已测配置上 reward 曲线紧跟 BF16 基线、rollout 时间显著下降。**证据只覆盖 Miles 内已测的配置**，作者提醒同一套量化在不同模型上可能表现不同。
+- 验证方式是比较 SGLang 与 Megatron-LM 对同一批采样 token 的 log-probabilities；已测配置上 reward 曲线紧跟 BF16 基线、rollout 时间显著下降。没有给出相对 BF16 的分差，也没有 NVFP4 / MXFP8 的加速倍数。**证据只覆盖 Miles 内已测的配置**，作者提醒同一套量化在不同模型上可能表现不同。
 
 ### 显存与 offload（§3.2、Table 6）
 
@@ -144,7 +144,7 @@ resource: "../../raw/2609.08368v1.pdf"
 | Kimi K2 1T-A32B | 32 | 53.28 s | 7.23 s | −86.4% |
 
 > Kimi K2 的时间含约 884 ms 的 on-GPU 重新量化（它的 checkpoint 每次传输后都需要）。作者强调优势在每侧两个节点时就已经出现。
-- **单节点是 P2P 的反例**：单节点给不出额外的聚合带宽，仍要付 host 侧 re-sharding 与 pinned-memory staging 的固定成本，所以默认保持 broadcast，P2P 只在两侧都跨多节点时有用。P2P 的模型覆盖也受限——发送方只有在架构具备 Megatron↔SGLang 统一 weight-name 映射时才能 re-shard，当前覆盖 Qwen2 / Qwen3 dense、Qwen3-MoE、GLM4-MoE 与 DeepSeek-V3 / V3.2 派生。
+- **单节点是 P2P 的反例**：单节点给不出额外的聚合带宽，仍要付 host 侧 re-sharding 与 pinned-memory staging 的固定成本，所以默认保持 broadcast，P2P 只在两侧都跨多节点时有用。P2P 的模型覆盖也受限——发送方只有在架构具备 Megatron↔SGLang 统一 weight-name 映射时才能 re-shard，当前覆盖 Qwen2 / Qwen3 dense、Qwen3-MoE、GLM4-MoE 与 DeepSeek-V3 / V3.2 派生。映射的编写成本和有没有自动化路径，报告没有写。模型列表上的「supported」不能推出该架构可用 P2P。
 - **Disk-delta 的前提是稀疏性**（连续 RL step 只改动模型很小一部分字节）：每个 rollout host 从共享 base checkpoint 出发，trainer 只写变化字节加一条指向 base 的引用。五步流程里**只有第 5 步暂停生成**（重新加载 patched checkpoint、推进引擎权重版本、恢复生成），前 4 步只是读写文件，可以与完全异步的 rollout 并行。XOR（默认；更紧凑更快，但是对合运算，必须严格应用一次且只对自己的 base）与 Overwrite（幂等，重试无害，字节更多）两种编码都在原始字节上工作，因此 base 与导出的策略必须在 tensor 名、dtype、shape、字节布局上完全一致；Miles 校验的是**结果状态的每个 tensor** 而不是 delta，base 不匹配或校验失败就整次更新停止，不让任何引擎用部分应用的权重生成。
 - **in-flight 请求三选一**（§4.4）：abort / 原位保留并围着它更新 / 撤回后按新权重重跑。**Retraction 是默认**。session server 不能容忍 token 历史在轨迹中途被拆掉，所以开了 session server 就拒绝 abort 模式；FSDP 后端永远 retract。
 - **权重校验是 opt-in 的**：先把引擎 tensor 填成随机值，再跑首次权重更新，任何没被写到的 tensor 到达检查时仍持有噪声，因此静默漏写无法蒙混过关。默认要求 bit-exact，也可以接受量化往返的舍入误差（容差由量化格式推出，不由用户给数字）；rollout 侧独有的 tensor（如 inference-only cache scale）跳过。Miles 只在**自己的 CI** 里自动打开这个检查。
@@ -169,7 +169,7 @@ adapter 成为循环的工作单元：trainer 更新它、权重路径同步它�
 ### True-on-policy alignment（§5.3）
 
 - 目标是把两边概率的数值差压到**恰好为 0**：两边跑同一个 attention kernel（FlashAttention-3，其 prefill 与 decode 路径 bitwise 一致）；两边都用**batch invariance** 的 matmul kernel（输出不随「多少请求共享一个 batch」变化），因为 rollout 的 batch 无法与 trainer 对齐；Megatron 侧把 Transformer Engine 的 fused 实现换成 Megatron 本地实现、关掉 fused rotary-embedding 与 bias-SwiGLU kernel、按 per-model kernel contract 钉住其余算子；FSDP 侧选匹配的 attention 实现；SGLang 跑 deterministic-inference mode，trainer 侧 cuBLAS / Transformer Engine / NCCL 都配成确定性执行；用 TP 时把 row-parallel linear 及其后的 all-reduce 做成与并行度无关；最后 rollout engine **用一次 prefill pass 重新给完成的序列打分**，而不是报 decode kernel 产出的 log-prob，让两边用同形状的计算。在受支持配置下两边对每个采样 token 给出完全相同的 log-probability，Miles 报告的绝对差恰为 0。
-- 代价是吞吐（确定性与 batch-invariant kernel 放弃了一些默认优化）。保证有两条边界：覆盖范围只有 dense Qwen3 0.6B 与 4B（Megatron 或 FSDP，配 data / tensor / pipeline / context 并行），线外模型 Miles 拒绝启动而不是给部分保证；保证只覆盖**一个指标**（每个采样 token 的 log-probability），不主张两边在输出分布上处处一致，也不处理另一个 off-policy 来源（权重更旧时生成的轨迹），后者由数据缓冲单独限制。[f-OPD](f-opd.md) 讨论的是 OPD 里的同类过期：旧 rollout，再加上 teacher 上下文漂移，用样本新鲜度加权，而不是这套 bitwise log-prob 对齐。
+- 代价是吞吐（确定性与 batch-invariant kernel 放弃了一些默认优化）。相对默认 kernel 慢多少，报告没有写。保证有两条边界：覆盖范围只有 dense Qwen3 0.6B 与 4B（Megatron 或 FSDP，配 data / tensor / pipeline / context 并行），线外模型 Miles 拒绝启动而不是给部分保证；保证只覆盖**一个指标**（每个采样 token 的 log-probability），不主张两边在输出分布上处处一致，也不处理另一个 off-policy 来源（权重更旧时生成的轨迹），后者由数据缓冲单独限制。[f-OPD](f-opd.md) 讨论的是 OPD 里的同类过期：旧 rollout，再加上 teacher 上下文漂移，用样本新鲜度加权，而不是这套 bitwise log-prob 对齐。
 
 ### Miles-Diffusion（§6）
 
@@ -219,7 +219,7 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 ## 与现有 wiki 页的关系
 
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md) 收集的是各家模型报告里的异步 rollout 治理（GLM-5 的轨迹数阈值、Ring-2.6 的 token budget、K3 的 λ partial rollout）。Miles 提供的是**同一问题的系统层实现**：staleness 的形式化定义、buffer 的丢组条件、group vs sample 两种补位粒度、异步评测的三种模式与可观测指标。GLM-5 报告里抽象的 stale sample dropping，在 Miles 里被写成「到达时查两条、取出时查一条」。
-- [训练—rollout 一致性](../concepts/train-rollout-consistency.md) 是本报告 §2.4 / §2.5 / §3.1 / §3.4 / §5.3 的提炼：TITO、R3、低精度契约、TIS / clip-or-pop 与 true-on-policy alignment 是同一根轴上的五层手段。注意 [GLM-5.3 官方发布博客](glm-5-3-blog.md) 声称 `slime` 把「平均 log-prob 差异」控制到 $10^{-7}$ 量级，而 Miles（建立在 slime 上）在 §9 报的是 train–inference KL 均值 0.0369——**两者口径不同**（一个是绝对 log-prob 差、一个是 per-token divergence 的均值，且 Miles 那条跑的是 BF16 训练 + FP8 服务），不能直接比较或相减，见该页待追问。
+- [训练—rollout 一致性](../concepts/train-rollout-consistency.md) 是本报告 §2.4 / §2.5 / §3.1 / §3.4 / §5.3 的提炼：TITO、R3、低精度契约、TIS / clip-or-pop 与 true-on-policy alignment 是同一根轴上的五层手段。注意 [GLM-5.3 官方发布博客](glm-5-3-blog.md) 声称 `slime` 把「平均 log-prob 差异」控制到 $10^{-7}$ 量级，而 Miles（建立在 slime 上）在 §9 报的是 train–inference KL 均值 0.0369——**两者口径不同**（一个是绝对 log-prob 差、一个是 per-token divergence 的均值，且 Miles 那条跑的是 BF16 训练 + FP8 服务），不能直接比较或相减。两份材料没有把这两个数定义成同一统计量。
 - [RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md) 是 §4 的提炼：三种传输、P2P 的「宽度而非规模」收益规律、disk-delta 的 XOR / Overwrite 取舍与「只有一步暂停生成」的设计。
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md) 与 [OPD 跨报告对比](../comparisons/on-policy-distillation.md)：Miles 的 OPD 差异是**框架侧**而非模型侧——它不改算法形式（仍是一样本 reverse KL，仍引 Thinking Machines Lab 博客），而是把信号折进 advantage 从而与任意 advantage estimator 组合，并给出 top-K 变体与 served / in-process 两种 teacher 部署。它的 Qwen3.5-35B-A3B 实验是已收录报告里少见的「蒸馏只缩长度、不涨分」的诚实结论。
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：Miles 不提出新算法，但它把 mismatch 修正做成一层可替换组件（TIS 的阻尼 vs clip-or-pop 的丢弃），坐标与 [IcePop](ring-1t.md) / KPop 的 mask 形状同轴。IcePop 原文已站在丢弃一侧反对 TIS。
@@ -229,16 +229,8 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 ## 证据边界与阅读提示
 
 - §9 是单次 100 step、单一任务分布，reward 曲线上升与「系统能不能稳定训下去」是两件事；Miles 自己也没把 0.438 → 0.556 读成能力提升。
-
-## 待追问
-
-- **需实验或作者披露**：GLM-5.3 博客说的「$10^{-7}$ 量级 log-prob 差异」与 Miles §9 的 train–inference KL 均值 0.0369 是不是同一个量？口径（绝对差 vs KL 均值）与精度配置（全对齐 vs BF16 训练 + FP8 服务）都可能不同，仓库里没有能对齐两者的第三方来源。
-- **需实验或作者披露**：R3 在异步 RL 下「效果可能有限」是作者的定性判断，没有开 / 关 R3 的异步对照表；60 MB/轨迹是本报告的估算，[R3 原文](r3.md)只报 <3% rollout 延迟，两边都没有 1M 上下文成本曲线。
-- **需实验或作者披露**：true-on-policy alignment 只在 dense Qwen3 0.6B/4B 上有 profile，MoE、长上下文、异步场景下「恰好为 0」是否成立未知；报告也没说这套确定性 kernel 相对默认 kernel 慢多少。
-- **需实验或作者披露**：低精度契约的验证是比较两边的 log-prob；没有给出「量化后相对 BF16 基线的 reward 曲线差多少」的量化数字，也没有 NVFP4 / MXFP8 的加速倍数。
-- **需实验或作者披露**：P2P 的模型覆盖靠手写 weight-name 映射；day-0 支持一个新架构时这份映射的成本、有没有自动化路径，报告未说。 报告列出的覆盖包括 Qwen2 / Qwen3 dense、Qwen3-MoE、GLM4-MoE、DeepSeek-V3 / V3.2 派生；「day-0 支持」是否也意味着可用 P2P，不能从模型支持列表直接推出。
-- **需实验或作者披露**：session server 不支持图像 / 视频输入，所以多模态 RL 目前拿不到 TITO 级的 token 精确性——这是已收录的多模态与 GUI agent 报告（[Kimi K3](kimi-k3.md)、[Xiaomi-GUI-0](xiaomi-gui-0.md) 等）都绕不开的问题。
-- **需实验或作者披露**：报告没有与其它后训练系统（`slime` 之外的 verl / NeMo-RL 等）的横向对照，所有数字都是自报单一配置；「production-ready」是设计目标而非第三方验证的结论。
+- 异步 RL 下 R3「效果可能有限」是作者的定性判断，§9 参考运行没开 R3。原文没有开 / 关对照表。60 MB/轨迹是本报告的估算；[R3 原文](r3.md)只报 <3% rollout 延迟。两边都没有 1M 上下文成本曲线。
+- true-on-policy 只在 dense Qwen3 0.6B/4B 上有 profile，已写在核心结论。原文没有与 verl / NeMo-RL 的横向对照。
 
 ## 相关页面
 
@@ -246,5 +238,3 @@ Miles 把「系统应该易读、易扩展」当成一条被强制执行的工�
 - 比较：[OPD 跨报告对比](../comparisons/on-policy-distillation.md)、[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
 - 相邻来源：[R3](r3.md)（`--use-rollout-routing-replay` 的算法定义）、[Single-Rollout Asynchronous Optimization](single-rollout-asynchronous-optimization.md)（异步问题的算法侧回答）、[GLM-5 技术报告](glm-5.md)、[GLM-5.3 官方发布博客](glm-5-3-blog.md)（`slime` 的数值对齐声明）、[Kimi K3](kimi-k3.md)（partial rollout + AgentENV microVM 沙箱）、[Laguna](laguna-m1-xs2.md)（另一条在线 agentic RL 基建路线）、[Thinking Machines Lab On-Policy Distillation 博客](thinking-machines-on-policy-distillation.md)（Miles OPD 引用的算法源头）、[Uni-OPD](uni-opd.md)（在 Miles 上做按域路由的 OPD）
 - 模型：[GLM-5](../models/glm-5.md)（案例研究对象）、[Kimi K2.5](../models/kimi-k2.5.md) 与 [Qwen3.5](../models/qwen3.5.md)（LoRA recipe 覆盖）
-
-关联提问页：[RL 权重同步与部署拓扑](../concepts/rl-weight-synchronization.md#相关追问)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md#相关追问)。

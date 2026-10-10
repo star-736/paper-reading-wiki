@@ -22,7 +22,7 @@ resource: "../../raw/databricks-benchmarking-coding-agents-2026-07-08.md"
 1. **Pareto 前沿上同时有 OpenAI、Anthropic 和开源。** 作者明确写：今天只有工具组合才能覆盖前沿（原文确证，结论 1 / Figure 1）。
 2. **GLM 5.2 进了最高能力档。** 质量与 Opus 4.8「统计上打平」，$1.28/task vs Opus $1.94（原文确证，§ Open models）。
 3. **看 token 单价会误判任务成本。** Sonnet 5 每 token 比 Opus 4.8 便宜约 1.7×，但任务成本 $2.09 vs $1.94，通过率 81% vs 87%；因为 Sonnet 干得更久、读得更多，token 用量 1.9×（原文确证，§ Price-per-task）。
-4. **同一模型换 harness，成本可以差到 2× 以上，质量接近。** 对照是 Claude Code / Codex vs [Pi](pi-coding-agent.md)。作者把主因写成每轮喂给模型的 context 量：Pi 大约少送 **3×**，工作集更紧、完成轮次更少（原文确证，§ Harnesses）。Matei 线程复述：Opus 和 GPT-5.5 上 Pi 成功率与厂商 harness 相当、成本约一半。
+4. **同一模型换 harness，成本可以差到 2× 以上，质量接近。** 对照是 Claude Code / Codex vs [Pi](pi-coding-agent.md)。作者把主因写成每轮喂给模型的 context 量：Pi 大约少送 **3×**，工作集更紧、完成轮次更少（原文确证，§ Harnesses）。原文没有把「每轮少送约 3× context」和「更少完成轮次」拆开的因果消融。Matei 线程复述：Opus 和 GPT-5.5 上 Pi 成功率与厂商 harness 相当、成本约一半。
 
 这正好补 [Pi 页](pi-coding-agent.md) 的待追问：Mario 自己的 Terminal-Bench 2.0 是 mixed-model 榜；这里是 **同模型、同 thinking effort、换膜**。
 
@@ -51,14 +51,11 @@ Harness 用「工程师会碰到的标准开箱配置」。任务复杂度日志
 - GPT-5.5 三档成本都更低，通过率 ±3 分以内。
 - 图注写明成本是 **token proxy**，不是订阅账单。
 
-作者自己的限定：这不是全面基准，只是他们代码库上的样本；「不是某一个 harness 永远更便宜」。后续产品叙述（Omnigent、Unity Gateway 路由）是动机，不是本评测结果。
+作者自己的限定：这不是全面基准，只是他们代码库上的样本；「不是某一个 harness 永远更便宜」。后续产品叙述（Omnigent、Unity Gateway 路由）是动机，不是本评测结果。开箱配置里有没有内部工具或 MCP，博客没有拆开，本库不再追这份内部清单。切断 git history 之后是否还剩 issue 链接或内部文档一类入口，正文没有逐项审计，本库不再把「还有没有别的 shortcut」留成追问。
 
 ## 待追问
 
-- **需实验或作者披露**：任务数、每格重复次数、置信区间正文没给；「统计打平」只有 GLM vs Opus 那一句。
-- **需实验或作者披露**：「每轮 3× 更少 context」和「更少 runs」没有拆开的因果消融。
-- **需实验或作者披露**：开箱配置是否包含 Databricks 内部工具/MCP，Pi 的四工具核心还剩多少，未披露。
-- **需实验或作者披露**：git history 封印之后，还有没有别的 shortcut（issue 链接、内部文档）？
+- **需作者披露**：任务数、每格重复次数、置信区间正文没给；「统计打平」只有 GLM vs Opus 那一句。
 
 ## 相关页面
 

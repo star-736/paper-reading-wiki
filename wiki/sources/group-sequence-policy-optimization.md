@@ -15,6 +15,7 @@ resource: "../../raw/Zheng 等 - 2025 - Group sequence policy optimization.pdf"
 - 标题：Group Sequence Policy Optimization
 - 团队 / 日期：Qwen Team, Alibaba Inc.；2025-07-29
 - 定位：LLM RL policy optimization 方法论文；不是新模型报告。论文称 GSPO 已贡献于 latest Qwen3 models 的改进。
+- 作者博客：`raw/Qwen Team - 2025 - GSPO blog.md`（<https://qwenlm.github.io/blog/gspo/>，2025-07-27）
 
 ## 核心结论
 
@@ -86,15 +87,12 @@ GSPO 的核心 insight 是：MoE 即使单 token activated experts 有波动，�
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：GSPO 是「sequence-level importance sampling 派」，从理论上重写 GRPO 的 ratio / clipping 单元。
 - [Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)：SAPO 继承 GSPO 的 sequence-coherence 目标，但认为 GSPO hard clipping 会整条 sequence 丢掉 near-on-policy token 的学习信号，因此改成 token-adaptive soft gate。
 - [Cumulative Token Policy Optimization](cumulative-token-policy-optimization.md)：CTPO 在 bias–variance 谱上把 GSPO 的长度归一化 ratio 标为「数值稳但作为 IS 修正有偏」，并以 prefix 连乘 $\prod_{t'\le t}r_{t'}$ 同时取无偏与低于 full sequence 的方差。这是 IS 修正口径的判断；GSPO 的 MoE routing 稳定性论据与它没有同一评测面的对照，CTPO 的 GSPO 基线也只是 dense Qwen3 上的 TIR 复现。
-- [Qwen3 技术报告](qwen3.md)：本论文称 GSPO contributed to latest Qwen3 models，但不是 Qwen3 2025-05 技术报告正文的一部分；回写 Qwen3 页时需标作后续外部算法。
+- [Qwen3 技术报告](qwen3.md)：2025-05 技术报告的 reasoning RL 写的是 GRPO，不是 GSPO。**外部佐证**（作者博客，不是本 PDF）：博客把 “latest Qwen3 models” 点名为 Instruct、Coder、Thinking 三个产品线，并写已用于它们的大规模 RL。博客没有给出各线的 checkpoint、后训练 stage 或消融。这不能回写成 2025-05 报告的事实。
 - [Qwen3.8-Omni](qwen3.8-omni.md) §7.1：Talker 的最后一阶段用 GSPO，奖励信号来自已经对齐人类偏好的 Thinker。没有 clip、没有说明是 sequence-level 还是 GSPO-token，也没有消融。这是采用记录，不是把本页的 MoE 稳定性实验搬到语音解码器上。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：GSPO clip range 量级（3e-4/4e-4）与 GRPO（0.2/0.27）差异很大；不同模型规模/任务是否需要重新标定？
-- **需实验或作者披露**：sequence-level ratio 在超长 response 上是否会掩盖局部坏 token 的 off-policy 问题？SAPO 正是沿这个方向批评并改造 GSPO。
-- **需实验或作者披露**：GSPO-token 在真正 multi-turn tool-use RL 里的 advantage 设计如何做？论文只说明形式可能，未给 agent 实验。
-- **需补外部来源**：「GSPO contributed to latest Qwen3 models」具体对应 Qwen3 哪个版本/哪次后训练，论文没有细化。
+- 原文没有在其它规模或任务上重新标定 clip range 的实验，也没有超长 response 上 sequence-level ratio 是否掩盖局部坏 token 的实验。GSPO-token 的 multi-turn advantage 只给形式，原文没有 agent 实验。
 
 ## 相关页面
 

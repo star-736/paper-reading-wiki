@@ -57,7 +57,7 @@ Agent-World 把"训练通用 agent"的瓶颈定位在**可扩展的真实环境�
 
 **工具接口生成与验证**。coding agent `ψ`（配 code compiler + OS tools `T̂`）对 `(m, D^(N)(m))` 生成候选工具 `f̂` 及其单元测试集 `Ĉ_f̂`。借鉴 execution-based 验证，做交叉质控——工具被保留需同时满足：Python 编译通过、测试准确率 `Acc(f̂; Ĉ_f̂) > 0.5`、环境至少含一个有效工具与一个有效测试。最终得到质控后的工具集 `F(m)`，环境生态 `E = {(D^(N)(m), F(m)) | m ∈ M}`。
 
-**环境分类体系**。对数千主题做层次聚类得 50 个簇心，基于 TOUCAN 分类法用 GPT-OSS-120B 做监督式摘要识别每簇中心主题，得 50 个二级标签；再请 3 位标注者合并抽象出 20 个一级类型。最终分类体系含 **20 一级 / 50 二级 / 1978+ 三级标签**，为跨环境任务合成与分层 arena 构造奠基。
+**环境分类体系**。对数千主题做层次聚类得 50 个簇心，基于 TOUCAN 分类法用 GPT-OSS-120B 做监督式摘要识别每簇中心主题，得 50 个二级标签；再请 3 位标注者合并抽象出 20 个一级类型。最终分类体系含 **20 一级 / 50 二级 / 1978+ 三级标签**，为跨环境任务合成与分层 arena 构造奠基。DB 复杂化轮数 \(N\) 与 arena 的 \(K=5\) 没有消融，三名标注者的一致性也没有报告。这些取值缺了不妨碍读已公开的分类流程，本库不再追配方和标注偏差控制。
 
 **可验证任务合成**。两条互补路径，均依赖 sandbox 执行收集 trace、推导 ground-truth、保留可验证性：
 
@@ -95,9 +95,9 @@ Agent-World 把"训练通用 agent"的瓶颈定位在**可扩展的真实环境�
 ## 后训练
 
 - **冷启动 SFT**：用与 Environment-Task Discovery 相同的合成策略，由 Doubao-Seed-1.8 policy 版本模型生成 **40K 轨迹**做 SFT。
-- **RL 初始化与算法**：SFT 后初始化 **Qwen3-8B / 14B backbone**，合成 **5K RL 样本**，用 **GRPO（RLVR）** 训练。
+- **RL 初始化与算法**：SFT 后初始化 **Qwen3-8B / 14B backbone**，合成 **5K RL 样本**，用 **GRPO（RLVR）** 训练。论文没有声称多环境 rollout 弥补了这个样本量，也没有更大 RL 样本的 scaling。本库不再追一条未做的样本量曲线。
 - **稳定性配置**：clip ratio `ε_low=0.2`、`ε_high=0.28`（即 DAPO 的 Clip-Higher 思路，上限放宽以鼓励探索）；最大轨迹长度 **80K tokens**，每步最大生成长度 32K；每训练步采 32 任务、8 rollouts，temperature=1.0、top_p=1.0（评测同样 temp=1.0/top_p=1.0）。
-- **策略模型（数据/诊断侧）**：环境挖掘、任务合成、代码/rubric 生成、agentic diagnosis 均用 **GPT-OSS-120B**。
+- **策略模型（数据/诊断侧）**：环境挖掘、任务合成、代码/rubric 生成、agentic diagnosis 均用 **GPT-OSS-120B**。它同时被列为被比较的基础模型（MCP-Mark 4.7%）。原文没有换更强策略模型来测合成数据能力上限的对照。
 - **方差控制**：每个实验重复 8 次取平均。
 
 ## 评测要点
@@ -126,6 +126,18 @@ Agent-World 把"训练通用 agent"的瓶颈定位在**可扩展的真实环境�
 | **Agent-World-14B** | **13.3** | **55.8** | **65.4** |
 
 > 表为 Table 1 的 Avg 列（MCP-Mark / BFCL V4 / τ2-Bench 各自的子域均值）。原文 Table 1 另含 MCP-Mark 的 File/Github/Notion/Play./Post.、BFCL V4 的 WebSearch/Memory/Multi-T/No live/Live/Relev./Irrelev.、τ2-Bench 的 Retail/Telecom/Airline 细分；"–"表示原文未报告。环境扩展开里每列最优加粗、次优下划线（此处从略）。
+
+Agent-World-14B 的 MCP-Mark 平均 13.3 不是单列拉低的。Table 1 五列与两个前沿参照（准确率 %，原文确证）：
+
+| 模型 | File. | Github | Notion | Play. | Post. | Avg |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| GPT-5.2 High | 60.0 | 47.8 | 42.9 | 40.0 | 66.7 | 53.1 |
+| Gemini-3 Pro | 56.7 | 45.7 | 43.8 | 40.0 | 70.2 | 50.8 |
+| Agent-World-14B | 16.6 | 4.4 | 3.6 | 4.0 | 38.1 | 13.3 |
+
+五列都低于这两个参照。Post. 是 14B 最高的一列（38.1 对 GPT-5.2 的 66.7），Github / Notion / Play. 接近地板。论文没有把这个差距归因于 MCP-Mark 子域对真实 MCP server 覆盖不足。自演化表里的 MCP-Mark (Post.) 从 29.5 到 38.1，是 Post. 这一列，不是五列平均 13.3。
+
+参考文献 [6] 是 MCP-Atlas（arXiv:2602.00933）。正文前 19 页没有出现 Atlas，也没有文内引用 [6]。评测用的是 MCP-Mark 五列，以及 MCP-Universe 的五个子域（Browser Automation、Web Searching、Location Navigation、Repository Management、Financial Analysis）。论文没有比较这三个基准。本库不再追一份正文没写的三者关系。
 
 三条主要发现（原文 §4.2）：
 
@@ -170,7 +182,7 @@ SkillsBench / ARC-AGI-2 / Claw-Eval 三个高难 assistant benchmark：
 | +1 round | 40.2 (+2.3) | 49.1 (+1.5) | 13.9 (+4.4) |
 | +2 rounds | 41.6 (+1.4) | 50.0 (+0.9) | 15.1 (+1.2) |
 
-两模型三套评测均单调提升；EnvScaler-8B 不依赖 Agent-World 初始化也能持续受益，说明该循环对其它环境扩展基线同样有效。最大增益出现在 MCP-Mark（Agent-World +8.6、EnvScaler +5.6）——该 benchmark 需更强状态追踪与真实 MCP server 深度交互，正契合自演化"诊断定位环境特定弱点→定向合成更难实例"的目标。第二轮增益小于第一轮但保持正向（diminishing yet positive），早期主要修不熟悉环境交互的模式级错误，后期聚焦长周期复杂交互的残余失败。
+两模型三套评测均单调提升；EnvScaler-8B 不依赖 Agent-World 初始化也能持续受益，说明该循环对其它环境扩展基线同样有效。最大增益出现在 MCP-Mark（Agent-World +8.6、EnvScaler +5.6）——该 benchmark 需更强状态追踪与真实 MCP server 深度交互，正契合自演化"诊断定位环境特定弱点→定向合成更难实例"的目标。第二轮增益小于第一轮但保持正向（diminishing yet positive），早期主要修不熟悉环境交互的模式级错误，后期聚焦长周期复杂交互的残余失败。原文只测了两轮，没有更多轮上环境多样性枯竭或过拟合 arena 分布的实验。
 
 > **内部矛盾（已据原文核实）**：§4.3.4 prose（p17）称 Agent-World-14B 的 τ2-Bench 从 45.3%->50.5%，但同节 Table 2（p16）实为 60.2%->65.4%；BFCL-V4（52.4->55.8）与 MCP-Mark（29.5->38.1）两列 prose 与表一致，仅 τ2 列不一致，且增量 (+5.2) 一致。主表 Table 1 的 Agent-World-14B τ2 Avg=65.4 与 Table 2 的 +2 rounds 值吻合，故以表值为准，prose 的 45.3/50.5 为论文自身笔误（疑似早期草稿残留，增量恰好一致说明只是起点被整体下移）。
 
@@ -181,15 +193,6 @@ Qwen3-8B / 14B backbone 在 GRPO 下 reward 稳步上升；entropy 随时间相�
 ## 评测体系说明
 
 23 个 benchmark 分五类：核心 agentic tool-use（MCP-Mark / BFCL V4 / τ2-Bench）、高级 AI assistant（SkillsBench / ARC-AGI-2 / Claw-Eval）、通用推理（MATH500 / GSM8K / MATH / AIME24 / AIME25 / KOR-Bench(Cipher) / OlympiadBench）、agentic search & coding（WebWalkerQA / SWE-bench Verified / SWE-bench Multilingual / Terminal-Bench 1.0 / Terminal-Bench 2.0 / GAIA / HLE）、知识与 MCP（MMLU / SuperGPQA / MCP-Universe 五子域）。用 in-house 评测框架、对齐官方分数，部分 benchmark（GAIA / HLE）用采样子集加速。
-
-## 待追问
-
-- **现有材料待核**：**MCP-Mark 绝对分偏低**：Agent-World-14B 在 MCP-Mark Avg 仅 13.3%，远低于 Gemini-3 Pro 50.8% / GPT-5.2 53.1%。报告把 MCP-Mark 列为主战场之一却差距明显，是否因 MCP-Mark 子域（File/Github/Notion/Play./Post.）对真实 MCP server 覆盖不足？需看分项分布。
-- **需实验或作者披露**：**GPT-OSS-120B 的双重角色**：它既是环境挖掘/任务合成/诊断的策略模型，又被列为被比较的基础模型（MCP-Mark 仅 4.7%）。用它造的训练数据是否存在能力上限天花板？换更强策略模型（如 Doubao-Seed-2.0）能否进一步提升环境/任务质量？
-- **需实验或作者披露**：**5K RL 样本 + 40K SFT 的规模**：相对环境生态（1978 环境 / 19822 工具）显得偏小，是否靠多环境 rollout 与自演化循环弥补了数据量？更大 RL 样本量的 scaling 未见分析。
-- **需实验或作者披露**：**自演化轮数的上限**：仅测了 2 轮且边际递减，更多轮是否会出现环境多样性枯竭或过拟合 arena 评测分布？
-- **需实验或作者披露**：**DB complexification 的轮数 `N`** 与 arena `K=5` 的取值依据未给消融；环境分类体系依赖 GPT-OSS-120B 摘要 + 3 标注者，标注偏差如何控制？
-- **现有材料待核**：**与 MCP-Atlas 的关系**：报告引用 MCP-Atlas [6] 但评测用的是 MCP-Mark [106] 与 MCP-Universe，三者关系未澄清。
 
 ## 相关页面
 

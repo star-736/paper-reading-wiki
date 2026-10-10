@@ -116,14 +116,10 @@ CoT：从 DeepSeek-R1 蒸馏，10B token、32K 数学轨迹 SFT。AIME 24，温�
 ## 证据边界与阅读提示
 
 - [InfLLM-V2](infllm-v2.md) 已入库：可训练块稀疏、5B 短→长，不是本页 related work 的 InfLLM（Xiao 2024a）。它在同一 8B dense 检查点上复现 NSA 适应，loss 先炸；那是 short-to-long 协议，不能用来否定本页 27B 从头稀疏。
-
-## 待追问
-
-- **需实验或作者披露**：摘要 260B vs §4.1 270B。
-- **需实验或作者披露**：三支独立 K/V 的参数量和 decode 访存增量没有单独拆开；Table 4 的 5632 是上界合计。
-- **需实验或作者披露**：门 $g_t^c$ 学到了什么（是否常把质量压在选块支上）没有消融。
-- **需实验或作者披露**：没有 RL 稳定性数字。AIME 是 R1 蒸馏 SFT。后续 DSA 在 GLM-5 RL 上踩的 top-k 非确定性，本页尚未遇到。
-- **需实验或作者披露**：没有 128K / 1M 质量；64K kernel 数字是 Triton vs Triton FA2，不是生产 kernel。
+- 摘要 260B token 与 §4.1 的 270B token 差额已写在核心结论，论文未解释，不再重复追问。
+- 三支独立 K/V 的参数量和 decode 访存没有拆开；Table 4 的 5632 是上界合计。缺拆分不阻碍理解三支结构，不再追。
+- 本报告没有 RL 稳定性实验，AIME 是蒸馏 SFT。64K kernel 是 Triton vs Triton FA2，质量数字没有 128K / 1M。这些都不再向原文追。
+- 原文没有门 $g_t^c$ 是否把质量压在选块支上的消融。
 
 ## 相关页面
 

@@ -113,14 +113,14 @@ CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该�
 
 数据混合优化是「data-centric AI」在 LLM 预训练中的核心议题。模型架构和训练算法趋同后，数据组成成为决定模型能力的主要变量。DoReMi 等方法把数据配比从人工经验驱动变成可自动优化的工程问题，且优化成本远低于训练本身（DoReMi 仅 8% 额外 FLOPs）。这对降低训练成本、提升数据效率有直接价值。
 
+## 证据边界
+
+- 原文没有解释 280M domain weights 为何能用于 8B 的受控实验，也没有 web corpus 相对 Wikipedia 更重要的机制对照。instance-level 与 domain-level 没有公开对比实验。AutoMixer 已报告能力间轻度负相关；原文没有强负相关时回归器是否零和解的实验。
+- DynamixSFT 只到 8B、Aioli 只到 1.4B，frontier-scale 对照与 perplexity 对 downstream 的含义已写在上文。reward 计算与 +12.7% 开销的口径矛盾见 [DynamixSFT 来源页](../sources/dynamix-sft.md#待追问)。
+
 ## 待追问
 
-- **需实验或作者披露**：DoReMi 的 domain weights 跨尺度迁移机制仍不清楚——280M 产出为何能用于 8B？TANDEM 的 bi-level 理论是否给出更严格的迁移保证？
-- **需实验或作者披露**：RegMix 发现 web corpus 比高质量 Wikipedia 更重要，这与 DoReMi 大幅 upweight Pile-CC 一致——但为什么？
-- **需实验或作者披露**：instance-level mixture（Qwen3）与 domain-level reweighting（DoReMi/RegMix）的效果对比尚无公开 benchmark。
-- **需实验或作者披露**：AutoMixer 已在 MoE proxy + MoE 生产模型上验证有效（此前 DoReMi/TANDEM 仅 dense），但 ~60 个 proxy 的总成本与 KL 系数 $\lambda$ 的 sensitivity 未披露；per-capability 回归器在能力间强负相关时是否会陷入零和解？
-- **需实验或作者披露**：DynamixSFT 的「在线无 proxy」与 DoReMi/RegMix/AutoMixer 的「proxy 放大」在 frontier-scale 下孰优尚无对比（DynamixSFT 实验仅到 8B，AutoMixer 用到 33B MoE）。reward 计算与 +12.7% 开销口径的矛盾独立记录于 [DynamixSFT 来源页](../sources/dynamix-sft.md#待追问)。
-- **需实验或作者披露**：Aioli 的 LMO 框架统一了 DoReMi/DoGE/Skill-It/DML，但实验仅到 1.4B 且 perplexity 与 downstream 负相关（$r=0.529$）--AIOLI 优化 perplexity 是否反而损害 downstream？框架本身是分析工具，AIOLI 方法在 frontier-scale 的效果未验证。
+- **需核对原文**：TANDEM 的 bi-level 理论是否给出比 DoReMi 更严格的跨尺度迁移保证？这要回 TANDEM 原文，不是补一次迁移实验。
 
 ## 相关页面
 
@@ -130,5 +130,3 @@ CMCV 的改进动机是 IMIC 的根本局限：**单模型内省只能捕获该�
 - [DynamixSFT 技术报告](../sources/dynamix-sft.md) - SFT 阶段在线无 proxy 的 Multi-Armed Bandit 分支，与 proxy-model 谱系范式分叉
 - [Aioli 技术报告](../sources/aioli.md) - LMO 统一框架，把 DoReMi/DoGE/Skill-It/DML 表达为同一优化问题的特例；AIOLI 在线方法无需额外训练 run
 - [Qwen3 技术报告](../sources/qwen3.md) - instance-level data mixture 的产业实践
-
-关联提问页：[DynamixSFT 技术报告](../sources/dynamix-sft.md#相关追问)。

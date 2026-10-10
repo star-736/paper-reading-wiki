@@ -16,6 +16,7 @@ resource: "arXiv:2606.16140v1"
 - arXiv：2606.16140v1，2026-06-15
 - 团队：Sina Weibo Inc.（Sen Xu, Shixi Liu, Wei Wang, Jixin Min, Yingwei Dai, Zhibin Yin, Yirong Chen, Xin Zhou, Junlin Zhang）
 - 模型页：[VibeThinker-3B](../models/vibethinker-3b.md)
+- MGPO 与 Expert Model Fusion 的前作：`raw/2511.06221v1.pdf`（VibeThinker-1.5B，arXiv:2511.06221v1，2025-11-09）。3B 论文引用它，但没有重写 $D_{ME}$ 与 merge 权重。
 
 ## 核心结论
 
@@ -82,7 +83,9 @@ Qwen2.5-Coder-3B（dense，3B 参数）。论文不涉及架构改动，所有�
 | 数据 | 全量质量过滤后数据 | hard subset（trace >5K token + 用 VibeThinker-1.5B 8 次 rollout 错误率 >0.75 的样本） |
 | 训练 | 5 epochs, lr=5e-5, cosine→8e-8, warmup 5%, global batch 128, sequence packing | 2 epochs, 沿用 Stage 1 超参 |
 
-**Diversity-Exploring Distillation**（原文确证，§2.1.2）：训练中定期保存中间 checkpoint，在 domain-specific probing set 上评 Pass@K，为每个域选产出更多 valid solution 的 checkpoint 作为 specialist（而非选最低 loss 或最高 Pass@1），再做参数级 merge。目的：保留域特定推理能力的同时维持高输出多样性，为 RL 提供更宽的解空间。
+**Diversity-Exploring Distillation**（3B 原文确证，§2.1.2）：训练中定期保存中间 checkpoint，在 domain-specific probing set 上评 Pass@K，为每个域选产出更多 valid solution 的 checkpoint 作为 specialist（而非选最低 loss 或最高 Pass@1），再做参数级 merge。目的：保留域特定推理能力的同时维持高输出多样性，为 RL 提供更宽的解空间。
+
+前作把这次 merge 写成参数凸组合（1.5B 原文确证，§3.3）：$M_{\mathrm{SFT}}=\sum_i w_i M_i^\*$，$w_i\ge 0$ 且 $\sum_i w_i=1$。他们的实现是等权平均 $w_i=1/N$（数学四子域 $N=4$）。3B 只写「参数级 merge」，没有改成 TIES、DARE 或其他算法，也没有另给一组 $w_i$。不能据此断言 3B 每个域仍是 $1/N$。
 
 ### RL 阶段
 
@@ -94,7 +97,11 @@ Qwen2.5-Coder-3B（dense，3B 参数）。论文不涉及架构改动，所有�
 
 $$w(q) = \exp\left(-\gamma \, D_{ME}(p(q) \| p_0)\right), \quad p_0 = 0.5$$
 
-$D_{ME}$ 度量 $p(q)$ 偏离最大熵点 0.5 的程度。$p(q)\approx 0$（太难，正信号稀疏）和 $p(q)\approx 1$（已饱和）的 prompt 被降权，聚焦在模型当前能力边界附近的 prompt（对错共存）。该权重作用于 group-relative advantage：
+$D_{ME}$ 度量 $p(q)$ 偏离最大熵点 0.5 的程度。3B 没有展开这个距离。前作把它定义成到 $p_0=0.5$ 的 KL（1.5B 原文确证，§3.4）：
+
+$$D_{ME}(p(q)\|0.5)=p(q)\log\frac{p(q)}{0.5}+(1-p(q))\log\frac{1-p(q)}{0.5}.$$
+
+1.5B 的温度系数写成 $\lambda$，3B 写成 $\gamma$；3B 说核心公式保持不变。$p(q)\approx 0$（太难，正信号稀疏）和 $p(q)\approx 1$（已饱和）的 prompt 被降权，聚焦在模型当前能力边界附近的 prompt（对错共存）。该权重作用于 group-relative advantage：
 
 $$J_{MGPO}(\theta) = \mathbb{E}_{q,\{y_i\}}\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|y_i|}\sum_{t=1}^{|y_i|}\min\left(\rho_{i,t}(\theta)\,w(q)\,A_i,\;\text{clip}(\rho_{i,t}(\theta),\,1-\epsilon,\,1+\epsilon)\,w(q)\,A_i\right)\right]$$
 
@@ -106,7 +113,7 @@ VibeThinker-3B 保持了 MGPO 核心公式不变，但改为**全 on-policy**（
 
 - **顺序训练**：Math RL → Code RL → STEM RL。每个阶段的 checkpoint 保留用于后续 offline self-distillation。
 - **Single Long-context**：与 VibeThinker-1.5B 的渐进式 context window 扩展不同，3B 版直接用单一 64K context window。论文发现高截断 warm-up 会损害 3B 的长思维能力（1.5B 上则有效），假设原因是 3B 的 SFT 质量控制更严、无效推理模式更少，高截断 warm-up 不再主要是去噪，而是破坏已有的高质量长推理行为。
-- **Long2Short Math RL**：accuracy→efficiency 两阶段。第一阶段标准 MGPO 优化准确率；第二阶段在正确轨迹集 $C$ 内按 response length 重分配 reward——brevity score $s_i = 1/L_i$，centered length-aware shift $r'_i = r_i + \lambda \cdot \frac{s_i - \bar{s}}{\max_{j\in C}|s_j - \bar{s}|}$（$\lambda=0.2$）。设计为零和（$\sum_{i\in C}(r'_i - r_i) = 0$），不改变 group-level reward baseline，只 reshape 正确轨迹间的相对偏好，偏好更短的推理路径。
+- **Long2Short Math RL**：accuracy→efficiency 两阶段。第一阶段标准 MGPO 优化准确率；第二阶段在正确轨迹集 $C$ 内按 response length 重分配 reward——brevity score $s_i = 1/L_i$，centered length-aware shift $r'_i = r_i + \lambda \cdot \frac{s_i - \bar{s}}{\max_{j\in C}|s_j - \bar{s}|}$（$\lambda=0.2$）。$\lambda$ 是手设常数，论文没有选择过程或消融。设计为零和（$\sum_{i\in C}(r'_i - r_i) = 0$），不改变 group-level reward baseline，只 reshape 正确轨迹间的相对偏好，偏好更短的推理路径。
 
 ### Offline Self-Distillation
 
@@ -151,13 +158,9 @@ VibeThinker-3B 在小/中模型对比中全面领先（3B 超过 4B–14B reason
 - **知识**：GPQA-Diamond 70.2 → +CLR 72.9，但仍落后 GLM-5（86.0）/ Kimi K2.5（87.6）约 14–15 点——这是 Parametric Compression-Coverage Hypothesis 预测的边界。
 - **指令**：IFEval 93.4 / IFBench 74.5，证明极端推理增强未牺牲指令可控性。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：MGPO 的 $D_{ME}$ 具体形式未给出（论文只说"measures how far $p(q)$ deviates from maximum-entropy point 0.5"），猜测是某种 entropy 或 KL 变体，但需查 VibeThinker-1.5B 原文确认。
-- **需补外部来源**：Diversity-Exploring Distillation 的参数级 merge 具体方法未说明（是 simple average / weighted average / 还是更复杂的 merge 策略？）。
-- **需实验或作者披露**：Long2Short RL 的 $\lambda=0.2$ 是如何选定的？是否有 ablation？
-- **需实验或作者披露**：CLR 的"decision-relevant claim"提取过程依赖模型自身，是否对 claim 提取质量敏感？论文未给 ablation。
-- **需实验或作者披露**：VibeThinker-1.5B 的渐进式 context window 在 3B 上失效的发现很有价值——这是否意味着 context window 策略与 SFT 数据质量强耦合？高 SFT 质量下 warm-up 截断有害，低 SFT 质量下有益？
+- 原文没有 CLR claim 提取质量的消融。3B 上高截断 warm-up 有害、1.5B 上有效，以及作者对 SFT 质量的假设，已写在后训练。原文没有检验这一耦合的受控对照。
 
 ## 相关页面
 

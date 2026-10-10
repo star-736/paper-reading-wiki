@@ -22,7 +22,7 @@ resource:
 
 ## 核心结论
 
-KAT-Coder-V2 是快手 KwaiKAT 团队的 agentic coding 模型，基于 KAT-Coder-V1 继续后训练。核心方法论是 **Specialize-then-Unify**：把 agentic coding 能力分解为五个正交专家域（SWE / WebCoding / Terminal / WebSearch / General），各自独立 SFT + RL，再通过 On-Policy Distillation 融合为单一模型。
+KAT-Coder-V2 是快手 KwaiKAT 团队的 agentic coding 模型，基于 KAT-Coder-V1 继续后训练。基座架构和参数量未公开。核心方法论是 **Specialize-then-Unify**：把 agentic coding 能力分解为五个正交专家域（SWE / WebCoding / Terminal / WebSearch / General），各自独立 SFT + RL，再通过 On-Policy Distillation 融合为单一模型。五域专家是否与统一 student 同容量，报告没有写。
 
 报告识别了三个根本挑战并分别对应解决方案：(1) 能力碎片化 -> 五域分治 + OPD 统一；(2) 基础设施耦合 -> KwaiEnv 模块化解耦 datasets / sandboxes / scaffolds / verifiers；(3) agentic RL 扩展 -> 沿任务复杂度 / 意图对齐 / scaffold 泛化三轴系统性扩展，并用 MCLA 稳定 MoE RL、Tree Training 消除树状轨迹冗余计算。
 
@@ -126,12 +126,9 @@ KRL（Kwai RL）围绕两个核心创新：(1) Tree Training 消除 group sampli
 
 前端美学评测是报告自建的 reference-free 基准：所有 prompt 取自普通用户口语输入，专业 UI/UX 设计师盲评，Chrome 1920×1080 标准化环境含交互审查。Landing Page 分 10 维度（结构/视觉/组件/动态四层），Slides 和 Data Viz 各 5 维度。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：KAT-Coder-V1 的基座是什么？报告只说 continued post-training，未公开 backbone 架构和参数量。
-- **需实验或作者披露**：MCLA 的 K=8 次 forward prefill 的计算开销与收益的 trade-off 曲线如何？是否做过更小 K 的消融？
-- **需实验或作者披露**：Turn-level policy optimization 的 turn 边界在不同 scaffold 间如何标准化？跨 scaffold 训练时 turn 粒度不一致是否影响 advantage 估计？
-- **需实验或作者披露**：五域专家各自的参数量是否与统一 student 相同？OPD 时 teacher 和 student 容量差如何影响蒸馏效果？
+- 原文没有更小 K 的 MCLA 消融，也没有跨 scaffold 的 turn 粒度不一致对 advantage 的对照。正文写 turn 边界按 scaffold 标记动态定义。
 
 ## 相关页面
 

@@ -44,7 +44,7 @@ MiniMax 使用 CISPO 做 policy optimization（定义见 [MiniMax-M1](../sources
 
 Forge 的工程优化集中解决 straggler 和重复前缀计算：
 
-- Windowed FIFO：在滑动窗口内贪心消费已完成轨迹，窗口外保持 FIFO，平衡吞吐与数据分布一致性。
+- Windowed FIFO：在滑动窗口内贪心消费已完成轨迹，窗口外保持 FIFO，平衡吞吐与数据分布一致性。窗口大小没有随任务难度或 reward 稀疏度自适应的规则。
 - Prefix tree merging：同一 rollout group 中共享长前缀的样本只计算一次前缀，报告称可带来最高 40x 训练加速。
 - MTP co-training：RL 过程中持续训练 MTP draft path，避免 policy 变化导致 speculative decoding 接受率下降。
 - Prefill-decode disaggregation 与 global KV cache pool：降低长上下文多轮 agent 的重复 prefill 成本。
@@ -53,8 +53,6 @@ Forge 的工程优化集中解决 straggler 和重复前缀计算：
 
 Forge 更像训练和系统基础设施；[Agent Swarm](agent-swarm.md) 更像模型学到的并行编排策略；[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md) 则是 rollout 采样算法，专门把探索预算投到工具反馈后的高熵 step。三者都承认 agent 的瓶颈不只在模型参数，也在上下文、工具、轨迹调度、采样结构和反馈质量。[Agent-World](../sources/agent-world.md) 则在更上一层把"环境本身的可扩展合成 + 诊断驱动课程"当第一性问题——同一环境生态既供多环境 RL 训练、又作动态诊断 arena 持续定位弱环境并定向扩展任务，是 self-evolution 在数据/课程层（而非训练系统层）的互补路线。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：Black-box agent 只观察外部请求流时，能否充分学习隐藏 context management 策略？
-- **需实验或作者披露**：completion-time reward 是否会鼓励过度并行，导致工具成本或错误率上升？
-- **需实验或作者披露**：Windowed FIFO 的窗口大小是否需要随任务难度和 reward 稀疏度自适应？
+- 原文没有 black-box agent 只看外部请求流时能否学到隐藏 context management 的实验，也没有 completion-time reward 是否鼓励过度并行的对照。

@@ -118,6 +118,7 @@ prefill 的 query 长度与历史 cache 长度、decode 的单个新 query 与�
 ## 跨报告信号
 
 - **[DeepSeek-V2](../sources/deepseek-v2.md)（起源，2024）**：MLA 首次提出。236B/21B MoE，整体相对 DeepSeek 67B 的 KV cache 降 93.3%、最大生成吞吐提至 5.76×（非 MLA 单组件消融），并用附录 D.1 消融论证「减头数」（GQA/MQA）有质量代价、故走「压低秩」这条正交轴。
+- **[DeepSeek-V3](../sources/deepseek-v3.md)**：五个 MLA 宽度与 V2 相同。§2 点名的架构变化是 DeepSeekMoE 的 auxiliary-loss-free 和 MTP；注意力节只复述 MLA。
 - **[DeepSeek-V3.2](../sources/deepseek-v32.md)**：把 [DSA](deepseek-sparse-attention.md) **实例化在 MLA 的 MQA mode 上**——latent vector（即 MLA 的 KV entry）被同一 query token 的所有 query head 共享，DSA 的 top-k 就在这些 latent entry 上选。原文："we implement DSA based on the MQA (Shazeer, 2019) mode of MLA"。这里的「MQA mode」是**轴二 · selection 结构**（见上文「两种 mode 与『MQA mode』歧义」），**不是说训练前向用 MQA 算术**——事实上短上下文 prefill 仍用「masked MHA mode to simulate DSA」。
 - **[DeepSeek-V4](../sources/deepseek-v4.md)**：CSA 进一步在 MLA 血统上叠压缩——core attention 是 **Shared-KV MQA**，query 仍由**压缩 latent 向量上投影**得到（且该 latent 与 indexer query 共享）。即 MLA 的 latent-query 结构被 CSA 继承，再在压缩 KV entry 上做 MQA。
 - **[GLM-5](../models/glm-5.md)**：同样在 MLA-DSA 基座上做长上下文稀疏，RL 阶段冻结 indexer + deterministic top-k（与 V3.2「post-training 继续训练 indexer」是两条路线）。
@@ -131,11 +132,31 @@ prefill 的 query 长度与历史 cache 长度、decode 的单个新 query 与�
 - **它把「KV cache 压缩」从减头数解放成压低秩**。这条轴使缓存大小由 latent 与位置分支决定，而不直接随 KV head 数增长；其质量与缓存折中需看具体配置，是百万 token 上下文路线（DeepSeek-V4）成立的前提之一。
 - **两种 mode 的存在揭示了训练/推理的非对称**。V3.1-Terminus 的训练/prefill 用 MHA mode 展开，decode 用 MQA mode 吸收；其他配置需分别核对实现。同一套权重两种算法形态，是 MLA 工程上最容易被忽略但最关键的点。
 
+## 从 V2 到 V4
+
+下表只记注意力。V3 的数字来自 [DeepSeek-V3 技术报告](../sources/deepseek-v3.md)（重读 [`raw/2412.19437v2.pdf`](../../raw/2412.19437v2.pdf)，arXiv:2412.19437v2）。
+
+| 代 | 相对上一代，注意力上多了什么 | 定位 |
+| --- | --- | --- |
+| [V2](../sources/deepseek-v2.md) | 提出 MLA：低秩 KV、query 低秩压缩、decoupled RoPE。发布配置 \(n_h=128\)、\(d_h=128\)、\(d_c=512\)、\(d_c'=1536\)、\(d_h^R=64\)，60 层、hidden 5120 | 机制起源 |
+| [V3](../sources/deepseek-v3.md) | **MLA 公式与这五个宽度不变**（§2.1.1 复述 V2；超参段：\(n_h=128\)、\(d_h=128\)、\(d_c=512\)、\(d_c'=1536\)、\(d_h^R=64\)）。变的是外壳：61 层、hidden 7168。§2 写明未点名的细节遵循 V2；相对 V2 点名的架构例外是 DeepSeekMoE 的 auxiliary-loss-free，外加 MTP，不是新的注意力 | 沿用，不是改版 |
+| [V3.2](../sources/deepseek-v32.md) | 论文写唯一架构改动是 continued training 引入 DSA：lightning indexer + token 级 top-k（\(k=2048\)），实例化在 MLA 的 MQA mode 上 | 在原 MLA cache 上加选择 |
+| [V4](../sources/deepseek-v4.md) | 混合 CSA / HCA，不再缓存逐 token 的 \(c^{KV}+k^R\)。CSA 先把多个 token 压成一个 KV entry，再做 DSA；core attention 是 Shared-KV MQA（该 entry 同时当 key 和 value）。query 仍由压缩 latent 上投影，且与 indexer query 共享这份 latent。同节还有 partial RoPE（向量末 64 维）、滑窗分支、attention sink、grouped output projection | latent query 留下，KV 路径换掉 |
+
+V3.2 论文没有重列 MLA 宽度。发布权重 [`deepseek-ai/DeepSeek-V3.2-Exp` 的 `config.json`](https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/blob/main/config.json)（外部佐证，2026-10-11 读取）仍是 `q_lora_rank=1536`、`kv_lora_rank=512`、`qk_nope_head_dim=128`、`qk_rope_head_dim=64`、`num_attention_heads=128`，与 V3 超参段一致。这不能代替论文里的句子，只说明这份检查点没有改这些宽度。
+
+## MSA 为何用 GQA 而不是 MLA
+
+两篇论文的动机段回答的不是同一件事，不能收成「谁证明了 GQA 优于 MLA」。
+
+- **DeepSeek-V2 附录 D.1** 的对象是稠密注意力：7B 消融里 MHA 高于 GQA-8 和 MQA，所以 MLA 改走压低秩，而不是减 KV head。
+- **[MSA](../sources/msa.md) 没有 GQA 对 MLA 的质量对打**（原文确证，§1、§2.3、§6、Outlook）。它写的是部署与转换：沿稀疏 softmax，以便复用已有软件和硬件；用块级选择和更小的 top-\(k\)，以便在更宽的 GPU 上跑，并放松 prior designs 的 head-dimension 约束。prior designs **没有点名 MLA**。§2.3 补充：逐 head 的 token 级选择最细，但难映射成 GPU 矩阵运算，所以 GQA 组内共享一份 index。贡献条写可以从预训练 GQA checkpoint near-lossless 转换。§6 把和 DSA 的差别写成一起取的两条轴：每个 GQA group 独立的块级 top-\(k\)，KV 读取保持连续；DSA 是 MLA 的 MQA mode 上、全体 query head 共享一个 token 级 top-\(k\)。Outlook 再说这套选择贴着多数开源模型已有的 GQA 底座。
+
+因此路线分歧是实的：DeepSeek 用质量消融把底座定成低秩压缩，MiniMax 用基础设施和 GQA 检查点转换把底座定成 GQA。MSA 没有声称这条选择赢在质量。
+
 ## 待追问
 
-- **需实验或作者披露**：**query 压缩「具体怎么省激活显存」论文未展开，待坐实**。一个合理推测：1536 维 latent 当「细腰」checkpoint，只常驻它、backward 时从它重算出 16384 维大 query（~10× 节省）。依据是 V2 训练框架确实用了 recomputation（§ 训练："a portion of the operators are recomputed to save activation memory"），但这句是**块级通用技巧**，论文**没把它专门挂到 query 压缩上**——所以「存细腰+重算 query」是推断，非原文机制。且实际工程中 gradient checkpointing 多在 transformer block 级别整体包，未必是 query 专属。求证难点：博客讲解多为同款二手推断（会循环），官方 modeling 代码大概率只见块级重算；要硬坐实需 DeepSeek 自己的训练代码或作者澄清。
-- **现有材料待核**：DeepSeek-V2 → V3 → V3.2（DSA）→ V4（CSA）这条演进链上「每一步在 MLA 上加了什么」，值得做一张演进表（V3 的 MLA 改动、V3.2 加 DSA、V4 加 token 压缩 + Shared-KV MQA）。
-- **现有材料待核**：MSA 选 GQA 而非 MLA 作底座，是 MiniMax 与 DeepSeek 的路线分歧还是有明确的效率/质量权衡论证？需要对比两篇论文的动机段。
+- **需核对训练代码**：**query 压缩「具体怎么省激活显存」论文未展开，待坐实**。一个合理推测：1536 维 latent 当「细腰」checkpoint，只常驻它、backward 时从它重算出 16384 维大 query（~10× 节省）。依据是 V2 训练框架确实用了 recomputation（§ 训练："a portion of the operators are recomputed to save activation memory"），但这句是**块级通用技巧**，论文**没把它专门挂到 query 压缩上**——所以「存细腰+重算 query」是推断，非原文机制。且实际工程中 gradient checkpointing 多在 transformer block 级别整体包，未必是 query 专属。求证难点：博客讲解多为同款二手推断（会循环），官方 modeling 代码大概率只见块级重算；要硬坐实需 DeepSeek 自己的训练代码或作者澄清。
 
 ## 已核实的配套对照
 
@@ -143,7 +164,7 @@ prefill 的 query 长度与历史 cache 长度、decode 的单个新 query 与�
 
 ## 相关页面
 
-- 来源：[DeepSeek-V2](../sources/deepseek-v2.md)（MLA 首次提出）、[DeepSeek-V3.2](../sources/deepseek-v32.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（Gated MLA：NoPE + full-rank output gate + FP32 attention output）
+- 来源：[DeepSeek-V2](../sources/deepseek-v2.md)（MLA 首次提出）、[DeepSeek-V3](../sources/deepseek-v3.md)（宽度沿用 V2）、[DeepSeek-V3.2](../sources/deepseek-v32.md)、[DeepSeek-V4](../sources/deepseek-v4.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)（Gated MLA：NoPE + full-rank output gate + FP32 attention output）
 - [DeepSeek Sparse Attention](deepseek-sparse-attention.md)
 - [线性注意力与 delta rule](linear-attention-and-delta-rule.md)（Kimi Linear 用 MLA 当 1/4 全局层）
 - [高效长上下文注意力](efficient-long-context-attention.md)

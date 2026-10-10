@@ -46,14 +46,9 @@ ARPO 把 agentic RL 的问题拆得更细：trajectory-level RL 假设「完整�
 - Tool-call efficiency：Figure 7 显示 Qwen2.5-7B 上 ARPO 用约一半工具调用数取得更高 overall accuracy。
 - 超参边界：Figure 8 显示 entropy weight 0.4 左右最佳，升到 1.0 反而掉分；initial sampling size 在 8 达峰；global rollout size 增大仍有收益。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：entropy-based branching 与推理期 tree search / self-consistency / Agent Swarm 的运行时并行探索如何结合？
-- **需实验或作者披露**：soft advantage estimation 是实测更稳，但共享前缀 credit assignment 在更长轨迹中是否会被 group normalization 稀释？
-
-## 相关追问
-
-主记录：[ARPO 在 coding / terminal 的适用性](../sources/agentic-reinforced-policy-optimization.md#待追问)；[ARPO 更换工具栈后的稳健性](../sources/agentic-reinforced-policy-optimization.md#待追问)。
+- 原文没有把 entropy-based branching 接到推理期 tree search、self-consistency 或 Agent Swarm 的实验，也没有更长轨迹上 group normalization 是否稀释共享前缀 credit 的对照。coding / terminal 与更换工具栈的缺失见来源页证据边界。
 
 ## 相关页面
 

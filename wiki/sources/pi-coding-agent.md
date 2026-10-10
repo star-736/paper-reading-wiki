@@ -94,12 +94,9 @@ CET-only 第二次 run 当时未完成；博客里的中途截图是第 6 名 **
 ## 证据边界与阅读提示
 
 - Terminal-Bench 2.0 的 49.8% 是 mixed-model 榜。同模型换膜的外部数字见 [Databricks 内部评测](databricks-coding-agents.md)：质量接近时 Pi 任务成本可低到 2× 以上，但 max-effort Opus 通过率掉了 7 分。
-
-## 待追问
-
-- **需实验或作者披露**：「<1000 token 系统提示」在 skills / AGENTS.md / 文档路径注入之后还剩多少，本文没有重测。Databricks 的「每轮 3× 更少 context」是端到端重放总量，不是系统提示长度。
-- **需补外部来源**：0.84.0 的 lane-based Session 对「一条 JSONL 树」用户心理模型改了多少？changelog 只给 API 契约，没有用户向机制文。
-- **需补外部来源**：YOLO 默认在 2026 的真实供应链攻击面上是否仍然站得住，本文只给 2025-11 的论证。
+- 「<1000 token」是 2025-11 核心提示口径。skills、AGENTS.md 和文档路径注入后的长度随用户配置变化，博客没有重测，本库不再追这个随配置变化的数字。Databricks 的「每轮 3× 更少 context」是端到端重放总量。
+- 0.84.0 的 lane-based Session 已写在上一节：一条 session 上多条 lane，operation 只有 run / compaction / navigation，lane 不是 sub-agent。没有另外的用户向机制文，本库不再追那份不存在的说明。
+- YOLO 默认的论证停在 2025-11-30。没有后续供应链攻击面复核，本库不再追一份未发表的安全评估。
 
 ## 相关页面
 

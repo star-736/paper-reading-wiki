@@ -123,7 +123,7 @@ Table 2 在裸异步上逐件加上机制。工具是 Avg@4，coding 是 resolve
 
 加权相对裸异步是工具 +9.2、resolve +9.7。锚定再 +2.4 / +1.6。刷新把 collapse 从 1/5 收到 0/5。作者把加权读成主要对付 rollout drift；分数本身同时含 \(D^{\mathrm{sup}}\)。
 
-附录写，除非另作说明，**后面的**方法比较用最硬的 lag = 8。这句话出现在附录 B.1，不能直接当成 Table 1 已经声明 lag = 8。Figure 3 的 lag 是人为固定的；Table 1 的裸异步没有在正文写出 lag。
+附录 B.1 的 Compared methods 写：除非另作说明，这句之后的方法比较用最硬的异步设定 lag = 8。这句话在附录 B 末尾，后面是方法名清单和附录 C（Table 3、Figure 5、Figure 6）。below 不回指正文 Table 1。Figure 5 自己写明 lag 取 0、2、4、8。Table 1 的 caption 和 §5.3 没有写异步 lag。
 
 ## 与现有 wiki 页的关系
 
@@ -133,15 +133,15 @@ Table 2 在裸异步上逐件加上机制。工具是 Avg@4，coding 是 resolve
 - **[Uni-OPD](uni-opd.md)** 修的是当前 rollout 上轨迹回报和 0/1 结果反序，不处理异步缓冲的新鲜度。
 - **[OPD 综述](opd-survey.md)** v4 把它放在训练动态轴，表里写成 Freshness-aware control、轨迹级、Async-OPD lag bounding。综述那一段收成「用 freshness budget 限制 rollout 策略和更新策略的 lag」。原文还有两项 KL、ReLU 权重和 rollout 锚定。数字以这篇 Table 1–2 为准。
 
+\(\alpha,\beta,\xi,\lambda,\kappa_f,\kappa_{\mathrm{roll}},\kappa_{\mathrm{sup}}\) 只写「pilot 上选定」，正文没有数值。缺这些系数也不妨碍读新鲜度加权、锚定和刷新这三步，不再追。
+
 ## 待追问
 
-- **现有材料待核**：Table 1 与 Table 2 的异步 post-patch 回归是 12.1 和 7.4。resolve、同步和 f-OPD 的回归对得上。
-- **现有材料待核**：工具指标在 §5.1 / Table 2 是 Avg@4，附录后一段 Metrics 写成 single-trajectory tool success。
-- **现有材料待核**：Table 1 的异步 lag 没有在正文写死。附录「比较用 lag = 8」的 below 指附录之后。
-- **需实验或作者披露**：\(\alpha,\beta,\xi,\lambda,\kappa_f,\kappa_{\mathrm{roll}},\kappa_{\mathrm{sup}}\) 只有「pilot 上选定」。复现缺这些数。
-- **需实验或作者披露**：\(\ell\) 的发散度方向、是不是 full-vocab。诊断 KL 不能代替它。
-- **需实验或作者披露**：Qwen3-Coder-30B-A3B-Instruct 在附录指向 Qwen3 技术报告 [4]，Table 1 指向 Qwen3-Coder-Next 报告 [49]。两处没有对齐到同一份权重，51.6 也没有写是在 250 题子集上重测的。
-- **需实验或作者披露**：纯推理不记录 supervision replay，但 Figure 3(b) 仍画了随 lag 上升的 supervision drift。推理曲线是否包含这一项，正文没有分开。
+- **数字相互矛盾**：Table 1 与 Table 2 的异步 post-patch 回归是 12.1 和 7.4。resolve、同步和 f-OPD 的回归对得上。
+- **数字相互矛盾**：工具指标在 §5.1 / Table 2 是 Avg@4，附录后一段 Metrics 写成 single-trajectory tool success。
+- **需核对原文**：\(\ell\) 的发散度方向、是不是 full-vocab。诊断 KL 不能代替它。目标本身没定义完。
+- **需核对原文**：Qwen3-Coder-30B-A3B-Instruct 在附录指向 Qwen3 技术报告 [4]，Table 1 指向 Qwen3-Coder-Next 报告 [49]。两处没有对齐到同一份权重，51.6 也没有写是在 250 题子集上重测的。
+- **需核对原文**：纯推理不记录 supervision replay，但 Figure 3(b) 仍画了随 lag 上升的 supervision drift。推理曲线是否包含这一项，正文没有分开。
 
 ## 相关页面
 

@@ -169,16 +169,11 @@ Gemma 4 31B 以 Elo 1451 排名 open dense 模型第一，超过 Gemma 3 27B（1
 
 > Table 9 节选。Gemma 4 在 128k 长上下文上全面超越 Gemma 3 27B。E4B 在 RULER 128k 上以 86.6 vs 66.0 大幅领先。
 
+预训练 token 数、训练步数、thinking 数据构成和 RL 策略（仅写 similar to Gemma 3）、以及 p-RoPE 的 $p=0.25$ 选择依据，报告都没有给。这些缺口不改变已经写出的架构。
+
 ### 音频 benchmark
 
-E2B/E4B 在 FLEURS ASR 和 CoVoST 翻译上均优于 Gemma 3n 对应尺寸，尽管音频编码器从 680M 减到 305M、on-disk 从 390MB 减到 87MB。E2B 翻译 BLEU 相对提升 12%，ASR WER 相对改善 17%。
-
-## 待追问
-
-- **需实验或作者披露**：预训练数据规模（token 数）和训练步数未公开。
-- **需实验或作者披露**：Thinking mode 的训练数据构成和 RL 策略未详述（仅提及"similar to Gemma 3"）。
-- **需实验或作者披露**：p-RoPE 的 p=0.25 选择依据和消融结果未给出。
-- **需实验或作者披露**：Encoder-free 12B 在音频任务上与有编码器的 E2B/E4B 仍有差距（Table 8 vs Table 7），差距来源是编码器本身还是训练数据量？
+E2B/E4B 在 FLEURS ASR 和 CoVoST 翻译上均优于 Gemma 3n 对应尺寸，尽管音频编码器从 680M 减到 305M、on-disk 从 390MB 减到 87MB。E2B 翻译 BLEU 相对提升 12%，ASR WER 相对改善 17%。原文没有这项实验/对照：没有把 encoder-free 12B 与带编码器的 E2B/E4B 的音频差异拆成编码器本身和训练数据量。
 
 ## 相关页面
 

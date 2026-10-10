@@ -135,12 +135,9 @@ SFT 惩罚模型不给特定答案概率；RL 的监督绑定 task success 而�
 ## 证据边界与阅读提示
 
 - **「暴力 SFT 过训练 expert → OPD 蒸馏」是否已在产业报告中出现**？作者提出这是 hopeful result，但 MiMo/V4 的 teacher 都是 RL 训出来的。[Nemotron 3 Ultra](nemotron-3-ultra.md) 的 STEM teacher 在 student 之上又做了大规模 SFT+RL（DeepSeek-V4-Pro 生成的推理混合），再 OPD 回去，HLE 恢复率只有 16.9%——作者归因于 student 采样不到 teacher 新学的推理路径。这是「额外 SFT teacher → OPD」的生产反例，限定在自包含推理，不否定 agentic 域的高恢复率。
-
-## 待追问
-
-- **需实验或作者披露**：**on-policy 数据 > teacher 的结论是否只在 minimal editing 这种 niche task 上成立**？作者自己说该 task 适合测遗忘和泛化，但在更 broad 的能力域上，teacher 质量是否会重新主导？
-- **现有材料待核**：**OPSD 的 pointwise clipping 与 KAT-Coder-V2.5 的 drift-aware truncation / Keye-VL-2.0 的 top-k overlap estimator 是否在解决同一个问题**？原文剪的是 full-vocab 高贡献 style 词表项，不是 sampled-token reverse KL 上的 clip。 KAT 剪的是长轨迹 drift，Keye 过滤双方低概率 token；需先比较估计器、作用对象与训练阶段，再讨论是否能统一。
-- **需实验或作者披露**：**熵下降与解法多样性的关系**：博客图中的 OPD 更早陡降现象，能否在匹配训练预算、采样温度、熵估计方式与多随机种子的条件下复现？应同时测 token entropy、同题语义多样性和 pass@k，不能把它们当作同一指标，也不能先假设 OPD 普遍比 RL 丢失更多多样性。此前与 Qwen3 pass@64 改善的表面冲突，应改为同协议下的联合测量问题。
+- **三套稳定化不是同一个问题。** [OPSD](opsd.md) 的 pointwise clipping 剪的是 full-vocab 上高贡献的 style 词表项。KAT-Coder-V2.5 按 top-k 重叠在长轨迹上做梯度掩码。Keye-VL-2.0 用 top-k overlap 决定采样 token 的 advantage 算不算。估计器、作用对象和训练阶段都不同，不再问它们能不能收成一件事。
+- 原文没有在 minimal editing 以外的能力域上，对照 on-policy 数据与 teacher 质量谁主导。
+- 原文没有在匹配训练预算、采样温度、熵估计和多种子的条件下，把 token entropy、同题语义多样性和 pass@k 放在一起测。
 
 ## 相关页面
 

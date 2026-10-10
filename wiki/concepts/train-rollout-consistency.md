@@ -48,7 +48,9 @@ timestamp: 2026-09-11
 
 ### 第三层：量化 / 精度契约
 
-核心约束是**两边必须共享同一份量化协议**：只量化 rollout，或两边量化方式不同，会让两边从同一权重算出不同结果，误差逐层累积（Miles §3.1 称其可能直接导致 catastrophic train-rollout mismatch）。做法是把量化实现成端到端契约，检查 checkpoint 转换、trainer 前向、rollout、权重导出四个阶段同契约；允许的部署组合只有「两边同格式」或「trainer 留 BF16 而 rollout 量化」两种（NVFP4 例外，它要求每个接触权重的阶段都量化）。
+核心约束是**两边必须共享同一份量化协议**：只量化 rollout，或两边量化方式不同，会让两边从同一权重算出不同结果，误差逐层累积（Miles §3.1 称其可能直接导致 catastrophic train-rollout mismatch）。Miles 把 MXFP8 与 NVFP4 做成端到端精度契约，检查 checkpoint 转换、trainer 前向、rollout、权重导出四个阶段同契约。允许的部署组合只有「两边同格式」或「trainer 留 BF16 而 rollout 量化」两种；NVFP4 要求每个接触权重的阶段都量化，因此不能配 BF16 trainer。
+
+适用格式写在 §3.1 与 Table 5。有端到端 recipe 的量化格式是 **FP8 blockwise**（128×128、FP32 scale）、**MXFP8**（1×32、UE8M0 scale）和 **NVFP4 E2M1**（1×16，块内 E4M3 scale 再套每张量 FP32 scale）。四阶段契约点名的是 MXFP8 与 NVFP4。INT4 QAT 与「BF16 train, FP8 serve」是并列选项；后者就是 trainer 留 BF16、rollout 走 FP8。§9 参考运行用的就是这一种，剩余 train-inference KL 仍由 TIS 吸收。§3.4 把 TIS / clip-or-pop 放在目标函数一侧，用来处理两边仍不一致时的 ratio；精度选择与这一层分开。
 
 - 各家变体：[MiniMax-M1](../sources/minimax-m1.md) 在 hybrid Lightning Attention 上看到 train/infer kernel 概率对不齐（LM head 高幅激活），reward 不涨；LM output head 改 FP32 后相关从约 0.987 到 0.997（Figure 3），小 dense softmax 模型上没出现。[Ring-2.6](../sources/ling-2.6.md) 用 module-aware FP8——LM Head 走 FP32、Attention/Shared Experts 保 BF16、Routed Experts 用 blockwise FP8，按模块敏感度分配精度；[Kimi K3](../sources/kimi-k3.md) 从 SFT 起即 QAT（MXFP4 权重 + MXFP8 激活），RL 时 rollout 与 training 共用同一量化方案；[MiMo-V2.6](../sources/mimo-v2.6.md) 在 mid-training 做 MXFP4 QAT，RL 的专家 rollout 用 MXFP4，训练侧按同一 Humming GEMM 做 QDQ；[Laguna](../sources/laguna-m1-xs2.md) 保留 BF16 权重、只把 KV cache 存 FP8——作者明确写「为安全牺牲一半并发」，因为 FP8 权重的预发布消融显示 train-inference KL mismatch 变大；[VibeThinker-3B](../sources/vibethinker-3b.md)（MGPO）观察到 rollout engine 优化推理吞吐后被放大的概率失配，直接改用全 on-policy。
 
@@ -71,15 +73,11 @@ timestamp: 2026-09-11
 - **它区分了「训练跑不动」和「训练跑得动但训的是别的东西」**。异步调度、partial rollout、staleness 治理解决的是前者；本页这一轴解决的是后者。
 - **「对齐」有明确的成本阶梯**，因此正确的问题不是「要不要做到 bit-exact」，而是「在哪个模型 / 拓扑上值得买到哪一层」：TITO 近乎免费但要求 serving 层可改造；R3 要付 60 MB/轨迹；量化契约会绑死可选格式与硬件（MXFP8 / NVFP4 只在 Blackwell 上可用）；bit-exact 只在 dense 小模型上有 profile。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：R3 的带宽成本：Miles 估 60 MB/轨迹，原文只报 <3% 延迟。1M 上下文下是否还有更低成本的等价机制？异步 staleness 大时只重放 mask 够不够？
-- **需实验或作者披露**：「量化契约」与「ratio 修正」的边界应该是硬性的吗？Miles 的 NVFP4 例外说明有些格式无法只靠 ratio 修正兜底，但报告没给「哪些格式必须走契约、哪些可以靠修正」的判据。
-- **需实验或作者披露**：各家的对齐声明几乎都是自报，缺少跨系统、同配置的独立测量。
-
-## 相关追问
-
-主记录：[log-prob 差与 KL 的统计口径](../sources/miles-v0-1.md#待追问)；[多模态 TITO 精确性](../sources/miles-v0-1.md#待追问)。
+- R3 的 60 MB/轨迹与 <3% 延迟已写在上文。原文没有 1M 上下文成本曲线，也没有异步 staleness 更大时只重放 mask 的实验。
+- 各家对齐声明几乎都是自报。原文没有跨系统、同配置的独立测量。
+- 量化契约的适用格式已写在第三层。原文没有「可以不走契约、只靠 ratio 修正」的格式清单。
 
 ## 相关页面
 

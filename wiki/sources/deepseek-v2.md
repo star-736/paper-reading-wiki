@@ -15,7 +15,7 @@ resource: "../../raw/DeepSeek-AI%20%E7%AD%89%20-%202024%20-%20DeepSeek-V2%20A%20
 - 标题：DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model
 - 版本/日期：arXiv:2405.04434，2024-05
 - 团队：DeepSeek-AI
-- 关键身份：**MLA（Multi-Head Latent Attention）的首次提出处**，也是 DeepSeekMoE 的奠基论文之一。后续 [DeepSeek-V3.2](deepseek-v32.md) 的 DSA、[DeepSeek-V4](deepseek-v4.md) 的 CSA 都架在 MLA 之上。
+- 关键身份：**MLA（Multi-Head Latent Attention）的首次提出处**，也是 DeepSeekMoE 的奠基论文之一。下一份报告 [DeepSeek-V3](deepseek-v3.md) 沿用这里的五个 MLA 宽度。后续 [DeepSeek-V3.2](deepseek-v32.md) 的 DSA、[DeepSeek-V4](deepseek-v4.md) 的 CSA 都架在 MLA 之上。
 - 概念页：[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)
 
 ## 核心结论
@@ -56,6 +56,22 @@ RoPE 与低秩 KV 压缩**不兼容**：若直接对 K 施加 RoPE，位置敏�
 
 8.1T tokens 预训练；pipeline parallelism 部署不同层；DeepSeekMoE 用 2 shared + 160 routed expert 配置。128K 上下文经 Needle-in-a-Haystack 压力测试。
 
+### 负载均衡（§2.2.2–2.2.4，原文确证）
+
+V2 仍是 auxiliary-loss 配置，不是 V3 起的 auxiliary-loss-free。路由先做 **device-limited routing**：每个 token 的目标专家落在至多 \(M\) 台设备上；\(M\ge 3\) 时作者称与不受限 top-K 大致对齐。训练超参取 \(M=3\)，routed expert 均分到 \(D=8\) 台设备。
+
+平衡由三项辅助损失相加，都是「频率 × 亲和」那种点积：
+
+| 损失 | 管什么 | 训练系数 |
+| --- | --- | --- |
+| \(L_{\text{ExpBal}}\) | expert 级，防 routing collapse | \(\alpha_1=0.003\) |
+| \(L_{\text{DevBal}}\) | 设备上的专家组负载 | \(\alpha_2=0.05\) |
+| \(L_{\text{CommBal}}\) | 每台设备收到的 token 量；发送量已由 device-limited routing 封顶 | \(\alpha_3=0.02\) |
+
+损失不能保证严格平衡，所以训练时还有 **device-level token-dropping**：每台设备的 capacity factor 为 1.0，丢掉该设备上亲和最低的 token，直到不超预算；约 10% 的训练序列从不丢 token。评测不丢 token。
+
+[DeepSeek-V3](deepseek-v3.md)（[`raw/2412.19437v2.pdf`](../../raw/2412.19437v2.pdf) §2.1.2）把相对 V2 的架构例外写成 auxiliary-loss-free：bias 只参与 top-K 选择，不进门控值；另留一个系数极小的 sequence-wise balance loss，防止单条序列内极端失衡。谱系对照见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。
+
 ## 后训练
 
 SFT + GRPO 强化学习（DeepSeek 自家 RL 算法），对齐到对话与人类偏好。本页聚焦 MLA 架构，后训练细节从略——如需可单独 deepen。
@@ -83,18 +99,14 @@ SFT + GRPO 强化学习（DeepSeek 自家 RL 算法），对齐到对话与人�
 
 因此，“MLA 在该实验总体表现更好且缓存显著更小”有原文支撑；“MLA 在所有规模、所有任务都超过 MHA”不成立（`refuted`，小模型 C-Eval 已是反例）。Table 9 未给多 seed 方差或置信区间，不能把每个正差值都称作统计显著优势。其 247.4B / 21.5B 的大模型实验列，也不能直接当作发布版 236B / 21B 的最终 8.1T 训练结果。摘要的 −93.3% 与 5.76× 是相对 DeepSeek 67B 的另一组比较，不能混用分母。
 
-## 待追问
-
-- **现有材料待核**：**负载均衡**：V2 报告 §2.2.3 用的是三重 auxiliary loss（expert 级 $L_{\text{ExpBal}}$ + device 级 + …）配 device-limited routing 与 token-dropping——这是 aux-loss 旧世配置；V3 起才切换到 auxiliary-loss-free bias（[Loss-Free Balancing](loss-free-balancing.md)），谱系对照见 [MoE 负载均衡谱系](../concepts/moe-load-balancing.md)。本页架构段尚未沉淀 V2 的三重 loss 细节。
-
 ## 相关追问
 
-主记录：[MLA 架构演进表](../concepts/multi-head-latent-attention.md#待追问)。
+主记录：[query 压缩如何省激活显存](../concepts/multi-head-latent-attention.md#待追问)。演进表已写入 [从 V2 到 V4](../concepts/multi-head-latent-attention.md#从-v2-到-v4)。
 
 ## 相关页面
 
 - 概念：[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)、[DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md)、[高效长上下文注意力](../concepts/efficient-long-context-attention.md)
-- 后续来源：[DeepSeek-V3.2](deepseek-v32.md)、[DeepSeek-V4](deepseek-v4.md)
+- 后续来源：[DeepSeek-V3](deepseek-v3.md)、[DeepSeek-V3.2](deepseek-v32.md)、[DeepSeek-V4](deepseek-v4.md)
 - 比较：[稀疏注意力机制对比](../comparisons/sparse-attention-mechanisms.md)
 
 对应概念与矩阵形状：[Multi-Head Latent Attention (MLA)](../concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)。

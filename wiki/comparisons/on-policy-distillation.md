@@ -156,15 +156,12 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 ## 证据边界与阅读提示
 
 - **GLM-5 的 cross-stage distillation 应不应该归到 OPD**？它的 KL 算法、on-policy 形式与另外几家一致（都引同一篇 Thinking Machines Lab 博客），但目的（召回而非融合 / 压缩）独立。本页倾向于把它列出来作为第三类用法，而不是排除在 OPD 之外。
-
-## 待追问
-
-- **需实验或作者披露**：**token-level KL vs full-vocab KL 的真实差距有多大**？MiMo 在 token-level KL 上做出了可与 V4 比拼的 SWE-Bench 73.4 / BrowseComp 58.3，说明 token-level 在恰当稳定性补丁下不是 OPD 的瓶颈。[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 的初步实验更进一步：full-vocab / top-k logit matching 在 Terminal Bench 上**不如** sampled-token。V4 上 full-vocab 的工程代价到底换来了什么--是稳定性、收敛速度，还是 teacher 数量上限？两边都没有交叉复现。teacher 是否 in-support 与估计器本身的影响还未拆开。[Revisiting OPD](../sources/revisiting-opd.md) 在 7B 数学上说明 sampled-token 会脆，并用 teacher top-32 重归一化 reverse KL 相对 sampled-token 抬高数学均分；它没有 full-vocab 臂，也不是 Nemotron 的 logit matching。[Many Faces](../sources/many-faces-opd.md) 进一步写明：不重归一化时 \(+1\) 项消不掉；重归一化消掉偏差，但丢掉集合上的概率质量，不再逼近全词表。两篇没有同一协议的对照。
-- **需实验或作者披露**：**单 teacher（Qwen3）vs 多 teacher（MiMo/V4）哪种更适合谁**？Qwen3 demo 了"单 flagship teacher 也能让 8B 在 pass@64 上扩探索空间"，那 MiMo/V4 的多 teacher 是否在小模型场景下也成立--还是只有大模型 student 容量才撑得住多 teacher？
-- **需实验或作者披露**：**off-policy distill + on-policy distill 的两阶段是不是更通用**？Qwen3 和 Qwen3-VL 都走这条；MiMo 直接从 SFT 进 MOPD 不做 off-policy 预热；V4 也从 specialist 训练进 OPD 不做 off-policy 预热。两阶段是 Qwen 家族的偏好，还是普适更优？
-- **需实验或作者披露**：**MOPD 的 teacher-student co-evolution 循环**：[Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 已跑两轮（Figure 10 + Table 5）。第二轮在 Terminal Bench 继续涨（50.8→54.0）、GDPVal 持平 46.7。HLE 两轮几乎不动（25.6→26.7）。还没回答的是：哪些域需要第二轮、统一 SFT 能否救回 HLE 那类「teacher 靠 off-policy 新数据」的缺口。 Ultra §3.3.5 把统一 SFT 再分域、或 teacher 先造 SFT 再 MOPD 列为未做的 Foundations 实验。
-- **需实验或作者披露**：**teacher 类型选择（RL vs SFT vs Self）是否由 domain reward 噪声决定**？[nrehiew 博客](../sources/nrehiew-sft-rl-opd.md)指出 MiMo Table 7 中 Math/Code 偏好 RL teacher、Creative writing / 知识密集型偏好 self-distillation，与 reward 噪声一致--verifiable reward 的 domain 适合 RL teacher，LLM judge 有偏的 domain 适合蒸馏。这是否意味着 teacher 类型选择有一条可操作规则？
-- **需实验或作者披露**：**为什么 RL domain 的 student 几乎总是超过 teacher，self-distill domain 却不一定**？nrehiew 注意到 MiMo Table 7 里最终 merged student 在 RL domain 普超 teacher、在 self-distilled domain 有时不如 teacher。这与 on-policy 承重墙实验（teacher 质量不是决定性的）是否矛盾--还是 self-distill domain 的 reward 噪声让 teacher 信号本身不可靠？[ExOPD](../sources/exopd.md) 只解释了 \(\lambda>1\)、同基座、prompt 按域分开的情形；\(\lambda=1\) 的生产配方仍然开着。
+- [Revisiting OPD](../sources/revisiting-opd.md) 与 [Many Faces](../sources/many-faces-opd.md) 没有同一协议的对照。Revisiting 没有 full-vocab 臂。V4 与 Nemotron 的估计器也没有交叉复现，见上文。
+- 各家没有在小模型上对照单 teacher 与多 teacher。
+- 各家没有把「off-policy 再 on-policy」和「直接进 OPD」做成跨家族的受控对照。
+- [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) §3.3.5 把统一 SFT 再分域、或 teacher 先造 SFT 再 MOPD 列为未做。原文没有哪些域需要第二轮、以及统一 SFT 能否补上 HLE 缺口的实验。
+- 各家没有把「domain reward 噪声决定 teacher 类型」做成受控对照。
+- 原文没有检验「RL 域 student 超过 teacher」和 on-policy 承重墙实验是否矛盾。[ExOPD](../sources/exopd.md) 的闭式只覆盖 \(\lambda>1\)。
 
 ## 相关页面
 
@@ -192,5 +189,8 @@ DeepSeek-V4 报告没有给可比的"OPD 前后"消融表（它把 OPD 当 mixed
 - [GKD：On-Policy Distillation of Language Models](../sources/generalized-knowledge-distillation.md)：本页「轴二：KL 形式的工程权衡」的上游菜单——GKD 把目标拆成「student 数据比例 λ × 发散度 D」两个旋钮，并给出 forward KL / JSD(β) 谱系 / reverse KL 的实测排序（task-dependent）。本页比较的是各报告选了哪个估计器，GKD 说明这些选择在多大程度上是可选维度。
 - [MiniLLM：On-Policy Distillation of Large Language Models](../sources/minillm.md)：另一支源头，直接改目标函数（forward KLD → reverse KLD）并用 policy gradient 优化，配套 single-step decomposition / teacher-mixed sampling / length normalization 三个稳定化技巧；与本页各报告的 token-level advantage 形式同族但非同一估计器。
 - [AKL](../sources/akl.md)：把 GKD/MiniLLM 连续 toy 上的 mode-seeking 刻画降级；离散 softmax 上 FKL/RKL 同驻点，有限 epoch 差在 head vs tail。
+- [ListOPD](../sources/listopd.md)：ExOPD 的 reward-scale \(\lambda\) 在近确定 JSON 上的 clip-safe 阈值。不是 GKD 的数据混合比例。
+- [Rock Tokens](../sources/rock-tokens.md) / [Local teachability collapse](../sources/local-teachability-collapse.md) / [Healthcare AI GYM](../sources/healthcare-ai-gym.md)：综述失败目录里原先只有转述的三处一手页。Jeong 的 KL 重置是权重复制。
+- [Gemma 2](../sources/gemma-2.md)：预训练是语料软标签；后训练只声明了学生分布上的蒸馏，没有 rollout 协议。
 
 关联提问页：[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md#相关追问)、[Nemotron 3 Ultra 技术报告](../sources/nemotron-3-ultra.md#相关追问)。

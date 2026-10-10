@@ -80,6 +80,8 @@ ObservationPack 从提案族 Context（C23/C24）出发，最终落在 observati
 
 这解释了为什么 SoL-Pi **用不上** Pi 0.84.0 的 durable `AgentHarness`：它的 Compact 语义绑在「`compact()` abort + `agent_settled` + 无 promise 的 `sendMessage`」这一套旧 ExtensionAPI 上。
 
+2026-10-11 核对的当前 coding-agent 主路径里，这两条语义还在（外部佐证，[`raw/pi-coding-agent-v1.1.0-compact-snapshot.md`](../../raw/pi-coding-agent-v1.1.0-compact-snapshot.md)）：v1.1.0 的 `agent_settled` 仍是 session / extension / JSON 事件，并新增 `aborted`；`AgentSession.compact()` 仍先 `await this.abort()`，且不重试、不继续被打断的 turn。`packages/durable` 仍单独存在，发行说明没有把它写成 CLI 默认。`sendMessage()` 不返回 promise 这一 0.84.2 细节没有在这次 v1 注释里重述。本库不再追「durable AgentHarness 一旦成为默认、旧语义还在不在」这一尚未发生的切换。
+
 ## 评测要点
 
 所有主比较在 `xhigh`。主台是 EdgeBench，因为轨迹要跑数小时；作者认为 Terminal-Bench 2.1 / SWE-bench 通常一小时内结束，重复开销来不及累积（原文确证，§ EdgeBench makes long-horizon efficiency measurable）。
@@ -101,20 +103,16 @@ Swarm 试点（Anthropic original performance take-home，单次、非随机）�
 - Compact 的 20k tail 是对 Pi 默认的硬编码估计。用户若改了 Pi 的 compaction 设置，经济判断会偏。
 - 评测主台是 [EdgeBench](edgebench.md) 的 51 公开题；官方 EdgeBench 榜用 Codex/Claude Code，不能和 SoL-Pi 数字横比。
 - 「harness scaling law」和 closed-loop 环境自合成都标为早期 / 愿景，没有曲线。
+- 博客没有四个机制的单机制消融，也没有把 45–49% 的 token 下降拆到 ObservationPack、Compact 等各项。94% 是拼装后的平均分，原文没有把它拆成地板泄漏和 EdgeBench 噪声的对照。
 
 ## 待追问
 
-- **需实验或作者披露**：94% 能力保留是平均分；Terminal-Bench 4 上少解 3 题，损失集中在哪类任务？
-- **需补外部来源**：SoL-Pi 钉在 Pi 0.84.2 的旧 `ExtensionAPI`。Pi 的 durable `AgentHarness` 一旦成为 CLI 默认，`agent_settled` / `compact()` abort 语义还在不在？
-
-## 相关追问
-
-主记录：[SoL-Pi 四机制的独立消融](../concepts/agent-harness.md#待追问)。
+- **需核对原文**：94% 能力保留是平均分；Terminal-Bench 4 上少解 3 题，损失集中在哪类任务？
 
 ## 相关页面
 
 - [Pi coding agent 设计博客](pi-coding-agent.md)
-- [DeepSeek Harness 官方文档](deepseek-harness.md)（插件核 vs 本页在 Pi 上加效率层；PTC/`run_code` 与 Action Fusion 是否同类未交叉实验）
+- [DeepSeek Harness 官方文档](deepseek-harness.md)（插件核 vs 本页在 Pi 上加效率层；原文没有 PTC/`run_code` 与 Action Fusion 的交叉实验）
 - [EdgeBench 技术报告](edgebench.md)
 - [Databricks coding agent 内部评测博客](databricks-coding-agents.md)
 - [Agent harness](../concepts/agent-harness.md)

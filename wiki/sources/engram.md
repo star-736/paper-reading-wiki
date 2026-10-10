@@ -136,17 +136,20 @@ Figure 6 是训练–推理不一致的 post-hoc 消融（推理时压掉稀疏�
 
 > Figure 4 | Analysis of representational alignment and convergence speed. (a) Layer-wise KL Divergence via LogitLens. … (b–c) CKA … upward shift of the high-similarity diagonal … shallow layers are functionally equivalent to deeper layers of the MoE model.（§6.1 / Figure 4）
 
+## 证据边界与阅读提示
+
+- 「等效加深」是 CKA / LogitLens 上的相关；原文没有把 MoE 加层到对齐深度再比下游的干预实验。
+- 无限内存曲线停在 100B tokens 的 3B backbone，原文没有生产 token 预算上的外推实验。
+- Table 4 是 dense 4B/8B 加单层 100B Engram，不是 MoE-27B。原文没有 MoE 与 Engram 同时通信的实验；HBM 热缓存、NVMe 冷层和多机切表没有实测。
+- 原文没有与 [Intern-S2-Mobius](intern-s2-mobius.md) 的同协议对照。Mobius 共享 FFN 参数库，Engram 是 hash 到静态 embedding。
+
 ## 待追问
 
-- **需实验或作者披露**：**摘要 MMLU +3.4 与 Table 1 的 +3.0 不一致**。MMLU-Redux 恰好是 +3.4（60.6→64.0）；未说明摘要用的是哪一列。
-- **需实验或作者披露**：**「等效加深」没有因果干预**：CKA/LogitLens 是相关；没有把 MoE 加层到 CKA 对齐深度再比下游。推理增益也可能来自更好的局部统计，而不是腾出的深度。
-- **需实验或作者披露**：**Engram-40B 项项不占优 + 262B tokens 相对 27B 稀疏表偏短**。无限内存曲线是 100B tokens 的 3B backbone，不能外推到生产 token 预算。
-- **需实验或作者披露**：**Table 4 用 dense 4B/8B + 单层 100B Engram，不是 MoE-27B**。避开了 Expert Parallel，也没有测 MoE+Engram 同时通信。HBM 热缓存、NVMe 冷层、多机切表都只是设计陈述。
-- **需实验或作者披露**：**与 [Intern-S2-Mobius](intern-s2-mobius.md) 的「知识 Memory」不是同一接口**：Mobius 共享的是 FFN 参数库、Reasoner 用计算去读；Engram 是 hash 到静态 embedding。两边都没做对方的对照。
+- **同一篇数字不一致**：**摘要 MMLU +3.4 与 Table 1 的 +3.0 不一致**。MMLU-Redux 恰好是 +3.4（60.6→64.0）；未说明摘要用的是哪一列。
 
 ## 相关追问
 
-主记录：[Engram 与 Qwen 的等参分配分歧](../concepts/conditional-memory.md#待追问)；[工具交错下的 n-gram 预取](../concepts/conditional-memory.md#待追问)。
+等参分配与工具交错预取都没有同协议对照，见 [条件记忆](../concepts/conditional-memory.md#证据边界)。
 
 ## 相关页面
 

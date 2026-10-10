@@ -101,15 +101,15 @@ Table 1（原文确证）。val100 / ITD / TBLite 为 8 次 pass@1；TB2 为 5 �
 
 从最强 8B ECHO checkpoint 关掉 GRPO，只跑 100 step \(\mathcal{L}_{\mathrm{Env}}\)。无过滤时 val100 +3.8 pp；过滤到「每次工具调用都可解析」后，PyTerm +10.0、ITD +5.2，val100 仍在 ±1 pp。**TBLite 同配方 −3.9**。作者怀疑 PyTerm 的 traceback/打印值更贴动作，TBLite 更多不可见文件系统与进程状态。失败模式下 env loss 会变成「失败动力学」模型，所以要 clean-rollout 过滤。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：OT-SFT 在 TB2 上 ECHO≈GRPO：是 strategy prior 真的补不回来，还是 TB2 + Terminus 2 方差（附录 SE ~1.5 pp）吃掉了 0.23 分？
-- **需实验或作者披露**：\(\lambda\) 与 clip-higher / void-trajectory filter 的交互只写「正交可组合」，没有 2×2 消融。
-- **需实验或作者披露**：Verifier-free 在 TBLite 失败，是否说明辅助 CE 依赖「观测与下一动作强对齐」的环境，迁不到 GUI / 搜索？
+- OT-SFT 的 TB2 上 ECHO 与 GRPO 接近（7.64→7.87）。附录 SE 约 1.5 pp。原文没有把这点差和方差拆开的对照。
+- 原文把 $\lambda$ 与 clip-higher / void-trajectory filter 写成正交可组合，没有 2×2 消融。
+- Verifier-free 在 TBLite 上失败已写在 §5.5。原文没有把这条辅助 CE 迁到 GUI 或搜索的实验。
 
 ## 相关追问
 
-主记录：[ECHO 与 LWM warm-up 能否叠加](qwen-agent-world.md#待追问)。
+主记录：[ECHO 与 LWM warm-up 能否叠加](qwen-agent-world.md#application-ii统一-agent-基座lwm-warm-up)。
 
 ## 相关页面
 

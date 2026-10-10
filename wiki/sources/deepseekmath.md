@@ -70,7 +70,7 @@ PPO（Eq. 1）用 GAE + 可学习 $V_\psi$ 算 advantage，并常把 KL 罚写�
 目标（Eq. 3）仍是 token-level importance ratio + clip，再减 $\beta D_{\mathrm{KL}}[\pi_\theta\|\pi_{\mathrm{ref}}]$。和 PPO 的差别在 **advantage 从哪来**，以及 **KL 放哪**：
 
 - 同一题从 $\pi_{\theta_{\mathrm{old}}}$ 采 $G$ 条 $\{o_i\}$。
-- **Outcome supervision**（§4.1.2）：reward model 给整条输出一个 $r_i$，组内标准化 $\tilde r_i=(r_i-\mathrm{mean}(\mathbf{r}))/\mathrm{std}(\mathbf{r})$，该序列**所有 token** 的 $\hat A_{i,t}=\tilde r_i$。
+- **Outcome supervision**（§4.1.2）：reward model 给整条输出一个 $r_i$，组内标准化 $\tilde r_i=(r_i-\mathrm{mean}(\mathbf{r}))/\mathrm{std}(\mathbf{r})$，该序列**所有 token** 的 $\hat A_{i,t}=\tilde r_i$。后来 [GSPO](group-sequence-policy-optimization.md) 把「reward 在 sequence、ratio 在 token」当作批评。那是后文的论点，本 PDF 没有 sequence-level ratio 实验，也不把这件事留成待补实验。
 - **Process supervision**（§4.1.3）：逐步奖励，token advantage 是后续步标准化奖励之和。
 - KL 用 Schulman (2020) 无偏估计（Eq. 4）直接进 loss，不写进 $r_t$，以免搅乱 $\hat A$。
 
@@ -126,16 +126,11 @@ Limitations（§6）：几何与定理证明弱于闭源；7B few-shot 几乎不
 ## 证据边界与阅读提示
 
 - Reward model 仍是神经网络 RM，不是后来通行的 rule-based verifier。GRPO 算法与「可验证奖励」不是同一件事。
+- 原文 GRPO 的 loss 是 sample-level 再 token 平均（$1/G\sum_i 1/|o_i|\sum_t$）。原文没有与后来全局 token 池平均的消融。
 
 ## 待追问
 
-- **需实验或作者披露**：原文 GRPO 的 loss 是 **sample-level 再 token 平均**（$1/G\sum_i 1/|o_i|\sum_t$）。[DAPO](dapo.md) 后来把这改成全局 token 池平均。DeepSeekMath 自己没有这条消融。
-- **需实验或作者披露**：Outcome 把同一 $\tilde r_i$ 广播到整条序列：这正是后来 GSPO「reward 是 sequence 级、ratio 却 token 级」批评的起点。本页没有 sequence-level ratio 实验。
-- **需实验或作者披露**：RL 主结果用的是 outcome 还是 process、是否走完 iterative？§4.2 没写死；过程监督优势只在 1.3B 的 Figure 5。
-
-## 相关追问
-
-主记录：[RL 的 Maj@K 与 Pass@K 外推](../comparisons/llm-rl-policy-optimization.md#待追问)。
+- **需核对原文**：RL 主结果用的是 outcome 还是 process、是否走完 iterative？§4.2 没写死；过程监督优势只在 1.3B 的 Figure 5。Figure 6 的两轮迭代是另一组 7B 曲线，不能回写成 Table 5 的协议。
 
 ## 相关页面
 

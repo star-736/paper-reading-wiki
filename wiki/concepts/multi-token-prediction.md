@@ -51,7 +51,7 @@ MiniMax 的另一个要点是初始化方式：从主模型复制权重扩展 MT
 
 ## 当 MTP-1 不够：DSpark 的接管
 
-DeepSeek 系列在 V3 / V3.2 / V4 的报告原文里一直停留在 MTP-1（single-token MTP），而不是扩到 MTP-3/5 这种更激进的多 token draft。[DSpark 论文](../sources/dspark.md) § 5.4 给出了**生产侧的诚实原因**：静态多 token drafter 在高并发下会**严格降低 aggregate throughput**，因为长 draft block 里靠后的低置信 token 会无差别占用 target 验证 batch 的容量。DSpark 把"该验多长"做成动态的全局吞吐最大化问题——confidence head 估每个 prefix 存活概率，hardware-aware scheduler 按 profile 出的 SPS(B) 曲线在线截断——于是大 draft block 在轻负载下能展开吃干算力、在高负载下又会自动压缩，避免 MTP-3/5 的吞吐塌方。V4 preview 上线两周后，生产 serving 引擎里 MTP-1 已被 DSpark 整体替换。
+DeepSeek 系列在 [V3](../sources/deepseek-v3.md) / V3.2 / V4 的报告原文里一直停留在 MTP-1（single-token MTP），而不是扩到 MTP-3/5 这种更激进的多 token draft。[DSpark 论文](../sources/dspark.md) § 5.4 给出了**生产侧的诚实原因**：静态多 token drafter 在高并发下会**严格降低 aggregate throughput**，因为长 draft block 里靠后的低置信 token 会无差别占用 target 验证 batch 的容量。DSpark 把"该验多长"做成动态的全局吞吐最大化问题——confidence head 估每个 prefix 存活概率，hardware-aware scheduler 按 profile 出的 SPS(B) 曲线在线截断——于是大 draft block 在轻负载下能展开吃干算力、在高负载下又会自动压缩，避免 MTP-3/5 的吞吐塌方。V4 preview 上线两周后，生产 serving 引擎里 MTP-1 已被 DSpark 整体替换。
 
 这把 MTP 在 DeepSeek 系里的角色推到下一阶段：从"训练目标 + 静态 draft" 进入"训练目标 + dynamic-block draft + per-request scheduling"，draft model 不再是固定深度的并行预测头，而是 parallel backbone + 轻量 sequential head + 校准过的 confidence head 三件套。
 

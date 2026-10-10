@@ -79,11 +79,11 @@ Kernel（Figure 6，$|I|=16$）：相对 FlashAttention-2，A100 128k 最高 7.4
 
 - NSA 对照是第三方 Triton，不是 DeepSeek 原文 kernel；速度与质量两边都可能吃亏。
 - 跨层是否复用 $I(i)$：每层独立，没有 IndexCache 实验。
+- 本报告没有 RL / agentic 稳定性实验，也没有写 top-k 是否非确定。不再追。
 
 ## 待追问
 
-- **需实验或作者披露**：`openbmb/MiniCPM4.1-8B` 与 §4 的 8B 训练检查点是不是同一份权重？2026-10-10 的 `config.json` 与 §4 的 GQA 形状一致（hidden 4096、32 层、32 query head、2 KV head），但默认配置没有 `sparse_config`，模型卡把它写成带 fusion thinking 的 MiniCPM4 最新版。形状一致不等于 §4 那次 8T+5B 运行的权重。
-- **需实验或作者披露**：没有 RL / agentic 稳定性。top-k 是否非确定，本页没写。
+- **需核对仓库**：`openbmb/MiniCPM4.1-8B` 与 §4 的 8B 训练检查点是不是同一份权重？2026-10-10 的 `config.json` 与 §4 的 GQA 形状一致（hidden 4096、32 层、32 query head、2 KV head），但默认配置没有 `sparse_config`，模型卡把它写成带 fusion thinking 的 MiniCPM4 最新版。形状一致不等于 §4 那次 8T+5B 运行的权重。
 
 ## 相关页面
 

@@ -76,11 +76,8 @@ HIGH / MEDIUM / LOW effort 的 pass@2 分别为 29.5% / 27% / 21%，相对 HIGH 
 
 - **跨领域性**：所有直接结果都是 ARC / ConceptARC 或 ARC-like 网格任务。语言、数学、工具使用和 ARC-AGI-2 只是作者的 future work，不是现有能力证据（原文确证，§9.1）。
 - **成本可比性**：$0.00070 是 H200 计时乘固定价格的 computed cost；图中的竞争项混合了 API 价格与硬件 estimates，且 leaderboard 快照和 API 定价都会变化（原文确证，§5、Figure 2 notes）。
-
-## 待追问
-
-- **需实验或作者披露**：**可复现性**：权重、完整训练配方、recurrent update 及推理 implementation 都未公开；独立 black-box audit 复现的是部署服务得分，而非从训练到部署的可复现性（原文确证，§5）。
-- **需实验或作者披露**：**memory 的作用分离**：$S_t$（示例适配）与 $H_r$（查询求解）的接口是清晰的系统抽象，但没有 hidden-state intervention 或公开 update rule 可直接证实两者的因果分工。
+- **实现未公开**：权重、完整训练配方、recurrent update 和推理 implementation 都不在报告里。独立 black-box audit 复现的是部署服务得分，不是从训练到部署的可复现性（原文确证，§5）。缺这些不改变已写出的系统抽象。
+- 原文没有这项实验/对照：没有 hidden-state intervention 来分开 $S_t$ 与 $H_r$ 的因果。update rule 未公开，上一条已写明。
 
 ## 相关页面
 

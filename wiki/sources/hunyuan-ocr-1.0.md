@@ -52,9 +52,9 @@ HunyuanOCR 是面向 OCR 的商业级开源轻量 VLM（约 1B）：原生分辨
 
 - **Hunyuan-ViT（约 0.4B）**：建在 SigLIP-v2-400M 上，混合生成–判别联合训练。按原图宽高比分 patch，ViT 全局注意力，避免拉伸。面向长文档、低质量扫描。
 - **Adaptive MLP Connector**：可学习 pooling，在空间维压缩高分辨率特征，保留文字密集区。
-- **Hunyuan-0.5B**：稠密 LLM，带 **XD-RoPE**：把常规 RoPE 拆成 text / height / width / time 四个子空间，对齐 1D 文本、2D 版面和 3D 时空。本报告用它做多栏与跨页；原生视频编码不是本页任务。
+- **Hunyuan-0.5B**：稠密 LLM，带 **XD-RoPE**：把常规 RoPE 拆成 text / height / width / time 四个子空间，对齐 1D 文本、2D 版面和 3D 时空。本报告用它做多栏与跨页；原生视频编码不是本页任务。已发布权重的 `xdrope_section` 为 `[16, 16, 16, 16]`（`head_dim` 128，四个子空间各 16 个频率通道；本地 `raw/hf-weight-configs-2026-10-11/HunyuanOCR.json`）。字段没有标明哪一段是 time。这些任务仍是静态图，报告没有写 time 位置 id 是否变化，用量不再追。
 
-后作 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) 写本模型视觉上限 2K、上下文 32K，1.5 升到 4K / 128K。2K 上限是 1.5 的转述，本 PDF 未写死最大边长。
+后作 [HunyuanOCR-1.5](hunyuan-ocr-1.5.md) §3.1 写把最大输入分辨率从 2K 扩到 4K。1.0 这份 PDF 没有写死边长。同一份已发布 config 的 `vision_config.max_image_size` 为 **2048**。2K 是后作陈述加上权重配置的外部佐证，不是 1.0 PDF 的原文确证。
 
 ### 任务与输出格式
 
@@ -93,7 +93,7 @@ IE 覆盖 30 类卡证/票据（附录 Table 8）。翻译能力受 0.5B 语言�
 
 ## 后训练
 
-GRPO（DeepSeekMath 式组内相对优势 + clip + KL 项写在 Eq. 1），**无显式 KL 系数**（附录 Table 9：`KL loss coefficient = 0`）。N=8、温度 0.85、top-p 0.95、top-k 50；actor LR 8e-7、Adam、constant、global batch 512、max prompt 6144 / max response 16384。超长或 schema 不合直接 reward=0。
+GRPO（DeepSeekMath 式组内相对优势 + clip）。Eq. 1 保留通式里的 $-\beta D_{\mathrm{KL}}$；附录 Table 9 把这次 RL 的 `KL loss coefficient` 写成 **0**。已披露的训练设置里 KL 项不生效，公式与表不再当成未解矛盾。N=8、温度 0.85、top-p 0.95、top-k 50；actor LR 8e-7、Adam、constant、global batch 512、max prompt 6144 / max response 16384。超长或 schema 不合直接 reward=0。
 
 任务自适应 reward（§5.2.2）：
 
@@ -139,14 +139,7 @@ Wild-OmniDocBench：把原页打印再折、弯、变光照后重拍。DocML：1
 
 v1.5→v1.6 自报掉 2.07；同属 v1.6 的自报与 MinerU 统一重测再差 2.16。MGAM 通常提分，这里统一重测更低，差异主要不像单纯粒度修正。
 
-Wild-OmniDocBench（外部佐证，2026-10-10）：[Tencent-Hunyuan/HunyuanOCR](https://github.com/Tencent-Hunyuan/HunyuanOCR) 的 README 在 2026-05-11 把这项写成已开源，链接 [VirtualLUOUCAS/Wild_OmniDocBench](https://github.com/VirtualLUOUCAS/Wild_OmniDocBench) 与 [Hugging Face](https://huggingface.co/datasets/VirtualLUO/Wild_OmniDocBench)。数据集说明写 1350 张、对应 OmniDocBench v1.5，由打印、形变和再拍摄做成。同一条公告开源的另一项是 MMTIT-Bench，不是 DocML。DocML 仍只出现在 v1.0 README 评测表的列名里，没有对应数据集仓库。
-
-## 待追问
-
-- **需补外部来源**：本 PDF 未写死视觉最大边长；1.5 说 1.0 是 2K。checkpoint 配置是否坐实 2K，本页不能升级为原文确证。
-- **需实验或作者披露**：XD-RoPE 的 time 子空间在 1.0 任务里实际用了多少？字幕抽取是视频截图，不是原生视频流。
-- **需补外部来源**：GRPO Eq. 1 写了 KL 项，附录 Table 9 却是 `KL loss coefficient = 0`。β 是否始终为 0，还是公式抄了 DeepSeekMath 通式。
-- **需实验或作者披露**：DocML 是否另有未挂在 HunyuanOCR README 上的发布地址。v1.0 评测表有这一列；2026-05-11 的开源公告点名的是 Wild-OmniDocBench 与 MMTIT-Bench。
+Wild-OmniDocBench（外部佐证，2026-10-10）：[Tencent-Hunyuan/HunyuanOCR](https://github.com/Tencent-Hunyuan/HunyuanOCR) 的 README 在 2026-05-11 把这项写成已开源，链接 [VirtualLUOUCAS/Wild_OmniDocBench](https://github.com/VirtualLUOUCAS/Wild_OmniDocBench) 与 [Hugging Face](https://huggingface.co/datasets/VirtualLUO/Wild_OmniDocBench)。数据集说明写 1350 张、对应 OmniDocBench v1.5，由打印、形变和再拍摄做成。同一条公告开源的另一项是 MMTIT-Bench，不是 DocML。DocML 仍只出现在 v1.0 README 评测表的列名里，没有对应数据集仓库，不再追一份未挂出来的发布地址。
 
 ## 相关追问
 

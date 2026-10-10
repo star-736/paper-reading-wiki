@@ -135,12 +135,12 @@ training_client.forward_backward(trajectories, loss_fn="importance_sampling")
 - **[GLM-5](glm-5.md)** §3.5 reference [28]——cross-stage distillation 直接引博客作为算法依据。
 - **[MiMo-V2-Flash](mimo-v2-flash.md)** §4——MOPD 引 Agarwal 2023 + Gu 2023 + Lu 2025（即本博客）三篇作为 OPD 文献。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：**discount factor 之争**：博客选 0（实践不提升），但有些 OPD 工作走 > 0；在什么场景 > 0 才有意义？长 horizon agentic task 是否例外？
-- **需实验或作者披露**：**teacher 选择**：博客发现 Qwen3-8B 当 teacher 蒸 8B 自己比 Qwen3-32B 当 teacher 在 personalization 上更好（"sampling from Qwen3-8B is better than Qwen3-32B for preserving chat capabilities"）。这违反"teacher 越强越好"直觉——什么时候同尺寸或更弱的 teacher 反而更适合？是否只在 self-distillation / continual learning 场景成立？
-- **需实验或作者披露**：**多 teacher 路由**：博客的实验全是**单 teacher**——MiMo 多 teacher、V4 >10 个 teacher 在 reverse-KL 框架里的相互覆盖如何？博客在 §Distillation for personalization 末段把 V3.2 specialist distillation 提了一句但没深入。
-- **需实验或作者披露**：**forking tokens 与 entropy bonus 的关系**：博客观察 teacher 主要罚分叉 token；这与 RL 中 entropy regularization、high-entropy token 主导论的理论联系是什么？是否说明在 forking token 上加权 KL 能进一步提效？
+- 原文没有长 horizon agentic 任务上 discount > 0 是否有增益的实验。博客的选择是实践不提升，所以用 0。
+- personalization 上，博客写用 Qwen3-8B 自蒸馏比用 Qwen3-32B 当 teacher 更能保住对话能力。原文没有把「更弱 teacher 何时更好」扩到这组设定之外。
+- 原文实验是单 teacher，没有多 teacher 路由互相覆盖的实验。
+- 原文没有在 forking token 上加权 KL、或把它和 entropy bonus 对照的实验。
 
 ## 相关页面
 

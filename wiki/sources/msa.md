@@ -57,6 +57,17 @@ MSA 是构建在 Grouped Query Attention（GQA）之上的 blockwise 稀疏注�
 - HELMET-128K 上 MSA-CPT Overall 仅低 0.6（46.53 → 45.93）；RULER-128K 平均反高 0.12 分；显式表明每 query 仅看 n·B = 2,048 个 KV token 时长上下文能力可保持。
 - 效率：1M context 下 attention FLOPs 减 28.4×；H800 实测 prefill 加速 14.2×、decode 加速 7.6×（运行时收益小于理论 FLOPs 收益，因为索引、TopK、reverse-index、query gather 都有 overhead）。
 
+## 为何底座是 GQA
+
+报告没有做「GQA 底座 vs MLA 底座」的质量实验。原文给出的是另一组理由（§1、§2.3、§6、Outlook）：
+
+- 走稀疏 softmax，是为了复用已有软件和硬件，并从预训练 GQA checkpoint **near-lossless 转换**。
+- 块级选择、较小的 top-\(k\)，是为了在更宽的 GPU 上执行，并放松 prior designs 的 head-dimension 约束。这句**没有把 prior designs 说成 MLA**。
+- 逐 head 的 token 级选择难映射到 GPU 矩阵运算，所以每个 GQA group 共享一份块级 index，KV 读取保持连续。
+- 和 DSA 的对照写在 §6：DSA 在 MLA 的 MQA mode 上做 token 级、全体 query head 共享的 top-\(k\)；MSA 是每个 GQA group 独立的块级 top-\(k\)。
+
+DeepSeek-V2 附录 D.1 用稠密消融说明减头数有质量代价，从而选择 MLA。那条论证与上面这组部署论证不是同一个实验。细节与「不能收成谁赢了质量」见 [MLA 概念页](../concepts/multi-head-latent-attention.md#msa-为何用-gqa-而不是-mla)。
+
 ## 与已有沉淀的关系
 
 - 同样属于 [高效长上下文注意力](../concepts/efficient-long-context-attention.md) 中的"内容自适应稀疏"路线，与 [DeepSeek Sparse Attention](../concepts/deepseek-sparse-attention.md) 是同代竞争方案。两者关键差异：DSA 是 **token-level、所有 query head 共享一个 top-k**；MSA 是 **block-level、每个 GQA group 独立 top-k**。
@@ -75,9 +86,9 @@ MSA 是构建在 Grouped Query Attention（GQA）之上的 blockwise 稀疏注�
 - **HF kernel 入口**：通过 `kernels` 库 `get_kernel("MiniMaxAI/msa", version=0)` 调用；README 还引用了 `huggingface.co/kernels/kernels-staging/msa`。
 - **BibTeX**：README 的 BibTeX 写的是占位符（"coming once the companion paper / technical report has a stable identifier"），暗示 README 早于 arXiv 公开版本。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：MSA 的 group-shared block-level top-k 与 DSA 的 head-shared token-level top-k，哪一边在 RL 阶段更稳定？GLM-5 报告提到 DSA 因 top-k 非确定性会让 RL entropy 崩塌；MSA 论文 Outlook 节亲口说「extending the same selector-only design to settings beyond pretraining, including reinforcement-learning post-training and agentic deployment」是待做工作，主体报告只覆盖 pretraining。这是明确的 open problem，不是「论文未表态」。
-- **需实验或作者披露**：MSA-PT 在多数 benchmark 上小胜 full baseline，是稀疏作为正则的副作用，还是 3T 预算下 full attention 还没充分训练？需要更长 horizon 或匹配的更大 baseline 才能判断。
-- **需实验或作者披露**：报告强调 MSA 可以从 GQA 直接转换，但其核心仍是新加 idx 投影；与 DSA 那种 indexer 不变、只换 top-k 范式的"零参数改动"路线相比，部署门槛差多少。
-- **需实验或作者披露**：论文 14.2× prefill / 7.6× decode 是在 H800 上测的，但公开 kernel 已经针对 SM100 / Blackwell 重写。在 Blackwell 上这两个数字会变成什么？没有官方数据。
+- 从 GQA 转换时新加的是 Index Branch 的两个投影。论文没有把这和 DSA「只换 top-k」折成一个部署成本数字，不再追这个差额。
+- 14.2× / 7.6× 是 H800 上的数字。公开 kernel 面向 SM100，Blackwell 上的加速比没有官方数据，不再追。
+- Outlook 把 selector-only 设计延伸到 RL 后训练和 agentic 部署写成待做工作；主体报告没有 MSA 与 DSA 的 RL 稳定性对照。
+- 原文没有更长训练 horizon，或与 MSA-PT 匹配的更大 full-attention baseline。

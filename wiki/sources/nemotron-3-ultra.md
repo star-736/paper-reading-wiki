@@ -155,14 +155,11 @@ Table 10 与六家开源对照（MiniMax-2.7、GLM-5.1、Kimi-K2.6、Qwen-3.5、
 ## 证据边界与阅读提示
 
 - Figure 1 吞吐对照混用 TRT-LLM 与 vLLM，5.9× 不能直接读成架构因子。
-
-## 待追问
-
-- **需实验或作者披露**：预训练第二次发散（16T residual / MaxVio）切到 20T 是权宜；NVFP4 不是原因，真正的优化病理仍不清楚。
+- 第二次发散的原因原文写未确定：MaxVio 相关但不因果，切到全 BF16 也消不掉。原文没有进一步的诊断实验。
 
 ## 相关追问
 
-主记录：[sampled-token 与 full-vocab OPD 的反转](../comparisons/on-policy-distillation.md#待追问)；[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#待追问)。
+主记录：[sampled-token 与 full-vocab OPD 的反转](../comparisons/on-policy-distillation.md#轴二kl-形式的工程权衡)；[MOPD 第二轮与 HLE 恢复缺口](../comparisons/on-policy-distillation.md#证据边界与阅读提示)。
 
 ## 相关页面
 

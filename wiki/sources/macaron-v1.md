@@ -37,7 +37,7 @@ Macaron-V1 把目标定义为「experiential intelligence」：部署后的经�
 
 Venti 以 744B GLM-5.2 base 加四个 specialist 发布：L0 Chat（也是 route entry）、L1 Agent、L2 Coding、L3 GenUI。公开 adapter header 的每个 LoRA 含 7,688,042,496 个 stored values；它是逻辑张量计数，不等于 active-per-token 参数或设备显存，所以报告把「748B」保留为 release-facing label。Tall 则建在 Qwen3.6-35B-A3B，四个 adapter 各 3,775,651,840 stored values，nominal base 加 adapter 约 50.1B。
 
-路由不是另训分类器：L0 在 24-token 紧预算、受限 grammar 下输出唯一 L0–L3 标签；目标 adapter 生成回答后，再额外输出最多 192 token 的服务端 summary。每个 adapter 的 own-view 保留自己先前的完整 assistant/tool trace，把其他 adapter 的先前 turn 压成 summary；因此再次进入同一 adapter 时前缀字节一致，直接命中 engine 的 LoRA-aware prefix cache。报告在 6,448 条训练数据 trace 上测得路由 99.12%，但该 trace 不是独立 held-out split，只能视为实现诊断，不能估计泛化路由准确率。
+路由不是另训分类器：L0 在 24-token 紧预算、受限 grammar 下输出唯一 L0–L3 标签；目标 adapter 生成回答后，再额外输出最多 192 token 的服务端 summary。每个 adapter 的 own-view 保留自己先前的完整 assistant/tool trace，把其他 adapter 的先前 turn 压成 summary；因此再次进入同一 adapter 时前缀字节一致，直接命中 engine 的 LoRA-aware prefix cache。报告在 6,448 条训练数据 trace 上测得路由 99.12%，但该 trace 不是独立 held-out split，只能视为实现诊断，不能估计泛化路由准确率。原文没有在独立任务、multi-intent turn 或更开放 specialist registry 上报告路由准确率、延迟和 failure recovery。
 
 MoL 的结构收益是把一份 nominal 744B base 而非四份 merged base 常驻：按 stored-value 口径，Venti 为约 774.8B 对 2.976T，即 26.0% / 少 74.0%。但这只说明权重常驻结构更省；报告没有用 matched deployment 证明它比四个 merged specialist 的 TTFT 或吞吐更优。
 
@@ -55,7 +55,7 @@ Harness Context Protocol（HCP）是上述 runtime 的版本化 TOML 契约，�
 
 MindForge 将 `(problem bank, model, HCP)` 连到 evaluated trajectories，再连到 `(dataset, next model, next HCP)`，形成 Discovery → Expansion → Update 三阶段：Discovery 生成比当前模型更难但可评价的任务；Expansion 在固定 model–HCP 下执行、定位 model/task/harness 失败并重跑受影响 slice；Update 过滤有效轨迹训练 LoRA，同时登记通过的 HCP。
 
-其最醒目的实验刻意**不更新权重**：从 frozen GLM-5.2 基础配置必失败的 122 个 TerminalBench 2.1 simulation task 出发，69 个适应式 HCP/skill/hook 搜索 job 后，至少找到一个配置让每题通过一次。两个单一 portfolio configuration 最多通过 11/122；后续阶段按尚未覆盖任务定向搜索，最终覆盖 122/122。这个结果表明「baseline 下失败」不等于 frozen base 缺能力，但由于测试集由失败样本筛出、搜索是 adaptive 且不同阶段的任务/错误率不同，不能解释成单一配置泛化，更不能当成 adapter 训练或跨代复利的证据。
+其最醒目的实验刻意**不更新权重**：从 frozen GLM-5.2 基础配置必失败的 122 个 TerminalBench 2.1 simulation task 出发，69 个适应式 HCP/skill/hook 搜索 job 后，至少找到一个配置让每题通过一次。两个单一 portfolio configuration 最多通过 11/122；后续阶段按尚未覆盖任务定向搜索，最终覆盖 122/122。这个结果表明「baseline 下失败」不等于 frozen base 缺能力，但由于测试集由失败样本筛出、搜索是 adaptive 且不同阶段的任务/错误率不同，不能解释成单一配置泛化，更不能当成 adapter 训练或跨代复利的证据。原文没有多代 RSI 在固定外部 test 上的持续增益、保留率或 transfer 实验。
 
 ![Figure 7：固定 base-failure 集上的 HCP 搜索。上图是逐 job 的累计覆盖，69 个 job 后 122/122；下图是当前尝试任务的通过率。模型始终冻结，改变的只有 HCP-carried harness。](../assets/macaron-v1/fig7-harness-search-coverage.png)
 
@@ -78,15 +78,7 @@ LoRA RL 的 policy 写为 $\pi_\phi(a_t \mid o_{\leq t}; \theta, c)$，其中 sp
 | UI4A-Bench Final Score | 87.8 | 同一 161-case runtime 下可直接比较；高于表中 Opus 4.8 的 75.9 与 GPT-5.5 的 72.1 |
 | TerminalBench 2.1 | 87.6 | 报告表中其余多为导入 leaderboard 值，不能做统一实验结论 |
 
-外部 suite 还含 VitaBench / VitaBench2、$\tau^3$-Bench、PinchBench、ClawGym、SWE-Verified、DeepSWE 和 SWE Atlas QnA；每行指标、harness、retry 与部分 provenance 不同，报告也拒绝把它们平均成一个模型总排名。Tall 的 text-only adapter 在五个视觉 benchmark 上有混合变化（四项小升、MME perception 降 52.99），无重复方差与 adapter/routing ablation，不能声称保住了多模态能力。
-
-## 待追问
-
-- **需实验或作者披露**：多代 RSI 在固定外部 test 上是否有持续增益、保留率和 transfer，而非只显示一次 harness search 的 coverage？
-- **需实验或作者披露**：不同团队/用户训练的 adapter 在同一 base 上组合时，兼容性、provenance、tool visibility 与隐私隔离如何验证？
-- **需实验或作者披露**：L0 路由在独立任务、multi-intent turn 与更开放 specialist registry 上的准确率、延迟和 failure recovery 如何？
-- **需实验或作者披露**：ChatBench / LivingBench 所用私有 judge 与产品数据的脱敏、同意、保留和 re-identification audit 何时公开？
-- **需实验或作者披露**：LongStraw、R3、DSA alignment 各自对真实 agent quality 与训练稳定性的独立贡献是什么？
+外部 suite 还含 VitaBench / VitaBench2、$\tau^3$-Bench、PinchBench、ClawGym、SWE-Verified、DeepSWE 和 SWE Atlas QnA；每行指标、harness、retry 与部分 provenance 不同，报告也拒绝把它们平均成一个模型总排名。Tall 的 text-only adapter 在五个视觉 benchmark 上有混合变化（四项小升、MME perception 降 52.99），无重复方差与 adapter/routing ablation，不能声称保住了多模态能力。跨团队或跨用户 adapter 组合没有被实现成待测系统，本库不再追兼容性与隐私隔离的验证配方。ChatBench / LivingBench 的脱敏、同意与保留审计没有公开时间表，本库不再追这份合规日程。
 
 ## 相关页面
 

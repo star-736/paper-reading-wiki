@@ -102,10 +102,9 @@ OOD：把 TL;DR 上训好的 DPO / PPO 直接评 CNN/DailyMail 新闻摘要（Ta
 - [ORPO](orpo.md)：去掉 $\pi_{\mathrm{ref}}$。chosen 的长度平均 NLL 上加 $\lambda$ 倍 log odds ratio 的 logistic。Odds 用的是长度平均后的序列概率。
 - [SimPO](simpo.md)：也去掉 $\pi_{\mathrm{ref}}$。sigmoid 里比较的是 $\beta/|y|$ 倍的平均 log-prob，再减目标 margin $\gamma$。四组 7B/8B 上 AlpacaEval 2 LC 高于同协议 DPO，最大差 6.4（Mistral-Base）。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$，对公开偏好集（HH、TL;DR）的分布偏移有多大？论文没有量化。
-- **需实验或作者披露**：Figure 3 右图后期 win rate 轻微回落，论文问这是不是 reward over-optimization 在 DPO 里的对应物，没有下结论。
+- 原文没有量化无 $\pi_{\mathrm{SFT}}$ 时用 preferred completions 拟合 $\pi_{\mathrm{ref}}$ 的分布偏移。reward over-optimization 被列为未来工作；原文没有判定 Figure 3 右图后期波动是否为其对应物的实验。
 
 ## 相关追问
 

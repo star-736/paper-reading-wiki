@@ -22,13 +22,13 @@ timestamp: 2026-10-03
 
 [Pi coding agent 设计博客](../sources/pi-coding-agent.md) 把产品 harness 收成四工具（`read` / `write` / `edit` / `bash`）和合计 <1000 token 的系统提示+工具定义。核心论题是**上下文必须可见**：作者从 Claude Code 拆出来，是因为系统提示、工具和 mid-session reminders 会在背后改模型看到的东西。MCP、plan mode、todo、background bash、dedicated sub-agent 工具被明确排除出核心，需要时写文件、用 tmux，或让 agent 自己写 TypeScript extension。
 
-这和 Prime Agent / Macaron 同属「改膜不改权重」，但方向相反：Prime Agent 把 REPL 和递归 `rlm()` 做成核心原语以换 expressivity；Macaron 搜索可版本化 HCP；Pi 把能力推到用户空间，核心保持可观察的四工具循环。Terminal-Bench 2.0 上 Pi + Claude Opus 4.5 自报约 50%，但是 mixed-model 榜，不是同模型换膜。OpenClaw 以 Pi 为底盘，所以 [UniClawBench](../sources/uniclawbench.md) 的 OpenClaw 行测的是这张极小膜上的产品框架。
+这和 Prime Agent / Macaron 同属「改膜不改权重」，但方向相反：Prime Agent 把 REPL 和递归 `rlm()` 做成核心原语以换 expressivity；Macaron 搜索可版本化 HCP；Pi 把能力推到用户空间，核心保持可观察的四工具循环。Terminal-Bench 2.0 上 Pi + Claude Opus 4.5 自报约 50%，但是 mixed-model 榜，不是同模型换膜。OpenClaw 以 Pi 为底盘，所以 [UniClawBench](../sources/uniclawbench.md) 的 OpenClaw 行测的是这张极小膜上的产品框架。原文没有同模型成对实验来区分「四工具已经够用」和「必须靠 REPL/`rlm()` 才能 elicit」。Databricks 的同模型换膜没有测 REPL/`rlm()`。V4.1-Flash 上 Minimal 高于 Standard，但是自家模型加自家 Minimal，不是跨训练分布的交叉。
 
 2026-08 的 `pi-agent-core` 0.84.0 把 durable `AgentHarness`（内部曾叫 runtime2）升成默认导出：改的是可崩溃恢复的 session/lane 契约，**不是**内建 fan-out 子 agent。CLI 到 0.85.1 仍走旧 `AgentSessionRuntime`。
 
 ### SoL-Pi：同一张膜上减重复开销
 
-[SoL-Pi](../sources/sol-pi.md) 不换底盘，给 Pi 加一层 opt-in 效率扩展。Auto-research 从 152 个方向里留下四个机制：Action Fusion、Online Context Compact、ObservationPack、Evidence-Preserving Reducer。相对 Pi，token 少 45–49%、成本约低 1/3、平均分保留约 94%；相对 Codex / Claude Code 原生 harness，token 少 35–64%。它和 Macaron MindForge 都做 harness 侧 RSI，但 Macaron 搜的是可评测 HCP 配置，SoL-Pi 搜的是交互环里的重复开销。钉死 Pi 0.84.2 的公开 ExtensionAPI，不用 durable `AgentHarness`。Held-out 主台是 [EdgeBench](../sources/edgebench.md) 的 51 公开题。
+[SoL-Pi](../sources/sol-pi.md) 不换底盘，给 Pi 加一层 opt-in 效率扩展。Auto-research 从 152 个方向里留下四个机制：Action Fusion、Online Context Compact、ObservationPack、Evidence-Preserving Reducer。相对 Pi，token 少 45–49%、成本约低 1/3、平均分保留约 94%；相对 Codex / Claude Code 原生 harness，token 少 35–64%。它和 Macaron MindForge 都做 harness 侧 RSI，但 Macaron 搜的是可评测 HCP 配置，SoL-Pi 搜的是交互环里的重复开销。钉死 Pi 0.84.2 的公开 ExtensionAPI，不用 durable `AgentHarness`。Held-out 主台是 [EdgeBench](../sources/edgebench.md) 的 51 公开题。博客没有四个机制的单机制消融，也没有把 45–49% 的 token 下降拆到各项；94% 是拼装后的平均分，原文没有把它拆成地板泄漏和 EdgeBench 噪声的对照。
 
 独立外部成对数字见 [Databricks](../sources/databricks-coding-agents.md)：同一模型同一 thinking 档，Pi 相对 Claude Code / Codex 任务成本可低到 2× 以上、每轮约少送 3× context；质量多数档接近，但 Opus **max** 通过率 82% vs 89%。这补上了 Pi 设计博客只有 mixed-model Terminal-Bench 的缺口。
 
@@ -62,7 +62,7 @@ timestamp: 2026-10-03
 
 ### UI-Mate DemoCUA：示范工作流是一层会改策略的膜
 
-[UI-Mate](../sources/ui-mate.md) 的 Demo Workflow Harness 不搜索 HCP，也不提供 REPL。它把一条录屏变成指针驱动的 subtask checklist：当前目标、完成判据、不含坐标的里程碑，外加 `subtask_complete`。live 截图对示范有否决权，所以这层膜改变的是条件化，不是动作空间本身。33-task self-demo 上严格成功 17.2%→35.4%，是「同一模型换可见程序」的成对证据；作者同时承认 workflow 钉在上下文开头会破坏 KV 前缀，属于膜的实现税。它与 Prime Agent / Macaron 的差别：后两者在冻结 L0 时改 runtime 原语或配置；UI-Mate 还专门为这层膜做了 SFT（对齐 / 错位 / 无关示范），权重和膜是一起训的。
+[UI-Mate](../sources/ui-mate.md) 的 Demo Workflow Harness 不搜索 HCP，也不提供 REPL。它把一条录屏变成指针驱动的 subtask checklist：当前目标、完成判据、不含坐标的里程碑，外加 `subtask_complete`。live 截图对示范有否决权，所以这层膜改变的是条件化，不是动作空间本身。33-task self-demo 上严格成功 17.2%→35.4%，是「同一模型换可见程序」的成对证据；作者同时承认 workflow 钉在上下文开头会破坏 KV 前缀，属于膜的实现税。它与 Prime Agent / Macaron 的差别：后两者在冻结 L0 时改 runtime 原语或配置；UI-Mate 还专门为这层膜做了 SFT（对齐 / 错位 / 无关示范），权重和膜是一起训的。§10 的 variant-demo 只有 10 题试点。原文没有「必须围着部分匹配示范做后训练，还是 self-demo SFT 已经够用」的对照。
 
 ### Qwen3.8-Omni：给已有 harness 补音视频，再单独做一张实时膜
 
@@ -83,7 +83,7 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 - [Kimi K3](../sources/kimi-k3.md) 的 Unified White-Box RL Env 按配置实例化 Kimi Code / Claude Code / Codex / OpenClaw / Hermes，目标是 harness-agnostic RL。
 - [MiMo-V2.6](../sources/mimo-v2.6.md) 不用生产 harness 直接做 RL：同一条最小 agent loop 重组出 mini-harness。DeepSWE v1.1 上，未参与训练的 codex、claude code、mini-swe-agent 的 pass@1 均值大约从 50% 到 66%（Figure 10）。这是训练分布里的迁移，不是换评测膜的成对消融。
 
-这些和 Prime Agent 的「先做一张表达性膜再 co-train」方向相反但互补：前者防止模型绑死在一种 CLI，后者假设当前模型还不会用满一张更强的膜。
+这些和 Prime Agent 的「先做一张表达性膜再 co-train」方向相反但互补：前者防止模型绑死在一种 CLI，后者假设当前模型还不会用满一张更强的膜。Prime Agent §5 把围着 `rlm` / typed state 的后训练标为预期，原文没有实验拆开表达性膜的收益有多少来自模型本来就会用代码。
 
 ### ASPIRE：具身侧的 coding agent 膜
 
@@ -106,24 +106,10 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 1. **Agent 分数默认是 (model, harness, budget, context policy) 的联合。** UniClawBench 和 Prime Agent 从两个方向重复这件事：换框架可以超过换模型；换一张更表达的膜可以大幅改变 ARC-AGI-3 曲线形状。[Pi](../sources/pi-coding-agent.md) 再补一条：极小工具面在 mixed-model Terminal-Bench 2.0 上也能进前十，但那不是同模型换膜。[UI-Mate](../sources/ui-mate.md) 再加一维：同一 verifier 下开关一条示范，严格成功可以从 17.2% 到 35.4%。[Qwen-UI-Agent](../sources/qwen-ui-agent.md) 则把「何时开始、在哪台设备继续」也放进膜，但还没有成对消融。读 [Agentic 评测体系](agentic-evaluation-benchmarks.md) 时，harness 和示范都不能再当脚注。
 2. **冻结权重仍能改可达策略集。** Macaron 的 HCP 搜索和 Prime Agent 的 Continual Harness 都在 L0 不动时扩展策略。[Dream-RSI](../sources/dream-rsi.md) 同样不改发现 agent，改的是分支、并行和停止的策略代码，并用已记录发现树做回放。[ASPIRE](../sources/aspire.md) 把同一判断搬到机器人：改 skill library 而不是 VLA 权重。[EmbodiedSkills](../sources/embodied-skills.md) 的高层 scheduler 也在冻结低层 VLA 上 SFT，但 RoboTwin headline 用的是按任务特化的 π0.5，不能写成「整层 L0 都没动」。这不是持续学习已经发生，而是「elicit vs 学会」必须分开记账。
 3. **持久化会保存作弊。** Prime Agent 的 Factorio RCON skill 说明：refinement / memory 若没有独立校验和 rollback，self-improvement 会把 specification exploit 写成可复用程序。这是 [Agent 记忆生命周期](agent-memory-lifecycle.md) 的 gate/rollback 在 agent runtime 上的对应物。
-4. **训练与评测正在抢同一层。** 一边随机化、多 harness、harness-agnostic RL，一边把评测膜做得更表达、更可记账。后续 model–harness co-learning 若真发生，这两条线会撞到同一组 primitive（工具 schema、上下文管理、subagent API）。
-
-## 待追问
-
-- **需实验或作者披露**：Pi 的「模型已经会用四工具」和 Prime Agent 的「需要更强原语才能 elicit」哪一句在同模型成对实验里成立？Databricks 只说明极小膜在他们的 PR 任务上成本更低、质量多数档接近，没有测 REPL/`rlm()`。V4.1-Flash 上 DeepSeek Harness Minimal 高于 Standard，方向与 Pi 一致，但是自家模型 + 自家 Minimal，不是跨训练分布的交叉。
-- **需实验或作者披露**：SoL-Pi 的 94% 能力保留有多少是四个机制叠加后的地板泄漏，有多少是 EdgeBench 本身的噪声？博客没有单机制消融。 45–49% token 下降里 ObservationPack、Compact 等机制各占多少，也需逐项拆分。
-- **需实验或作者披露**：表达性膜的收益有多少来自「模型本来就会用代码」，有多少必须靠围着 `rlm` / typed state 做后训练才会出现？Prime Agent §5 把后者标为预期，没有实验。
-- **需实验或作者披露**：多 harness 训练会不会训出「在每张膜上都平庸」的策略，从而抹掉 Prime Agent 这类高表达接口的优势？
-- **需实验或作者披露**：如何把 harness 失败（丢状态、记错成本、过早停）从 leaderboard 里单独审计出来，而不是混进模型能力？
-- **需实验或作者披露**：Continual Harness 与 HCP 能否共用一套可审计契约（typed state + provenance + rollback），还是评测膜和产品契约会继续分叉？
-- **需实验或作者披露**：DemoCUA 的 variant-demo 迁移是否必须围着「部分匹配的示范」做后训练，还是 self-demo SFT 已经够用？UI-Mate §10 只有 10 题试点。
-- **需实验或作者披露**：Qwen-UI-Agent 的 proactive harness 有多少增益来自 affair 记忆和跨设备 planner，有多少其实是 27B 策略自己已经会的 GUI+CLI？报告只有定性轨迹。
-- **需实验或作者披露**：Dream-RSI 在固定历史树上选出的策略，下一轮在线发现质量是否跟回放分同向？正文只保证回放分不下降。主记录在[来源页](../sources/dream-rsi.md#待追问)。
+4. **训练与评测正在抢同一层。** 一边随机化、多 harness、harness-agnostic RL，一边把评测膜做得更表达、更可记账。后续 model–harness co-learning 若真发生，这两条线会撞到同一组 primitive（工具 schema、上下文管理、subagent API）。Continual Harness 与 HCP 改的对象已经分开记账，本库不再追一份两者共用的标准契约。Dream-RSI 的选择准则只覆盖历史树上的平均回放分，原文没有下一轮在线质量是否同向的实验（见[来源页](../sources/dream-rsi.md)）。原文没有检验多 harness 训练会不会把策略训成在每张膜上都平庸，也没有把丢状态、记错成本或过早停从排行榜里单独审计出来的实验。
 
 ## 相关页面
 
 - 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Dream-RSI](../sources/dream-rsi.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[StepAudio 3 Realtime 技术报告](../sources/stepaudio-3-realtime.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)
-
-关联提问页：[SoL-Pi 官方博客](../sources/sol-pi.md#相关追问)。

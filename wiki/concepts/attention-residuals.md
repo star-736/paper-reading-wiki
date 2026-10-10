@@ -3,7 +3,7 @@ type: Concept
 title: "Attention Residuals"
 description: "把标准残差（沿深度压成单一状态）换成每层选择性从所有前层检索表示——沿深度做 attention，类比 Transformer 把序列位置的 RNN 换成 attention。"
 tags: ["concept", "attention-residuals", "depth-mixing"]
-timestamp: 2026-07-30
+timestamp: 2026-10-11
 ---
 
 # Attention Residuals
@@ -14,7 +14,7 @@ timestamp: 2026-07-30
 
 > 类比：序列方向上，RNN 把历史压进一个 hidden state（瓶颈），Transformer 用 attention 让每位置 attend 所有前位置（解除瓶颈）。深度方向上，标准残差把前层压进一个 residual stream（瓶颈），AttnRes 让每层 attend 所有前层（解除瓶颈）。
 
-来源：[Kimi K3 技术报告](../sources/kimi-k3.md) § 2.2，引原始工作 [57]。K3 是首个把 AttnRes 用进 3T 级生产模型的开源报告。
+一手论文：[Attention Residuals](../sources/attention-residuals.md)（Kimi Team，arXiv:2603.15031v1）。下面的 Full / Block 公式按 [Kimi K3 技术报告](../sources/kimi-k3.md) § 2.2 转写。K3 是首个把 AttnRes 用进 3T 级生产模型的开源报告。
 
 ## 机制（已据 Kimi K3 原文 § 2.2 核实）
 
@@ -48,7 +48,7 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 
 内存/通信从 `O(Ld)` 降到 `O(Nd)`；block 结构还 bound 推理时状态，使并行 inter-block 结果与顺序 intra-block partial sum 可经 **online softmax** 合并，显著降推理时延。
 
-**K3 配置**：N=8 blocks × S=12 layers。93 层 → 8 个完整 block（各 12 层）+ 1 个 partial final block（9 层），含 embedding 共 9 个 block。报告引 [57] 称"N ≈ 8 recovers most of the benefit across model scales"。
+**K3 配置**：N=8 blocks × S=12 layers。93 层 → 8 个完整 block（各 12 层）+ 1 个 partial final block（9 层），含 embedding 共 9 个 block。报告引 [57] 称 "N ≈ 8 recovers most of the benefit across model scales"。这句的实验出处在 [Attention Residuals 论文](../sources/attention-residuals.md) 的 §5，测量尺度小于 K3。
 
 ## 为什么重要
 
@@ -59,7 +59,7 @@ Full AttnRes 的 `O(Ld)` 内存 + pipeline 跨阶段通信在 93 层、2.8T 规�
 ## 跨报告信号
 
 - **[Kimi K3](../sources/kimi-k3.md)（Moonshot AI，2026-07）**：本机制的生产级首个开源采用者。K3 把 AttnRes 与 KDA-MLA 混合注意力 + Stable LatentMoE 并列，明确作为"layer mixing"维度（Figure 2 架构图把 AttnRes 标为跨 block 的 layer mixing 路径）。EAGLE-3 draft model 的 feature fusion 也利用 AttnRes block 输出（取 1st/4th/final AttnRes block 作低/中/高层特征）。
-- **原始工作 [57]**：K3 引用但未在报告内展开原始论文细节。N≈8 的经验结论、block size 选择依据均来自 [57]。**待追问**：[57] 的原始实验尺度是否覆盖 3T 级，N=8 在 93 层下是否仍最优。
+- **[Attention Residuals 论文](../sources/attention-residuals.md)（Kimi Team，2026-03，arXiv:2603.15031v1）**：本机制的一手来源。\(N\approx 8\)、Table 2 的激活规模、block size 扫描和 Kimi Linear 48B/3B 集成的原文数字都在该页；93 层、2.8T 的 \(N\) 扫描不在那篇 PDF 里。
 - **[Linear Attention Architectures](../sources/linear-attention-architectures.md)（ETH Zurich，2026-07）**：给出适用于 DeltaNet / GDN 的另一条跨层路径 CLVR。它不对 layer outputs 做 depth attention，也不替换 residual sum；它取层内线性记忆正要写入的 $v_{l,t}$，经零初始化投影后**加到**共享 residual stream。350M–1.3B 的 single-run 结果中 CLVR 优于传 write error 的 CLER-H，但增益小且随规模 / token budget 缩小。这是“跨层可检索输出”与“跨层暴露内部写入量”两种不同接口的实证边界。
 - **[Intern-S2-Mobius](../sources/intern-s2-mobius.md)（Shanghai AI Lab，2026-08）**：提出的 BRC 也针对层级信息瓶颈，但并不让深层 attention 聚合早层 activation。它把所有 FFN 横向拼成共享 knowledge Memory，让各层 Reasoner 检索同一参数化知识库；作者将此称为“间接”双向知识访问。因接口是共享 FFN 参数而非 depth-attention state，不能把 Mobius 的 35B conversion 结果当作 AttnRes 的独立复现或 ablation。
 - **[Qwen3.8-Flash-Next](../sources/qwen3.8-next.md) 的 Gated Residual（Qwen，2026-08）**：同一「单残差流是深度瓶颈」问题的另一家族。GR 把残差加宽到 4 支，elementwise sigmoid 门读、每支一个标量写，**丢掉支路混合矩阵 $H_{res}$**（HC / mHC 把容量花在这里）。28 层上 Full AttnRes 与 GR 都到 loss 1.762，Block AttnRes $S=4$ 差 0.011；48 层 GR 1.707 vs Block $S=4$ 的 1.711（Table 6）。Qwen 选 GR 的公开理由是去掉 $H_{res}$ 少一次残差整读，以及门提供的稳定性，不是下游全面胜过 AttnRes。路径分解显示一支走长程（典型跳 10.9 层，多送到 softmax 全局层）、三支走局部——和 AttnRes 的 learned softmax 选层不同，是加宽累加器 + 门，不是 depth attention。
@@ -76,17 +76,11 @@ AttnRes 和 CLVR 都试图缓解深度信息被单一 residual stream 稀释，�
 
 因此 CLVR 不是 AttnRes 的轻量实现：前者保留 host residual path 和线性时间 token mixer，代价是只暴露局部内部量；后者让每层按深度选择任意前层表示，表达力更直接但需要保留 / 聚合 depth representations（[Linear Attention Architectures](../sources/linear-attention-architectures.md) § 4、§ 6.6）。
 
-## 待追问
-
-- **需补外部来源**：**N=8 / S=12 在 93 层 2.8T 规模下是否最优？** 报告引 [57] 说"N≈8 recovers most of the benefit across model scales"，但 [57] 原始实验尺度未在 K3 报告展开。层数从 [57] 实验尺度到 93 层，最优 N 是否该 scale？需查 [57] 原文。
-- **需实验或作者披露**：**AttnRes 的 ablation 增益**。K3 报告把 AttnRes 作为架构组成部分描述，但未给"有 AttnRes vs 无 AttnRes"的 head-to-head ablation 数字（validation loss / downstream benchmark）。2.5× scaling efficiency 是综合改进的合计，AttnRes 贡献占比未拆解。
-- **需实验或作者披露**：**Full vs Block AttnRes 的质量差距**。报告说 Block 是为降开销，N=8 recover most benefit，但"most"是定性。Full AttnRes 在 K3 规模下能多带来多少增益？
-- **需实验或作者披露**：**pseudo-query `q_l = w_l` 的作用**。每层一个可学习向量作 query，它学到的模式是什么？是否某些层倾向 attend 近层、某些 attend 远层（含 embedding）？可解释性分析缺。
-- **需实验或作者披露**：**与 DenseFormer / Feathers 等跨层连接工作的关系**。AttnRes 不是唯一做跨层信息流的工作，DenseFormer（dense connection）等走的是加法而非 attention。这些机制在 K3 规模下的对比缺。
+K3 报告没有「有 AttnRes vs 无 AttnRes」的单独数字，2.5× scaling efficiency 是综合改进。Full 相对 Block 在 K3 规模下也没有增量。「N≈8 recovers most」的原文依据在 [Attention Residuals 论文](../sources/attention-residuals.md) 的 §5，对应 Table 2 的 \(N=8\) 对照和该文的 block size 扫描，测量对象不是 93 层、2.8T。28/48 层的对照在 [Qwen3.8-Next](../sources/qwen3.8-next.md) Table 6，不能外推到 93 层。pseudo-query \(q_l=w_l\) 没有可解释性分析。DenseFormer 的同预算对照在一手论文 Table 4：436M 激活上损失 1.767，baseline 为 1.766；48B 与 93 层上没有这组对照。这些缺口不改变 AttnRes 已公开的 depth-attention 定义。
 
 ## 相关页面
 
-- 来源：[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 与 AttnRes 的受控对照）
+- 来源：[Attention Residuals 论文](../sources/attention-residuals.md)（一手实验尺度与 K3 集成边界）、[Linear Attention Architectures 技术报告](../sources/linear-attention-architectures.md)（CLVR 与 AttnRes 的受控对照）
 
 - 来源：[Kimi K3 技术报告](../sources/kimi-k3.md)（§ 2.2 Attention Residuals）、[Qwen3.8-Next 架构报告](../sources/qwen3.8-next.md)（Gated Residual，与 AttnRes 同预算对照）
 - 模型：[Kimi K3](../models/kimi-k3.md)、[Qwen3.8-Flash-Next](../models/qwen3.8-flash-next.md)

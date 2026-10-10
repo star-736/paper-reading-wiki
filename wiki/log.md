@@ -1,5 +1,41 @@
 # 日志
 
+## [2026-10-11] maintenance | 外部来源检索后重数待追问
+
+外部来源检索之后重数各页「待追问」列表项，总数由 61 改为 59：现有材料待核 0，需补外部来源由 10 改为 7，需实验或作者披露 0，未标签由 51 改为 52。`raw/` 未改。
+
+## [2026-10-11] ingest | DeepSeek-V3
+
+新增来源页 `wiki/sources/deepseek-v3.md`。Figure 2 在 `wiki/assets/deepseek-v3/`。MLA 五个宽度与 V2 相同。层数、hidden、前三层稠密 FFN、sigmoid 门是外壳差异。`raw/` 未改。
+
+## [2026-10-11] ingest | Attention Residuals
+
+新增来源页 `sources/attention-residuals.md`。Table 2 的 N=8 与 194M–528M 与概念页一致。原先「16 层消融」按论文计数是 L=32（L_b=16）。Figure 1 在 `wiki/assets/attention-residuals/`。`raw/` 未改。
+
+## [2026-10-11] maintenance | 清残留的补实验追问
+
+11 条「需实验或作者披露」都不是再要求补实验、消融、对照或外推，一条未删。同篇数字矛盾改为「数字相互矛盾」；回论文或后续实现核对的改为「需核对原文」或「需补外部来源」；机制未写明和未公开定义去掉了「需实验」。待追问仍是 61 条：现有材料待核 0，需补外部来源 10，需实验或作者披露 0，未标签 51。`raw/` 未改。
+
+## [2026-10-11] maintenance | 删除需补实验的待追问
+
+各页「待追问」列表项重数为 61：现有材料待核 0，需补外部来源 9，需实验或作者披露 11，未标签 41。需作者补实验的追问已从队列删除，证据边界保留「原文没有这项实验」。留下的主要是同篇数字矛盾，以及要回论文、配置或仓库核对的条目。`raw/` 未改。
+
+## [2026-10-11] verify | Qwen3-VL 层号与多模态待追问
+
+Qwen3-VL 的 DeepStack 层号与 Interleaved MRoPE 通道来自权重配置，已写回 `sources/qwen3-vl.md`；证据等级是 config，不是报告正文。没有新建页面。HunyuanOCR 1.0 的 92.03 对 89.87 仍开放。`raw/` 未改。
+
+## [2026-10-11] ingest | ListOPD、Rock Tokens 与相关 OPD 一手页
+
+补齐 OPD 综述所缺的五份一手页：`sources/listopd.md`、`sources/rock-tokens.md`、`sources/local-teachability-collapse.md`、`sources/healthcare-ai-gym.md`、`sources/gemma-2.md`。`raw/` 对应 `2605.08737v1.pdf`、`2605.09253v4.pdf`、`2605.13643v2.pdf`、`2605.02943v1.pdf`、`2408.00118v3.pdf`。Gemma 2 预训练是语料软标签，不是学生 rollout；Jeong 的 KL 2.637→0.343 是权重复制，不是前缀失准。索引「待追问分流」改为已入库。
+
+## [2026-10-11] ingest | Open X-Embodiment
+
+新增来源页 `sources/open-x-embodiment.md`。不建模型页。闭合 OXE / RT-2-X：它是混合物上 co-fine-tune 的 55B，不是厨房原版 RT-2；索引「需要新来源」改为已入库。同时闭合 π0.7 视觉塔：Gemma 3 自带 SigLIP，400M 与 417M 不要双计。`raw/` 新增 `2310.08864v9.pdf` 与 `2503.19786v1.pdf`。
+
+## [2026-10-11] ingest | Demons in the Detail 与 RWKV-7
+
+新增来源页 `sources/demons-in-the-detail.md` 与 `sources/rwkv-7.md`。前者给出 Qwen 的 global-batch load balancing loss（同步 $\bar f_i$）；后者把 delta rule 写成向量衰减加秩一修正，转移矩阵不是 Householder。索引三类追问改为已完成：线性门控（GDN 标量门是 Mamba2 式 weight decay 加可并行实现，不是相对 GLA 的消融胜出；KDA 低秩门的秩等于 head dimension）、Qwen3-Coder-Next 的 SWE-bench 数字与对照及 300 轮协议、Qwen3 负载均衡原论文（从「需要新来源」移除，现为 Demons in the Detail，arXiv:2501.11873）。`raw/` 新增 `2501.11873v2.pdf`、`2102.11174v3.pdf`、`2503.14456v2.pdf`。
+
 ## [2026-10-10] verify | 七条实现细节
 
 对照仓库、Qwen3-8B 模型卡与两篇补下的 PDF，关闭七条「需补外部来源」。HF 与 vLLM 的 KV cache 都是 RoPE 之后的 K；模型卡把开源框架写成静态 YaRN，vLLM 在有 `dual_chunk_attention_config` 时不走 YaRN。CTPO 的 VERL 把工具返回的 mask 置 0，不乘进 $\rho^{\mathrm{cum}}$，五轮之间只沿 assistant token 累积。Ling-2.6 跟随 Ring-flash-linear-2.0 的固定衰减递推，另有 head-wise 幂律衰减、输出门、QK-Norm 和 Partial RoPE。Keye-VL 的 RL 节不写冻结 indexer，也没有公开训练仓。UniClawBench 的 supervisor 与 user simulator 都是 `gpt-5.4`。AdaCodec 的 $\gamma$ 按训练集中位 8 个 P-frame 标定。`raw/` 新增 `2606.02569v1.pdf`、`2510.19338v2.pdf`。

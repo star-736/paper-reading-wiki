@@ -139,12 +139,12 @@ LIBERO-LONG：π0 85.2；+ token-level MoE 88.6；+ 按 denoising timestep 路�
 - 新技能仍要演示 IL（附录 A.2）。路由正确依赖 VLM 把 \(\sigma\) 写对。
 - 不要和 [EmbodiSkill](embodiskill.md) / [ASPIRE](aspire.md) / [EmbodiedSkills](embodied-skills.md) 混名：这边既不改技能正文、也不写程序、也不做 typed runtime 合同。
 - π\*0.6 只出现在附录未来工作，本库不建页。
+- 真机每任务 20 次（A.3.2）。摘要的 18.3 / 21 是百分点差，原文没有置信区间，不再追。
+- LIBERO 上 AtomicVLA 平均 96.6 仍低于表内 π0.5 的 96.9，优势集中在 Long（Table 1）。原文没有把 SG-MoE 增益和基座世代差拆开的受控对照。
 
 ## 待追问
 
-- **需实验或作者披露**：共享专家和技能专家分别叠在 π0 的 VLM 层还是 300M action expert 上？附录只写技能专家「follows the Gemma architecture」且 FFN 独立，width=2048 / depth=18 更像骨干而不是 width=1024 的 action expert。原文没有一张层对层对照图。
-- **需实验或作者披露**：LIBERO 上 AtomicVLA（π0 基座）平均仍低于表内 π0.5。SG-MoE 的增益主要在 Long，还是基座世代差？
-- **需实验或作者披露**：真机每任务 20 次。18.3 / 21 没有置信区间。
+- **需核对权重或代码**：共享专家和技能专家分别叠在 π0 的 VLM 层还是 300M action expert 上？附录只写技能专家「follows the Gemma architecture」且 FFN 独立，width=2048 / depth=18 更像骨干而不是 width=1024 的 action expert。原文没有一张层对层对照图。
 
 ## 相关页面
 

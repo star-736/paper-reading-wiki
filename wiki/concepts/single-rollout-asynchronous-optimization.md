@@ -45,13 +45,9 @@ SAO 的可执行假设是：**异步的效率来自「完成即训」，所以�
 - 稳定性：vanilla GRPO ~160 step 崩，vanilla VAPO 无 DIS ~90 step 崩，SAO 报告约 1000 step（Figure 3–4）。
 - 作者写已部署到 GLM-5.2（750B-A40B）agentic RL pipeline；这是原文声明，不是本页 30B 表能外推的结果。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：与 ARPO / GiGPO 同一异步预算下，放弃 group 是否总是值得？
-
-## 相关追问
-
-主记录：[frozen-attention critic 向 dense 迁移](../sources/single-rollout-asynchronous-optimization.md#待追问)；[GLM-5.3 compaction 定义](../sources/single-rollout-asynchronous-optimization.md#待追问)。
+- 原文没有与 ARPO / GiGPO 在同一异步预算下放弃 group 的对照。frozen-attention critic 的 dense 迁移，以及 DIS 与其它 ratio 的组合，原文也没有实验；见来源页证据边界。compaction 一词不在本 PDF。
 
 ## 相关页面
 

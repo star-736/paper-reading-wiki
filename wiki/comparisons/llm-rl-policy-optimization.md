@@ -198,29 +198,21 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 
 - [DeepSeekMath](../sources/deepseekmath.md)：GRPO 的定义文与发布检查点。主实验是 7B 数学 Instruct→RL、神经网络 RM，不是后来的 RLVR；Figure 7 的 Maj@K↑ / Pass@K≈ 是「涨分来自分布校准」的原文锚点。
 - [MiniMax-M1](../sources/minimax-m1.md)：CISPO 的定义文与发布检查点。夹 IS 权重、不丢 token；原文不下 IS 下界。Laguna 的 $(1,4)$ 是采用方超参。
-- [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO；DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
+- [Qwen3 技术报告](../sources/qwen3.md)：官方 2025-05 报告的 reasoning RL 阶段写的是 GRPO。GSPO 作者博客把采用对象写成之后的 Instruct、Coder、Thinking，见 [GSPO](../sources/group-sequence-policy-optimization.md)。DAPO/GSPO/SAPO 都是后续或外部算法论文，不能回写成原报告事实。
 - [VAPO](../sources/vapo.md)：主要实验直接使用 Qwen2.5-32B base 且不加 SFT；这是外部 RL 算法实验，不是 Qwen2.5 / Qwen3 官方训练 recipe，也不发布独立模型实体。
 - [Qwen3-VL 技术报告](../sources/qwen3-vl.md)：原报告有 own post-training pipeline；SAPO 论文提供后续/配套 Qwen3-VL RL 训练证据，说明 SAPO 用在 Qwen3-VL-30B-A3B preliminary cold-start 上，但不替换源报告 pipeline。
-- [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
+- [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。$D_{ME}$ 在 1.5B 原文里是到 $0.5$ 的二元 KL；3B 沿用该式但把温度写成 $\gamma$。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本页可作为该概念页里「RL policy optimization 子谱系」的展开。
 - [GLM-5 技术报告](../sources/glm-5.md) / [GLM-5.3](../models/glm-5-3.md)：报告里的 DIS 与 [SAO](../sources/single-rollout-asynchronous-optimization.md) 是同一层机制；SAO 论文补上单 rollout + critic，并声明用于 GLM-5.2。5.3 博客的 compaction 不在该 PDF。
 - [MinerU2.5-Pro](../sources/mineru-2-5-pro.md)：Stage 3 是 GRPO + DAPO recipe 的**非 agentic 应用**——文档解析格式对齐。三个特点值得与 agentic RL 对照：(1) reward 直接用评测指标（edit distance / CDM / TEDS / IoU），无需单独 reward model，也无 LLM-as-judge，比 agentic RL 的 reward 设计更「机械」但更可信；(2) 训练数据按 reward 分布过滤（剔除过高/过低 reward，保留中段）以最大化有效 policy gradient 信号——与 [MGPO](../sources/vibethinker-3b.md) 的 prompt-level 加权、DAPO 的 dynamic sampling 同属「聚焦能力边界样本」家族，但用 hard filter 而非 soft weight；(3) 增益小（+0.45）但定向——主要提公式 CDM（+0.81），印证 GRPO 对「交叉熵等权 token 与 sequence-level 结构指标错位」的修补。这说明 GRPO+DAPO recipe 不限于 long-CoT reasoning / agentic，对任何「token-level loss 与任务级指标错位」的结构化输出任务都适用。
 
+## 证据边界
+
+- 下列对照原文没有：VAPO 的 Length-Adaptive GAE 迁到 code / agent 长轨迹；DAPO 的 token-level loss 与 GSPO 的 sequence-level ratio 能否组合；SAPO 是否严格替代 GSPO；ARPO 的 partial rollout 配 GSPO / SAPO 时的 advantage 归属；GiGPO 在开放工具 / GUI / 仓库编辑里的状态重复率，以及与 ARPO 的同预算对照；HGPO 的 history group 对 summary / retrieval / latent memory、deep-group covariance 与 uncertainty 权重；SAO 的 frozen-attention critic 在 dense 上，以及 DIS 与 SAPO / CISPO 的组合；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益；DeepSeekMath Figure 7 的 Maj@K / Pass@K 对比外推到更大模型或 RLVR。CTPO 只有 dense TIR、与 GSPO 的 MoE 稳定性没有同一评测面，已写在上文。
+
 ## 待追问
 
-- **需实验或作者披露**：VAPO 的 Length-Adaptive GAE 能否迁移到 code / agent 长轨迹？其 $\lambda(l)$ 实现是否需要下界 clipping，论文没有说明。
-- **需实验或作者披露**：VAPO 相对 DAPO 的 10.4 分与更少 update steps，扣除 value model 的额外显存、FLOPs 和预训练 50 steps 后，wall-clock / total-token 效率是否仍占优？
-- **需实验或作者披露**：DAPO 的 token-level loss 与 GSPO 的 sequence-level ratio 是否冲突？一个在 loss reduction 上按 token 平均，一个在 importance ratio 上按 sequence 加权；二者能否组合，需要实验。
-- **需实验或作者披露**：SAPO 是否会成为 GSPO 的严格替代，还是只在 outlier token 多 / hard clipping 脆的阶段更好？论文承认所有方法最终仍可能 instability。
-- **需实验或作者披露**：ARPO 的 partial rollout 如果配 GSPO / SAPO，shared prefix 与 branch token 的 advantage attribution 应该用 sequence-level 还是 token-adaptive gate？
-- **需实验或作者披露**：GiGPO 的状态匹配在开放工具 / GUI / 仓库编辑里是否还能维持 ALFWorld 那种 >65% 重复率？与 ARPO 同一预算对照仍然缺失。 状态不精确重复时的相似度分组与折扣权重风险，另见 [GiGPO 概念页](../concepts/group-in-group-policy-optimization.md#待追问)。
-- **需实验或作者披露**：HGPO 的 $k$-state history 能否代表真实 memory prompt？summary / retrieval memory 的层次相似度、deep-group covariance 与 uncertainty-weighted aggregation 仍无实验。 固定 history hash 如何适配摘要、检索或 latent memory，固定深度权重能否用 advantage uncertainty 替换，也属于这一组实验。
-- **需实验或作者披露**：SAO 的 frozen-attention critic 在 dense 模型上是否还成立？DIS 硬 mask 与 SAPO soft gate、CISPO detached clip 能否组合？
-- **需实验或作者披露**：MoE 的 routing volatility 是 GSPO/SAPO 的核心动机之一；dense 模型上 sequence-level 方法相对 DAPO recipe 的收益是否同样大？
-- **需实验或作者披露**：DeepSeekMath Figure 7 的「RL 抬 Maj@K、不抬 Pass@K」是否在更大模型或可验证环境 RLVR 上仍成立？后续报告几乎不复现这条曲线。
-- **需实验或作者披露**：MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
-- **需实验或作者披露**：现有库中收录的 2026 agentic / RLVR 报告较少采用 DPO；这一观察不能直接推广为整个产业弃用。是静态偏好对难以覆盖可验证环境，还是 length bias / likelihood displacement 等问题影响采用？[KTO](../sources/kto.md)、[IPO](../sources/ipo.md)、[ORPO](../sources/orpo.md)、[SimPO](../sources/simpo.md) 都不能单独证明生产选择的因果，仍需采用方披露或受控对照。
-- **需实验或作者披露**：CTPO 的 prefix 连乘在 MoE expert routing volatility 下是更敏感还是更钝？GSPO 的稳定性论据与 CTPO 的无偏论据没有同一评测面的对照，dense-only 实验无法回答。
+- **需核对因果**：现有库中收录的 2026 agentic / RLVR 报告较少采用 DPO；这一观察不能直接推广为整个产业弃用。是静态偏好对难以覆盖可验证环境，还是 length bias / likelihood displacement 等问题影响采用？[KTO](../sources/kto.md)、[IPO](../sources/ipo.md)、[ORPO](../sources/orpo.md)、[SimPO](../sources/simpo.md) 都不能单独证明生产选择的因果。这不是缺一次实验。
 
 ## 相关页面
 
@@ -229,4 +221,4 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - 系统侧来源：[R3](../sources/r3.md)（MoE 路由重放，与本页 ratio 方法正交）、[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[DeepSeekMath](../models/deepseekmath.md)（GRPO 发布检查点）、[MiniMax-M1](../models/minimax-m1.md)（CISPO 发布检查点）、[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)
 
-关联提问页：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md#相关追问)、[Cumulative Token Policy Optimization（CTPO）](../sources/cumulative-token-policy-optimization.md#相关追问)、[DeepSeekMath](../sources/deepseekmath.md#相关追问)、[DPO：Direct Preference Optimization](../sources/dpo.md#相关追问)、[KTO：Model Alignment as Prospect Theoretic Optimization](../sources/kto.md#相关追问)。
+关联提问页：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md#相关追问)、[DPO：Direct Preference Optimization](../sources/dpo.md#相关追问)、[KTO：Model Alignment as Prospect Theoretic Optimization](../sources/kto.md#相关追问)。

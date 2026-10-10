@@ -48,7 +48,7 @@ $$
 
 输出 $o_t=W_o(\sigma(r_t)\odot\mathrm{wkv}_t)$（Eq. 17）。Channel Mixing 是平方 ReLU 的门控 FFN（Eq. 14–15、18）。
 
-和 GLA / GDN 的分叉：这里没有矩阵 $S_t\in\mathbb{R}^{d_k\times d_v}$，也没有 $k^\top v$ 外积写入。每个通道维护加权和的分子与分母，衰减 $w$ **不随 token 变**（数据无关）。[Gated Linear Attention](gated-linear-attention.md) Table 1 后来把 **RWKV-6** 写成数据相关的 $\alpha_t^\top\mathbf{1}$，那是后作，不要回写成本页。
+和 GLA / GDN 的分叉：这里没有矩阵 $S_t\in\mathbb{R}^{d_k\times d_v}$，也没有 $k^\top v$ 外积写入。每个通道维护加权和的分子与分母，衰减 $w$ **不随 token 变**（数据无关）。Eq. 16 **不能**改写成 GLA 的 $S_t=\mathrm{Diag}(\alpha_t)S_{t-1}+k^\top v$：衰减发生在标量指数 $e^{-(t-i)w}$ 里，状态是两条 $O(d)$ 向量扫描，作者没有给出与矩阵门的等价。[Gated Linear Attention](gated-linear-attention.md) Table 1 后来把 **RWKV-6** 写成数据相关的 $\alpha_t^\top\mathbf{1}$，那是后作，不要回写成本页。矩阵状态上的 generalized delta 在 [RWKV-7](rwkv-7.md)，不在本 PDF。
 
 训练用自定义 CUDA kernel 跑 WKV 扫描；embedding 小初始化 + 额外 LN；多数权重零初始化（§3.4）。上下文 1024，Adam、bfloat16，学习率指数衰减，加 PaLM 式 softmax 归一化辅助损失（§4.1）。
 
@@ -58,7 +58,9 @@ Table 2 规模：169M / 430M / 1.5B / 3B / 7B / 14B。参数公式 $2VD+13D^2L+D
 
 45 个 (数据, 参数) 点的 scaling 在 Pareto 前沿 $r^2=0.994$；外推一个数量级 $r^2=0.875$（Figure 4）。作者用来反驳「LSTM 不服从 Transformer 那种 log-log」的旧结论。
 
-NLP：与 Pythia / OPT / BLOOM 做 FLOP 对齐，不和 Chinchilla-optimal 或 LLaMA 过训比（§5.1）。LRA 五项上仅次于 S4（Appendix J.2）。推理墙钟随生成长度线性，Transformer 二次（Figure 7）。
+NLP：与 Pythia / OPT / BLOOM 做 FLOP 对齐，不和 Chinchilla-optimal 或 LLaMA 过训比（§5.1）。主文 Figure 1 是十二项平均。分任务是 Appendix Figure 12 的零样本曲线，文本层没有一张可抄的 14B 逐项数字表，因此不能写成「14B 对同代 14B Transformer 的单任务表」。LRA 五项上仅次于 S4（Appendix J.2）。推理墙钟随生成长度线性，Transformer 二次（Figure 7）。
+
+Appendix L 的 44.2% → 74.8% 是 **RTE**（recognizing textual entailment，Wang et al., 2019）上的 **F1 Macro**。模型是零样本 RWKV-4-Raven-14B，对照是 2023 年 2 月访问的 ChatGPT 和 GPT-4。原 prompt 把 premise 放在问题前面；改成先问「hypothesis 是否 entailment」，再给 premise 和 hypothesis。附录没有报告 RTE 的样本量。同一节还列了 WNLI、GoEmotions、PolEmo2（Table 6）以及 aggression、sarcasm、unhealthy、MathQA、TweetSent（Table 7），44.2/74.8 这对数只对应 RTE。
 
 长上下文：1024 → 2048（10B token）→ 4096（100B）→ 8192（100B），Pile 测试损失随窗下降（Figure 6）。
 
@@ -66,16 +68,11 @@ NLP：与 Pythia / OPT / BLOOM 做 FLOP 对齐，不和 Chinchilla-optimal 或 L
 
 - **不是 GDN/KDA 链上的一环。** [线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md) 的主轴是矩阵状态 +（可选）delta。RWKV-4 是 AFT 收成 RNN。GLA 的 MQAR 图里 RWKV-4 弱于矩阵状态模型（GLA Figure 4）。
 - **Lightning-2 / GLA 解决的是矩阵线性注意力怎么在 GPU 上线性训。** 本页的并行瓶颈是 WKV 扫描 $O(BTd)$，矩阵乘已经可并行。未来工作自己写了用 parallel scan 把 WKV 降到 $O(B\log T\,d)$（§7），本 PDF 没做。
-- **后作不要从本页推断。** Eagle/Finch（RWKV-5/6）改矩阵状态与动态递推；RWKV-7 写 generalized delta rule。入口若出现，另建来源页。
-
-## 待追问
-
-- **现有材料待核**：Eq. 16 能否改写成 GLA 那种 $S_t=\mathrm{Diag}(\alpha)S_{t-1}+k^\top v$？作者没给这条等价。不要把 channel-wise 衰减升级成矩阵门。
-- **现有材料待核**：14B 与同代 14B Transformer 的单任务表在附录；主文 Figure 1 是十二项平均。
-- **现有材料待核**：prompt 重排让 F1 从 44.2% 到 74.8%（Appendix L）是哪一项任务、多少样本，主文没展开。
+- **后作不要从本页推断。** Eagle/Finch（RWKV-5/6）改矩阵状态与动态递推。generalized delta 的论文形式见 [RWKV-7](rwkv-7.md)。
 
 ## 相关页面
 
+- 后作：[RWKV-7](rwkv-7.md)
 - 模型：[RWKV](../models/rwkv.md)
 - 概念：[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)
 - 矩阵状态对照：[Gated Linear Attention](gated-linear-attention.md)、[Lightning Attention-2](lightning-attention-2.md)、[Mamba-2](mamba-2.md)、[Gated DeltaNet](gated-delta-net.md)

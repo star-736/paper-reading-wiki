@@ -85,7 +85,7 @@ Kimi K3 相对 Kimi K2 是一次结构性大改，不是单纯放大：
 - **Full AttnRes**：层 `l` 有可学习 pseudo-query `q_l = w_l`，keys/values 是所有前层输出 `f_i(h_i)`（含 token embedding `h_1`）。用 softmax kernel `ϕ(q,k) = exp(q^⊤ RMSNorm(k))`（RMSNorm 防止大输出层主导权重）。深度 `L < 100`，`O(L²d)` 算力可承受，实际开销是 `O(Ld)` 内存（及 pipeline parallelism 下的跨阶段通信）保留所有层输出。
 - **Block AttnRes**（K3 实际用）：把 L 层分成 N 个 block（每 block S 层）。block 内层输出累加成单一表示 `b_n`；跨 block 做完整 attention。内存/通信从 `O(Ld)` 降到 `O(Nd)`，且推理时状态有界，可用 online softmax 把 inter-block 并行结果与 intra-block 顺序 partial sum 合并。K3 取 **N=8 blocks × 12-layer size**（93 层 → 8 个完整 block + 1 个 partial final block，含 embedding 共 9 个 block）。
 
-> 详见 [Attention Residuals 概念页](../concepts/attention-residuals.md)。
+> 详见 [Attention Residuals 概念页](../concepts/attention-residuals.md)。一手论文是 [Attention Residuals](attention-residuals.md)。本报告的 N=8 × 12 层是 93 层上的生产配置；那篇论文的 \(N\) 测量停在更小的激活规模和 54 层的 Kimi Linear 集成，93 层、2.8T 的扫描不在那篇 PDF 里。
 
 ### Stable LatentMoE（新机制，已据 § 2.3 核实）
 
@@ -184,7 +184,7 @@ K3 训练+评测共创建 **51,219,741 个 sandbox**，跨 1,505,678 个镜像�
 
 并行策略：PP + virtual stages + EP + ZeRO-1 + Pipeline ZeRO-2 + CP。
 
-- **MoonEP（Perfectly Balanced EP，§ 5.2.1，开源 github.com/MoonshotAI/MoonEP）**：动态冗余 expert 在线规划迁移，保证每 rank 恰收 `S×K` token。证明：**E/R 个冗余 expert per rank 足够保证可行解**（E=expert 数，R=EP size），且该 bound essentially tight（附录 E 证明）。ILP 离线算精确解作参考，GPU planning kernel 近优、开销可忽略、恒尊重 E/R 上界。zero-copy communication（planning kernel 预算每 token 目的地，直接 send 到 expert-grouped position）。**sync-free static shapes**（完美平衡 → 每层计算 shape 静态已知 → 消除 per-layer MoE host 同步）。对比 DeepEP（worst-case 需 `S×K×R` buffer）MoonEP 只需固定 `S×K`。expert-GEMM workload-aware scheduling。vs ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解需手动调参）。这里的 ECHO 是 MoE 通信栈，不是 Shrivastava 的 Terminal Agents world-model [ECHO](echo.md)。
+- **MoonEP（Perfectly Balanced EP，§ 5.2.1，开源 github.com/MoonshotAI/MoonEP）**：动态冗余 expert 在线规划迁移，保证每 rank 恰收 `S×K` token。证明（附录 E，原文确证）：定理 1 对任意 router 输出有 \(M(I)\le E/R\)（E 为 expert 数，R 为 EP size）。定理 2 不是只有上界：rank 0 上的 expert 不接 token，其余 \(R-1\) 个 rank 上的 expert 均分全部 token；rank 0 要收下的 \(S\times K\) 个 token 全是远程的，至少碰到 \(\lceil E(R-1)/R^2\rceil\) 个 expert。按定理 1 的填充过程逐 expert 迁移可以达到这个值。\(R\) 大时它约等于 \(E/R\)，所以没有显著更小的一般上界；essentially tight 说的是这件事，不是每个 \(R\) 都有 \(M\ge E/R\)。ILP 离线算精确解作参考，GPU planning kernel 近优、开销可忽略、恒尊重 E/R 上界。zero-copy communication（planning kernel 预算每 token 目的地，直接 send 到 expert-grouped position）。**sync-free static shapes**（完美平衡 → 每层计算 shape 静态已知 → 消除 per-layer MoE host 同步）。对比 DeepEP（worst-case 需 `S×K×R` buffer）MoonEP 只需固定 `S×K`。expert-GEMM workload-aware scheduling。vs ECHO/UltraEP（预设冗余数或 per-rank token cap，可能无解需手动调参）。这里的 ECHO 是 MoE 通信栈，不是 Shrivastava 的 Terminal Agents world-model [ECHO](echo.md)。
 - **Memory-efficient training（§ 5.2.2）**：block-wise FP8 quantization + offload/remote-offload，element-wise operator recomputation。MoE：SonicMoE 启发的 gradient rewrite（prob 梯度不再依赖 forward output，改依赖 act_output + d_output，消除 backward 对 output 的依赖，代价是额外轻量 element-wise）。AttnRes：block 表示一次生成在 boundary layer、后续共享，checkpointing 包裹，pipeline 用 cache-based pipeline communication（只增量传新 block，micro-batch 完即释放，理论下界）。Pipeline ZeRO-2 gradient sharding + CPU offload。P2P-based Muon orthogonalization（不全量 all-gather，P2P 取本地 owned shard）。
 - **Multimodal encoder optimization（§ 5.2.3）**：dynamic CP for large images（沿 patch 维切到多设备，gather-KV；CP group 再分 sub-CP group 负载均衡分布多张大图）。ViT computation in PP bubbles（extends K2.5 的 DEP——ViT forward of first PP micro-batches 同步前置，剩余进 pipeline bubble，backward 类似，大部分 ViT 计算藏在 bubble 里）。
 
@@ -262,24 +262,21 @@ Anthropic/OpenAI 拒绝 cyber 任务，故仅对比 GLM-5.2。
 - **Knowledge work**：Kimi Work 产出 42 年 AI ASIC 行业交互式研究网站，120+ 轮迭代，87 季报 + 99 原 PDF（11,000+ 页），2,800+ web search + 1,100+ terminal query。
 - **Video editing**：native multimodal 架构做 3Blue1Brown 风格自身架构 motion-graphics explainer + 56 源片段 teaser 视频剪辑。
 
+## 证据边界
+
+下列项报告没有给，也不改变已公开机制：`g_min=-5` 只写 fixed，没有消融；MoonViT-V2「matches SigLIP-initialized baseline」是定性句，Figure 6 是 gradient norm，没有下游视觉表；MOPD 的 9 teacher 混合比例和 curriculum 未写；KDA prefix cache 没有生产 hit rate；cosine 相对 WSD 的获胜超参和搜索空间未写，因此不能独立复核对 MiniMax 的反驳；Per-Head Muon 没有 loss 或 spike 对比；SiTU-GLU 的 β1=4、β2=25 没有选择依据。Tier 2 任务集未公开，14 个解不能从报告独立复现。
+
 ## 待追问
 
-- **需实验或作者披露**：**KDA scaled sigmoid 的 `g_min = -5` 怎么选的？** 报告只说"fixed"，未给消融。e^-5 ≈ 6.7e-3 是否是最优 retention 下界？更小（如 -7）会给更长 retention 但可能溢出 BF16；更大（如 -3）更安全但 retention 短。需 ablation。
-- **需实验或作者披露**：**MoonViT-V2 from-scratch 追平 SigLIP-init 的结论是否 robust？** Figure 6 只给 gradient norm 对比，未给下游视觉 benchmark 的 head-to-head 数字。"matches the SigLIP-initialized baseline across vision evaluations"是定性陈述，缺量化表。是否所有视觉能力都追平，还是部分子任务（如 fine-grained OCR、长视频）仍有差距？
-- **需实验或作者披露**：**MOPD 的 9 teacher 如何混合采样？** 报告给 OPD reward 形式但未给采样策略——每步按 domain × effort 均匀采？还是按某 curriculum？9 teacher 的 mixing ratio 对 student 收敛的影响未展开。
-- **现有材料待核**：**MoonEP 的 E/R bound "essentially tight" 的下界例子？** 附录 E 给上界证明，但 tightness 的具体构造（哪些 routing pattern 让 E/R 冗余不够）未在正文展开，需查附录 E。
-- **需实验或作者披露**：**KDA-aware prefix cache 的 hit rate 实测？** 报告描述机制详尽但未给生产 hit rate / miss cost 分布。1M coding 流量下 512-token hash block 的实际命中率、KDA checkpoint sparse 存储的存储开销，需生产数据。
-- **需实验或作者披露**：**Cosine vs WSD 的"独立超参搜索"细节？** 报告说 cosine 在各自最优超参下赢 WSD，但未给 WSD 的最优超参是什么、搜索空间多大。这是对 MiniMax 等报告 WSD 更优结论的直接反驳，需更多细节坐实。
-- **需实验或作者披露**：**Per-Head Muon 的改善幅度量化？** 报告说"improves training stability at larger scales"但未给 loss curve 或 spike frequency 对比。相对 full-matrix Muon 的稳定性增益需 ablation 数字。
-- **需实验或作者披露**：**SiTU-GLU 的 β1=4 / β2=25 怎么选的？** 报告给值但未给选择依据。β1·β2=100 的 bound 是否对应某 activation outlier 阈值？与 FP8 dynamic range 的关系？
-- **需实验或作者披露**：**Cyber Tier 2 的 14 个解是否可复现？** 报告说"every task verified solvable by human experts"但未公开任务集。GLM-5.2 8/36 的对比是否在同一 harness、同一 prompt？
+- **需核对原文**：**Cyber Tier 2 与 GLM-5.2 是否同一协议**：报告给 K3 14/36、GLM-5.2 8/36，但没写是不是同一 harness、同一 prompt。
 
 ## 相关追问
 
-主记录：[K3 的 AttnRes 分块数与尺度](../concepts/attention-residuals.md#待追问)。
+主记录：[Attention Residuals 论文的证据边界](attention-residuals.md#证据边界)。K3 生产配置仍见 [概念页](../concepts/attention-residuals.md#跨报告信号)。
 
 ## 相关页面
 
+- 一手论文：[Attention Residuals](attention-residuals.md)
 - 模型：[Kimi K3](../models/kimi-k3.md)
 - 概念：[Attention Residuals](../concepts/attention-residuals.md)（新机制）、[Stable LatentMoE](../concepts/stable-latentmoe.md)（新机制）、[线性注意力与 delta rule](../concepts/linear-attention-and-delta-rule.md)（KDA 升级）、[Multi-Head Latent Attention](../concepts/multi-head-latent-attention.md)（Gated MLA）、[注意力门控](../concepts/attention-gating.md)（full-rank 门）、[MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md)（2.8T 最大开源）、[Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)（9 teacher MOPD）、[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)（3-stage + white-box env）、[多 token 预测](../concepts/multi-token-prediction.md)（MTP→EAGLE-3 LK loss）、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)（partial rollout + AgentENV）、[零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md)（MLA NoPE 躲开 YaRN）
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)、[On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)

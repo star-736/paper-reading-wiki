@@ -38,6 +38,8 @@ MiMo-V2.6 把后训练写成一次放大的 agentic RL，再加一轮 Multi-Pref
 
 > Figure 2（原文 §2.1）：Audio, visual, and text inputs are mapped into a shared token sequence and processed by the MiMo Hybrid-SWA backbone, followed by the language-modeling head and multi-token prediction (MTP) blocks.
 
+Figure 2 与 §2 只把音频和视觉写成进入骨干的编码器。这篇 PDF 没有语音或图像生成头，不再追一份报告里没有的生成模块。
+
 | 主骨干 | Flash | Pro |
 | --- | --- | --- |
 | 层数（总 / SWA / GA） | 48 / 39 / 9 | 70 / 60 / 10 |
@@ -66,7 +68,7 @@ Table 1 注明：主骨干层数不含 MTP；编码器参数含输入 embedding�
 | Flash | 26T | 22T | 48T |
 | Pro | 27T | 3T | 30T |
 
-文本语料含网页、书籍、论文、代码和 STEM。视觉含 caption、grounding、OCR、GUI、对话、视频和 visual-coding。音频组织成语音–文本交错、ASR 和通用音频描述。
+文本语料含网页、书籍、论文、代码和 STEM。视觉含 caption、grounding、OCR、GUI、对话、视频和 visual-coding。音频组织成语音–文本交错、ASR 和通用音频描述。报告没有解释 Pro 全模态阶段 3T、Flash 22T 这组不对称。缺了配比理由也不改变上面这张已公开的两阶段表，不再追。
 
 Mid-training（§3.2）把通用底座接到大规模 RL：agent 轨迹（代码、通用、视觉、研究）混上高质量文本、仓库级代码和图像 / 视频 / 音频。先在 256K 上花主要算力，最后一阶段扩到 1M。隐藏权重从 AdamW 换成 Muown（Muon 加显式行范数控制；Lion et al., 2026）。Embedding、LM head 和 MoE router 继续用 AdamW。作者写明切换 Adam 预训练模型到 Muon 可能掉点，但这次 mid-training 没有 loss spike。同一阶段做 MXFP4 量化感知训练。
 
@@ -108,7 +110,7 @@ Reward hacking 的典型是仓库修复题里去网上抄已发布补丁（Table
 
 > Figure 11（原文 §5.4）：MiMo-V2.6-Pro expert-load balance at decoder layer 9 (384 experts) during RL, comparing runs with and without freezing the router.
 
-本报告没有重述 V2-Flash 的 expert bias 与 sequence auxiliary loss。预训练阶段的均衡配方不能从这篇 PDF 读出来。
+本报告没有重述 V2-Flash 的 expert bias 与 sequence auxiliary loss。预训练阶段的均衡配方不能从这篇 PDF 读出来，不再追冻结 router 之后 bias 是否仍在更新。Table 3 的采样次数、MOPD2 的 teacher 个数和路由、以及 CyberGym 与三套内部基准的独立协议，正文前面已经写明缺失，不再单列。
 
 ### MOPD2
 
@@ -163,15 +165,6 @@ Table 3 是 §5.6 之后的最终对比。横线表示报告未给出。前沿�
 9B 分域 GRPO 相对自身 SFT 的 Table 6（代码为单 harness）：SWE-bench Verified avg@3 61.1 → 66.2，SWE-bench Pro 44.6 → 47.6，Terminal Bench 2.1 avg@1 37.1 → 52.8，AutomationBench 30.3 → 33.1，MiMo Visual Coding (mini) 64.0 → 72.4，MiMo Cyber Bench (mini) 31.3 → 47.0。相对 Qwen3.5-9B，SWE-bench Pro 从 32.0 到 SFT 的 44.6，AutomationBench 从 5.0 到 30.3。内部音乐基准从 SFT 的 45.7 到 RL 的 52.5。Figure 17 的网页案例是定性对照，分数对应 Table 6 的 61.7 → 64.0 → 72.4 这条视觉轨迹。
 
 §5.5 记录了 30 步的中断：Pro 墙钟 123.1 小时，Flash 81.8 小时。失败包括 GPU 双比特内存错误、一次 grader 网络不可达、partial rollout 把 KV 池打满、micro-batch 内专家并行 rank 收到超过均值 30 倍的 token 导致训练 OOM，以及 Flash 后期打包时的主机内存 OOM。这些是运行日志，不是能力结论。
-
-## 待追问
-
-- **现有材料待核**：Table 3 与 §4.1 DeepSWE 曲线的协议差（是否 average@k、是否含 MOPD2）报告没有写明。
-- **现有材料待核**：MOPD2 的 token-level 监督是否仍是 V2-Flash 的 reverse-KL log-ratio，teacher 有几个、prompt 如何路由，本 PDF 都没有写。
-- **需实验或作者披露**：Pro 的全模态阶段只有 3T token，Flash 有 22T。报告没有解释这组不对称。
-- **需实验或作者披露**：RL 冻结 router 之后，预训练阶段的 bias 或辅助损失是否仍在更新？本报告没有给出 V2.6 的均衡配方。
-- **现有材料待核**：Figure 2 与 §2 把音频和视觉写成进入骨干的编码器。这篇 PDF 没有描述语音或图像生成头。
-- **需外部核验**：CyberGym 修正后的分数，以及三套 MiMo 内部基准，都还没有独立协议说明。
 
 ## 相关页面
 

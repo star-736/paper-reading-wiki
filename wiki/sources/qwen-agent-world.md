@@ -33,6 +33,8 @@ Qwen-AgentWorld 是**首个覆盖 7 域的 native language world model（LWM）*
 1. **Decouple（解耦）**——LWM 作为独立环境模拟器，支持 turn-level 可扩展性与可控性，做 Sim RL 训练 agent。
 2. **Unify（统一）**——LWM 训练作为 agent 基座的 warm-up，把 next-state prediction 内化为一种 meta-reasoning 模式（类似"反思"但面向未来）。
 
+Related Work 的 Synthetic Environment Generation 一节把程序化合成环境与 learned neural simulator 并列。[Agent-World](agent-world.md) 被引在这一节：把真实环境合成扩到近 2,000 个环境，并带自演化训练（原文确证，该节）。两篇都没有做一个把合成环境接到 LWM 上的系统，本库不再追这个未出现的组合。
+
 ![Figure 1：Qwen-AgentWorld 总览。上半为 7 域统一的 native language world model（CPT→SFT→RL 三阶段，10M+ 环境轨迹）；下半为两种 agent 增强范式——左 [i] Decouple 把 LWM 作环境模拟器做 Sim RL（可扩展到无限真实环境 + 可控对抗环境），右 [ii] Unify 把 LWM 训练作 agent 基座 warm-up。底部柱状图展示 LLM RL（不含工具调用）在 agentic 任务上的泛化增益。](../assets/qwen-agent-world/fig1-overview.png)
 
 > Figure 1 Overview of Qwen-AgentWorld. Top: Qwen-AgentWorld is a unified native language world model across seven domains. Bottom: We explore two complementary strategies for applying world modeling to enhance language agents (mainly using the 35B-A3B model as agent): Decouple and Unify, where the world model serves as the environment simulator and agent foundation model, respectively.（§ 1 Introduction）
@@ -71,7 +73,7 @@ LWM 形式化为条件文本生成器：给定 system prompt `c`、历史观测 
 
 > Figure 5 Three-stage training pipeline of Qwen-AgentWorld. Stage 1 CPT injects world knowledge; Stage 2 SFT instills next-state-prediction thinking patterns; Stage 3 RL sharpens output quality.（§ 3）
 
-**训练数据**（§3.1）。三源互补：(1) Dedicated Agent Infrastructure——自建 containerized 沙箱、MCP servers、持久 terminal/GUI 环境，自动合成任务并让 agent 系统端到端执行，是主数据源；(2) Open Environment Interaction Traces——终端录制、开源 agentic tool-call 日志、代码仓库执行 trace，经多 agent 清洗管线（fetching / denoising / segmentation / semantic alignment / quality scoring）筛选；(3) In-House Agentic Trajectories——日常模型开发积累的 7 域轨迹。三阶段数据池严格不相交：CPT 用 (1)(2) + 专门领域 world knowledge 语料，SFT/RL 仅用 (3)。
+**训练数据**（§3.1）。三源互补：(1) Dedicated Agent Infrastructure——自建 containerized 沙箱、MCP servers、持久 terminal/GUI 环境，自动合成任务并让 agent 系统端到端执行，是主数据源；(2) Open Environment Interaction Traces——终端录制、开源 agentic tool-call 日志、代码仓库执行 trace，经多 agent 清洗管线（fetching / denoising / segmentation / semantic alignment / quality scoring）筛选；(3) In-House Agentic Trajectories——日常模型开发积累的 7 域轨迹。三阶段数据池严格不相交：CPT 用 (1)(2) + 专门领域 world knowledge 语料，SFT/RL 仅用 (3)。Abstract 的 10M+ 与 Table 2 的 SFT/RL 池（约 7K / 92K）不是同一批规模；三源占比和域分布未披露，缺了它不妨碍读这三阶段分工，本库不再追内部混合比例。
 
 SFT/RL 数据统计（原文确证，Table 2）：
 
@@ -122,6 +124,8 @@ SFT/RL 数据统计（原文确证，Table 2）：
 - **五维 Rubric（LLM judge）**：每预测观测由 LLM judge 按 §4.2 五维 rubric 打分（每维 1–5），total reward = mean × 5，范围 [5, 25]；judge 失败则 reward=0。每域用定制 judge system prompt + content-type classification（减少 timestamp/PID 等不可复现细节的 false negative），异步分布式调用。
 - **Rule-Based Verifier**：部分数据携带可执行 verifier 代码，产出 binary 0/1 信号，缩放到 [0, 25]。作客观锚点，缓解开放 reward 的 reward hacking。
 
+§3.4 写明 Appendix B 的训练动态里，Factuality 相对提升最大（11.3%），全程仍是最低分维度（原文确证，§3.4）。原文没有对照实验检验这是不是相对程序化环境合成的根本瓶颈。
+
 ## 应用范式
 
 ### Application I：解耦模拟器（Sim RL）
@@ -144,7 +148,7 @@ LWM 作为独立环境模拟器（policy agent 与 world model 是分开的模�
 **Controllable Simulation**（§6.1.2）。用自然语言指令在 trajectory 与 turn 两级塑造 LWM 行为，验证两种互补模式：
 
 - **Environment Adaptation（MCP）**。从真实 MCP 轨迹合成模拟 system prompt（initial state + environment summary + controllable simulation instructions），注入定向扰动（间歇 API 错误、分页响应、不完整中间结果、批量操作部分失败）。标准 Sim RL（无控制指令）几乎无增益（Tool Decathlon 32.4→31.5 反降），controlled Sim RL 在 Tool Decathlon +3.7、MCPMark +12.3（原文确证 Table 7）。**可控性不只是增益大小的因素，而是 Sim RL 在此域能否工作的前提**——无 grounded simulation instructions 时训练信号太噪。
-- **Fictional-World Construction（Search）**。用多 agent 合成框架构造 1k 完全虚构但自洽的环境，每个锚定一个 300–500 行的关系数据库。四策略（time-shifted / granular long-tail / private simulation / realistic grounded）保持数据虚构但真实。controlled simulation instruction 要求 LWM 只返回与当前 query 相关的信息、不揭示完整答案，迫使 agent 改写 query、交叉引用、迭代聚合。WideSearch 上 35B F1 Item +16.29、397B +3.87（原文确证 Table 8）。**在完全虚构世界训练的 agent 泛化到真实搜索任务**——因答案仅存在于虚构设定中，agent 无法从参数记忆绕过搜索工具，也不会把训练时的搜索结果与真实世界知识混淆。
+- **Fictional-World Construction（Search）**。用多 agent 合成框架构造 1k 完全虚构但自洽的环境，每个锚定一个 300–500 行的关系数据库。四策略（time-shifted / granular long-tail / private simulation / realistic grounded）保持数据虚构但真实。原文没有这四种合成策略的独立消融。controlled simulation instruction 要求 LWM 只返回与当前 query 相关的信息、不揭示完整答案，迫使 agent 改写 query、交叉引用、迭代聚合。WideSearch 上 35B F1 Item +16.29、397B +3.87（原文确证 Table 8）。**在完全虚构世界训练的 agent 泛化到真实搜索任务**——因答案仅存在于虚构设定中，agent 无法从参数记忆绕过搜索工具，也不会把训练时的搜索结果与真实世界知识混淆。
 
 **Real RL vs Sim RL**（§6.1.2）。WideSearch 上对比 controllable Sim RL 与用真实搜索引擎训练的 Real RL（原文确证 Figure 9）：
 
@@ -156,11 +160,13 @@ LWM 作为独立环境模拟器（policy agent 与 world model 是分开的模�
 
 > **原文要点**：Sim RL 的有效性依赖给 world model 提供足够详细的 initial state；没有它，模拟保真度下降、下游增益缩减（§6.1 Takeaways: "State is the bottleneck"）。
 
+正文没有不同 initial state 详细度下的 Sim RL 增益曲线。
+
 ### Application II：统一 agent 基座（LWM warm-up）
 
 把 agent 与 world model 统一为同一模型：选 action 的模型也预测环境状态（§6.2）。机制是 LWM 训练让 agent 在 commit 前先心智模拟候选 action 的后果，把 world modeling 作为内部规划步骤。这呼应 LeCun et al. (2022) 的 unified world-model–actor 架构与 VLA 研究中的 World Action Model 范式。
 
-实验：在 Qwen3.5-35B-A3B-SFT 上做 LWM RL warm-up（本质是**单轮、非 agentic、无工具调用**的任务——给定 user action 预测下一环境状态），之后直接在多轮、工具调用的 agentic 任务上评测，**不做任何额外微调**。
+实验：在 Qwen3.5-35B-A3B-SFT 上做 LWM RL warm-up（本质是**单轮、非 agentic、无工具调用**的任务——给定 user action 预测下一环境状态），之后直接在多轮、工具调用的 agentic 任务上评测，**不做任何额外微调**。原文把 LWM warm-up 与 agent 训练中的辅助 world-modeling 目标相加写成 future work，没有这项叠加实验。
 
 结果（原文确证 Table 9）——7 个 benchmark 全部提升，含 3 个完全 OOD 域：
 
@@ -228,7 +234,7 @@ AgentWorldBench 五维 rubric 均值（原文确证）：
 
 - **Qwen-AgentWorld-397B-A17B 总均分 58.71 最高**，超 GPT-5.4（58.25）。
 - **文本域优势明显**：397B 文本均分 58.07 vs GPT-5.4 56.84（+1.23），在 Terminal（57.73 vs 53.69）与 SWE（68.49 vs 66.29）——这两个域需准确建模代码执行状态与工具 API 行为——优势最大。
-- **GUI 域落后**：Claude Opus 4.8（60.93）/ Opus 4.6（61.12）领先，Qwen-AgentWorld-397B 第五（59.69）。差距反映 multimodal pre-training 的优势是纯文本 world modeling 不能完全捕获的。
+- **GUI 域落后**：Claude Opus 4.8（60.93）/ Opus 4.6（61.12）领先，Qwen-AgentWorld-397B 第五（59.69）。论文把差距归因于 multimodal pre-training；三域观测是 accessibility tree / UI view hierarchy 的文本表示。原文没有纯文本 world modeling 对 GUI 状态推理是否有内在上限的对照实验。
 - **World-model 训练效果**：397B 从 base 54.74→58.71（+3.97）；35B 从 47.73→56.39（+8.66，超 Claude Sonnet 4.6 的 56.04）。改进在文本/GUI 两域一致。Qwen3.6 系（无 LWM 训练，同架构家族）Qwen3.6-Plus 50.81 / Qwen3.6-Max-Preview 52.42 远低于 Qwen-AgentWorld——增益不能由 base 模型通用能力解释。
 - **Search 最难**：最佳 37.82 约为 SWE（68.49）/ MCP（70.10）最佳的一半。Search 需建模持续演化的 web 内容，长检索链上的事实一致性对所有模型都难。
 
@@ -259,16 +265,6 @@ Terminal 100 RL 步内从 32.8 升到 47.0（+14.2）；三个 held-out 文本�
 - **Search: URL 跨 RL step 的真实性**。追踪单个 Search 样本跨 RL checkpoint：Step 100 生成 IMDB URL `tt2333444`（合成标识符）；Step 200 标识符变 `tt2988794`，来源按自然排名（Wikipedia → IMDB → NYT → Rotten Tomatoes），snippet 含与 ground truth 紧密匹配的查询特定事实细节。URL 标识符仅占响应 token 极小部分，但 RL 甚至增强这些低显著性细节——reward 信号传播到显式 reward 维度粒度之下。
 - **Terminal: 字符级字节算术**。多轮轨迹中模型在前一 turn 见 `cat` 显示的文件内容，几轮后须预测 `wc -c` 输出。模型在 thinking trace 中逐字符枚举（含不可见 `\n` 字节），通过逐字母算术得到精确计数（53 bytes）。其他例子中模型同时满足密码学不变量（相同文件 → 相同 SHA256）与 Unix pipeline 语义（tee 到不存在目录失败但不影响 stdout）。
 - **MCP: 跨 turn API schema 保真度**。模拟 Notion workspace 的 9 个顺序 API call 中，模型维护完美一致性：同一 user identifier 出现在每个 `created_by` 字段、每 block 的 `parent.page_id` 匹配查询的 block ID、完整 Notion schema（~20 字段/block）无遗漏。模型实现了有状态的 in-context database，跨数十个嵌套 JSON 对象维护引用完整性。
-
-## 待追问
-
-- **需实验或作者披露**：**GUI 域差距的根因**。Qwen-AgentWorld 在 GUI 域（Android/Web/OS）落后 Claude Opus 4.8/4.6 与 GPT-5.4，论文归因于 multimodal pre-training 优势。但三 GUI 域已用 accessibility tree / UI view hierarchy 的文本表示——这是否意味着纯文本 world modeling 对 GUI 状态推理有内在上限？Future work 提到的 "multimodal extension"（融合截图与文本表示）能否闭合差距？
-- **需实验或作者披露**：**Factuality 维度持续最低**。Appendix B 显示 Factuality 相对提升最大（11.3%）但全程仍是最低分维度——factual world knowledge 是环境模拟最难的部分。这是否是 LLM world model 的根本瓶颈（vs 程序化环境合成的确定性）？更大 CPT 语料能否突破？
-- **需实验或作者披露**：**10M+ trajectories 的构成拆解**。Abstract 称用 10M+ 环境交互轨迹，但 Table 2 的 SFT/RL pool 仅 ~7K/~92K。10M+ 应是 CPT 数据（含 dedicated infra + open traces + world knowledge 语料），但三源各自占比与域分布未给出。
-- **需实验或作者披露**：**Fictional-world 四策略的独立贡献**。time-shifted / granular long-tail / private simulation / realistic grounded 四种合成策略未做消融，哪种对 sim-to-real 迁移贡献最大？
-- **需实验或作者披露**：**LWM warm-up 与 auxiliary world-modeling loss 能否相加**。[ECHO](echo.md) 已 ingest：同一策略、GRPO+环境 token CE，TerminalBench-2.0 上 8B/14B 相对匹配 GRPO 近乎翻倍；它不是独立模拟器。本报告把两条路写成 future work 的 compounding，ECHO 也没做 LWM warm-up。机制不同已闭合，相加与否仍开放。
-- **需实验或作者披露**：**与 Agent-World（人大+ByteDance）的互补边界**。论文 Related Work 明确把 [Agent-World](agent-world.md)（Dong et al., 2026）归为 "Synthetic Environment Generation"（code-driven），自定位为 "learned neural simulator"。两者在 Sim RL 上各有优势：Agent-World 的 code-based 合成保证确定性执行与可验证 reward，Qwen-AgentWorld 的 LWM 覆盖 code 难以指定的域（搜索引擎、真实 MCP servers）。但两者是否可组合——例如用 Agent-World 的环境合成造 seed、用 Qwen-AgentWorld 扩展到不可程序化域？
-- **需实验或作者披露**：**State is the bottleneck 的定量证据**。§6.1 Takeaways 称 Sim RL 有效性依赖给 world model 足够详细的 initial state，但正文未给对应的消融数据（不同 initial state 详细度下的 Sim RL 增益曲线）。
 
 ## 相关页面
 

@@ -66,10 +66,10 @@ Mach-Mind-4-Flash 是一个 35B 总参数 / 3B 激活参数的 MoE agentic 模�
 2. **三轨并行 RL**（§4.2–4.7）：共享 GRPO 框架但数据/reward 分域定制：
    - **Reasoning RL**（§4.2）：可验证正确性（数学唯一解 / 代码测试 / STEM 确定答案）。Two-Stage Reward Curriculum 解决 sparse outcome 下的 zero-reward trap：Stage 1 dense process reward 做 cold start，过阈值后切 Stage 2 strict outcome reward。Difficulty-based Pruning 用 SFT model 8 次推理过滤太难/太易。
    - **Safety RL**（§4.3）：content safety（taxonomy + RM）+ behavioral safety（工具调用安全性、授权、可逆性），pairwise contrastive 训练。
-   - **Tool-Use RL**（§4.4）：**EnvScaling** 策略--不扩展静态 tool-call trace，而是扩展环境（190+ stateful domain / 3.5K tool interface）。三类环境：file-system execution、programmatically verifiable（Python 模拟）、model-simulated。trajectory-level reward，asymmetric clipping `ε_low=0.20, ε_high=0.28`，K=8，T_max=40 turn，action-token masking。
+   - **Tool-Use RL**（§4.4）：**EnvScaling** 策略--不扩展静态 tool-call trace，而是扩展环境（190+ stateful domain / 3.5K tool interface）。三类环境：file-system execution、programmatically verifiable（Python 模拟）、model-simulated。190+ 的领域清单未列出。trajectory-level reward，asymmetric clipping `ε_low=0.20, ε_high=0.28`，K=8，T_max=40 turn，action-token masking。
    - **DeepSearch RL**（§4.5）：两路多跳 QA 合成（Wikipedia DAG + ReAct web 探索），在线 RL + GRPO + ORM。四机制 context 管理：sliding-window observation filter、progress summary restart、dynamic adaptive threshold、answer self-check。
    - **Code Agent RL**（§4.6）：repo 级 SWE，跨 scaffold（OpenHands/SWE-Agent）轨迹构造，XML 工具格式（非 JSON），error masking（rule-based + LLM 混合），Slime 异步 RL infra + TIS + Dynamic Sampling + prompt-level loss。
-   - **Claw Agent RL**（§4.7）：sandbox 环境自主 agent，E2B 协议，stateful agent loop（PENDING→GENERATING→PROCESSING_TOOLS→TERMINATED），token-level credit assignment 按结构角色（action/tool/reasoning/answer）reweight gradient。
+   - **Claw Agent RL**（§4.7）：sandbox 环境自主 agent，E2B 协议，stateful agent loop（PENDING→GENERATING→PROCESSING_TOOLS→TERMINATED），token-level credit assignment 按结构角色（action/tool/reasoning/answer）reweight gradient。各角色的具体权重，报告没有写。这是结构角色重加权，不是 [ARPO](../concepts/agentic-reinforced-policy-optimization.md) 按熵在高不确定步分叉。
 
 3. **MOPD 融合**（§4.8）：详见下文 [MOPD 段](#mopd-融合)。
 
@@ -96,7 +96,7 @@ MOPD 融合效果（Table 3，§5.2，已据原文核实）：
 | Agent | ClawBench (pass@3) | 80.70 | 80.30 | 83.20 | 超越专家（跨域迁移） |
 | Agent | ClawEval | 61.82 | 67.23 | 70.35 | 超越专家（跨域迁移） |
 
-三种融合模式：(1) Reasoning 的 **capability anchoring**（专家防止融合退化）；(2) General 的 **full retention**；(3) Agent 的 **mixed**（SWE 部分保留 + OpenClaw 正向跨域迁移）。
+三种融合模式：(1) Reasoning 的 **capability anchoring**（专家防止融合退化）；(2) General 的 **full retention**；(3) Agent 的 **mixed**（SWE 部分保留 + OpenClaw 正向跨域迁移）。SWE-bench Verified 从专家 73.80 到融合后 71.10（−2.7pp）。报告把落差归因于 scaffold 行为被蒸馏平滑，没有给出被抹掉的具体行为。
 
 Appendix C 的消融发现一个重要跨域迁移效应：在 tool-use + IF + safety 三 teacher 基础上加 code teacher，AIME'25 +2.30、AIME'26 +0.83，**没有加数学 teacher 却提升了数学**--code supervision 的跨域迁移是真实的，但不可依赖，每个想保留的能力都应至少有一个 teacher 代表。
 
@@ -118,7 +118,7 @@ HMPO（§4.9，引 [66]）在 GRPO 上只改 reward 设计，三组件：
 
 ### 统一 RL/OPD 训练范式（§3.1）
 
-- 加权 loss `L = α·L_OPD + β·L_RL`（公式 1），三模式切换：纯 RL（α=0）、纯 OPD（β=0）、联合（α>0, β>0）。
+- 加权 loss `L = α·L_OPD + β·L_RL`（公式 1），三模式切换：纯 RL（α=0）、纯 OPD（β=0）、联合（α>0, β>0）。α、β 的取值和调度，报告没有写。
 - OPD loss 支持 MSE / Forward_kl_TopK 等多种形式。
 - 继承 RL 框架的分布式调度、异步 reward routing（20+ task 并行 reward 计算）、online sampling 闭环。
 
@@ -135,13 +135,13 @@ HMPO（§4.9，引 [66]）在 GRPO 上只改 reward 设计，三组件：
 - **MTP 加速**：Megatron-Core native MTP module + vLLM sampling phase speculative decoding。
 - 加速效果（Appendix A, Figure 15）：tp=8/ep=8 时 +2%，tp=4/ep=8 时 +2%，tp=8/ep=4 时 **+17%**（通信占比越低加速越显著）。
 
+## 证据边界与阅读提示
+
+- 原文没有联合模式（α>0, β>0）下 OPD 与 RL 梯度是否互相干扰的对照。HMPO 的跨域数字已写在正文；原文没有把「通用 conciseness」和「math-specific shortcut」拆开的对照，也没有失败域实验。
+
 ## 待追问
 
-- **需实验或作者披露**：统一 RL/OPD loss 中 `α`/`β` 的调度策略是什么？联合模式（α>0, β>0）下两条路径的梯度是否会互相干扰？
-- **需实验或作者披露**：EnvScaling 的 190+ stateful domain 覆盖哪些领域？model-simulated environment 的 LLM/world-model simulator 如何保证 reward 可靠性？
-- **需实验或作者披露**：Claw Agent 的 token-level credit assignment 按"结构角色"reweight，具体权重如何设定？与 [ARPO](../concepts/agentic-reinforced-policy-optimization.md) 的 entropy-based step-level credit assignment 是什么关系？
-- **需实验或作者披露**：HMPO 的跨域泛化机制是"学到了通用 conciseness policy"还是"math-specific shortcut 恰好在 code/IF 上也有效"？是否有失败域？
-- **需实验或作者披露**：MOPD 融合中 SWE-bench 保留率最低（−2.7pp），报告归因于"scaffold-specific behaviors 被蒸馏平滑"--是否有具体的 scaffold 行为被损失的案例分析？
+- **需核对原文**：model-simulated environment 的 LLM / world-model simulator 如何保证 reward 可靠性？报告没有写。
 
 ## 相关页面
 

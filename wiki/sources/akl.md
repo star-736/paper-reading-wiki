@@ -100,11 +100,8 @@ GPT-4 打分（Figure 5，满分 10，TinyLLaMA）：AKL 多样性 5.51、质量
 - **实验不是 on-policy。** 若 AKL 只在 teacher-forced 前缀上算 KL，它和 OPD 的数据轴是正交的。
 - 最大 student 1.1B，作者 Limitation 自己写没做 70B。
 - 「50+ epoch 才收敛」来自直接优化离散 \(q\) 的 toy，不能换算成 LLM 的 optimizer step。
-
-## 待追问
-
-- **需实验或作者披露**：**理论覆盖不到 sampled-token PG。** 公式 5–8 的驻点论证停在 token-wise softmax。Thinking Machines / MiniLLM 的 reverse-KL advantage 是否仍与 FKL 同驻点，原文没做。
-- **需实验或作者披露**：\(\mu=0.5\)、\(\epsilon=|p-q|\) 几乎没扫；附录 Table 6 有若干 \(\mu\)，正文当默认。
+- 正文把 \(\mu=0.5\)、\(\epsilon=|p-q|\) 当默认。附录 Table 6 有若干 \(\mu\)，没有把 \(\epsilon\) 扫成可引用的灵敏度表。缺这组扫描也不改变「同驻点、有限步差在 head/tail」这个机制，不再追。
+- 公式 5–8 的驻点论证停在 token-wise softmax。原文没有 sampled-token policy gradient 是否仍与 forward KL 同驻点的实验或证明。
 
 ## 相关页面
 

@@ -83,15 +83,10 @@ Proposition 4.1 假定：历史越一致，单层 estimator bias 单调下降；
 - [SAO](single-rollout-asynchronous-optimization.md) 取消 group sampling、以 critic 补回 baseline；HGPO 则依赖一组相同初始状态的 rollout，属于同步 group-based 分支。
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) 将它归为 advantage 构造层：不是新 ratio、clip 或 reward，而是 history-aware 的 step-group baseline。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：论文用 raw、可分解的历史 state 建 $C_k$；若 memory 是摘要、检索片段或隐状态，什么才是“历史一致”？作者仅在结论提出 embedding similarity 作为未来方向。
-- **需实验或作者披露**：Proposition 4.1 的零 covariance、bias 单调和 variance 单调假设没有在实验中逐项检验；学得的 uncertainty weight 能否优于固定 $\alpha$ 仍是开放问题。
-- **需实验或作者披露**：仅在 ALFWorld / WebShop 与 Qwen2.5-1.5B/7B 验证。开放浏览、GUI、SWE 和随机工具环境里，state equality / state canonicalization 的成本与错误配对风险仍未知。
-
-## 相关追问
-
-主记录：[HGPO 的 state 匹配是否覆盖完整 prompt](../concepts/hierarchy-of-groups-policy-optimization.md#待追问)。
+- 开放网页、GUI、SWE 与非精确状态匹配的缺失已写在核心结论。摘要、检索或隐状态上的「历史一致」原文没有实验；作者只把 embedding similarity 列为未来方向。
+- 原文没有逐项检验 Proposition 4.1 的零协方差与单调假设，也没有学得的 uncertainty weight 相对固定 $\alpha$ 的对照。
 
 ## 相关页面
 

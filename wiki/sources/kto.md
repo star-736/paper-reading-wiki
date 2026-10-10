@@ -24,7 +24,7 @@ resource: "../../raw/2402.01306v5.pdf"
 2. **KTO 换的是人类价值函数，不是 DPO Eq. 7 的配对 logistic**：前景理论的 $v(z)=(z-z_0)^\alpha$ / $-\lambda(z_0-z)^\alpha$ 数值不稳，改成 logistic $\sigma$，用 $\{\lambda_D,\lambda_U\}$ 代替单一 $\lambda$，参考点从「那条 dispreferred $y$」换成 $\mathrm{KL}(\pi_\theta\|\pi_{\mathrm{ref}})$。目标是最大化 generation 的效用，不是最大化 $y_w\succ y_l$ 的似然（§4.1、Eq. 8）。
 3. **不需要 pair**：监督是二元 desirable / undesirable。把 $n$ 条偏好拆成 $2n$ 条二元样本就能训；one-$y$-per-$x$ 去掉配对痕迹后仍然能超过 DPO（§4.1 Data、Table 3、Figure 5）。
 4. **1B–30B 上匹配或超过 DPO，但任务并不均匀**：GPT-4 对 SFT target 的 winrate 上 SFT+KTO 与 SFT+DPO 同阶；Llama 上 KTO 单独显著好于 DPO 单独（7B / 30B，$p<0.01$）。Zephyr-β-SFT + UltraFeedback 的 GSM8K 从 DPO 的 40.0 到 KTO 的 53.5（+13.5）；TydiQA 上 KTO 反而低于 DPO（Table 2 / Table 5、Figure 3）。
-5. **边界不能省略**：训练仍是离线闭式损失，不从当前策略采样 rollout，不是 RLVR / GRPO。最大公开对照 30B，任务是对话 winrate / MMLU / GSM8K / HumanEval / BBH，不是多轮 agent。作者自己写没有一种 HALO 普适最优；KTO 的价值函数来自货币赌博，几乎肯定不是人类读文本的价值函数（§4.5、§5、§6）。
+5. **边界不能省略**：训练仍是离线闭式损失，不从当前策略采样 rollout，不是 RLVR / GRPO。最大公开对照 30B，任务是对话 winrate / MMLU / GSM8K / HumanEval / BBH，不是多轮 agent。作者自己写没有一种 HALO 普适最优；KTO 的价值函数来自货币赌博，几乎肯定不是人类读文本的价值函数（§4.5、§5、§6）。§5 把在线 HALO、按分数的 HALO 和其他模态标成方向，没有实验，也没有给出描述语言的 $v$ 与 $Q$。
 
 ## 机制（已据原文核实）
 
@@ -143,12 +143,9 @@ Table 1 是 UltraFeedback 上的推荐超参（AdamW、batch 32、梯度裁剪 1
 - [DAPO](dapo.md)：不要混名。DAPO 是 on-policy GRPO recipe；检索「DPO / KTO」若落到 DAPO，先回到本页或 [DPO](dpo.md)。
 - IPO（Azar et al., [arXiv:2310.12036](https://arxiv.org/abs/2310.12036)）、ORPO（Hong et al., [arXiv:2403.07691](https://arxiv.org/abs/2403.07691)）、SimPO（Meng et al., [arXiv:2405.14734](https://arxiv.org/abs/2405.14734)）**尚未 ingest**。正文只把 ORPO 当无参考模型基线；不要把 KTO 的 no-$\pi_{\mathrm{ref}}$ 变体写成 ORPO。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：货币赌博的 Kahneman-Tversky $v$ 几乎肯定不是人类读文本的价值函数。什么样的 $v$ 和 $Q$ 才描述语言？作者列为未来工作（§5）。
-- **需实验或作者披露**：在线 HALO、按分数的 HALO、其他模态，原文只点了方向（§5）。
-- **需实验或作者披露**：朴素 $y_w$ / $y_l$ 拆分是否低估了真正二元反馈；one-$y$-per-$x$ 只在 OASST / 不平衡子采样上做过。
-- **需实验或作者披露**：Proposition 4.1 的饱和会不会在复杂可验证任务上变成系统性欠拟合？没有 RLVR 对照。
+- 更合理的 pair→二元分解，正文已写为未来工作。原文没有在 RLVR 上检验 Proposition 4.1 的饱和是否造成系统性欠拟合的对照。
 
 ## 相关追问
 

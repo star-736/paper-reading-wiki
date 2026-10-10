@@ -99,18 +99,11 @@ $$
 - [Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)：SAPO 改的是 trust region 的**形状**（hard clip → soft gate），CTPO 改的是 trust region 的**宽度随位置的变化**；两者都批评固定 clip，但机制不同，论文未互相比较。
 - [DAPO](dapo.md) / [DeepSeekMath](deepseekmath.md)：CTPO 保留 GRPO 的 group-relative outcome advantage 与无 critic 结构，只替换 ratio 与 clip；DAPO 的 recipe 四件套与 CTPO 正交，论文未组合。
 - [训练—rollout 一致性](../concepts/train-rollout-consistency.md) / [Ring-1T](ring-1t.md) 的 IcePop / [Miles v0.1](miles-v0-1.md) 的 TIS：那些修正的是**训练引擎与推理引擎**概率失配（$\pi_{\mathrm{train}}$ vs $\pi_{\mathrm{infer}}$）；CTPO 的 $\rho^{\mathrm{cum}}$ 修正的是**算法内** $\pi_\theta$ vs $\pi_{\theta_{\mathrm{old}}}$ 的多步复用 off-policy。两层 ratio 来源不同，不要合并叙述。
-- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：本页归入 importance ratio / clipping 单元层，是 GSPO「sequence-level 派」与 GRPO「token-level 派」之外的第三种粒度——prefix-cumulative。
+- [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)：本页归入 importance ratio / clipping 单元层，是 GSPO「sequence-level 派」与 GRPO「token-level 派」之外的第三种粒度——prefix-cumulative。环境 token 与跨 turn 连乘已写在该页的 CTPO 小节：工具返回 mask 为 0，不乘进 $\rho^{\mathrm{cum}}$；五轮之间 prefix 只沿 assistant token 累积。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：Proposition 2 (ii) 的 per-token ratio 独立假设与真实序列不符（同一 response 内 log-ratio 强相关）；Figure 1 的 $\hat\sigma\sqrt t$ 拟合是经验支持，但 $\hat\sigma$ 从 step 50 的 0.0335 漂到 step 150 的 0.0393，$\sqrt t$ 律在长训练里是否仍成立没有更长程的曲线。
-- **需实验或作者披露**：advantage 仍是 outcome-level 标量广播到全 token；Proposition 1 的无偏是「给定任意 token-level advantage 函数时 ratio 无偏」，不是 credit assignment 无偏。与 [GiGPO](gigpo.md) / [HGPO](hierarchy-of-groups-policy-optimization.md) 的 step-level advantage 是否可组合，没有实验。
-- **需实验或作者披露**：只有 Qwen3-4B / 14B 两个 dense 规模、单一 TIR 任务、未报训练 seed 数与方差；avg@32 是评测采样口径。14B 的 BRUMO / HMMT 单项不占优说明平均增益的稳健性边界仍窄。
-- **需实验或作者披露**：position-adaptive clipping 的 $p$ 与 $\varepsilon$ 基值只在 TIR 上标定为 $p=0.5$、$(0.025,0.05)$；$p\ne0.5$ 的敏感性没有消融。
-
-## 相关追问
-
-主记录：[CTPO 与 MoE routing volatility](../comparisons/llm-rl-policy-optimization.md#待追问)。环境 token 与跨 turn 连乘已写在 [比较页的 CTPO 小节](../comparisons/llm-rl-policy-optimization.md)：工具返回 mask 为 0，不乘进 $\rho^{\mathrm{cum}}$；五轮之间 prefix 只沿 assistant token 累积。
+- Figure 1 的 $\hat\sigma$ 从 step 50 的 0.0335 到 step 150 的 0.0393。原文没有更长程曲线检验 $\sqrt t$ 律，没有与 GiGPO / HGPO 的 step-level advantage 组合实验，也没有 $p\ne 0.5$ 的敏感性消融。主实验只有 Qwen3-4B / 14B 的 TIR，未报训练 seed 数与方差。14B 单项不占优已写在评测表下。
 
 ## 相关页面
 

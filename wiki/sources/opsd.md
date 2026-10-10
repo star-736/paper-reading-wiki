@@ -125,7 +125,7 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 
 表注写 “the best checkpoint for each model and benchmark”。单元格实际是每个模型一个步数。1.7B 的 step 75 三榜合计 27.2，高于被采用的 step 50 的 27.0。
 
-这组 base 远低于主表：主表评测开 thinking，1.7B 的 AIME24 base 是 51.5。两组增益不能相减。
+这组 base 远低于主表：主表评测开 thinking，1.7B 的 AIME24 base 是 51.5。两组增益不能相减。会议版附录 B 只写非思考设定下增益不均匀、8B 更大；没有解释为何和主表开 thinking 时小模型增益更大的方向相反。
 
 ## 与现有 wiki 页的关系
 
@@ -138,13 +138,9 @@ Style 关键词含 `wait` / `alright` / `hmm`；math 含 `exponent` / `logarithm
 - **[SDFT](sdft.md)**：示范或文章当上下文的持续学习版。公式 1 写成 reverse KL，实践段改口 forward KL，主表未标注方向。Qwen2.5-7B 全参数，不是本页的 Qwen3 LoRA。
 - Context distillation（Snell et al. 2022）、STaR / ReST：相关工作里的 off-policy / 硬标签自训练前身；OPSD 的差异是 on-policy + soft 分布匹配。
 
-## 待追问
+## 证据边界
 
-- **需实验或作者披露**：**冻结初始 teacher vs 跟着更新的 teacher**：正文只说冻结更稳，没有量化「当前策略当 teacher」会怎么崩。
-- **需实验或作者披露**：**\(\tau\) 未调**：附录自己写更大模型可能还能再涨。clipping 是机制还是这个 \(\tau\) 碰巧够用？
-- **现有材料待核**：**尺度方向随协议变**。主表评测开 thinking 时，1.7B 均分从 37.1 到 43.4（+6.3），8B 只比 GRPO 多 0.8。会议版训练和评测都关 thinking 时，平均增益反过来是 8B +15.4、4B +4.4、1.7B +0.3，且 8B 在 step 50 后回落。作者没有解释这是容量还是 thinking 协议造成的。
-- **需实验或作者披露**：**竞赛数学以外有没有证据**：无代码、无 agent、无多 teacher。privileged \(y^\star\) 在没有参考解答的任务上怎么构造？
-- **需实验或作者披露**：本页的参考解答 \(y^\star\) 与 [SDFT](sdft.md) 的专家示范、[SDPO](sdpo.md) 的环境反馈，是三种 privileged context。哪一种在没有标准答案的任务上仍成立，三篇都没有交叉实验。
+原文没有冻结 teacher 对更新 teacher 的量化、\(\tau\) 的扫描、竞赛数学以外的任务，以及和 SDFT / SDPO 的交叉实验。附录 B 也没有 \(\tau\) 的选择实验；正文已写 \(\tau\) 没有调参。
 
 ## 相关页面
 

@@ -124,13 +124,12 @@ Table 25（§F.4）原文确证：1.4B 上 mixing law 仍高保真（log-linear 
 
 §F.5 原文确证：LMO 框架可调整目标为 OOD validation loss（$A^t_{\text{OOD}} \in \mathbb{R}^m$ 变向量），AIOLI-OOD 在不需额外 run 的条件下优于 stratified。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需实验或作者披露**：实验仅到 1.4B + 160M，未在 frontier-scale 验证；与 AutoMixer（frontier-scale MoE）的 per-capability 回归路线无直接对比
-- **需实验或作者披露**：perplexity 与 downstream 负相关（$r = 0.529$），AIOLI 优化 perplexity 是否反而损害 downstream？论文自己承认这是开放问题
-- **需实验或作者披露**：LEARNPARAMS 的 $\delta$ 在 $m=7$ 时仅 0.007（极小），$A^t$ 估计质量是否足够？超参 sensitivity 分析仅到 $m=3$
-- **需实验或作者披露**：linear dynamic mixing law 在 instruction-tuning 上 $R^2$ 仅 0.419（§C.1.2），AIOLI 在 SFT 阶段是否仍有效？
-- **需实验或作者披露**：$A^{t\star}$ 随时间变方向的机制未深入分析--是训练动力学（loss landscape 变化）还是数据组间的 curriculum 效应？
+- 实验到 1.4B 与 160M。原文没有 frontier-scale 验证，也没有与 AutoMixer 的直接对照。perplexity 与 downstream 的关系，§F.1 已写成开放问题。
+- LEARNPARAMS 在 $m=7$ 时 $\delta=0.007$；超参敏感性分析只到 $m=3$。原文没有进一步的估计质量实验。
+- §C.1.2 的 linear dynamic mixing law 在 instruction-tuning 上 $R^2=0.419$。原文没有 AIOLI 在 SFT 阶段的实验。
+- $A^{t\star}$ 随时间变方向已写在 §C.2.1。原文没有把它拆成训练动力学或 curriculum 的进一步实验。
 
 ## 相关页面
 

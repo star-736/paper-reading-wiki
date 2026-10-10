@@ -13,7 +13,7 @@ resource: "../../raw/DeepSeek-V3.2.pdf"
 
 - 原始 PDF：[raw/DeepSeek-V3.2.pdf](../../raw/DeepSeek-V3.2.pdf)
 - 标题：DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models
-- 版本/日期：arXiv:2412.19437，2024-12-02
+- 版本/日期：arXiv:2512.02556。仓库 PDF [`raw/DeepSeek-V3.2.pdf`](../../raw/DeepSeek-V3.2.pdf) 首页标题与该条目一致。2412.19437 是 [DeepSeek-V3](deepseek-v3.md) 的编号，不是本报告；那篇的注意力仍是 MLA，DSA 从本报告才写起。
 - 团队：DeepSeek-AI
 - 模型页：[DeepSeek-V4](../models/deepseek-v4.md)（V3.2 在 V3.1-Terminus 基础上引入 DSA，V4 为后续演进）
 
@@ -34,7 +34,7 @@ DeepSeek-V3.2 在 DeepSeek-V3.1-Terminus 基础上引入 **DeepSeek Sparse Atten
 
 DSA 由两个核心组件构成：
 
-1. **Lightning Indexer**：对每个 query token h_q 与历史 token h_s，通过少量 attention head 计算 index score $A_{q,s} = \sum_j w_{q,j}^{idx} \cdot \text{ReLU}(q_{q,j}^{idx} \cdot k_{s,j}^{idx})$，使用 ReLU 激活以适配 FP8 部署。
+1. **Lightning Indexer**：对每个 query token h_q 与历史 token h_s，通过少量 attention head 计算 index score $A_{q,s} = \sum_j w_{q,j}^{idx} \cdot \text{ReLU}(q_{q,j}^{idx} \cdot k_{s,j}^{idx})$，使用 ReLU 激活以适配 FP8 部署。论文只给符号 $H_I$，并写成 “a small number of heads”，$d_I$ 也未赋值（§2.1）。发布权重 [`deepseek-ai/DeepSeek-V3.2-Exp` 的 `config.json`](https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/blob/main/config.json)（外部佐证，2026-10-11 读取）写 `index_n_heads=64`、`index_head_dim=128`、`index_topk=2048`。这是该检查点的配置，不是论文里的句子。GLM-5 附录的 32 头 / head dim 128 是另一个模型，不能当成 V3.2 的头数。
 2. **Fine-grained Token Selection**：对每个 query 位置取 index score 的 **top-k**（k=2048）个历史 KV entry 做精确 softmax 注意力。
 
 DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模式**下——latent vector（KV entry）被同一 query token 的所有 query head 共享，理由是 kernel 效率：原文「each key-value entry **must be shared across multiple queries**」。注意这里的「MQA mode」是 **selection 结构**（KV 跨头共享、top-k 所有 head 选同一组），**不等于训练前向用 MQA 算术**——附录 A（Figure 7）的「训练/prefill 用 MHA mode、decode 用 MQA mode」是 **compute form** 那条轴、且 caption 限定在 V3.1-Terminus（dense 基座）；DSA 下短上下文 prefill 仍「specially implement a masked MHA mode to simulate DSA」，正说明 compute form（MHA）与 selection（DSA/MQA 共享）是两条正交的轴。推理代码已开源（Hugging Face `deepseek-ai/DeepSeek-V3.2-Exp`）。
@@ -79,10 +79,8 @@ DSA 实例化在 **[MLA](../concepts/multi-head-latent-attention.md) 的 MQA 模
 - **竞赛表现**（V3.2-Speciale）：IMO 2025 Gold（35/42）、CMO 2025 Gold（102/126）、IOI 2025 Gold（492/600）、ICPC WF 2025 Gold（10/12）。
 - **Agentic 评测**：SWE-bench Verified 73.1、Terminal Bench 2.0 46.4（Claude Code 框架）、BrowseComp 67.6（带 context management）。
 
-## 待追问
+## 证据边界与阅读提示
 
-- **需补外部来源**：Lightning indexer 的具体 head 数论文未明确给出（已据原文核实：§2.1, p3 仅给符号 $H_I$ 并定性描述"a small number of heads"，未赋数值；$d_I$ 同样未给。k=2048 已确认，§2.1.1, p4）。GLM-5 附录报告 32 头 / head dim 128 无法从 V3.2 PDF 交叉验证，需查开源代码或 GLM-5 报告。
-- **需实验或作者披露**：943.7B sparse training tokens vs GLM-5 的 20B——差异来自起点模型、数据分布还是设计哲学？需要消融实验。
-- **需补外部来源**：Post-training 中 indexer 是否真正更新——论文说"same way as sparse continued pre-training"，但未给出冻结 vs 更新的消融。
-- **现有材料待核**：masked MHA 模式的具体实现和效率收益未在正文展开。
-- **需实验或作者披露**：V3.2 仅在 128K 上下文训练，对 >128K 的泛化能力未见讨论（V4 报告提到 context management 部分弥补了这一限制）。
+- 原文没有解释 943.7B 与 GLM-5 20B sparse token 差异的消融。
+- 后训练写明不冻结 indexer；原文没有冻结与继续更新的对照。
+- 训练上下文停在 128K；原文没有 >128K 的泛化实验。
