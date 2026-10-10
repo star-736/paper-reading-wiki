@@ -110,7 +110,7 @@ $$
 
 ## 相关追问
 
-主记录：[CTPO 与 MoE routing volatility](../comparisons/llm-rl-policy-optimization.md#待追问)；[CTPO 的环境 token 与跨 turn 连乘](../comparisons/llm-rl-policy-optimization.md#待追问)。
+主记录：[CTPO 与 MoE routing volatility](../comparisons/llm-rl-policy-optimization.md#待追问)。环境 token 与跨 turn 连乘已写在 [比较页的 CTPO 小节](../comparisons/llm-rl-policy-optimization.md)：工具返回 mask 为 0，不乘进 $\rho^{\mathrm{cum}}$；五轮之间 prefix 只沿 assistant token 累积。
 
 ## 相关页面
 

@@ -119,7 +119,7 @@ Passkey（Appendix A.1）：Llama2 13B + DCA 在 18k 内各深度 100%（Figure 
 
 - **[YaRN](yarn.md)**：频率切分 + attention temperature。DCA 不碰频率表。Qwen3 的公开推理是 YaRN + DCA 一起把 32K 窗再 4× 到约 128K——两件套叠在 32K ABF 训练窗上，不是「DCA 等于 YaRN」。
 - **[Jet-Long](jet-long.md)**：把 DCA 当固定分组基线（`chunk_size=20480, local_window=4096`）。Jet-Long 的动态 $G$ 和 cache 不变量是后作；本页数字不要回写进 Jet-Long 表。
-- **[Qwen3](qwen3.md)**：S3 训到 32K（RoPE base $10^4\to10^6$，按 YaRN 原文是 NTK-aware / ABF），推理再叠 YaRN + Dual Chunk Attention 4×。4B/8B 模型卡 128K 来自这套部署，不是再训到 128K。
+- **[Qwen3](qwen3.md)**：S3 训到 32K（RoPE base $10^4\to10^6$，按 YaRN 原文是 NTK-aware / ABF），报告写推理再叠 YaRN + Dual Chunk Attention 4×。4B/8B 模型卡上的 131,072 只给出静态 YaRN（`factor=4.0`，`original_max_position_embeddings=32768`），没有 DCA 字段，所以卡上的部署顺序不是「先频率表、再位置索引」。`Qwen/Qwen2.5-7B-Instruct-1M` 则是另一端：`rope_scaling` 为空，`rope_theta=10^7`，DCA 为 `chunk_size=262144`、`local_size=8192`。vLLM `get_rope`（commit `acec1b1d`）在 `dual_chunk_attention_config` 非空时构造 `DualChunkRotaryEmbedding`，`inv_freq` 只用 `rope_theta`，`yarn` 分支进不去；DCA 用 `k_t = arange % chunk_len` 索引这张表。两边同时写进配置时，公开的 vLLM 不会先做 YaRN 再做 DCA。Hugging Face `modeling_qwen3.py` 没有 DCA。
 - **[高效长上下文注意力](../concepts/efficient-long-context-attention.md)**：正交轴。DCA 仍做 dense softmax，只改位置角是否还在训练网格上。
 
 ## 证据边界与阅读提示
@@ -129,7 +129,6 @@ Passkey（Appendix A.1）：Llama2 13B + DCA 在 18k 内各深度 100%（Figure 
 ## 待追问
 
 - **需实验或作者披露**：Eq. 6 左端写成 $P_q^{\mathrm{Intra}}$ 却等于 $c-1-P_k[j]$。分段公式与 $P_q^{\mathrm{Inter}}$ 定义一致，但没有勘误。
-- **需补外部来源**：Qwen3 没有写 DCA 的 $s$、$w$、是否仍按 $\tfrac{3}{4}$ 训练窗切块，也没有写 YaRN 的频率表和 DCA 的位置索引谁先谁后。
 - **需实验或作者披露**：Algorithm 1 用各支路 `map.sum` 做归一化；全局 softmax 的严格合并应走 LSE。[Jet-Long](jet-long.md) 后来用 inclusion–exclusion + LSE，并批评过对数域减法。DCA 这套 FA 合并的数值误差没有报。
 - **需实验或作者披露**：没有 MLA / GQA 以外架构、没有 256K / 1M、没有与 DSA 叠加的实验。
 

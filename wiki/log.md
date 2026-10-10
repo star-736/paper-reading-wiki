@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-10] verify | 七条实现细节
+
+对照仓库、Qwen3-8B 模型卡与两篇补下的 PDF，关闭七条「需补外部来源」。HF 与 vLLM 的 KV cache 都是 RoPE 之后的 K；模型卡把开源框架写成静态 YaRN，vLLM 在有 `dual_chunk_attention_config` 时不走 YaRN。CTPO 的 VERL 把工具返回的 mask 置 0，不乘进 $\rho^{\mathrm{cum}}$，五轮之间只沿 assistant token 累积。Ling-2.6 跟随 Ring-flash-linear-2.0 的固定衰减递推，另有 head-wise 幂律衰减、输出门、QK-Norm 和 Partial RoPE。Keye-VL 的 RL 节不写冻结 indexer，也没有公开训练仓。UniClawBench 的 supervisor 与 user simulator 都是 `gpt-5.4`。AdaCodec 的 $\gamma$ 按训练集中位 8 个 P-frame 标定。`raw/` 新增 `2606.02569v1.pdf`、`2510.19338v2.pdf`。
+
 ## [2026-10-10] verify | 发布状态与检查点身份
 
 用 Hugging Face 模型卡、`config.json` 与 GitHub README 核对 15 条「需补外部来源」。已写回并关闭：DeepSpec 与 V4-Flash/Pro-DSpark 已发布；DeepSeek-V4 有 arXiv:2606.19348v1，摘要数字与 HF PDF 一致，未逐页对照；Step-Audio 3 与 Seed2.0 在官方列表中没有权重；UI-Mate-9B/27B 为 Apache-2.0，9B 视觉配置与 Qwen3.5-9B 一致；YOIO 的 aka.ms 链接只到博客索引；Wild-OmniDocBench 已由 HunyuanOCR README 指向公开数据集；MiniMax-M3 发布配置是 4 routed + 1 shared。改为需作者披露：DocML、M3 的 instruct/RL 版、MiniCPM4.1 与 §4 是否同一权重、WeMM 的冻结与混合比、Qwen-UI-Agent 三档检查点、FreeToken 的 CUDA-graph 覆盖、ITT 勘误、GLM-OCR 的 CogViT 是否即 GLM-5V-Turbo。`raw/` 未改。

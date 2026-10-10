@@ -53,6 +53,8 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 
 **终止条件**：pass（score ≥ 阈值如 0.9）/ continue（未通过但可恢复且 follow-up 预算未用完，如 max 3 轮）/ fail（不可恢复或预算耗尽）/ timeout（如 30 分钟）。
 
+**外部佐证**（[HKU-MMLab/UniClawBench](https://github.com/HKU-MMLab/UniClawBench) commit `a8ac4df6`，`docs/REPRODUCIBILITY.md`）。answer supervisor 和 public user simulator 都用 `gpt-5.4`，`reasoning_effort=high`（`lib/defaults.py` 的默认）。执行容器的底座是 `ubuntu:24.04`（`docker/runtime-base.Dockerfile`）：Chrome `147.0.7727.50`、Node `22.22.1`、`agent-browser` `0.21.4`、桌面 `1440x900`。注入的 base skill 是 `apt-package-manager`、`agent-browser-control`、`desktop-control`（pyautogui）、`web-search`、`duckduckgo-search`；`linux-gui-control` 留在仓库里，不打进镜像。派生镜像：`openclaw` 钉 `openclaw@2026.3.11`，`nanobot` 钉 `nanobot-ai==0.1.5.post3`，另有 `openclaw-edict` 和 `codex`。公开任务是 200 条英文（suite `101`–`105`）加 200 条中文镜像（`201`–`205`）。
+
 ### 评测指标
 
 - **PR（Pass Rate）**：task-level pass/fail。
@@ -111,9 +113,6 @@ UniClawBench 是一个 **capability-driven（能力驱动）** 的 proactive age
 
 ## 待追问
 
-- **现有材料待核**：400 个任务的中英分配比例未在正文明确（需查附录或 GitHub repo）。
-- **需补外部来源**：三角色闭环的 user simulator 和 supervisor 用的具体模型未在正文说明（推测也是 LLM，但未指明型号）。
-- **需补外部来源**：任务执行环境的 Docker 镜像和 tool/skill 列表是否随 repo 公开，需查 GitHub。
 - **现有材料待核**：Cross-Platform 任务的"多平台"具体指哪些平台组合（browser + GUI app? 跨 OS?），正文仅举例未枚举。
 - **需实验或作者披露**：论文引用了 Hermes Agent [27] 和 OpenClaw [39] 作为 proactive agent 平台代表，但未在实验中评测它们作为 executor backbone 的差异。
 

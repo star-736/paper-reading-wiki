@@ -41,7 +41,7 @@ JoyAI-VL-Interaction 构建在 **JoyAI-VL 1.0** 之上，后者的 LLM 初始化
 
 - 参考帧（reference frame）用完整 ViT 编码（256 visual tokens）；
 - 可预测帧之间编码为紧凑 **P-token**（约 16 tokens），由运动向量 + 残差构建；
-- **predictive-cost reset**：当预测代价升高（场景变化）时自动开新参考帧；
+- **predictive-cost reset**：当预测代价升高（场景变化）时自动开新参考帧。AdaCodec 原文（`raw/2606.02569v1.pdf`，§3.1）把帧级代价写成 $\ell_t=\sum_b \ell^b_t(m^b_t)$，第 0 帧固定为 I-frame，之后 $\ell_t>\gamma$ 就新开 GOP。$\gamma$ 没有绝对数值：在训练集上调到中位 8 个 P-frame，然后训练和评测共用这一阈值。每条 GOP 的 P-frame 数另有上限 $K_{\max}$，默认与 $N_P=16$ 一起用 $K_{\max}=16$（Table 10）。[HaowenHou/AdaCodec](https://github.com/HaowenHou/AdaCodec) 仓库只有 README 和资源，没有这段阈值的代码。
 - 效果：token 预算增长与场景变化量而非帧数成正比，可消费无界视频流。
 
 ![JoyAI-VL-Interaction Figure 2：模型总览与 AdaCodec 视频编码。Round 1（t=1）输入 full RGB frame，经 ViT 编码为 256 visual tokens；Round 2（t=2）输入 residual + motion vector，经 P-Tokenizer 编码为仅 16 visual tokens（约 16 倍压缩）。两类 token 一起送入 VL-interaction model，模型输出 </silence>（保持静默）或 </response>（如"The car is moving towards the left."）。](../assets/joyai-vl-interaction/fig2-adacodec-encoding.png)
@@ -167,7 +167,6 @@ $$L(\theta) = -\frac{1}{|A|} \sum_{j \in A} w_j \log p_\theta(y_j \mid y_{<j})$$
 
 ## 待追问
 
-- **需补外部来源**：**AdaCodec 的 predictive-cost reset 阈值如何设定？** 论文引用了 AdaCodec 原文 [9]（arXiv:2606.02569），但未在本报告展开。
 - **需实验或作者披露**：**RL 的 answer-centered window sampling 的具体窗口大小？** 论文只说"压缩到个位数 turn"，未给确切窗口长度。
 - **需实验或作者披露**：**三段式记忆的 $T_s$ / $M$ / $L$ 具体取值？** 论文给出结构但未公开参数。
 - **需实验或作者披露**：**2 小时上下文的延迟实测数据？** 论文声称 sub-second latency 但未给系统级延迟 breakdown。

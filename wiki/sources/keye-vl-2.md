@@ -140,9 +140,7 @@ Student loss = advantage-weighted policy gradient $\mathcal{L}_{MOPD} = -\mathbb
 
 ### DSA 在 RL 中的适配（§5.2.1）
 
-与 [GLM-5](../concepts/deepseek-sparse-attention.md) 遇到的问题一致：DSA 的 top-k 算子非确定性会导致训练和推理间 token selection 不一致，RL 几步后性能塌陷。Keye-VL-2.0 的处理：用 `flashinfer.topk` 替代 `torch.topk`（2-3× speedup + 确定性），chunked DSA indexer 分块处理 score matrix 降低峰值内存。
-
-> Keye-VL-2.0 和 GLM-5 都用 deterministic top-k 解 DSA RL 稳定性问题，但 Keye-VL-2.0 用 `flashinfer.topk`（GLM-5 用 `torch.topk`），且没有提到冻结 indexer 参数（GLM-5 冻结了）。这可能是 GQA+DSA 与 MLA+DSA 在 indexer 参数稳定性上的差异，待追问。
+与 [GLM-5](../concepts/deepseek-sparse-attention.md) 遇到的问题一致：DSA 的 top-k 算子非确定性会导致训练和推理间 token selection 不一致，RL 几步后性能塌陷。§5.2.1 的处理只写两件事：用 `flashinfer.topk` 替代 `torch.topk`（2–3× speedup，并保持确定性），以及 chunked DSA indexer 沿序列切 score matrix、分块做 Top-k 再聚合，用来降峰值内存。这一节没有冻结 indexer 的句子。前面 §2.3.3 的 sparse adaptation 写的是全部参数解冻，KL 只在 top-k 上算，indexer 输入从计算图 detach。公开 GitHub 没有训练仓库（`Kwai-Keye` 组织返回 404，项目页 [kwai-keye.github.io](https://kwai-keye.github.io/) 不含 RL 脚本），所以不能从代码证实 RL 步里 indexer 权重仍在更新。能核实的是：报告没有写出 GLM-5 那种「RL 冻结 indexer」。
 
 ## 评测要点
 
@@ -186,7 +184,6 @@ TimeLens 三子集 mIoU 全部最优，验证 scene-wise dense caption + diverse
 
 ## 待追问
 
-- **需补外部来源**：Keye-VL-2.0 的 DSA indexer 在 RL 阶段是否冻结？报告说用 deterministic `flashinfer.topk` 但没提冻结 indexer 参数，与 GLM-5 的策略是否真有差异？
 - **现有材料待核**：GQA Sparse Aggregation 中各 group 的 attention 分布归一化是独立做的，这是否意味着不同 group 可能关注不同的 top-k 子集？还是共享同一个 indexer 选出的 top-k？
 - **需实验或作者披露**：13 个 domain teacher 的具体配置（参数量、训练数据量）未披露。teacher 路由是静态规则还是 learned router？
 - **需实验或作者披露**：Top-k overlap estimator 中 $\Omega_{i,t}$ 为空时 $A_{i,t} = 0$，这种零 advantage token 的比例有多高？是否影响训练效率？

@@ -301,4 +301,4 @@
 
 ### 需要新来源的明确入口
 
-可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)。IPO / ORPO / SimPO、SDPO、SDFT 已入库，OPSD 页那条外部来源已关闭。OPD 综述仍缺一手页：[ListOPD / Rock Tokens / local teachability](sources/opd-survey.md#待追问)，以及 Jeong 的 KL 重置和 Gemma 2 是否为学生 rollout 上的 OPD。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[CTPO 的环境 token mask](comparisons/llm-rl-policy-optimization.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。
+可优先补 [RT-2-X / Open X-Embodiment](sources/openvla.md#待追问)、[Qwen3 的负载均衡原论文](sources/qwen3.md#待追问)。IPO / ORPO / SimPO、SDPO、SDFT 已入库，OPSD 页那条外部来源已关闭。OPD 综述仍缺一手页：[ListOPD / Rock Tokens / local teachability](sources/opd-survey.md#待追问)，以及 Jeong 的 KL 重置和 Gemma 2 是否为学生 rollout 上的 OPD。官方实现核查可从 [Qwen3-VL 的层号与维度配置](sources/qwen3-vl.md#待追问)、[FAST 词表同一性](concepts/vision-language-action.md#待追问) 开始。CTPO 的环境 token mask 已按 VERL 实现写回比较页。

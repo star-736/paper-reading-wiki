@@ -29,7 +29,7 @@ Ling-2.6 和 Ring-2.6 是 Inclusion AI 在万亿参数规模上的 agentic intel
 
 三条设计轴线：
 
-1. **高效长上下文**：把 Ling-2.0 的 GQA 架构 retrofit 成 **7:1 [Lightning Attention](lightning-attention-2.md) + MLA** 混合线性注意力（每 8 层中 7 层线性、1 层 MLA），线性注意力把 per-token 成本从 $O(n^2)$ 降到 $O(n)$，MLA 压缩 KV cache。迁移通过四阶段 smooth pipeline（Lightning Attention 转换 -> Linear Warmup -> MLA 转换 -> MLA Warmup）在 ~400B tokens 内完成，性能无损。继续预训练 ~9.6T tokens。机制定义见 [Lightning Attention-2](lightning-attention-2.md)；本报告只写 following Ring-flash-linear-2.0，未展开内部算子。
+1. **高效长上下文**：把 Ling-2.0 的 GQA 架构 retrofit 成 **7:1 [Lightning Attention](lightning-attention-2.md) + MLA** 混合线性注意力（每 8 层中 7 层线性、1 层 MLA），线性注意力把 per-token 成本从 $O(n^2)$ 降到 $O(n)$，MLA 压缩 KV cache。迁移通过四阶段 smooth pipeline（Lightning Attention 转换 -> Linear Warmup -> MLA 转换 -> MLA Warmup）在 ~400B tokens 内完成，性能无损。继续预训练 ~9.6T tokens。机制定义见 [Lightning Attention-2](lightning-attention-2.md)。本报告写 following Ring-flash-linear-2.0。该文（`raw/2510.19338v2.pdf`，arXiv:2510.19338v2）Eq. 3 的递推与 Lightning-2 的状态方程同形：$kv_t=\lambda kv_{t-1}+k_t^\top v_t$，$o_t=q_t(kv_t)$。同节另有四件 Lightning-2 算法框里没有的外包：head-wise 幂律衰减（相对线性衰减，训练 LM loss 约低 0.04）、输出门、QK-Norm 后的半维 RoPE、grouped RMSNorm（§2.2.3、Figure 2）。Ling-2.6 的转换步沿用这套，并写明新增 $W_{gate}$、$\gamma_{gate}$，同时保留 QK Norm 和 Partial RoPE。`linghe` 的 CUDA 本轮未逐 kernel 对照。
 
 2. **高 token 效率**：Ling-2.6 不把短回复当风格偏好，而是优化 **capability per output token**。后训练用 Evo-CoT（去冗余推理步骤）、LPO（语言单元级策略优化）、双向偏好对齐和 shortest-correct-response distillation，在 reasoning workload 上约 4× token 效率提升。Ling-2.6-1T 在 Artificial Analysis Intelligence Index 上以 ~16M output tokens 达到 34 分，可比 GPT-5.4 non-reasoning。
 
@@ -193,7 +193,6 @@ Token efficiency：Artificial Analysis Intelligence Index 上以 ~16M output tok
 
 ## 待追问
 
-- **需补外部来源**：Lightning Attention 与 [KDA](../concepts/linear-attention-and-delta-rule.md) / [GDN](../sources/gated-delta-net.md) 的关系：机制页见 [Lightning Attention-2](lightning-attention-2.md)（标量衰减外积累加，不是 delta rule）。本报告仅说"following Ring-flash-linear-2.0"，未核对本族生产算子是否逐行等同 Lightning-2。
 - **需实验或作者披露**：7:1 比例 vs Kimi Linear / Qwen3-Next 的 3:1：scaling law 实验在更大模型上是否仍支持 7:1？Ling-2.6 的线性注意力质量是否足以支撑如此高比例？M=16 已退化，说明线性注意力仍有容量上限。[MiniMax-M1](minimax-m1.md) 更早用过 7 Lightning : 1 softmax，不要把 7:1 写成 Ling-2.6 独有，也不要把 M1 的全局 softmax 写成 MLA。
 - **需实验或作者披露**：KPop 的 binary KL 与 [GSPO](../sources/group-sequence-policy-optimization.md) / [SAPO](../sources/soft-adaptive-policy-optimization.md) 的关系：KPop 替代的是 IcePop（训练-推理 mismatch 控制），与 GSPO（sequence-level ratio）和 SAPO（soft gate）是否正交可组合？
 - **需实验或作者披露**：异步 RL 的 partial-rollout pipeline 与 [GLM-5 异步 Agent RL](../concepts/asynchronous-agent-rl.md) 的异同：两者都解耦 rollout 与 training、都用 staleness 控制，但 Ling-2.6 用 token budget $\Phi$ 约束而 GLM-5 用轨迹数量阈值——哪个更优？

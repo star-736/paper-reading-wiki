@@ -91,6 +91,8 @@ GSPO 的 sequence-level ratio 让同一 response 内所有 token 共享一个权
 
 证据边界：CTPO 的实验只有 dense Qwen3-4B / 14B 上的 TIR 数学，GSPO 基线是它自己的复现而非 Qwen3-30B-A3B 的 MoE 场景；14B 上平均增益主要来自 AIME 两项，BRUMO 25 略低于 GSPO、HMMT 25 介于 GRPO 与 GSPO 之间。Table 1 把 GSPO 标为「有偏」是 IS 修正口径的判断，不等于否定 GSPO 在 MoE 稳定性上的实测结论——两边没有同一评测面的对照。
 
+**外部佐证**（[horizon-llm/CTPO](https://github.com/horizon-llm/CTPO) commit `acc40211`，VERL 分支）。正文没写环境 token。实现里工具返回和 user turn 的 `response_mask` 记 0，assistant token 记 1（`verl/experimental/agent_loop/tool_agent_loop.py`）。`cum-token-cumprod` 与 CTPO-LA 都做 `cumsum((log π − log π_old) * mask)`（`verl/trainer/ppo/core_algos.py` 的 `_compute_policy_loss_cum_token_impl` / `_compute_policy_loss_cum_token_la_impl`）。mask 为 0 的位置在连乘里贡献 0，环境 token 的 ratio 不进入 $\rho^{\mathrm{cum}}$，clip 也不作用在这些位置上。位置 $t$ 是 `cumsum(mask)`，只数策略 token。整段 response 是一条扁平序列，cumsum 不在 turn 边界清零，所以默认五轮（`ctpo.sh` 的 `MAX_TURNS=5`、`CTPO_RATIO_MODE=cumprod`、`MASK_VOID_TURNS=False`）之间，prefix 只沿着 assistant token 继续累。
+
 ### SAPO：保留 sequence coherence，但恢复 token adaptivity
 
 SAPO 继承 GSPO 对 sequence coherence 的追求，但不接受 GSPO 的 hard sequence clipping。它用 smooth gate 做 token-level attenuation：正常情况下平均 token gate 近似 sequence-level gate，满足 GSPO 的对齐诉求；异常情况下只下调 outlier token，不让 near-on-policy token 一起陪葬。
@@ -219,7 +221,6 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - **需实验或作者披露**：MiniMax-M1 没写 $\varepsilon_{\mathrm{IS}}^{\mathrm{high}}$ 的具体值；Laguna $(1,4)$ 与原文「不下下界」是否同一配方，两边都没有对照表。
 - **需实验或作者披露**：现有库中收录的 2026 agentic / RLVR 报告较少采用 DPO；这一观察不能直接推广为整个产业弃用。是静态偏好对难以覆盖可验证环境，还是 length bias / likelihood displacement 等问题影响采用？[KTO](../sources/kto.md)、[IPO](../sources/ipo.md)、[ORPO](../sources/orpo.md)、[SimPO](../sources/simpo.md) 都不能单独证明生产选择的因果，仍需采用方披露或受控对照。
 - **需实验或作者披露**：CTPO 的 prefix 连乘在 MoE expert routing volatility 下是更敏感还是更钝？GSPO 的稳定性论据与 CTPO 的无偏论据没有同一评测面的对照，dense-only 实验无法回答。
-- **需补外部来源**：CTPO 在 TIR 多轮轨迹里如何对待环境返回的非策略生成 token（是否计入 $\rho^{\mathrm{cum}}$ 连乘、clip 是否作用其上）？正文与附录未说明，需看其 VERL 实现确认。 还需确认五轮 TIR 中 prefix 是否跨 turn 累积。
 
 ## 相关页面
 

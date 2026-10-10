@@ -78,6 +78,8 @@ $$
 
 若 RoPE 表被 cache：Dynamic Scaling 下 $s$ 一变，**每个 token 的旋转都变**。正确实现是 cache **施加 RoPE 之前**的 KV（§3.4）。这与 [Jet-Long](jet-long.md) 的 cache 不变量相反：那边存的是基座位置上的已旋转 KV，靠可加性做 correction rotation。
 
+**外部佐证**（2026-10-10 核对的 `main`）：Hugging Face `transformers` 的 `Qwen3Attention` 先 `apply_rotary_pos_emb`，再 `past_key_values.update`，DynamicCache 里是旋转后的 K 和未旋转的 V（`src/transformers/models/qwen3/modeling_qwen3.py`）。vLLM 的 `YaRNScalingRotaryEmbedding._compute_cos_sin_cache` 把 NTK-by-parts 之后的 $\cos/\sin$ 乘上 `mscale` 做成表；`Qwen3Attention.forward` 先 `rotary_emb(positions, q, k)`，再把这对 q、k 交给 `Attention` 写入 paged KV（`vllm/model_executor/layers/rotary_embedding/yarn_scaling_rope.py`、`vllm/model_executor/models/qwen3.py`，commit `acec1b1d`）。两条栈 cache 的都是 **RoPE 之后的 K**。`Qwen/Qwen3-8B` 模型卡写明这些开源框架（含 SGLang、llama.cpp）实现的是静态 YaRN，`factor` 不随输入长度变；因此它们也不实现原文对 Dynamic Scaling 的「cache 未旋转 KV」。同一张卡写阿里云 Model Studio 默认动态 YaRN，那条路径的 cache 层没有公开代码。
+
 ## 训练
 
 Llama 2 7B/13B 扩到 128K：只改 §3.3 的频率计算，$s=16$ 或 $s=32$。学习率 $2\times 10^{-5}$、无 weight decay、线性 warmup 20 step、AdamW $\beta=(0.9,0.95)$。$s=16$：PG19 切成 64K 段（BOS/EOS 包边），全局 batch 64，400 step。$s=32$：从 $s=16$ checkpoint 再 200 step，训练数据仍是 64K，不是 128K（§4.1）。消融用更老的 LLaMA 7B（预训练窗 2K）扩到 32K，同样 400 step。Figure 2 上 YaRN 的训练 loss 低于 PI / NTK-aware / NTK-by-parts。
@@ -115,10 +117,9 @@ Llama 2 128K 模型的 passkey：7B / 13B 的 $s=32$ 在测到的窗内平均准
 
 ## 待追问
 
-- **需补外部来源**：$\alpha=1$、$\beta=32$ 和 $\sqrt{1/t}=0.1\ln(s)+1$ 是在 LLaMA / Llama 2 上拟合的。 [Qwen3](qwen3.md) 训练期 ABF（base $10^4\to 10^6$）再推理期 YaRN factor=4，报告没写 $\alpha/\beta/t$，也没写固定 $s$ 还是 Dynamic Scaling。HuggingFace `rope_type=yarn` 是否逐条实现 Definition 2，本页未核源码。
+- **需补外部来源**：$\alpha=1$、$\beta=32$ 和 $\sqrt{1/t}=0.1\ln(s)+1$ 是在 LLaMA / Llama 2 上拟合的。 [Qwen3](qwen3.md) 训练期 ABF（base $10^4\to 10^6$）再推理期 YaRN factor=4，报告没写 $\alpha/\beta/t$，也没写固定 $s$ 还是 Dynamic Scaling。vLLM 的 YaRN 已核为固定 `factor` 的 cos/sin 表（见上）。Hugging Face `ROPE_INIT_FUNCTIONS["yarn"]` 的 $\alpha/\beta$ 默认值是否逐条等于 Definition 2，本页仍未核。
 - **需实验或作者披露**：原文主结果是微调；生产（[Qwen3](qwen3.md) 32K→128K 是 YaRN + [Dual Chunk Attention](dual-chunk-attention.md) 再 4×、[Qwen3-Next](qwen3-next-blog.md) 256K→1M、[Laguna](laguna-m1-xs2.md) 只在 GA 层加 YaRN）把 YaRN 当推理或中段训练旋钮。三种用法（微调 / Dynamic 零样本 / 固定 factor 推理）没有同模型对照。DCA 改的是注意力位置索引，与本页的频率切分正交。
 - **需实验或作者披露**：没有 256K / 1M 数字。Qwen3-Next 的 1M YaRN 远超本页 128K 证据。
-- **需补外部来源**：Dynamic Scaling 要求 cache 施加 RoPE 之前的 KV；vLLM / SGLang 等生产栈实际 cache 的是哪一层，本页未核。
 
 ## 相关页面
 
