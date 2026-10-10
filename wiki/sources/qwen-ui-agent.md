@@ -17,6 +17,7 @@ resource: "arXiv:2607.28227v1"
 - **团队**：MAI-UI Team / Alibaba Token Hub, Alibaba Group；Project Co-Leader Hanzhang Zhou / Panrong Tong / Xu Zhang，Project Leader Yue Wang
 - **arXiv**：[2607.28227](https://arxiv.org/abs/2607.28227)
 - **项目页**：[tongyi-mai.github.io/Qwen-UI-Agent](https://tongyi-mai.github.io/Qwen-UI-Agent)
+- **代码**（外部佐证，2026-10-10）：[Tongyi-MAI/Qwen-UI-Agent](https://github.com/Tongyi-MAI/Qwen-UI-Agent) 自述只是网站源码，实现在 [Tongyi-MAI/MAI-UI](https://github.com/Tongyi-MAI/MAI-UI)，许可证写 Apache-2.0。该仓库 README 在 2025-12-29 放出的权重是 [MAI-UI-2B](https://huggingface.co/Tongyi-MAI/MAI-UI-2B) 与 [MAI-UI-8B](https://huggingface.co/Tongyi-MAI/MAI-UI-8B)。`Tongyi-MAI` 的 Hugging Face 列表没有本报告的 27B、35B-A3B 或 4B。网站源码把技术报告、代码和 checkpoint URL 写成发布时再替换的 Coming soon。
 - **模型页**：[Qwen-UI-Agent](../models/qwen-ui-agent.md)
 
 报告自称是 [MAI-UI](https://arxiv.org/abs/2509.12895) 的续作（原文确证，Abstract footnote）。本 wiki 尚未沉淀 MAI-UI 原文。
@@ -171,7 +172,7 @@ Table 9 把 27B 与 [Qwen3.5-27B](../models/qwen3.5.md) 对照，表注写「pre
 
 ## 待追问
 
-- **需补外部来源**：27B 在 Table 9 被写成 Qwen3.5-27B 的 GUI 后训练产物；35B-A3B 与 4B 只写 “corresponding base checkpoints”，HF 仓库和是否同一视觉编码器未点名。
+- **需实验或作者披露**：报告里的 27B / 35B-A3B / 4B 用的是哪一个视觉编码器。公开 HF 上的 MAI-UI-2B 与 8B 不是这三档；这三档的仓库和 `base_model` 还没有放出来。
 - **需实验或作者披露**：AutoJudge 92.8% 一致率意味着真机 SOTA 仍带 judge 噪声；没有公开与 Xiaomi RealMobile 同一任务集的对照。
 - **需实验或作者披露**：Harness 的 proactive / 跨平台增益没有「同一权重开关膜」的成对实验，和 [UI-Mate DemoCUA](ui-mate.md) / [Prime Agent](prime-agent.md) 的隔离程度不同。
 - **需实验或作者披露**：Action RL 的 +7% 任务成功率未写清评测集；Online RL 的验证/false-stop 百分比未给绝对基数。

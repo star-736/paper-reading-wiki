@@ -30,7 +30,7 @@ OpenBMB 在 InfLLM-V2 报告里开源的 hybrid reasoning 检查点，Hugging Fa
 
 ## 技术身份
 
-报告 §4 的 8B GQA（$d=4096$，$h_q=32$，$h_{kv}=2$）是机制与数字的来源。摘要把 MiniCPM4.1 写成「基于 InfLLM-V2 框架训练并开源」。在读到独立的 MiniCPM4.1 模型卡之前，把 §4 数字当作这套框架的 8B 实验，不要把 HF 页面上的未核项写进本表。
+报告 §4 的 8B GQA（$d=4096$，$h_q=32$，$h_{kv}=2$）是机制与数字的来源。摘要把 MiniCPM4.1 写成「基于 InfLLM-V2 框架训练并开源」。2026-10-10 读到的 HF `config.json` 是 hidden 4096、32 层、32 query head、2 KV head，与这组形状一致；默认文件没有 `sparse_config`，README 要求自行加进去才启用 InfLLM v2。模型卡还写 fusion thinking。因此本表仍用 §4 的实验数字，不把 HF 权重组当成那次预训练运行的同一检查点。
 
 相对 NSA：同一短检查点上做长微调时，本架构不另加 KV 投影。相对 MoBA：有 pooling 选择器，不是块均值点积。
 

@@ -16,6 +16,7 @@ resource: "../../raw/2606.06467v1.pdf"
 - 版本/日期：arXiv:2606.06467v1，2026-06-04。入口：[arXiv](https://arxiv.org/abs/2606.06467)。
 - 作者：Yutao Sun、Yanqi Zhang、Li Dong（共同一作），Jianyong Wang、Furu Wei；Microsoft Research / Tsinghua University。与 [YOCO](yoco.md) 同团队。
 - 方法名是 **CLSA**（cross-layer sparse attention）；标题里的 You Only Index Once 是对 YOCO「只缓存一次」的延伸。模型页：[YOCO-CLSA 4B](../models/yoco-clsa.md)。
+- 代码入口（外部佐证，2026-10-10）：论文给的 `https://aka.ms/GeneralAI` 跳到 [thegenerality.com/agi](https://thegenerality.com/agi/)。该页是微软研究院博客索引；YOCO-S 条目链到本篇 arXiv，没有权重或 vLLM 补丁仓库。Hugging Face 上没有名为 YOIO 的官方模型。
 
 ## 核心结论
 
@@ -210,8 +211,6 @@ Table 9 的 CLSA top-k 是把一次性路由除以 **32 层** 后的摊销值（
 - **需实验或作者披露**：128K 只有 vLLM 延迟，没有 RULER / 多针 / 长推理质量。
 - **需实验或作者披露**：self-decoder 从 YOCO-3B 的 gRet 换成 SWA，CLSA 增益有多少来自这个替换，没有消融。
 - **需实验或作者披露**：没有 RL：top-k 非确定性在 agentic 训练里是否会像 DSA 那样爆，未知。
-- **需补外部来源**：权重与 vLLM 补丁除 `https://aka.ms/GeneralAI` 外没有可核的公开路径。
-
 ## 相关页面
 
 - 模型：[YOCO-CLSA 4B](../models/yoco-clsa.md)、[YOCO-3B](../models/yoco.md)

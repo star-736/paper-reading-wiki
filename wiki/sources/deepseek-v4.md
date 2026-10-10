@@ -13,7 +13,7 @@ resource: "../../raw/deepseek-v4-hf-technical-report.pdf"
 
 - 原始 PDF：[raw/deepseek-v4-hf-technical-report.pdf](../../raw/deepseek-v4-hf-technical-report.pdf)
 - 标题：DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence
-- 来源说明：Hugging Face 官方技术报告 PDF；初次下载时未找到 arXiv 条目。
+- 来源说明：正文据 Hugging Face 官方技术报告 PDF。arXiv 现有正式条目 [2606.19348v1](https://arxiv.org/abs/2606.19348)（DeepSeek-AI，2026-04-26）。摘要里的 Flash 284B/13B、Pro 1.6T/49B、预训练超过 32T、1M 上下文、相对 V3.2 的 27% 单 token FLOPs 与 10% KV cache，与本页据 HF PDF 写下的数字一致。本页没有把 arXiv PDF 换进 `raw/`，也没有逐页对照两份 PDF 的修订差。
 - 团队：DeepSeek-AI
 - 模型页：[DeepSeek-V4](../models/deepseek-v4.md)
 
@@ -58,7 +58,6 @@ V4 OPD 选择**full-vocabulary logit distillation**而非 token-level KL estimat
 ## 待追问
 
 - **需实验或作者披露**：架构能力强但复杂；报告本身也把架构简化列为未来方向。
-- **需补外部来源**：当前来源不是 arXiv，后续如果出现 arXiv 版本或新 revision，需要更新来源页和日志。
 
 ## 相关页面
 

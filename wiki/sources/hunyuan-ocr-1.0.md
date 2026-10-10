@@ -139,12 +139,14 @@ Wild-OmniDocBench：把原页打印再折、弯、变光照后重拍。DocML：1
 
 v1.5→v1.6 自报掉 2.07；同属 v1.6 的自报与 MinerU 统一重测再差 2.16。MGAM 通常提分，这里统一重测更低，差异主要不像单纯粒度修正。
 
+Wild-OmniDocBench（外部佐证，2026-10-10）：[Tencent-Hunyuan/HunyuanOCR](https://github.com/Tencent-Hunyuan/HunyuanOCR) 的 README 在 2026-05-11 把这项写成已开源，链接 [VirtualLUOUCAS/Wild_OmniDocBench](https://github.com/VirtualLUOUCAS/Wild_OmniDocBench) 与 [Hugging Face](https://huggingface.co/datasets/VirtualLUO/Wild_OmniDocBench)。数据集说明写 1350 张、对应 OmniDocBench v1.5，由打印、形变和再拍摄做成。同一条公告开源的另一项是 MMTIT-Bench，不是 DocML。DocML 仍只出现在 v1.0 README 评测表的列名里，没有对应数据集仓库。
+
 ## 待追问
 
 - **需补外部来源**：本 PDF 未写死视觉最大边长；1.5 说 1.0 是 2K。checkpoint 配置是否坐实 2K，本页不能升级为原文确证。
 - **需实验或作者披露**：XD-RoPE 的 time 子空间在 1.0 任务里实际用了多少？字幕抽取是视频截图，不是原生视频流。
 - **需补外部来源**：GRPO Eq. 1 写了 KL 项，附录 Table 9 却是 `KL loss coefficient = 0`。β 是否始终为 0，还是公式抄了 DeepSeekMath 通式。
-- **需补外部来源**：Wild-OmniDocBench / DocML 当时写「将公开」；本页未核是否已放。
+- **需实验或作者披露**：DocML 是否另有未挂在 HunyuanOCR README 上的发布地址。v1.0 评测表有这一列；2026-05-11 的开源公告点名的是 Wild-OmniDocBench 与 MMTIT-Bench。
 
 ## 相关追问
 

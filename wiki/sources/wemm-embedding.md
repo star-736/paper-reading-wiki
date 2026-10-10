@@ -17,6 +17,7 @@ resource: "../../raw/2608.24053v1.pdf"
 - 权重 / 代码：[Hugging Face collection](https://huggingface.co/collections/tencent/wemm-embedding)、[Tencent/WeMM-Embedding](https://github.com/Tencent/WeMM-Embedding)
 - 模型页：[WeMM-Embedding](../models/wemm-embedding.md)
 - 定位：**通用多模态 embedding 技术报告**，发布 2B / 4B / 9B 三档权重。输入覆盖文本、图像、视频、视觉文档和任意交错组合；输出维度可经 Matryoshka 截断。**不支持音频**。基座是对应尺寸的 natively multimodal [Qwen3.5](../models/qwen3.5.md)（§3）。
+- 基座仓库（外部佐证，2026-10-10，模型卡 `base_model`）：[WeMM-Embedding-2B](https://huggingface.co/tencent/WeMM-Embedding-2B) 指向 `Qwen/Qwen3.5-2B`，[4B](https://huggingface.co/tencent/WeMM-Embedding-4B) 指向 `Qwen/Qwen3.5-4B`，[9B](https://huggingface.co/tencent/WeMM-Embedding-9B) 指向 `Qwen/Qwen3.5-9B`。`Qwen/Qwen3.5-2B` 自己的卡又把 `base_model` 写成 `Qwen/Qwen3.5-2B-Base`，pipeline 是 image-text-to-text。三张 WeMM 卡都没有写 Instruct / thinking、视觉编码器是否冻结、或有没有改 GDN 与 full attention 的混合比。
 
 ## 核心结论
 
@@ -146,7 +147,7 @@ Stage-2 2B 累积（Table 6）：
 
 ## 待追问
 
-- **需补外部来源**：**基座 checkpoint 细节**：原文只写「corresponding natively multimodal Qwen3.5 backbones」，未写 Instruct / Base / thinking、是否冻视觉编码器、是否改 GDN:full-attention 混合比。
+- **需实验或作者披露**：**基座仍缺的训练开关**：模型卡已经点名 `Qwen/Qwen3.5-2B`、`Qwen3.5-4B`、`Qwen3.5-9B`。是否冻视觉编码器、是否改 GDN 与 full attention 的混合比、thinking 是否打开，卡上仍然没有。
 - **需实验或作者披露**：**训练配方空白**：optimizer、学习率、步数、硬件、global batch、$\tau$、$\tau_{\mathrm{dup}}$、$\alpha_d$、$\lambda_{\mathrm{Emb}}$、各档 $D_{\mathrm{MRL}}$、Stage 2 视觉分辨率和帧采样数均未给。
 - **需实验或作者披露**：**数据不可复现**：几百兆对的来源配比、内部数据占比、Semantic-ID 码本大小、reranker 启用任务列表都没有。
 - **需实验或作者披露**：**9B merge**：引了 TIES-Merging，但没写变体数、互补混合是什么、merge 算法超参；无法判断 80.6 有多少来自 merge 而不是容量。

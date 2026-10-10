@@ -16,6 +16,7 @@ resource: "raw/2607.00248v1.pdf"
 - 团队 / 日期：ByteDance Seed；arXiv:2607.00248v1，2026-07
 - 页数：87
 - 模型页：[Seed2.0](../models/seed2.md)
+- 开源（外部佐证，2026-10-10）：[ByteDance-Seed](https://huggingface.co/ByteDance-Seed) 的公开模型有 [Seed-OSS-36B-Base](https://huggingface.co/ByteDance-Seed/Seed-OSS-36B-Base) 与 Instruct，没有 Seed2.0 检查点。同名检索落到的是第三方蒸馏仓库。
 
 ## 核心结论
 
@@ -145,7 +146,6 @@ Seed2.0 Pro 在五场 ICPC 官方赛事（2025 World Finals + 西安 / 成都 / 
 ## 待追问
 
 - **需实验或作者披露**：Seed2.0 的架构是什么？参数量？是否 MoE？训练数据规模？--Model Card 完全未披露，需等待技术报告或开源。
-- **需补外部来源**：Seed2.0 是否有 HuggingFace 开源版本（如 Seed-OSS）？--报告提到前代 Seed-OSS 是开源的，但 Seed2.0 未说明开源计划。
 - **需补外部来源**：前代 Seed1.6/1.8 的技术细节是否已公开？--Seed-1.8 Model Card 被引用为 [1]，但未在 raw/ 中。
 - **需补外部来源**：定价仅为 Pro/Lite/Mini 各一个代表价，是否有按 context tier 分阶定价？--Gemini 有分阶，Seed2.0 只给单一价格。
 - **需补外部来源**：视频理解使用 VideoCut 工具的具体机制是什么？--Table 10 提到 VideoCut 工具提升长视频理解，但未描述工具设计。

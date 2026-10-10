@@ -14,7 +14,7 @@ resource: "../../raw/DSpark_paper.pdf"
 - 原始 PDF：[raw/DSpark_paper.pdf](../../raw/DSpark_paper.pdf)
 - 标题：DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation
 - 团队：Peking University + DeepSeek-AI（Xin Cheng / Xingkai Yu / Chenze Shao / Jiashi Li / Yunfan Xiong 等 5 人共同一作）
-- 开源：DSpark checkpoints（对应 DeepSeek-V4-Flash preview / DeepSeek-V4-Pro preview）+ 训练库 **DeepSpec**（包含 Eagle3、DFlash、DSpark）。
+- 开源（外部佐证，2026-10-10）：训练库 [deepseek-ai/DeepSpec](https://github.com/deepseek-ai/DeepSpec)（MIT），含 Eagle3、DFlash、DSpark。README 的 Released Checkpoints 对应论文 Table 1，是 Qwen3-4B/8B/14B 与 Gemma4-12B 上、用 open-perfectblend 训出的草稿，不是 V4 生产草稿。V4 的附加模块在 [DeepSeek-V4-Flash-DSpark](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-DSpark) 与 [DeepSeek-V4-Pro-DSpark](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro-DSpark)。两张模型卡都写：不是新模型，而是同一检查点加上 speculative decoding 模块，并指向 DeepSpec。
 - 部署 context：DeepSeek-V4 preview 发布两周后，DSpark 在生产 serving 引擎里**替换掉了 MTP-1**（即 V3/V3.2 起一直在用的 single-token MTP）。
 
 ## 核心结论
@@ -122,7 +122,6 @@ DSpark-5（$\gamma=5$，Markov head，parallel backbone = 3 层 MoE + mHC + slid
 
 ## 待追问
 
-- **需补外部来源**：**DeepSpec / DSpark checkpoints 的开源状态**：论文称发布 V4-Flash / V4-Pro preview 对应的 DSpark checkpoint 与 DeepSpec 训练库（含 Eagle3、DFlash、DSpark），但报告未给具体仓库链接；需要后续从 [github.com/deepseek-ai](https://github.com/deepseek-ai) 或 HuggingFace 上跟进。
 - **需实验或作者披露**：**难样本 unrecoverable draft cost**（§ 5.4 Limitations）：confidence scheduler 只能省 target 端验证，**draft 端 γ-token block 的 parallel backbone 是固定开销**。对于接受率天然极低的复杂请求，这一档算力无法回收；论文留作 future work（difficulty-aware early exit in draft model）。
 - **需实验或作者披露**：**Sequential head 与 [Gated DeltaNet / KDA](gated-delta-net.md) 这类 token-mixer 选择是否正交**：Markov head 走的是 low-rank transition bias，不是 attention 也不是 SSM；与混合线性注意力（KDA / GDN）一类的 backbone 选择应是**正交**的，但论文未做对比。
 - **现有材料待核**：**与 Multi-Teacher OPD 训练栈的关系**：DSpark 训练里 target 模型 100% 冻结、走的是 hidden-state caching + full-vocab supervision 思路，跟 [DeepSeek-V4 用的 full-vocab OPD](deepseek-v4.md#后训练opd-替代-mixed-rl)（也是 hidden-state caching + FP4 inference + TileLang KL kernel）共享同一套 HAI-LLM 工程地基；后续如果要写"DeepSeek-V4 的 distillation-as-infrastructure"主题，DSpark 是同一栈在 inference 端的延伸。

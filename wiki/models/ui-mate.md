@@ -17,7 +17,8 @@ UI-Mate 是腾讯 HY Frontier Team 发布的 **foundation GUI agent** 家族。�
 | 属性 | UI-Mate-9B | UI-Mate-27B |
 | --- | --- | --- |
 | **团队** | Tencent HY Frontier Team（Project Lead Zilong Huang） | 同左 |
-| **基座** | Qwen3.5-9B | Qwen3.6-27B |
+| **基座** | Qwen3.5-9B；HF `tencent/UI-Mate-9B`，`base_model` 为 `Qwen/Qwen3.5-9B` | Qwen3.6-27B；HF `tencent/UI-Mate-27B`，`base_model` 为 `Qwen/Qwen3.6-27B` |
+| **许可证** | Apache-2.0（模型卡） | 同左 |
 | **总参数** | 9B（报告按基座规模标注，未提及新增模块） | 27B（同上） |
 | **激活参数** | 报告未把 9B/27B 写成 MoE；按基座规模理解 | 同左 |
 | **模态** | 多模态（文本 + 图像输入；文本输出）（已据原文核实：观察是截图，输出是 reasoning + 动作；示范含前后帧但不注入像素坐标） | 同左 |

@@ -17,6 +17,7 @@ resource: "arXiv:2608.15930v1"
 - **团队**：Tencent HY Frontier Team；Project Lead Zilong Huang，Co-Lead Longxu Dou / Zihang Jiang / Lei Ke / Weixian Lei / Yingchen Yu，Supervisor Leowei Liang
 - **arXiv**：[2608.15930](https://arxiv.org/abs/2608.15930)
 - **项目页**：[ui-mate.github.io](https://ui-mate.github.io/)（含 macOS Apple Silicon 应用说明）
+- **权重**（外部佐证，2026-10-10）：[tencent/UI-Mate-9B](https://huggingface.co/tencent/UI-Mate-9B)、[tencent/UI-Mate-27B](https://huggingface.co/tencent/UI-Mate-27B)、[tencent/UI-Mate-democua-27B](https://huggingface.co/tencent/UI-Mate-democua-27B)，代码 [Tencent/UI-Mate](https://github.com/Tencent/UI-Mate)。模型卡许可证是 Apache-2.0。`base_model` 分别是 `Qwen/Qwen3.5-9B` 与 `Qwen/Qwen3.6-27B`。9B 的 `vision_config` 与 `Qwen/Qwen3.5-9B` 一致：`model_type=qwen3_5`，depth 27，hidden 1152，patch 16，`deepstack_visual_indexes` 为空，vision token id 同为 248053 / 248054 / 248056。这是配置一致，不是逐权重比对。
 - **模型页**：[UI-Mate](../models/ui-mate.md)
 
 **已闭合：不臆造 Qwen3.6 独立架构页。** 27B 基座在本 wiki 中无一手来源；9B 基座是 [Qwen3.5](../models/qwen3.5.md) 家族的 dense 变体。找不到一篇「Qwen3.6 技术报告」也不能从本报告升级 hybrid/dense 细节。
@@ -151,7 +152,6 @@ OSWorker 变长被解释为补全重复/分支子任务，而不是更低效：�
 
 ## 待追问
 
-- **需补外部来源**：项目页提供 macOS 应用，但报告未给出 Hugging Face 权重、许可证和 9B/27B 的视觉编码器是否改过 Qwen 基座。
 - **需实验或作者披露**：45-task variant-demo 只有 10 题试点：把示范段复制到目标实体数后净正向，但作者认为不够稳，未进主表（§10）。
 - **需实验或作者披露**：Historical reasoning 与 RL 探索的冲突只有定性熵塌缩描述，没有给出可复现的熵曲线或替代算法。
 - **需实验或作者披露**：IcePop + SeqClip 的过滤比例、以及 PCM 开启时的具体 `b / wmax` 未披露。

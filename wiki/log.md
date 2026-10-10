@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-10] verify | 发布状态与检查点身份
+
+用 Hugging Face 模型卡、`config.json` 与 GitHub README 核对 15 条「需补外部来源」。已写回并关闭：DeepSpec 与 V4-Flash/Pro-DSpark 已发布；DeepSeek-V4 有 arXiv:2606.19348v1，摘要数字与 HF PDF 一致，未逐页对照；Step-Audio 3 与 Seed2.0 在官方列表中没有权重；UI-Mate-9B/27B 为 Apache-2.0，9B 视觉配置与 Qwen3.5-9B 一致；YOIO 的 aka.ms 链接只到博客索引；Wild-OmniDocBench 已由 HunyuanOCR README 指向公开数据集；MiniMax-M3 发布配置是 4 routed + 1 shared。改为需作者披露：DocML、M3 的 instruct/RL 版、MiniCPM4.1 与 §4 是否同一权重、WeMM 的冻结与混合比、Qwen-UI-Agent 三档检查点、FreeToken 的 CUDA-graph 覆盖、ITT 勘误、GLM-OCR 的 CogViT 是否即 GLM-5V-Turbo。`raw/` 未改。
+
 ## [2026-10-10] ingest | SDFT
 
 MIT Improbable AI + ETH Zurich（arXiv:2601.19897v2，2026-08-07，22 页）。新增 `raw/2601.19897v2.pdf`、`sources/sdft.md`，提取 Figure 2/3/4/5。不建模型页。Headline：专家示范当教师上下文，学生在自己的 rollout 上蒸馏。公式 1 是 reverse KL；Practical Implementation 写 forward KL 更好，算法 1 指向附录 A.1 的 reverse KL 解析梯度，主表未标注方向。Qwen2.5-7B-Instruct 全参数。科学问答 32.1→70.2，先前能力平均 65.5→64.5；SFT 为 66.2 与 53.4。3B 上比 SFT 低 3.3。知识严格分 89，Oracle RAG 91。回写 OPSD、SDPO、OPD 比较页与 MOPD 概念页。OPSD 的外部来源条目关闭。

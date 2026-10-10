@@ -82,7 +82,7 @@ Kernel（Figure 6，$|I|=16$）：相对 FlashAttention-2，A100 128k 最高 7.4
 
 ## 待追问
 
-- **需补外部来源**：MiniCPM4.1-8B 与 §4 这只 8B GQA 是否同一检查点？原文只说「based on the InfLLM-V2 framework」开源了 MiniCPM4.1。
+- **需实验或作者披露**：`openbmb/MiniCPM4.1-8B` 与 §4 的 8B 训练检查点是不是同一份权重？2026-10-10 的 `config.json` 与 §4 的 GQA 形状一致（hidden 4096、32 层、32 query head、2 KV head），但默认配置没有 `sparse_config`，模型卡把它写成带 fusion thinking 的 MiniCPM4 最新版。形状一致不等于 §4 那次 8T+5B 运行的权重。
 - **需实验或作者披露**：没有 RL / agentic 稳定性。top-k 是否非确定，本页没写。
 
 ## 相关页面

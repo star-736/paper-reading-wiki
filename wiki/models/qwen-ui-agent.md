@@ -10,7 +10,7 @@ timestamp: 2026-09-05
 
 ## 身份
 
-Qwen-UI-Agent 是阿里 MAI-UI Team / Token Hub 发布的 **real-world-centric foundation GUI agent** 家族，定位为 MAI-UI 的续作。它不是通用 LLM 发布，而是专门做跨设备数字执行：看截图、读 CLI/API 反馈、在一次模型 turn 里发出单个或一批 GUI / bash / API 动作。覆盖 mobile、computer-use、browser 和 DeepSearch，并用一层 harness 把通知驱动的主动服务和跨手机–电脑工作流接上。
+Qwen-UI-Agent 是阿里 MAI-UI Team / Token Hub 发布的 **real-world-centric foundation GUI agent** 家族，定位为 MAI-UI 的续作。它不是通用 LLM 发布，而是专门做跨设备数字执行：看截图、读 CLI/API 反馈、在一次模型 turn 里发出单个或一批 GUI / bash / API 动作。覆盖 mobile、computer-use、browser 和 DeepSearch，并用一层 harness 把通知驱动的主动服务和跨手机–电脑工作流接上。2026-10-10 在 `Tongyi-MAI` 上能下载的权重是 MAI-UI-2B 与 MAI-UI-8B，不是下表这三档。
 
 ## 关键事实
 

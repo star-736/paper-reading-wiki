@@ -15,6 +15,7 @@ resource: "../../raw/2609.14005v2.pdf"
 - 标题：StepAudio 3 Realtime Technical Report。
 - 团队：StepFun-Audio Team。作者按名的字母序排列；arXiv 提交记录为 Haoyang Zhang。
 - 版本入口：[arXiv:2609.14005](https://arxiv.org/abs/2609.14005)。PDF 首页项目页超链接：[stepaudiollm.github.io/step-audio-3-realtime](https://stepaudiollm.github.io/step-audio-3-realtime/)。
+- 权重（外部佐证，2026-10-10）：`stepfun-ai` 的 Hugging Face 列表有 Step-Audio-2、Step-Audio-R1、Step-Audio-EditX，没有 Step-Audio 3 或 Step-Audio-3-Realtime。项目 GitHub 用户 `stepaudiollm` 只有项目站和 `hmu-bench`。项目页没有指向权重或推理仓库。
 - 模型页：[StepAudio 3](../models/stepaudio-3.md)。
 
 这是 Step-Audio 系列的实时对话报告，前作是 Step-Audio、Step-Audio 2、Step-Audio-R1、Step-Audio-R1.5 与 StepAudio 2.5（参考文献 [13]–[16]）。本库尚未单收这些前作。音频前端引用的是 Qwen3-Omni 技术报告（Jin Xu 等，arXiv:2509.17765），不是 [Qwen3.5-Omni](qwen3.5-omni.md) 或 [Qwen3.8-Omni](qwen3.8-omni.md) 里写过的编码器配置。
@@ -263,7 +264,6 @@ Table 10 的通用文本与 Table 8 的合并列一致：HMMT 2026 Feb 86.8（�
 - **需实验或作者披露**：Teacher 1–4 各对应哪一种数据配比，3:1:1:1 在留出集上怎么选中？表 8 没有给教师贴能力名。
 - **需实验或作者披露**：Formulation 与 Articulation 两次并发调用的延迟和显存是多少？Speak-First 与 Think-First 的切换规则只有默认值，没有分场景的触发条件。
 - **需实验或作者披露**：Table 5 的全思考列和 Table 4 的推理模式是否同一检查点？分数对不齐，正文没有说明差在哪一次训练。
-- **需补外部来源**：除 PDF 里的项目页超链接外，权重或推理代码是否发布。本页不把项目页的空抓取当成未发布。
 - **需实验或作者披露**：音频理解、对话、全双工和 τ-Voice 的闭源基线，哪些是作者重跑、哪些是引用记录分数？正文只把重跑协议写在 ASR 上。
 - **现有材料待核**：AA Full-Duplex 的 Overall 公式是什么？正文拒绝用四项简单平均代替官方 Overall，但没有写出权重。98.9 与 Pause Handling 的 98.9 数值相同，是否巧合并未说明。
 

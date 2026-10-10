@@ -17,7 +17,7 @@ resource: "arXiv:2608.16157v1"
 - **作者**：Shuo Yang*, Xiaoze Fan*, Melissa Pan, Haocheng Xi, Zhe Wang, Shanlin Sun, Kurt Keutzer, Song Han, Matei Zaharia, Chenfeng Xu†, Ion Stoica†（* equal contribution，† co-advise）
 - **通信**：andy_yang@berkeley.edu；xuchenfeng@utexas.edu
 - **arXiv**：[2608.16157](https://arxiv.org/abs/2608.16157)
-- **代码**：[github.com/FlashML-org/FreeToken](https://github.com/FlashML-org/FreeToken)
+- **代码**：[github.com/FlashML-org/FreeToken](https://github.com/FlashML-org/FreeToken)。支持列表（外部佐证，2026-10-10）在 [docs/models.md](https://github.com/FlashML-org/FreeToken/blob/main/docs/models.md)，作者称为 known-good，并写同架构的其他检查点也能跑。表内包括 DeepSeek-V4.1-Flash、DeepSeek-V4-Flash-0731、GLM-5.2 / GLM-5.3-Flash、Qwen3.6-35B-A3B、Qwen3.5-35B-A3B、Qwen3.8-Flash-Next，以及 GLM-4.7、Qwen3-MoE、Qwen3-VL、gpt-oss、Gemma-4、MiniMax-M2.5、MiniMax-M3、Muse-Glimmer。量化格式在 README 里写成 MXFP4、NVFP4、FP8、BF16；表内行再点名 FP8 与 NVFP4 仓库。README 写 graph-compatible execution，`models.md` 没有逐检查点标 CUDA-graph 快路径。
 - **下载**：[flashml.ai](https://flashml.ai)
 
 这是系统/serving 论文，不发布模型实体，不建模型页。
@@ -113,7 +113,7 @@ $$T_{\mathrm{fill}}(q)\approx qS/B_P,\quad T_{\mathrm{cpu}}(m-q)\approx (m-q)S/(
 
 ## 待追问
 
-- **需补外部来源**：正文说支持 20+ MoE，实验只报 Qwen3.6-35B-A3B、DeepSeek-V4-Flash、GLM-5.2；其余模型列表、量化格式和是否走过 CUDA-graph 快路径需查 GitHub / flashml.ai。
+- **需实验或作者披露**：`models.md` 的 known-good 表没有逐检查点写 CUDA-graph 快路径。README 只有 graph-compatible execution 这一句。
 - **需实验或作者披露**：最差 TTFT < 44 s 是原文概括；Figure 3 只画 mean TTFT，tail 分布未给表。
 
 ## 相关页面

@@ -22,7 +22,7 @@
 - [MiMo-V2.6 技术报告](sources/mimo-v2.6.md) - 全模态 Pro 1.02T/42B 与 Flash 310B/15B：一次混合 agentic RL、冻结 router、groupwise grading，以及 Multi-Prefix MOPD2。
 - [DeepSeek-V2 技术报告](sources/deepseek-v2.md) - DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。
-- [DeepSeek-V4 技术报告](sources/deepseek-v4.md) - DeepSeek-V4 的 Hugging Face 官方 PDF，重点是百万 token 上下文效率。
+- [DeepSeek-V4 技术报告](sources/deepseek-v4.md) - DeepSeek-V4 的技术报告，重点是百万 token 上下文效率。正文据 Hugging Face PDF；arXiv:2606.19348v1 的摘要数字与之相符，两份 PDF 未逐页对照。
 - [MiniMax-M2 Series 技术报告](sources/minimax-m2-series.md) - MiniMax-M2/M2.7 的 arXiv 技术报告，重点是低激活 MoE、Forge RL 和 self-evolution。
 - [MiniMax-M1](sources/minimax-m1.md) - MiniMax 的 456B / 45.9B hybrid-attention reasoning 报告，CISPO 一手出处：夹 IS 权重而非 token 更新；原生 1M 上下文，AIME 2024 86.0、SWE-bench Verified 56.0。M2 系列不是 CISPO 源头。
 - [Kimi K2.5 技术报告](sources/kimi-k2.5.md) - Kimi K2.5 的 arXiv 技术报告，重点是视觉 agentic intelligence、zero-vision SFT 和 Agent Swarm。
@@ -173,7 +173,7 @@
 - [DeepSeekMath](models/deepseekmath.md) - DeepSeek-AI 的 7B 数学推理族（Base / Instruct / RL），从 Coder-Base-v1.5 继续预训练；RL 变体是 GRPO 发布检查点，纯文本。
 - [MiniMax-M2 Series](models/minimax-m2-series.md) - 229.9B 总参数 / 9.8B 激活参数的低激活 MoE agentic 模型系列。
 - [MiniMax-M1](models/minimax-m1.md) - MiniMax 的 456B / 45.9B hybrid-attention reasoning 族（40k / 80k），7:1 Lightning Attention + softmax，CISPO RL，原生 1M，纯文本。
-- [MiniMax-M3](models/minimax-m3.md) - 428B 总参数 / 22B 激活参数（+ 600M visual encoder）的原生 MSA 多模态 MoE 模型，配套 MSA 报告释出。
+- [MiniMax-M3](models/minimax-m3.md) - 428B 总参数 / 22B 激活参数（+ 600M visual encoder）的原生 MSA 多模态 MoE。发布配置是 128 个 local expert、每 token 4 个 routed、1 个 shared expert。
 - [Kimi K2.5](models/kimi-k2.5.md) - 1.04T 总参数 / 32B 激活参数的 multimodal agentic MoE 模型，强调 Agent Swarm。
 - [Kimi Linear](models/kimi-linear.md) - 48B 总参数 / 3B 激活参数的混合线性注意力 MoE 研究模型，KDA:MLA = 3:1，验证线性注意力可 drop-in 替换 full attention。
 - [Qwen3-Coder-Next](models/qwen3-coder-next.md) - 79.7B 总参 / ~3B 激活的编码 agent 模型，基于 Qwen3-Next，3 GDN : 1 gated-attention 混合栈（已据 HF config 核实），纯文本。
@@ -280,15 +280,15 @@
 
 2026-09-17 第一轮整理覆盖 157 页的 `## 待追问`：原有 777 条列表项，87 条已有结论、证据边界或编目决定移回正文，50 条重复表述合并到主记录，剩余 640 条待追问。移出队列不等于本轮新解决了 87 个科研问题；分类只依据库内记录，未进行新一轮原文核验或外部检索。
 
-本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。同日入库 SDPO 与 SDFT，关闭 OPSD 页那条外部来源。SDFT 页新增 3 条实验类待追问；OPSD 与 SDPO 上各改写成 1 条跨设定对照。当前剩余 **642 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
+本轮原文核验已闭合 [OPD 熵曲线的归属](sources/minillm.md#熵与多样性的证据边界)：曲线来自 nrehiew 博客，MiniLLM 未做该对照。随后已补齐 [MLA 投影形状](concepts/multi-head-latent-attention.md#投影矩阵与缓存形状)与 [D.2 直接对照](sources/deepseek-v2.md#mla-与-mha-的直接对照附录-d2--table-9)，再关闭 2 条。本轮核实 M2 报告明确写 bias 与模型参数联合优化，关闭 1 条；GLM 专家均衡配方在两篇现有报告中仍未说明，1 条转为需作者披露。随后补齐 GDN 实验规模，关闭 1 条；Gated Attention 门参数已核实，原追问剩余的部署成本转为需实验。2026-10-10 入库 IPO / ORPO / SimPO，关闭 DPO 页「后续方法与 Eq. 7」那一条外部来源，三页另增 4 条实验类待追问。「2026 栈为何不用 DPO」仍在比较页，三篇也答不了。同日入库 SDPO 与 SDFT，关闭 OPSD 页那条外部来源。SDFT 页新增 3 条实验类待追问；OPSD 与 SDPO 上各改写成 1 条跨设定对照。同日核对发布状态：关掉 7 条已有公开页面或配置可答的外部来源，另有 8 条改记为需作者披露。当前剩余 **635 条**；OPD 跨任务普适性仍保留为实验问题。下表为核验后的计数。
 
 | 分类标签 | 条目数 | 下一步 |
 | --- | ---: | --- |
 | 现有材料待核 | 34 | 先重读已收录原文、附录或配置表，补足定位与推导；不预设材料一定能回答。 |
-| 需补外部来源 | 79 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
-| 需实验或作者披露 | 529 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
+| 需补外部来源 | 64 | 补引用论文、官方实现、权重配置、发布记录或勘误；不把“可能有”当成“已公开”。 |
+| 需实验或作者披露 | 537 | 缺受控对照、规模外推、生产配方或作者澄清；仅靠重读当前材料不能闭合。 |
 
-标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 642 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
+标签写在各页条目前，表示优先核查路径而非证据等级。复合问题保留上下文，先按第一步分流；读完材料后可能仍转入实验类。已厘清内容保留在各页“证据边界与阅读提示”；重复问题通过“相关追问”进入主记录，主记录附关联页反链。本轮只合并明确重叠的追问，不把不同模型、不同协议下的相似问题强行并成一个，因此当前 635 仍是条目数，不是严格去重后的独立研究问题数。其他标题下的“局限与开放问题”不计入这次统计。
 
 ### 优先回收的现有材料问题
 
