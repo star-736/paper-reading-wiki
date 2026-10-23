@@ -3,18 +3,20 @@ type: Source
 title: "MiMo-V2.6 技术报告"
 description: "Xiaomi LLM-Core 的全模态技术报告：混合 SWA/GA、一次混合 agentic RL，以及 Multi-Prefix MOPD2。"
 tags: ["source", "mimo-v2.6"]
-timestamp: 2026-10-03
-resource: "../../raw/MiMo_V2_6_technical_report.pdf"
+timestamp: 2026-10-24
+resource: "../../raw/2610.11959v1.pdf"
 ---
 
 # MiMo-V2.6 技术报告
 
 ## 来源
 
-- 原始 PDF：[raw/MiMo_V2_6_technical_report.pdf](../../raw/MiMo_V2_6_technical_report.pdf)
+- 原始 PDF：[raw/2610.11959v1.pdf](../../raw/2610.11959v1.pdf)
 - 标题：MiMo-V2.6: Scaling Reinforcement Learning Towards Self-Improvement
-- 版本/日期：Hugging Face `XiaomiMiMo/MiMo-V2.6-Pro-RL` 主分支 PDF，创建时间 2026-09-22；本文件没有 arXiv 号
-- 团队：LLM-Core Xiaomi（通讯作者 Fuli Luo）
+- 版本/日期：arXiv:2610.11959v1，2026-10-08，43 页。同一篇报告的更早本地副本是 Hugging Face `XiaomiMiMo/MiMo-V2.6-Pro-RL` 的 PDF（[raw/MiMo_V2_6_technical_report.pdf](../../raw/MiMo_V2_6_technical_report.pdf)，2026-09-22，44 页）。下面的主张按 arXiv v1 重读；两份在架构、RL 配方和 Table 3 上一致。arXiv 正文多出的明确引用是 §4.3 把 GAR 指向 Dong et al. (2026)
+- 团队：LLM-Core Xiaomi（通讯作者 Fuli Luo，附录 A）
+- 训练动态：[mimo.xiaomi.com/rl/mimo-v26](https://mimo.xiaomi.com/rl/mimo-v26)（§5）
+- 开放 9B：[XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B)（脚注 2）
 - 模型页：[MiMo-V2.6](../models/mimo-v2.6.md)
 - 前作文本骨干与 MOPD：[MiMo-V2-Flash 技术报告](mimo-v2-flash.md)（Core Team et al., 2026，arXiv:2601.02780）
 
@@ -28,7 +30,7 @@ MiMo-V2.6 把后训练写成一次放大的 agentic RL，再加一轮 Multi-Pref
 
 > Figure 1（原文第 1 页）：Benchmark score per task of MiMo-V2.6-Pro and MiMo-V2.6-Flash throughout RL training.
 
-§4.1 用 DeepSWE v1.1 的 average@3 量化这次 RL：Pro 从 58.4 到 72.6，Flash 从 48.7 到 65.7。Figure 3 把终点标成 72.57 与 65.68。花费是 Pro $2.6M、Flash $0.9M。Pro 的成本拆成 rollout 43.8%、训练 43.5%、grader 12.7%。这些曲线数字和后面 Table 3 的最终榜不是同一次测量，见 [评测要点](#评测要点)。
+§4.1 用 DeepSWE v1.1 的 average@3 量化这次 RL：Pro 从 58.4 到 72.6，Flash 从 48.7 到 65.7。Figure 3 把终点标成 72.57 与 65.68。花费是 Pro $2.6M、Flash $0.9M。正文把 Pro 拆成 rollout 43.8%、训练 43.5%、grader 12.7%。Figure 3 右图的图例顺序是 Training / Rollout / Grader；Pro 的三项与正文一致，同一顺序下 Flash 是训练 40.9%、rollout 44.9%、grader 14.2%。正文没有再写 Flash 的拆分。这些曲线数字和后面 Table 3 的最终榜不是同一次测量，见 [评测要点](#评测要点)。
 
 ## 架构与训练
 
@@ -92,7 +94,7 @@ Reward hacking 的典型是仓库修复题里去网上抄已发布补丁（Table
 
 二元测试分不出同样通过的补丁。高通过率代码子集用离线的 Groupwise Reward Synthesis（GRS）：对照多条离线 rollout 写出 solution rubric 和 behavior rubric，训练时逐条打分，奖励相乘 $R_i = R^{\mathrm{test}}_i \cdot S^{\mathrm{sol}}_i \cdot S^{\mathrm{beh}}_i$。测试失败仍是 0；全组都通过时，两项 rubric 的乘积仍能给出差异（§4.3.1）。
 
-其余代码任务用在线的 Groupwise Advantage Redistribution（GAR）。SFT grader 在共享工作区里对照成功和失败轨迹，按方案是否合适、实现是否有遗漏或多余退路、改动是否最小、是否伤到任务外代码、是否符合仓库习惯来给通过的补丁排序。确认依赖外部或泄漏答案的轨迹先把奖励置 0，再重算组统计。质量因子先压低质量通过者的正 advantage，再把拿掉的正质量按比例分回通过者；失败轨迹在这一步不动。公共缩放有上限。最后再减去组均值，使最终序列 advantage 组内均值为 0，并广播到该轨迹全部 response token。grader 不可用时退回原 advantage（§4.3.2）。
+其余代码任务用在线的 Groupwise Advantage Redistribution（GAR）。arXiv v1 把这一支引到 Dong et al. (2026)（[arXiv:2609.32577](https://arxiv.org/abs/2609.32577)）。下面的流程只依据本报告 §4.3.2，没有把那篇同伴论文的公式写进来。SFT grader 在共享工作区里对照成功和失败轨迹，按方案是否合适、实现是否有遗漏或多余退路、改动是否最小、是否伤到任务外代码、是否符合仓库习惯来给通过的补丁排序。确认依赖外部或泄漏答案的轨迹先把奖励置 0，再重算组统计。质量因子先压低质量通过者的正 advantage，再把拿掉的正质量按比例分回通过者；失败轨迹在这一步不动。公共缩放有上限。最后再减去组均值，使最终序列 advantage 组内均值为 0，并广播到该轨迹全部 response token。grader 不可用时退回原 advantage（§4.3.2）。
 
 ![Figure 7：左支 GRS 先离线建 solution / behavior rubric，在线用 rubric grader 把测试奖励乘上两项分数；右支 GAR 在线比较一组里通过与失败的轨迹，确认 hack 则奖励归零，再把正 advantage 从低质量通过者挪向高质量通过者。两支都进入 RL policy update。](../assets/mimo-v2.6/fig7-groupwise-grading.png)
 
@@ -164,7 +166,7 @@ Table 3 是 §5.6 之后的最终对比。横线表示报告未给出。前沿�
 
 9B 分域 GRPO 相对自身 SFT 的 Table 6（代码为单 harness）：SWE-bench Verified avg@3 61.1 → 66.2，SWE-bench Pro 44.6 → 47.6，Terminal Bench 2.1 avg@1 37.1 → 52.8，AutomationBench 30.3 → 33.1，MiMo Visual Coding (mini) 64.0 → 72.4，MiMo Cyber Bench (mini) 31.3 → 47.0。相对 Qwen3.5-9B，SWE-bench Pro 从 32.0 到 SFT 的 44.6，AutomationBench 从 5.0 到 30.3。内部音乐基准从 SFT 的 45.7 到 RL 的 52.5。Figure 17 的网页案例是定性对照，分数对应 Table 6 的 61.7 → 64.0 → 72.4 这条视觉轨迹。
 
-§5.5 记录了 30 步的中断：Pro 墙钟 123.1 小时，Flash 81.8 小时。失败包括 GPU 双比特内存错误、一次 grader 网络不可达、partial rollout 把 KV 池打满、micro-batch 内专家并行 rank 收到超过均值 30 倍的 token 导致训练 OOM，以及 Flash 后期打包时的主机内存 OOM。这些是运行日志，不是能力结论。
+§5.5 记录了 30 步的中断：Pro 墙钟 123.1 小时，Flash 81.8 小时。基础设施失败主要是 GPU 双比特内存错误。Flash 在第 15 与 16 步之间因 Kubernetes 故障重启；Pro 在第 14 步之后因 grader 网络不可达重启。partial rollout 把 KV 池打满；micro-batch 内某一层的专家并行 rank 收到超过均值 30 倍的 token，导致训练 OOM；Flash 后期打包时主机内存 OOM。这些是运行日志，不是能力结论。
 
 ## 相关页面
 

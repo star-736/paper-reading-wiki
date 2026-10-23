@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] deepen | MiMo-V2.6 arXiv v1
+
+Xiaomi LLM-Core（arXiv:2610.11959v1，2026-10-08，43 页）。新增 `raw/2610.11959v1.pdf`。与 2026-09-22 的 HF PDF 是同一篇报告，来源页改以 arXiv 为准。重读后架构、一次混合 RL 与 Table 3 与原页一致。§4.3 把 GAR 引到 Dong et al. 2026（arXiv:2609.32577），该文未单列成页。Figure 3 的 Flash 成本份额按与 Pro 相同的图例顺序读作训练 40.9%、rollout 44.9%、grader 14.2%。图沿用既有裁剪。回写后训练概念页。
+
 ## [2026-10-24] ingest | LongCat-DeepResearch
 
 美团 LongCat Team（arXiv:2609.36071v1，2026-09-28，23 页）。新增 `raw/2609.36071v1.pdf`、`sources/longcat-deepresearch.md`，提取 Figure 1–5。不建模型页：正文只区分 current LongCat 与上一版 LongCat-2.0，仓库只开源 harness。Headline：ResearchSpec 在分段调查期间固定；公开三榜 55.25 / 51.35 / 79.83。Table 5 上 LongCat-2.0 换当前 harness 的三榜无权重均分 47.04→58.05，再换当前模型到 62.14；预算不相等。规划合并抬报告分，继续修订效果混合。增强编辑的可读性偏好均分升到 53.96，DeepResearchBench II 的偏好边距为负。回写 agent harness、agentic engineering、评测体系与 Raven 的 DeepResearch Mixed 区分。

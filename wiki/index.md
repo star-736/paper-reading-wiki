@@ -19,7 +19,7 @@
 - [GLM-5.3 官方发布博客](sources/glm-5-3-blog.md) - 同一 GLM-5.2 base model 上只扩展后训练；公开长周期可验证环境、`slime` 对齐/调度与 coding/cyber 评测，但不是技术报告。
 - [GLM-5V-Turbo 技术报告](sources/glm-5v-turbo.md) - GLM-5V-Turbo 的 arXiv 报告，重点是 CogViT 视觉编码器、MMTP、30+ 类别多模态 RL 和 agent 框架集成（Claude Code / AutoClaw）。
 - [MiMo-V2-Flash 技术报告](sources/mimo-v2-flash.md) - MiMo-V2-Flash 的 arXiv 技术报告，重点是混合 SWA/GA 注意力、MOPD 和 MTP 加速。
-- [MiMo-V2.6 技术报告](sources/mimo-v2.6.md) - 全模态 Pro 1.02T/42B 与 Flash 310B/15B：一次混合 agentic RL、冻结 router、groupwise grading，以及 Multi-Prefix MOPD2。
+- [MiMo-V2.6 技术报告](sources/mimo-v2.6.md) - 全模态 Pro 1.02T/42B 与 Flash 310B/15B（arXiv:2610.11959v1）：一次混合 agentic RL、冻结 router、groupwise grading，以及 Multi-Prefix MOPD2。
 - [DeepSeek-V2 技术报告](sources/deepseek-v2.md) - DeepSeek-V2 的 arXiv 论文，Multi-Head Latent Attention（MLA）的首次提出处。
 - [DeepSeek-V3 技术报告](sources/deepseek-v3.md) - DeepSeek-V3 的 arXiv 论文：五个 MLA 宽度与 V2 相同；相对 V2 点名的架构例外是 auxiliary-loss-free 与 MTP。
 - [DeepSeek-V3.2 技术报告](sources/deepseek-v32.md) - DeepSeek-V3.2 的 arXiv 论文，引入 DeepSeek Sparse Attention（DSA）。

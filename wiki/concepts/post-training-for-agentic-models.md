@@ -32,7 +32,7 @@ Base model 给出知识、代码和推理基础，但 agentic model 还需要在
 
 ## MiMo-V2.6：一次混合 RL，再加 Multi-Prefix MOPD2
 
-[MiMo-V2.6](../models/mimo-v2.6.md) 把后训练的主循环改成一次混任务 GRPO：1,568 条 prompt、组大小 16、staleness 4，代码 / 通用 / 视觉 / 网络安全和多套 mini-harness 在同一步里更新。细奖励来自 groupwise grading：高通过率代码题用离线 rubric 乘上测试分，其余代码题在线重分配通过者的 advantage，并在确认 reward hacking 时把奖励置 0。RL 期间冻结 MoE router。
+[MiMo-V2.6](../models/mimo-v2.6.md) 把后训练的主循环改成一次混任务 GRPO：1,568 条 prompt、组大小 16、staleness 4，代码 / 通用 / 视觉 / 网络安全和多套 mini-harness 在同一步里更新。细奖励来自 groupwise grading：高通过率代码题用离线 rubric 乘上测试分，其余代码题在线重分配通过者的 advantage，并在确认 reward hacking 时把奖励置 0。arXiv:2610.11959v1 把在线重分配这一支引到 Dong et al. (2026)（[arXiv:2609.32577](https://arxiv.org/abs/2609.32577)）；同伴论文尚未入库，流程仍以本报告 §4.3.2 为准。RL 期间冻结 MoE router。
 
 MOPD 仍在 RL 之后，但名字改成 MOPD2，含义是 **Multi-Prefix** Multi-Teacher On-Policy Distillation。可验证域继续用 mixRL teacher 监督整段学生 rollout；难验证域用 SFT teacher，学生只在历史前缀上再生成一轮。这个缩写和 [Nemotron 3 Ultra](../sources/nemotron-3-ultra.md) 的第二轮 MOPD2 不是同一机制。本报告没有重写 V2-Flash 的 KL 公式。详见 [来源页](../sources/mimo-v2.6.md)。
 
