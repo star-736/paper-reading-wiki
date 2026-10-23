@@ -49,3 +49,4 @@ WeMM-Embedding 不改 Qwen3.5 的混合注意力骨架，核心是**怎么把 ML
 - 架构基座：[Qwen3.5](qwen3.5.md)
 - 同基座、不同任务：[InternVLA-A1.5](internvla-a1.5.md)、[Qwen-AgentWorld](qwen-agent-world.md)
 - 对照开源竞品所在家族：[Qwen3-VL](qwen3-vl.md)（Qwen3-VL-Embedding 的 LLM 线，不是 WeMM 的基座）
+- 同实验室、另一任务：[WeVisOne-VL](wevisone-vl.md)（感知与像素输出，基座是 Qwen3-VL）

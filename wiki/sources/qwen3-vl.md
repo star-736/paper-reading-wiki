@@ -166,3 +166,4 @@ RL 用 3 个互补 reward：
 - 概念：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)、[多模态 Agentic 训练](../concepts/multimodal-agentic-training.md)
 - 后续 RL optimizer：[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)（Qwen 团队后续方法论文，用 Qwen3-VL-30B-A3B preliminary cold-start 展示 SAPO > GSPO / GRPO-R2；不是本报告正文 pipeline）
 - 下游 VLA agent 层：[EmbodiedSkills](embodied-skills.md)（高层 scheduler 基于 Qwen3-VL，尺寸未写）
+- 下游感知模型：[WeVisOne-VL](wevisone-vl.md)（在 2B/4B 上加坐标 token 与约 9.6M 像素解码器；训练配方不在本报告里）

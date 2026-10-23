@@ -154,3 +154,4 @@ Stage-2 2B 累积（Table 6）：
 - 模型：[WeMM-Embedding](../models/wemm-embedding.md)
 - 基座：[Qwen3.5](../models/qwen3.5.md)
 - 同基座采用：[InternVLA-A1.5](../models/internvla-a1.5.md)（Qwen3.5 2B 做 VLA backbone，任务不是 embedding）
+- 同实验室、另一任务：[WeVisOne-VL](wevisone-vl.md)（Qwen3-VL 上的检测 / 分割 / 抠图，不是 embedding）

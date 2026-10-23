@@ -133,6 +133,7 @@
 - [Dual Chunk Attention](sources/dual-chunk-attention.md) - HKU + 阿里的 training-free 长上下文扩展：把 RoPE 注意力按 chunk 拆成 Intra / Inter / Successive 三路位置重映射，不改权重、兼容 Flash Attention；Llama2 70B 外推过 100k，并可与 PI / NTK / YaRN 正交叠加。Qwen3 公开推理配方的 DCA 一手出处。
 - [Jet-Long](sources/jet-long.md) - NVIDIA 的 tuning-free 零样本长上下文扩展：局部窗保留原版 RoPE，远程窗用解析式 $G=\lceil L/w_{\text{pretrained}}\rceil$ 把位置别名回训练网格；Qwen3-1.7B/4B/8B-Base 上 RULER 相对最强基线 +4.79/+2.18/+2.03 pp，fused kernel 相对 FA2 长上下文 prefill 最高 1.39×。
 - [WeMM-Embedding 技术报告](sources/wemm-embedding.md) - 微信视觉的通用多模态 embedding：2B/4B/9B 基于 Qwen3.5，两阶段对齐+精炼，MMEB-v2 上 2B 已超此前 8B 开源、9B 达 80.6，已部署视频号/公众号/朋友圈/电商。
+- [WeVisOne-VL](sources/wevisone-vl.md) - 微信视觉的统一感知 VLM（arXiv:2610.31329v1）：Qwen3-VL 2B/4B 上用坐标 token 与 `<OBJ>` 接约 9.6M 像素解码器，三阶段 SFT 后混合任务 GRPO；分割与抠图的 RL 只奖框。4B 检测 mean F1 为 57.1/55.3/71.3/44.7，RefCOCOg 拒识 67.4%。
 - [Prime Agent 技术报告](sources/prime-agent.md) - Prime Intellect 的开源 RLM harness：持久 IPython REPL、Continual Harness 与递归 subagent；把 harness 当评测膜，ARC-AGI-3 RHAE 上 Opus 5 从官方 30.2% 报到 95.5%，但作者不把它写成已隔离的因果效应。
 - [Pi coding agent 设计博客](sources/pi-coding-agent.md) - Mario Zechner 2025-11-30：极小核心、四工具、系统提示+工具定义 <1000 token；刻意不做 MCP / sub-agent / plan mode。Terminal-Bench 2.0 自报 Pi + Opus 4.5 约 50%，mixed-model 榜。不是 π0。
 - [SoL-Pi 官方博客](sources/sol-pi.md) - NVLabs 在 Pi 0.84.2 上用 auto-research 留下四个效率机制；相对 Pi token 少 45–49%、平均分保留约 94%。不是 Pi 官方发行版。
@@ -240,6 +241,7 @@
 - [DeepMMSearch-R1](models/deepmmsearch-r1.md) - Apple 的多模态 web search 模型，基于 Qwen2.5-VL-7B-Instruct，SFT+GRPO 训练做多轮文本搜索与裁剪图像搜索，6 benchmark 平均 57.13。
 - [Laguna](models/laguna.md) - Poolside 的 MoE agentic coding 模型族（M.1 225.8B/23.4B、XS.2 33.4B/3B），Model Factory 工业化流程，3:1 SWA/GA + softplus 门控 + WSD + AutoMixer + CISPO RL，XS.2 Apache 2.0 开源，纯文本。
 - [WeMM-Embedding](models/wemm-embedding.md) - 腾讯微信视觉的通用多模态 embedding 家族（2B/4B/9B），基于 Qwen3.5，文本/图像/视频/视觉文档/交错输入，不支持音频，已部署微信推荐与搜索。
+- [WeVisOne-VL](models/wevisone-vl.md) - 微信视觉的统一感知 VLM，基于 Qwen3-VL 2B/4B，坐标 token 加约 9.6M 像素解码器；单图+文本进，结构化文本以及 mask/alpha 出。HF 把名为 4B 的仓库标成 5B。
 - [MiniLLM](models/minillm.md) - 清华 CoAI + MSR 在 ICLR 2024 发布的学生模型族（GPT-2 120M/340M/760M、OPT 1.3B/2.7B/6.7B、LLaMA 7B），由 reverse-KLD on-policy 蒸馏训得，teacher 分别为 GPT-2-1.5B / OPT-13B / LLaMA-13B，纯文本输入输出；不是自研架构基座，而是方法路线的对照检查点。
 
 ## 概念

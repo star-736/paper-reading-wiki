@@ -56,4 +56,5 @@ LLM backbone **直接复用 [Qwen3 base 报告](../sources/qwen3.md) 释出的 8
 - 下游 GUI agent：[Xiaomi-GUI-0](xiaomi-gui-0.md)（以 Qwen3-VL-30B-A3B-Instruct 为基座，叠加真机闭环后训练）
 - 下游 VLA agent 层：[EmbodiedSkills](../sources/embodied-skills.md)（原文只写 Qwen3-VL-based agent components，未给尺寸）
 - 开源 embedding 对照：[WeMM-Embedding](wemm-embedding.md)（其报告把 Qwen3-VL-Embedding 当基线；WeMM 自己的基座是 Qwen3.5，不是本页这条 GQA 线）
+- 下游感知模型：[WeVisOne-VL](wevisone-vl.md)（微信视觉在 2B/4B 上加坐标 token 与约 9.6M 像素解码器，出框和 mask/alpha）
 - 视觉初始化来源：[MOSS-VL](moss-vl.md)（复用本系列视觉编码器初始化，但用 gated cross-attention 而非 interleaved 视觉 token 接入 Qwen3-8B decoder）

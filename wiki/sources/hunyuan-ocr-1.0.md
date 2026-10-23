@@ -152,3 +152,4 @@ Wild-OmniDocBench（外部佐证，2026-10-10）：[Tencent-Hunyuan/HunyuanOCR](
 - 同代轻量 OCR：[MinerU2.5](mineru-2-5.md)、[MinerU2.5-Pro](mineru-2-5-pro.md)（1.0 的 v1.6 统一重测）、[GLM-OCR](glm-ocr.md)（v1.5 上 94.62 vs 本页 94.10）、[Unlimited OCR](unlimited-ocr.md)
 - RL：[DeepSeekMath](deepseekmath.md)（GRPO）、[Ring-1T](ring-1t.md)（后作改用 IcePop）
 - 评测版本：[Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
+- 另一套 OCR 读数：[WeVisOne-VL](wevisone-vl.md)（转写必须逐字匹配且框过 IoU 的 F1；不是 OmniDocBench）

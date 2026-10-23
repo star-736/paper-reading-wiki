@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | WeVisOne-VL
+
+微信视觉（arXiv:2610.31329v1，2026-10-22，36 页）。新增 `raw/2610.31329v1.pdf`、`sources/wevisone-vl.md`、`models/wevisone-vl.md`，提取 Figure 1/2/4。Headline：Qwen3-VL 2B/4B 用坐标 token 与 `<OBJ>` 接约 9.6M 解码器；三阶段课程 SFT 后 GRPO，分割与抠图的 RL 只奖框。4B 检测 mean F1 为 57.1/55.3/71.3/44.7，RefCOCOg 拒识 67.4%。图文差在指代提案是否包含 Rex-Omni。回写 Qwen3-VL、WeMM-Embedding、DeepSeekMath 与 HunyuanOCR 1.0。
+
 ## [2026-10-24] ingest | CodeMidas
 
 小米 LLM Core 等（arXiv:2609.22068v1，2026-09-18，15 页）。新增 `raw/2609.22068v1.pdf`、`sources/codemidas.md`，提取 Figure 1/5/6/7/8/9。不建模型页。Headline：任务专属输入只剩源码；5,545 题 / 3,185 仓库 / 23 语言。GRPO 训 MiMo-V2.5，标准差归一化关闭。DeepSWE 10.0→21.7，ProgramBench Almost Solved 4.5→21.5，Terminal-Bench v2.1 63.7→72.2。高质量 3k 在三张消融榜上超过未清洗的约 8k。与 MiMo-V2.6 Table 3 的 V2.5 Pro 列协议未对齐。回写 agentic engineering、后训练、评测体系，以及 MiMo-V2.6、DeepSeekMath、Laguna、daVinci-Agency。
