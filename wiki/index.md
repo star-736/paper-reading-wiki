@@ -138,6 +138,7 @@
 - [Dream-RSI](sources/dream-rsi.md) - Google / DeepMind：不改 coding agent，用已记录发现树回放来改探索策略；Lasso 上同模型调用约少 1.7×，Pro 的平均优势主要来自 RCV1。
 - [Harness²](sources/harness2.md) - Google Cloud AI Research：无标签 Propose–Probe–Compose 改当前执行 harness，任务后再写入改进库；下一题仍从公共 H0 起步。单步最高 +11.5（WorkBuddy）、+4.5（JobBench）、+11.8 pp（LAB）。
 - [Raven：The Harness of Harnesses](sources/raven.md) - EverMind 的开源多 agent 生态：model–harness 对是组合单元，Host 用 DAG 编排原生专家与第三方 agent。MAOB 上 Exact Match 相对最强基线 +10.4 / +10.5 个百分点；专家、HarnessBank 与 SkillCorpus 分账。
+- [LongCat-DeepResearch 技术报告](sources/longcat-deepresearch.md) - 美团 LongCat 的深度研究报告系统：多规划者收成可执行 ResearchSpec，分段独立调查与写作，组装后做全局归属和局部修订。公开三榜 55.25 / 51.35 / 79.83；同上一版换 harness 的增益大于再换当前模型。不建模型页。
 - [EdgeBench 技术报告](sources/edgebench.md) - ByteDance Seed 超长程环境学习基准：134 题（公开 51）、每题 ≥12h；平均曲线 log-sigmoid \(R^2\ge 0.997\)。SoL-Pi 的 held-out 主台。
 - [Databricks coding agent 内部评测博客](sources/databricks-coding-agents.md) - 同模型换膜：Pi 相对 Claude Code / Codex 任务成本可低 2× 以上、每轮约少送 3× context；内部不可复现。
 - [DeepSeek Harness 官方文档](sources/deepseek-harness.md) - `dsh`：Everything is a Plugin，loop/session/sandbox 都是插件；developer preview。V4.1-Flash headline 用 Minimal 两工具模式。Cordis 论文只作内核外链。
@@ -276,7 +277,7 @@
 - [数据混合优化](concepts/data-mixture-optimization.md) - LLM 数据混合优化方法谱系：预训练 domain reweighting（DoReMi/DoGE/RegMix/TANDEM/AutoMixer，用小 proxy model 预测大模型权重）+ SFT 阶段在线无 proxy 分支（DynamixSFT，Multi-Armed Bandit）。
 - [Looped Transformers](concepts/looped-transformers.md) - 含 ITT 层内复用与 MoR 路由／KV 联合设计；权重共享的循环 Transformer：用同一 block 反复执行增加有效深度。PLT 通过 CLP + shared-KV G-SWA 使延迟和 KV-cache 不随 loop count 增长；LoopCoder-v2 发现 R=2 饱和；LoopWM 把同一顺序循环接到 world-model 隐状态，公开对照是通用 LLM。
 - [Agent 记忆生命周期](concepts/agent-memory-lifecycle.md) - Personal AI 记忆从静态存储到全生命周期可审计基础设施：Structure / Expansion / Evolution / Deployment 四角色 + 共享审计契约（typed evidence / diagnostic traces / strategy artifacts / gate-rollback）。
-- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Pi 极小核心、DeepSeek Harness 插件核、SoL-Pi 效率层、Prime Agent 表达性膜、Macaron HCP 与 Harness² 的两层递归同属这一层。
+- [Agent harness](concepts/agent-harness.md) - 模型与世界之间的执行膜：标准化执行/恢复/记账，把策略构造留给模型；Pi 极小核心、DeepSeek Harness 插件核、SoL-Pi 效率层、Prime Agent 表达性膜、Macaron HCP、Harness² 的两层递归，以及 LongCat-DeepResearch 的固定 ResearchSpec 同属这一层。
 - [Attention Residuals](concepts/attention-residuals.md) - Kimi K3 的深度维信息流机制：每层选择性从所有前层检索表示（沿深度做 attention），解除标准残差的 RNN 瓶颈；Block AttnRes（N=8）降开销到 O(Nd)。
 - [Stable LatentMoE](concepts/stable-latentmoe.md) - Kimi K3 的宽度维机制：LatentMoE（routed 在 latent 空间）+ Normalized（RMSNorm）+ SiTU-GLU（bounded activation）+ Quantile Balancing（aux-loss-free 的 exact 对偶 LP 解），支撑 896-expert/16-active 极端稀疏在 2.8T 规模稳定训练。
 - [条件记忆](concepts/conditional-memory.md) - 与 MoE 互补的静态模式查找：Engram 方法、V4.1 的 196B 生产集成与 Qwen3.8-Next 主机 n-gram；iso-param 是否从 expert 重分配仍有分歧。

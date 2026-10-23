@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | LongCat-DeepResearch
+
+美团 LongCat Team（arXiv:2609.36071v1，2026-09-28，23 页）。新增 `raw/2609.36071v1.pdf`、`sources/longcat-deepresearch.md`，提取 Figure 1–5。不建模型页：正文只区分 current LongCat 与上一版 LongCat-2.0，仓库只开源 harness。Headline：ResearchSpec 在分段调查期间固定；公开三榜 55.25 / 51.35 / 79.83。Table 5 上 LongCat-2.0 换当前 harness 的三榜无权重均分 47.04→58.05，再换当前模型到 62.14；预算不相等。规划合并抬报告分，继续修订效果混合。增强编辑的可读性偏好均分升到 53.96，DeepResearchBench II 的偏好边距为负。回写 agent harness、agentic engineering、评测体系与 Raven 的 DeepResearch Mixed 区分。
+
 ## [2026-10-24] ingest | Raven
 
 EverMind AI（arXiv:2609.33439v1，2026-09-27，82 页）。新增 `raw/2609.33439v1.pdf`、`sources/raven.md`，提取 Figure 1/2/5/8/11/13。不建模型页。组合单元是可执行的 model–harness 对；Host 先准入 DAG 再调度。理论是共享预算下的充分条件，奇偶构造里单 agent ≤1/2、零误差计划为 1。MAOB 140 题、工人不跑，Exact Match 0.711 对 0.607、0.867 对 0.762。§7.2 / §7.7 转述 HarnessBank 与 SkillCorpus。回写 agent harness、agentic engineering、Harness² 与 DeepSeek Harness。

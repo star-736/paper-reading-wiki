@@ -132,7 +132,7 @@ Qwen 上 Hermes 四项都高于 Claude Code。DeepSeek 上 Hermes 只在 Node F1
 
 ### 四个专家
 
-**Raven-Research。** 单一插件 `research-flow` 换掉内置搜索、抓取和澄清。重复查询有缓存，连续无新结果就停；固定相位的检查要求长搜索之后读页面、阻止过晚重开、并挽回没有答案就结束的回合。交付前另有一次看不到 agent 上下文的审阅，核对关键主张和已收集证据。DeepResearch Mixed 合并 BrowseComp、FRAMES、Humanity’s Last Exam 的纯文本精确匹配，以及中文 xBench-DeepSearch-2510。裁判是温度 0 的 GPT-5.6 Luna Pro。每个系统每题一次，跑在 2026-08-10 到 08-18（原文确证，§7.3、Appendix C.3）。
+**Raven-Research。** 单一插件 `research-flow` 换掉内置搜索、抓取和澄清。重复查询有缓存，连续无新结果就停；固定相位的检查要求长搜索之后读页面、阻止过晚重开、并挽回没有答案就结束的回合。交付前另有一次看不到 agent 上下文的审阅，核对关键主张和已收集证据。DeepResearch Mixed 合并 BrowseComp、FRAMES、Humanity’s Last Exam 的纯文本精确匹配，以及中文 xBench-DeepSearch-2510。这是搜索答对率，和 [LongCat-DeepResearch](longcat-deepresearch.md) 的 DeepResearchBench / DeepResearchBench II / ResearchRubrics 长报告 rubric 不是同一套题。裁判是温度 0 的 GPT-5.6 Luna Pro。每个系统每题一次，跑在 2026-08-10 到 08-18（原文确证，§7.3、Appendix C.3）。
 
 | 骨干 | MiroFlow | DeepSeek-Harness | Raven-Research |
 | --- | --- | --- | --- |
@@ -227,6 +227,7 @@ SkillCorpus 把同一份预先算好的选择注入 Raven 和 OpenClaw，骨干�
 - [Agentic engineering](../concepts/agentic-engineering.md) - 长周期任务把瓶颈放在运行系统上
 - [Harness²](harness2.md) - 另一份「harness 的 harness」：无标签行为对照改单执行器的文件，下一题从公共初始 harness 重来
 - [DeepSeek Harness 官方文档](deepseek-harness.md) - DeepResearch Mixed 上的同骨干对照之一
+- [LongCat-DeepResearch](longcat-deepresearch.md) - 另一套长报告基准：DeepResearchBench / II / ResearchRubrics，不是本页的 DeepResearch Mixed
 - [Prime Agent 技术报告](prime-agent.md) - 一张表达性膜上的 Continual Harness，不是异构花名册
 - [Macaron-V1 技术报告](macaron-v1.md) - 同一家族里可版本化的 HCP，不是第三方 agent 的 DAG
 - [Dream-RSI](dream-rsi.md) - 改探索策略代码，信号是已记录发现树上的回放分

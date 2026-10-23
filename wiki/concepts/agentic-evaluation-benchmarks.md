@@ -1,9 +1,9 @@
 ---
 type: Concept
 title: "Agentic 评测体系"
-description: "SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas 等 benchmark 的作用和可比性风险。"
+description: "SWE-bench、Terminal-Bench、BrowseComp、MCP-Atlas、DeepResearchBench 等 benchmark 的作用和可比性风险。"
 tags: ["concept", "agentic-evaluation-benchmarks"]
-timestamp: 2026-06-06
+timestamp: 2026-10-24
 ---
 
 # Agentic 评测体系
@@ -32,6 +32,9 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | Vending-Bench 2 | 模拟经营任务 | 测试长期规划和资源管理。 |
 | GDPval-AA | 办公与经济价值任务的 Artificial Analysis 子集 | MiniMax-M2、Kimi K2.5 用来测试 office/cowork agent 能力。 |
 | XBench / xbench-DeepSearch | 中文 deep search / deep research split | ARPO、WebSailor 等用来测试深搜索；读分数时要看中文 prompt、judge 和浏览器设置。 |
+| DeepResearchBench | 100 道中英博士级长研究报告；RACE 相对分 \(100 \times S_{\mathrm{tgt}}/(S_{\mathrm{tgt}}+S_{\mathrm{ref}})\) | [LongCat-DeepResearch](../sources/longcat-deepresearch.md) 用 GPT-5.5（medium）评全部 100 题，总分 55.25。参考报告是 2025-04 的 Gemini-DeepResearch 快照。官方榜同日前列 55.99 是另一批系统快照，不能写成这篇的名次。 |
+| DeepResearchBench II | 132 道由专家调查文章抽出的原子 rubric；信息回忆 / 分析 / 呈现 | 同一篇报告的总分 51.35，分析 60.69。引用被屏蔽来源文章的支撑句，该条记 −1。官方纯文本快照最高行是 43.00，和本文客户端产品不是同一代。 |
+| ResearchRubrics | 101 条真实提示、2,593 条专家标准；显式/隐式要求、综合、引用、指令遵循、表达 | LongCat 覆盖全部 101 题，Gemini 2.5 Pro 裁判，总分 79.83。维度分母只用正权重。Claude 的 72.91 是外部汇总，本文没有逐题成绩。 |
 | AIME / HMMT / BeyondAIME | 数学竞赛与高难数学推理 | DAPO、GSPO、SAPO 常用来追踪 long-CoT / reasoning RL 的 policy optimization 效果；读数时要看 avg@k / pass@k、采样次数和是否只用 rule-based reward。 |
 | LiveCodeBench / CodeForces | 代码生成与竞赛编程 | GSPO、SAPO 用来观察 RL 是否迁移到 coding；同名分数需看时间切分、采样次数和 Elo/Pass@1 口径。 |
 | MLE Bench Lite | 自动机器学习工程任务 | MiniMax-M2 用来展示 M2.7 的 self-evolution 和 scaffold 修改能力。 |
@@ -115,7 +118,9 @@ UniClawBench（arXiv:2607.08768，HKU MMLab + Meituan）与上表其他 benchmar
 - agent framework：OpenHands、Claude Code、内部 harness 等会改变工具集合和提示。
 - context management：discard-all、keep-recent-k、hierarchical context management 会显著影响 BrowseComp。
 - parallelism：Agent Swarm 等并行 agent 编排会改变 WideSearch、BrowseComp 的延迟和覆盖率。
-- judge model：BrowseComp 等需要 judge 的任务会受 judge prompt 和 judge model 影响。
+- judge model：BrowseComp 等需要 judge 的任务会受 judge prompt 和 judge model 影响。DeepResearchBench / DeepResearchBench II 在 LongCat 这篇里用 GPT-5.5（medium），ResearchRubrics 用 Gemini 2.5 Pro；换裁判不能和这两套数字横比。
+- 产品代际与官方榜：LongCat 的四系统比较走官方客户端里的 Gemini 3.7 Flash、GPT-5.6 Sol（xhigh）、Claude Opus 5（xhigh），自带工具和预算。Appendix A 并排的 2026-09-14 官方榜是另一批提交，作者写明自己的行不是榜上条目。
+- 已评分覆盖：ResearchRubrics 上 ChatGPT 与 Gemini 用共同有分的题目，Claude 只有外部总分。成功的低分报告不会被挑出来重跑；分数含恢复，不是第一次尝试的可靠性。
 - timeout 和 step budget：Terminal-Bench、MCP-Atlas、BrowseComp 的最大步数和超时会改变结果。
 - verified subset：Terminal-Bench 2.0 Verified 与原始 Terminal-Bench 2.0 结果不可直接混用。
 
