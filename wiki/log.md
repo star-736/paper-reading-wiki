@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | Harness²
+
+Google Cloud AI Research + Northwestern（arXiv:2610.14224v1，2026-10-09，37 页）。新增 `raw/2610.14224v1.pdf`、`sources/harness2.md`，提取 Figure 1–8。不建模型页。冻结执行器；任务级 Propose–Probe–Compose 用行为对照改执行 harness，交卷后把采纳树和教训写入改进库，下一题仍从公共 H0 起步。单步最高 +11.5（WorkBuddy，GLM-5 / OpenCode）、+4.5（JobBench）、+11.8 pp（LAB Partial）。Meta-Harness 在训练/开发集上用分数离线搜索。回写 agent harness、agentic engineering 与 Dream-RSI 对照表。
+
 ## [2026-10-11] maintenance | 外部来源检索后重数待追问
 
 外部来源检索之后重数各页「待追问」列表项，总数由 61 改为 59：现有材料待核 0，需补外部来源由 10 改为 7，需实验或作者披露 0，未标签由 51 改为 52。`raw/` 未改。

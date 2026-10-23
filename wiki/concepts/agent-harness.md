@@ -1,9 +1,9 @@
 ---
 type: Concept
 title: "Agent harness"
-description: "模型与世界之间的执行膜：标准化执行、恢复、验证和资源记账，把策略构造留给模型；跨报告里它已经是与权重同量级的性能变量。Pi 是极小核心产品膜，Prime Agent 是表达性评测膜。"
-tags: ["concept", "agent-harness", "rlm", "continual-harness", "pi-coding-agent"]
-timestamp: 2026-10-03
+description: "模型与世界之间的执行膜：标准化执行、恢复、验证和资源记账，把策略构造留给模型；跨报告里它已经是与权重同量级的性能变量。Pi 是极小核心产品膜，Prime Agent 是表达性评测膜，Harness² 在无标签任务流上同时改执行 harness 与改进库。"
+tags: ["concept", "agent-harness", "rlm", "continual-harness", "pi-coding-agent", "harness2"]
+timestamp: 2026-10-24
 ---
 
 # Agent harness
@@ -51,6 +51,12 @@ timestamp: 2026-10-03
 [Dream-RSI](../sources/dream-rsi.md) 也不更新发现 agent 的权重。它在 coding agent 外面加一层编排，动作是「从根或叶子里挑一批、最多 $W$ 个并行延续，或交空批停止」。已完成的发现树被当成回放模拟器：替代策略只能揭开已经存好的子节点，根上的新分支按创建顺序揭开，分支内部不能重排。策略开发 agent 改的是这份策略代码；选中规则只保证固定历史上的平均回放分不低于当前策略。
 
 这和上面几张膜的差别在信号从哪来。Macaron 在真实 harness 上搜 HCP；SoL-Pi 在能力地板内削 token；Prime Agent 在一条轨迹里写 L3 状态。Dream-RSI 的离线分数来自已实现搜索空间的重放，不学习动力学模型，所以它借用的 Dreamer 类比不能读成 world model。Lasso 上同模型调用约少 1.7×；摘要里相对 SimpleTES 的 162× 是 Gemini 调用次数对 gpt-oss-120b 的跨模型比。Pro 的六套 held-out 里只有 RCV1 快于固定探索。
+
+### Harness²：无标签任务流上的两层递归
+
+[Harness²](../sources/harness2.md) 也不更新执行器权重。它把递归拆成两层：任务级用 Propose–Probe–Compose，在没有地面真值的情况下，按同一题的行为对照改八个文件级组件；交卷后，harness 级递归把采纳的执行树和有对照支持的教训写入改进库。下一题仍从公共初始 harness 起步，库只在提议和组合时被查阅，不把上一题的执行 harness 自动挂上去。
+
+主表编辑器是 Claude Opus 4.8，执行器是冻结的 GLM-5 或 Gemini 3.5 Flash，底盘是现成 OpenCode 或 Codex。单步最大增益是 WorkBuddy 宏平均 +11.5（GLM-5 / OpenCode，64.2→75.7）、JobBench +4.5、LAB Partial +11.8 个百分点。并行 $k=5$ 继续加分。Meta-Harness 在训练半或 LAB 的 24 题开发集上用分数做离线搜索，和这条只走测试流的协议不是同一设置；LAB 上 Gemini / Codex 的 Meta-Harness 76.5 仍高于单步 75.6。$k>1$ 的选择器只看匿名交付物，附录里出现过从 95 分候选里挑中 55 的情况。同一模型兼做执行器和编辑器的实验是 OpenCode、$k=2$，五模型都高于自己的 base，不能和主表的 $k=1$ 增益直接相减。
 
 ### UniClawBench：读分时 framework 与 model 同量级
 
@@ -104,12 +110,12 @@ Figure 3 把上下文压缩、工作记忆和外部音视频记忆画在主 agen
 ## 为什么重要
 
 1. **Agent 分数默认是 (model, harness, budget, context policy) 的联合。** UniClawBench 和 Prime Agent 从两个方向重复这件事：换框架可以超过换模型；换一张更表达的膜可以大幅改变 ARC-AGI-3 曲线形状。[Pi](../sources/pi-coding-agent.md) 再补一条：极小工具面在 mixed-model Terminal-Bench 2.0 上也能进前十，但那不是同模型换膜。[UI-Mate](../sources/ui-mate.md) 再加一维：同一 verifier 下开关一条示范，严格成功可以从 17.2% 到 35.4%。[Qwen-UI-Agent](../sources/qwen-ui-agent.md) 则把「何时开始、在哪台设备继续」也放进膜，但还没有成对消融。读 [Agentic 评测体系](agentic-evaluation-benchmarks.md) 时，harness 和示范都不能再当脚注。
-2. **冻结权重仍能改可达策略集。** Macaron 的 HCP 搜索和 Prime Agent 的 Continual Harness 都在 L0 不动时扩展策略。[Dream-RSI](../sources/dream-rsi.md) 同样不改发现 agent，改的是分支、并行和停止的策略代码，并用已记录发现树做回放。[ASPIRE](../sources/aspire.md) 把同一判断搬到机器人：改 skill library 而不是 VLA 权重。[EmbodiedSkills](../sources/embodied-skills.md) 的高层 scheduler 也在冻结低层 VLA 上 SFT，但 RoboTwin headline 用的是按任务特化的 π0.5，不能写成「整层 L0 都没动」。这不是持续学习已经发生，而是「elicit vs 学会」必须分开记账。
+2. **冻结权重仍能改可达策略集。** Macaron 的 HCP 搜索和 Prime Agent 的 Continual Harness 都在 L0 不动时扩展策略。[Dream-RSI](../sources/dream-rsi.md) 同样不改发现 agent，改的是分支、并行和停止的策略代码，并用已记录发现树做回放。[Harness²](../sources/harness2.md) 把持久状态放在跨题改进库里，本题执行 harness 每题从公共 $\mathrm{H}_0$ 重挂；编辑当时看不到评测分数。[ASPIRE](../sources/aspire.md) 把同一判断搬到机器人：改 skill library 而不是 VLA 权重。[EmbodiedSkills](../sources/embodied-skills.md) 的高层 scheduler 也在冻结低层 VLA 上 SFT，但 RoboTwin headline 用的是按任务特化的 π0.5，不能写成「整层 L0 都没动」。这不是持续学习已经发生，而是「elicit vs 学会」必须分开记账。
 3. **持久化会保存作弊。** Prime Agent 的 Factorio RCON skill 说明：refinement / memory 若没有独立校验和 rollback，self-improvement 会把 specification exploit 写成可复用程序。这是 [Agent 记忆生命周期](agent-memory-lifecycle.md) 的 gate/rollback 在 agent runtime 上的对应物。
 4. **训练与评测正在抢同一层。** 一边随机化、多 harness、harness-agnostic RL，一边把评测膜做得更表达、更可记账。后续 model–harness co-learning 若真发生，这两条线会撞到同一组 primitive（工具 schema、上下文管理、subagent API）。Continual Harness 与 HCP 改的对象已经分开记账，本库不再追一份两者共用的标准契约。Dream-RSI 的选择准则只覆盖历史树上的平均回放分，原文没有下一轮在线质量是否同向的实验（见[来源页](../sources/dream-rsi.md)）。原文没有检验多 harness 训练会不会把策略训成在每张膜上都平庸，也没有把丢状态、记错成本或过早停从排行榜里单独审计出来的实验。
 
 ## 相关页面
 
-- 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Dream-RSI](../sources/dream-rsi.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[StepAudio 3 Realtime 技术报告](../sources/stepaudio-3-realtime.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
+- 来源：[MiMo-V2.6 技术报告](../sources/mimo-v2.6.md)、[Harness²](../sources/harness2.md)、[Dream-RSI](../sources/dream-rsi.md)、[Pi coding agent 设计博客](../sources/pi-coding-agent.md)、[SoL-Pi 官方博客](../sources/sol-pi.md)、[DeepSeek Harness 官方文档](../sources/deepseek-harness.md)、[EdgeBench 技术报告](../sources/edgebench.md)、[Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md)、[Prime Agent 技术报告](../sources/prime-agent.md)、[Macaron-V1 技术报告](../sources/macaron-v1.md)、[UniClawBench](../sources/uniclawbench.md)、[KAT-Coder-V2.5 技术报告](../sources/kat-coder-v2.5.md)、[Laguna M.1/XS.2 技术报告](../sources/laguna-m1-xs2.md)、[Kimi K3 技术报告](../sources/kimi-k3.md)、[UI-Mate 技术报告](../sources/ui-mate.md)、[Qwen-UI-Agent 技术报告](../sources/qwen-ui-agent.md)、[Qwen3.8-Omni 技术报告](../sources/qwen3.8-omni.md)、[StepAudio 3 Realtime 技术报告](../sources/stepaudio-3-realtime.md)、[ASPIRE](../sources/aspire.md)、[EmbodiedSkills](../sources/embodied-skills.md)
 - 相邻概念：[Agentic engineering](agentic-engineering.md)、[Agent Swarm](agent-swarm.md)、[Agent 记忆生命周期](agent-memory-lifecycle.md)、[Agentic 评测体系](agentic-evaluation-benchmarks.md)、[Forge Agent-Native RL](forge-agent-native-rl.md)、[具身 skill 自进化](embodied-skill-self-evolution.md)
 - 比较：[2026 前沿模型技术报告对比](../comparisons/2026-open-model-technical-reports.md)

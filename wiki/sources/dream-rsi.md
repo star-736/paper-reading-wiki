@@ -66,9 +66,10 @@ $$
 
 ### 和邻近 RSI 差在改哪一层
 
-| 系统 | 冻结的东西 | 被改的对象 | 离线信号 |
+| 系统 | 冻结的东西 | 被改的对象 | 改进信号 |
 | --- | --- | --- | --- |
 | Dream-RSI | coding agent、评测器、执行接口 | 探索策略代码（分支、并行、停止） | 已记录发现树上的回放分 |
+| [Harness²](harness2.md) | 执行器权重、阶段指令、决策规则 | 本题执行 harness，以及跨题改进库 | 无标签行为对照；评测分数不进编辑 |
 | [Macaron MindForge](macaron-v1.md) | base 权重 | HCP / skill / hook，通过后再用轨迹训 LoRA | 真实 harness 上的任务评测 |
 | [SoL-Pi](sol-pi.md) | Pi 0.84.2 核心 | 交互环里的 token 开销 | 预声明能力地板内的 auto-research |
 | [Prime Agent](prime-agent.md) | L0 权重 | 轨迹内的 notes、memories、skills、subagent specs | 任务执行中的 refine，不建回放树 |
@@ -182,5 +183,6 @@ E0–E1 用满 Pro 的 110 次上限。次数先降到 E4 的 50，E5 回到 92 
 - [Macaron-V1 技术报告](macaron-v1.md) - MindForge 搜的是 HCP，证据停在单次 harness search
 - [SoL-Pi 官方博客](sol-pi.md) - 同一类「先改外层再谈扩大 RSI」，搜的是 token 开销
 - [Prime Agent 技术报告](prime-agent.md) - 冻结权重，自改进写在轨迹内的 harness 状态
+- [Harness²](harness2.md) - 无标签行为对照改执行 harness，跨题留下的是改进库而不是上一题的执行树
 - [Qwen-AgentWorld 技术报告](qwen-agent-world.md) - 学出来的语言世界模型；Dream-RSI 的 worlds 是回放
 - [Looped World Models](looped-world-models.md) - Dreamer 式隐状态世界模型；本篇只借用 Dreamer 的动机

@@ -42,6 +42,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - [Pi](../sources/pi-coding-agent.md) 把同一层瓶颈定位在**上下文可见性**而不是 expressivity：四工具 + <1000 token 提示，MCP / plan / todo / background bash / dedicated sub-agent 不进核心。它是产品膜而不是评测膜；OpenClaw 以它为底盘。Terminal-Bench 2.0 自报 Pi + Claude Opus 4.5 约 50%，但是 mixed-model 榜。与 Prime Agent 互补：一边把原语做进核心，一边把原语赶到 extension。
 - [SoL-Pi](../sources/sol-pi.md) 把瓶颈再往下推一层：同一张 Pi 膜上，长轨迹的重复开销（额外模型轮、上下文重放、过大 observation、整本读 log）能不能在能力地板内被 auto-research 削掉。四个幸存机制都是交互环浪费，不是题面特化规则。这和 Macaron MindForge 的 RSI 同族，搜的对象不同。
 - [Dream-RSI](../sources/dream-rsi.md) 把同一层再拆成「探索策略怎么改」：coding agent 与评测器不动，已完成的发现树当成回放模拟器，离线改分支、并行和停止的策略代码。选择只保证历史树上的回放分不下降。Lasso 上同模型调用约少 1.7×；相对 SimpleTES 的 162× 是跨模型调用比。它和 MindForge、SoL-Pi 同属外层 RSI，离线信号分别是回放分、HCP 评测和 token 地板。
+- [Harness²](../sources/harness2.md) 把同一层再拆成「当前题的执行 harness」和「以后怎么改 harness」。冻结执行器，用无标签的行为对照做 Propose–Probe–Compose；下一题从公共初始 harness 重来，跨题留下的是改进库。单步在四组配置上都高于各自 base，最大 +11.5（WorkBuddy，GLM-5 / OpenCode）、+4.5（JobBench）、+11.8 个百分点（LAB Partial）。离线带标签的 Meta-Harness 不是同协议对照。详见 [Agent harness](agent-harness.md)。
 
 - [DeepMMSearch-R1](../sources/deepmmsearch-r1.md)（Apple + JHU，2025-10）把 agentic engineering 的瓶颈定位在**多模态搜索的工具使用精度**而非模型规模。核心论点是：现有 search-equipped MLLM 只支持单次调用和整图搜索，在真实知识密集 VQA 中效率低。DeepMMSearch-R1 用 Grounding DINO 做裁剪图像搜索（消除背景噪声）+ 多轮文本搜索（self-reflection / self-correction），SFT + GRPO 两阶段训练使工具调用更精准（裁剪搜索 -37%，多轮文本搜索 +2.6%）。6 benchmark 平均 57.13 超 RAG workflow +21pp。与 [GLM-5V-Turbo](../sources/glm-5v-turbo.md)（多模态 GUI agent）互补：GLM-5V-Turbo 解决 GUI 截图交互，DeepMMSearch-R1 解决 web 知识检索。
 
@@ -79,6 +80,7 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [Pi coding agent 设计博客](../sources/pi-coding-agent.md) - 极小核心产品膜；OpenClaw 底盘
 - [SoL-Pi 官方博客](../sources/sol-pi.md) - 在 Pi 上做 token 效率 RSI
 - [Dream-RSI](../sources/dream-rsi.md) - 用发现树回放改探索策略代码；不更新发现 agent
+- [Harness²](../sources/harness2.md) - 无标签任务流上同时改执行 harness 与改进库；权重冻结
 - [EdgeBench 技术报告](../sources/edgebench.md) - 12h 真实环境学习基准；SoL-Pi held-out
 - [Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md) - 同模型换膜的成本/质量成对数字
 - [DeepSeek Harness 官方文档](../sources/deepseek-harness.md) - 插件核产品膜；Minimal vs Standard 的分数差在 V4.1-Flash Table 4
