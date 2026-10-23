@@ -98,5 +98,6 @@ Cordis 把 temporal composability 定义成：组件移除时，运行时持有�
 - [Pi coding agent 设计博客](pi-coding-agent.md)
 - [SoL-Pi 官方博客](sol-pi.md)
 - [Agent harness](../concepts/agent-harness.md)
+- [Raven](raven.md) - DeepResearch Mixed 上与 MiroFlow 并列的同骨干对照
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md)
 - [Databricks coding agent 内部评测博客](databricks-coding-agents.md)

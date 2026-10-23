@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | Raven
+
+EverMind AI（arXiv:2609.33439v1，2026-09-27，82 页）。新增 `raw/2609.33439v1.pdf`、`sources/raven.md`，提取 Figure 1/2/5/8/11/13。不建模型页。组合单元是可执行的 model–harness 对；Host 先准入 DAG 再调度。理论是共享预算下的充分条件，奇偶构造里单 agent ≤1/2、零误差计划为 1。MAOB 140 题、工人不跑，Exact Match 0.711 对 0.607、0.867 对 0.762。§7.2 / §7.7 转述 HarnessBank 与 SkillCorpus。回写 agent harness、agentic engineering、Harness² 与 DeepSeek Harness。
+
 ## [2026-10-24] ingest | StartLux-Decision
 
 StartLux + 港大 + 南科大（arXiv:2610.17309v2，2026-10-20，本地 PDF 37 页）。新增 `raw/2610.17309v2.pdf`、`sources/startlux-decision.md`、`models/startlux-decision.md`，提取 Figure 2/3/4/5/6/13/15。Headline：Instant 一次前向读选项概率，AutoThink 在最高概率低于 0.9 时才推理；RLCD2 用冻结起点的 proper-score 增量加软长度惩罚。9B 终止率 45.9%→93.9%，平均轨迹少 65%。公开 DI 0.3 参与过选模型。DecisionPivot 上 27B AutoThink pair accuracy 86.9%。回写 Qwen3.5、RL 比较页、DAPO、DeepSeekMath 与后训练概念页。

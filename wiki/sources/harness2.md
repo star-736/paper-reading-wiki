@@ -103,6 +103,8 @@ $k>1$ 时，一个 agent 选择器只比较匿名交付物和任务材料，交�
 
 相关工作把 [Continual Harness](prime-agent.md)（arXiv:2605.09998）记为连续 episode 内的在线适配，并写明「单独一个连续 episode 还不构成这里的任务流协议」。Harness² 的流是逐题、不回放已完成任务、未来题不可见；本题可以在预算内反复执行（原文确证，§5、Appendix A.1 Streaming）。
 
+本库另收 [Raven](raven.md)（EverMind，arXiv:2609.33439v1，提交早于本文）。两边都用 harness of harnesses 这个说法，改的对象不同：Raven 把可执行的 model–harness 对交给 Host 排成 DAG；单张膜的搜索是 HarnessBank 的基因库和带标签的配对增益。本文的编辑会话看不到评测分数，下一题从公共 \(\mathrm{H}_0\) 重挂。两篇都没有引用对方。这是本库对照。
+
 ## 后训练
 
 没有权重后训练。主表编辑器是 Claude Opus 4.8，在 OpenCode 里以高推理力度跑 agent 会话；修订和反思的基线也用这个编辑器。执行器是冻结的 Gemini 3.5 Flash 与 GLM-5，初始 harness 是现成的 OpenCode 与 Codex，每套基准四组配置共用同一步改进（原文确证，§3.1）。
@@ -281,6 +283,7 @@ Figure 8 是位图。下面的格子按图中标注读出；正文只书面确�
 ## 相关页面
 
 - [Agent harness](../concepts/agent-harness.md) - 这层膜的跨报告位置
+- [Raven](raven.md) - 另一份 harness of harnesses：Host 编排多张 model–harness 对
 - [Agentic engineering](../concepts/agentic-engineering.md) - 长周期任务把瓶颈放在运行系统上
 - [Dream-RSI](dream-rsi.md) - 同样不改发现 agent；信号是发现树回放分
 - [Macaron-V1 技术报告](macaron-v1.md) - MindForge 搜可评测的 HCP

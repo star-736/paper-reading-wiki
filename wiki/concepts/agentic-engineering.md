@@ -3,7 +3,7 @@ type: Concept
 title: "Agentic Engineering"
 description: "这些报告如何定义长周期软件工程和工具使用任务。"
 tags: ["concept", "agentic-engineering"]
-timestamp: 2026-10-03
+timestamp: 2026-10-24
 ---
 
 # Agentic Engineering
@@ -43,6 +43,7 @@ Agentic engineering 是这些报告中的共同趋势：软件工作正在从一
 - [SoL-Pi](../sources/sol-pi.md) 把瓶颈再往下推一层：同一张 Pi 膜上，长轨迹的重复开销（额外模型轮、上下文重放、过大 observation、整本读 log）能不能在能力地板内被 auto-research 削掉。四个幸存机制都是交互环浪费，不是题面特化规则。这和 Macaron MindForge 的 RSI 同族，搜的对象不同。
 - [Dream-RSI](../sources/dream-rsi.md) 把同一层再拆成「探索策略怎么改」：coding agent 与评测器不动，已完成的发现树当成回放模拟器，离线改分支、并行和停止的策略代码。选择只保证历史树上的回放分不下降。Lasso 上同模型调用约少 1.7×；相对 SimpleTES 的 162× 是跨模型调用比。它和 MindForge、SoL-Pi 同属外层 RSI，离线信号分别是回放分、HCP 评测和 token 地板。
 - [Harness²](../sources/harness2.md) 把同一层再拆成「当前题的执行 harness」和「以后怎么改 harness」。冻结执行器，用无标签的行为对照做 Propose–Probe–Compose；下一题从公共初始 harness 重来，跨题留下的是改进库。单步在四组配置上都高于各自 base，最大 +11.5（WorkBuddy，GLM-5 / OpenCode）、+4.5（JobBench）、+11.8 个百分点（LAB Partial）。离线带标签的 Meta-Harness 不是同协议对照。详见 [Agent harness](agent-harness.md)。
+- [Raven](../sources/raven.md) 把瓶颈再向外放一层：多张已经特化的 model–harness 对如何被 Host 排进一张可准入的 DAG，而不是继续手写一张通吃所有域的膜。MAOB 上工人不跑，Exact Match 相对最强基线 +10.4 / +10.5 个百分点。四个专家的任务分、HarnessBank 的冻结模型进化、SkillCorpus 的技能注入是分开的实验。充分条件没有在这些跑分里估计。详见 [Agent harness](agent-harness.md)。
 
 - [DeepMMSearch-R1](../sources/deepmmsearch-r1.md)（Apple + JHU，2025-10）把 agentic engineering 的瓶颈定位在**多模态搜索的工具使用精度**而非模型规模。核心论点是：现有 search-equipped MLLM 只支持单次调用和整图搜索，在真实知识密集 VQA 中效率低。DeepMMSearch-R1 用 Grounding DINO 做裁剪图像搜索（消除背景噪声）+ 多轮文本搜索（self-reflection / self-correction），SFT + GRPO 两阶段训练使工具调用更精准（裁剪搜索 -37%，多轮文本搜索 +2.6%）。6 benchmark 平均 57.13 超 RAG workflow +21pp。与 [GLM-5V-Turbo](../sources/glm-5v-turbo.md)（多模态 GUI agent）互补：GLM-5V-Turbo 解决 GUI 截图交互，DeepMMSearch-R1 解决 web 知识检索。
 
@@ -81,6 +82,7 @@ Agentic engineering 改变了瓶颈。模型不只是生成正确片段，还要
 - [SoL-Pi 官方博客](../sources/sol-pi.md) - 在 Pi 上做 token 效率 RSI
 - [Dream-RSI](../sources/dream-rsi.md) - 用发现树回放改探索策略代码；不更新发现 agent
 - [Harness²](../sources/harness2.md) - 无标签任务流上同时改执行 harness 与改进库；权重冻结
+- [Raven](../sources/raven.md) - 异构 model–harness 对的 DAG 编排；规划、专家、进化和技能分账
 - [EdgeBench 技术报告](../sources/edgebench.md) - 12h 真实环境学习基准；SoL-Pi held-out
 - [Databricks coding agent 内部评测博客](../sources/databricks-coding-agents.md) - 同模型换膜的成本/质量成对数字
 - [DeepSeek Harness 官方文档](../sources/deepseek-harness.md) - 插件核产品膜；Minimal vs Standard 的分数差在 V4.1-Flash Table 4
