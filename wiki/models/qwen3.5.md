@@ -48,3 +48,4 @@ Qwen3.5 把 Qwen3-Next 引入的「3 GDN : 1 gated-attention」混合栈推到�
 - 作为 backbone 被采用：[WeMM-Embedding](wemm-embedding.md)（微信视觉通用多模态 embedding，2B/4B/9B 基于对应尺寸 Qwen3.5 natively multimodal checkpoint）
 - 作为 backbone 被采用：[UI-Mate](ui-mate.md)（9B GUI agent 基于 Qwen3.5-9B；同报告的 27B 变体基于 Qwen3.6-27B，不在本家族页）
 - 作为 backbone 被采用：[Qwen-UI-Agent](qwen-ui-agent.md)（27B GUI agent 在 Table 9 对照 Qwen3.5-27B；35B-A3B / 4B 仅按 corresponding checkpoint 推断）
+- 作为决策读出被继续训练：[StartLux-Decision](startlux-decision.md)（v1.1 的 4B / 27B Instant 配置为 `qwen3_5`；论文 Figure 2 还写了 Qwen3.8，没有按尺寸对应。改的是 full-attention 的 prompt mask，线性层保持因果）

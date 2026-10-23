@@ -46,6 +46,7 @@
 - [Qwen3.5-Omni 技术报告](sources/qwen3.5-omni.md) - Qwen3.5 代全模态报告：Thinker/Talker 用含 GDN 的 Hybrid Attention MoE，把线性注意力降 KV-cache 延伸到长音视频。下一代见 Qwen3.8-Omni。
 - [Qwen3-Next 官方博客](sources/qwen3-next-blog.md) - Qwen3-Next 无技术报告，本官方博客是其架构设计动机的一手出处：3:1 混合（75% GDN / 25% standard）、选 GDN 因 in-context learning 强于 SWA/Mamba2、全局层加 output gating 去 sink、Zero-Centered RMSNorm + 512-expert MoE + MTP。
 - [Qwen3 技术报告](sources/qwen3.md) - Qwen 系列 2025-05 基座报告（arXiv:2505.09388），标准 GQA + RoPE + RMSNorm + MoE，36T tokens / 119 语言；后训练核心 = 统一 thinking/non-thinking 双模式 + thinking budget + Strong-to-Weak Distillation 完胜 RL（1/10 GPU 时长）。Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL 的基座前作。
+- [StartLux-Decision](sources/startlux-decision.md) - StartLux 的 0.8B–27B 决策模型（arXiv:2610.17309v2）：Instant 在 full-attention 层对 prompt 双向读出；AutoThink 在最高概率低于 0.9 时才推理，并以 RLCD2 的 proper-score 增量加软长度惩罚训练。公开 DI 0.3 参与过选模型；DecisionPivot 上 27B AutoThink pair accuracy 86.9%。
 - [Qwen3-VL 技术报告](sources/qwen3-vl.md) - Qwen3-VL 多模态家族报告（arXiv:2511.21631），256K 原生上下文；三块架构升级 = Interleaved MRoPE（t/h/w 频谱均衡）+ DeepStack（ViT 中间 3 层 → LLM 前 3 层 residual add）+ 文本时间戳替换 T-RoPE。LLM backbone 是**标准 GQA 的 Qwen3**，与 Qwen3.5-Omni 的 hybrid 基座是两条路。
 - [vLLM-Omni 技术报告](sources/vllm-omni.md) - 面向 any-to-any 多模态模型的 fully disaggregated serving 系统：stage graph 拆分 AR / DiT / encoder 等阶段，独立批处理、资源配置与 unified connector 传输，Qwen3-Omni JCT 最高降 91.4%。
 - [FreeToken](sources/freetoken.md) - 端侧 MoE serving：CPU 常驻 expert 池 + GPU 共享 LRU + 带宽自适应 $q^{\star}$ 分流 miss，8GB 笔记本到单卡工作站交互式服务 35B–753B；相对 llama.cpp / KTransformers decode 1.3–2.3×。
@@ -189,6 +190,7 @@
 - [Kimi Linear](models/kimi-linear.md) - 48B 总参数 / 3B 激活参数的混合线性注意力 MoE 研究模型，KDA:MLA = 3:1，验证线性注意力可 drop-in 替换 full attention。
 - [Qwen3-Coder-Next](models/qwen3-coder-next.md) - 79.7B 总参 / ~3B 激活的编码 agent 模型，基于 Qwen3-Next，3 GDN : 1 gated-attention 混合栈（已据 HF config 核实），纯文本。
 - [Qwen3.5](models/qwen3.5.md) - Qwen3.5 多模态 Hybrid MoE 家族（397B-A17B 旗舰到 0.8B dense），3 GDN : 1 gated-attention，Qwen3.5-Omni 的架构基座。
+- [StartLux-Decision](models/startlux-decision.md) - 决策模型族：Instant 0.8B–27B 一次前向读出选项概率，AutoThink 4B/9B/27B 按置信决定是否推理。v1.1 已核对配置为 Qwen3.5 hybrid；文本或 JSON，可选图像，视觉塔冻结。
 - [Qwen3.8-Flash-Next](models/qwen3.8-flash-next.md) - Qwen 125B/6B 激活 MoE（+51B 主机 n-gram），3:1 GDN + QSA 与 Gated Residual；架构报告只覆盖预训练 base。
 - [Qwen3.8-Omni-Flash](models/qwen3.8-omni-flash.md) - 原生全模态 Thinker–Talker，继承 Qwen3.8-Next 骨干并在多模态预训练后启用 QSA；文本+图像+音频+空间音频+视频进，文本与语音出。参数量未披露。
 - [Qwen3](models/qwen3.md) - Qwen 系基座家族（0.6B–235B-A22B，6 dense + 2 MoE），标准 GQA + 去 QKV-bias + 加 QK-Norm + 无 shared expert MoE，纯文本。后续 Qwen3-Next/3.5/3-Coder-Next/3.5-Omni/Qwen3-VL/3.8-Flash-Next 的 LLM 前作。
@@ -285,7 +287,7 @@
 - [2026 前沿模型技术报告对比](comparisons/2026-open-model-technical-reports.md) - GLM-5、MiMo-V2-Flash、MiMo-V2.6、DeepSeek-V4、MiniMax-M2、Kimi、Qwen3.8-Flash-Next 与 Qwen3.8-Omni-Flash 等的横向比较。
 - [稀疏注意力机制对比](comparisons/sparse-attention-mechanisms.md) - DSA、MSA、NSA、MoBA、CSA/HCA、IndexCache、YOIO/CLSA、QSA 等沿"粒度 / 跨头共享 / 跨层共享"三轴的对比。
 - [On-Policy Distillation 跨报告对比](comparisons/on-policy-distillation.md) - 多专家融合、强到弱迁移与跨阶段召回三轴对比；含 V4.1 的 40+ 异构 teacher 最终 OPD，以及 Qwen3-8B OPD vs RL 对照。
-- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`）、IPO / ORPO / SimPO 三条离线改写，以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
+- [LLM RL policy optimization 对比](comparisons/llm-rl-policy-optimization.md) - VAPO / DAPO / GSPO / SAPO / ARPO / GiGPO / HGPO / SAO / RLCD2 等方法的抽象层级对比：value-based credit assignment、GRPO recipe、sequence-level ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、决策概率的 proper-score 增量；含 DPO 与 DAPO 的同名不同族对照、Iterative RPO（TRL `rpo_alpha`）、IPO / ORPO / SimPO 三条离线改写，以及 Miles 的 TIS / clip-or-pop（同一 ratio 区间下的阻尼 vs 丢弃）。
 
 ## 待追问分流
 

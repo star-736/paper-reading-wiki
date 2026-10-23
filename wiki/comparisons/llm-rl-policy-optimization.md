@@ -1,9 +1,9 @@
 ---
 type: Comparison
 title: "LLM RL policy optimization 对比"
-description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / CTPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO：value-based credit assignment、GRPO recipe、sequence-level ratio、prefix-cumulative ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE。DPO / KTO / IPO / ORPO / SimPO 在离线偏好节，与 DAPO 同名不同族，不进 GRPO 主表。"
+description: "以 DeepSeekMath 的 GRPO 为基线，对照 VAPO / DAPO / GSPO / CTPO / SAPO / ARPO / GiGPO / HGPO / SAO / MGPO / IcePop / KPop / CISPO / ECHO / RLCD2：value-based credit assignment、GRPO recipe、sequence-level ratio、prefix-cumulative ratio、soft trust region、agentic partial rollout、history-aware step 组 advantage、异步单 rollout、prompt 权重、mismatch mask、asymmetric clip、环境观测辅助 CE、决策概率的 proper-score 增量。DPO / KTO / IPO / ORPO / SimPO 在离线偏好节，与 DAPO 同名不同族，不进 GRPO 主表。"
 tags: ["comparison", "llm-rl-policy-optimization", "rl"]
-timestamp: 2026-10-10
+timestamp: 2026-10-24
 ---
 
 # LLM RL policy optimization 对比
@@ -47,6 +47,7 @@ timestamp: 2026-10-10
 | [IcePop](../sources/ring-1t.md) / KPop | Inclusion AI（Ling Team），2025-10 / 2026-06 | **训练-推理 mismatch 的 mask 形状** | IcePop：GRPO 变体，$k=\pi_{\mathrm{train}}(\theta_{\mathrm{old}})/\pi_{\mathrm{infer}}$，$M(k)=k$ 若 $k\in[\alpha,\beta]$ 否则 $0$（默认 $[0.5,5]$），仍保留 PPO clip；KPop：symmetric binary KL $D_{KL}^B(\pi_{train}\|\pi_{infer})$，两方向都要求 $\leq\phi$ | MoE RL 中训练-推理引擎概率不对齐；KPop 认为固定比率过度 mask 低概率 token | IcePop：Ring-1T / Ring-mini-2.0；KPop：Ring-2.6-1T agentic coding RL | 不替代 GRPO 的 ratio 单元，只控制哪些 token 参与；IcePop 对越界 token **丢弃**（对照 TIS 的阻尼） |
 | [CISPO](../sources/minimax-m1.md) | MiniMax-M1，2025-06；[Laguna](../sources/laguna-m1-xs2.md) 采用 2026 | **clip 对象：IS 权重 vs token 更新** | REINFORCE + stop-grad 夹过的 $r=\pi_\theta/\pi_{\theta_{\mathrm{old}}}$；原文 $\varepsilon_{\mathrm{IS}}^{\mathrm{low}}$ 取很大（不下界）、只调上界；全局 token-level 平均；GRPO 组内相对优势；无 KL。Laguna 另配 $(c_{low},c_{high})=(1,4)$ 与 length-weighted LOO | PPO/GRPO 把高 $r$ 的反思 token clip 掉，后续 off-policy 步无梯度 | Qwen2.5-32B 对照 AIME 2024（约 2× DAPO）；M1-456B 生产 RL；Laguna agentic coding | 不改 GRPO 的 advantage 定义；改「夹更新还是夹 IS 权重」，并保证所有 token 进梯度。M2 系列不是源头 |
 | [ECHO](../sources/echo.md) | Microsoft Research，2026-05 | **哪些 token 进监督：action PG + env CE** | \(\mathcal{L}_{\mathrm{GRPO}}(\mathcal{A})+\lambda\mathcal{L}_{\mathrm{Env}}(\mathcal{O}')\)；只要终端输出块；同一前向、无额外 rollout | 稀疏终局奖励让失败轨迹零梯度，但观测已在 rollout 里 | Qwen3-8B/14B、OT-SFT；TerminalBench-2.0 | 保留整条 GRPO；另加 on-policy 观测 CE。不是独立 world model，也不是 MoE EP 的 ECHO |
+| [RLCD2](../sources/startlux-decision.md) | StartLux，2026-10 | **奖励是冻结读出上的概率质量增量** | \(r=S(p_1,t)-S(p_0,t)-\lambda\max(0,\|\tau\|-B)\)；\(p_0,p_1\) 由冻结起点读出；组内中心化后 clip 到 \([-5,5]\)，不除标准差；只训 \(\max p_0<0.9\) | 决策 SFT 之后推理不停或空转；只奖对错不优化整份分布 | AutoThink 4B/9B/27B；held-out 决策与 DecisionPivot | 引用 group-relative policy gradients。奖励是 proper-score 差加软长度惩罚，优势不除组内标准差 |
 
 ## 关键分叉：critic、token、sequence、step 四个「单位」
 
@@ -168,6 +169,12 @@ Miles 的 §9 案例给了这一层在真实配置下的量级：BF16 训练 + F
 
 Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界裁到 5）是**采用方超参**，不要回写成 M1 原文。它与 DAPO Clip-Higher「放宽上界」是否互补，以及 CISPO 的 token-level IS 权重能否接到 GSPO/SAPO 上，两边都没有消融。
 
+### RLCD2：奖励改成冻结读出上的 proper-score 差
+
+[RLCD2](../sources/startlux-decision.md)（StartLux-Decision，2026-10）仍写 group-relative、token 级 clipped surrogate，并引用 [DeepSeekMath](../sources/deepseekmath.md)。它改的是 **奖励从哪来**。\(p_0\) 与 \(p_1\) 都由冻结的推理监督起点读出，奖励是决策加权 proper score 的增量，再减去超出软预算 \(B=3072\) 的 token，\(\lambda=10^{-4}\)。Advantage 只做组内中心化并 clip 到 \([-5,5]\)，按 Liu et al. 2025 **不除**标准差。训练样本限于 \(\max p_0<0.9\)。
+
+因此它不是 DAPO 的四件套，也不是又一个 ratio 变体。长度惩罚引用了 [DAPO](../sources/dapo.md)，但区间是「超过 3,072 后按 token 扣」，生成硬上限仍是 4,096。9B 上自行终止率从 45.9% 到 93.9%，平均轨迹从 2,494 token 到 868；held-out 准确率的变化区间包含 0。组大小、clip \(\varepsilon\) 和 KL 系数没有数值，不能和 DAPO 的 \(\varepsilon\) 并排。
+
 ## 离线偏好：DPO / KTO 不在这张 RL 表里
 
 上面每一行都还在 **on-policy RL** 里改东西：advantage 从哪来、ratio 按什么单元 clip、batch 里哪些 prompt/token 进梯度。 [DPO](../sources/dpo.md) 问的是前一个问题：**KL-constrained reward max 能不能根本不跑 RL。**
@@ -204,6 +211,7 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 - [VibeThinker-3B](../sources/vibethinker-3b.md)：MGPO 是 VibeThinker 系列（1.5B → 3B）的自研 RL 算法，不是外部算法论文的复现。$D_{ME}$ 在 1.5B 原文里是到 $0.5$ 的二元 KL；3B 沿用该式但把温度写成 $\gamma$。VibeThinker-3B 的 Long2Short RL（零和 length-aware reward shift）是在 MGPO 之上的 efficiency 优化，与 DAPO 的 overlong shaping 解决的是问题的两面——DAPO 处理截断样本的 reward noise，Long2Short 主动 reshape 正确轨迹的长度偏好。
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)：本页可作为该概念页里「RL policy optimization 子谱系」的展开。
 - [GLM-5 技术报告](../sources/glm-5.md) / [GLM-5.3](../models/glm-5-3.md)：报告里的 DIS 与 [SAO](../sources/single-rollout-asynchronous-optimization.md) 是同一层机制；SAO 论文补上单 rollout + critic，并声明用于 GLM-5.2。5.3 博客的 compaction 不在该 PDF。
+- [StartLux-Decision](../sources/startlux-decision.md)：RLCD2 把 group-relative 更新用在决策模型的推理轨迹上。奖励是冻结起点的 proper-score 增量，不是 0/1；9B 的主要变化是终止率与长度。公开 DI 0.3 参与过选模型。
 - [MinerU2.5-Pro](../sources/mineru-2-5-pro.md)：Stage 3 是 GRPO + DAPO recipe 的**非 agentic 应用**——文档解析格式对齐。三个特点值得与 agentic RL 对照：(1) reward 直接用评测指标（edit distance / CDM / TEDS / IoU），无需单独 reward model，也无 LLM-as-judge，比 agentic RL 的 reward 设计更「机械」但更可信；(2) 训练数据按 reward 分布过滤（剔除过高/过低 reward，保留中段）以最大化有效 policy gradient 信号——与 [MGPO](../sources/vibethinker-3b.md) 的 prompt-level 加权、DAPO 的 dynamic sampling 同属「聚焦能力边界样本」家族，但用 hard filter 而非 soft weight；(3) 增益小（+0.45）但定向——主要提公式 CDM（+0.81），印证 GRPO 对「交叉熵等权 token 与 sequence-level 结构指标错位」的修补。这说明 GRPO+DAPO recipe 不限于 long-CoT reasoning / agentic，对任何「token-level loss 与任务级指标错位」的结构化输出任务都适用。
 
 ## 证据边界
@@ -216,7 +224,7 @@ Laguna 这组数字隐含的方向判断（几乎不约束 $\rho\to 0$、上界�
 
 ## 相关页面
 
-- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[KTO](../sources/kto.md)（二元 HALO，不需要 pair，不在主表）、[IPO](../sources/ipo.md)（ΨPO / 平方损失，不在主表）、[ORPO](../sources/orpo.md)（无参考模型的 odds ratio，不在主表）、[SimPO](../sources/simpo.md)（长度平均 log-prob + margin，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Cumulative Token Policy Optimization](../sources/cumulative-token-policy-optimization.md)（prefix-cumulative ratio + 位置自适应 clip）、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
+- 来源：[DeepSeekMath](../sources/deepseekmath.md)（GRPO 一手出处）、[StartLux-Decision](../sources/startlux-decision.md)（RLCD2：proper-score 增量，不除标准差）、[VAPO](../sources/vapo.md)、[DAPO](../sources/dapo.md)、[DPO](../sources/dpo.md)（离线偏好闭式解，不在主表）、[KTO](../sources/kto.md)（二元 HALO，不需要 pair，不在主表）、[IPO](../sources/ipo.md)（ΨPO / 平方损失，不在主表）、[ORPO](../sources/orpo.md)（无参考模型的 odds ratio，不在主表）、[SimPO](../sources/simpo.md)（长度平均 log-prob + margin，不在主表）、[Iterative RPO](../sources/iterative-rpo.md)（DPO+NLL / TRL `rpo_alpha`）、[Group Sequence Policy Optimization](../sources/group-sequence-policy-optimization.md)、[Cumulative Token Policy Optimization](../sources/cumulative-token-policy-optimization.md)（prefix-cumulative ratio + 位置自适应 clip）、[Soft Adaptive Policy Optimization](../sources/soft-adaptive-policy-optimization.md)、[Agentic Reinforced Policy Optimization](../sources/agentic-reinforced-policy-optimization.md)、[GiGPO](../sources/gigpo.md)、[HGPO](../sources/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../sources/single-rollout-asynchronous-optimization.md)、[VibeThinker-3B](../sources/vibethinker-3b.md)、[Ring-1T](../sources/ring-1t.md)（IcePop 一手出处）、[Ling-2.6 技术报告](../sources/ling-2.6.md)（KPop）、[Laguna 技术报告](../sources/laguna-m1-xs2.md)（CISPO 采用 + vs GRPO/GSPO 消融）、CISPO 源头：[MiniMax-M1](../sources/minimax-m1.md)（MiniMax-M2 系列不是源头）、[ECHO](../sources/echo.md)（环境观测辅助 CE，不是新 ratio）
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)、[异步 Agent RL](../concepts/asynchronous-agent-rl.md)、[训练—rollout 一致性](../concepts/train-rollout-consistency.md)、[Group-in-Group Policy Optimization](../concepts/group-in-group-policy-optimization.md)、[Hierarchy-of-Groups Policy Optimization](../concepts/hierarchy-of-groups-policy-optimization.md)、[Single-Rollout Asynchronous Optimization](../concepts/single-rollout-asynchronous-optimization.md)
 - 系统侧来源：[R3](../sources/r3.md)（MoE 路由重放，与本页 ratio 方法正交）、[Miles v0.1](../sources/miles-v0-1.md)：不提出新算法，但把五类 advantage estimator（GRPO / GSPO / REINFORCE++ / PPO）与 TIS / clip-or-pop 做成同一层可替换组件，并给出低精度服务下 train–inference 残差的可测量级。
 - 模型：[DeepSeekMath](../models/deepseekmath.md)（GRPO 发布检查点）、[MiniMax-M1](../models/minimax-m1.md)（CISPO 发布检查点）、[Qwen3](../models/qwen3.md)、[Qwen3-VL](../models/qwen3-vl.md)、[VibeThinker-3B](../models/vibethinker-3b.md)

@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | StartLux-Decision
+
+StartLux + 港大 + 南科大（arXiv:2610.17309v2，2026-10-20，本地 PDF 37 页）。新增 `raw/2610.17309v2.pdf`、`sources/startlux-decision.md`、`models/startlux-decision.md`，提取 Figure 2/3/4/5/6/13/15。Headline：Instant 一次前向读选项概率，AutoThink 在最高概率低于 0.9 时才推理；RLCD2 用冻结起点的 proper-score 增量加软长度惩罚。9B 终止率 45.9%→93.9%，平均轨迹少 65%。公开 DI 0.3 参与过选模型。DecisionPivot 上 27B AutoThink pair accuracy 86.9%。回写 Qwen3.5、RL 比较页、DAPO、DeepSeekMath 与后训练概念页。
+
 ## [2026-10-24] ingest | Harness²
 
 Google Cloud AI Research + Northwestern（arXiv:2610.14224v1，2026-10-09，37 页）。新增 `raw/2610.14224v1.pdf`、`sources/harness2.md`，提取 Figure 1–8。不建模型页。冻结执行器；任务级 Propose–Probe–Compose 用行为对照改执行 harness，交卷后把采纳树和教训写入改进库，下一题仍从公共 H0 起步。单步最高 +11.5（WorkBuddy，GLM-5 / OpenCode）、+4.5（JobBench）、+11.8 pp（LAB Partial）。Meta-Harness 在训练/开发集上用分数离线搜索。回写 agent harness、agentic engineering 与 Dream-RSI 对照表。

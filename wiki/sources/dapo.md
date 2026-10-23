@@ -97,5 +97,5 @@ Table 1 的 progressive ablation：
 ## 相关页面
 
 - 比较：[LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md)
-- 相邻算法：[DPO](dpo.md)（名字易混，离线偏好而非 GRPO）、[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)（附录把 DAPO recipe 接到 agent step-level advantage）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
+- 相邻算法：[StartLux-Decision](startlux-decision.md)（RLCD2 引用本页的过长惩罚：超出软预算 3,072 后按 token 扣，\(\lambda=10^{-4}\)，硬上限仍是 4,096；不是 \(L_{\max}-L_{\mathrm{cache}}\) 到 \(L_{\max}\) 的线性 shaping）、[DPO](dpo.md)（名字易混，离线偏好而非 GRPO）、[VAPO](vapo.md)、[Agentic Reinforced Policy Optimization](agentic-reinforced-policy-optimization.md)、[GiGPO](gigpo.md)（附录把 DAPO recipe 接到 agent step-level advantage）、[Group Sequence Policy Optimization](group-sequence-policy-optimization.md)、[Soft Adaptive Policy Optimization](soft-adaptive-policy-optimization.md)
 - 概念：[Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)
