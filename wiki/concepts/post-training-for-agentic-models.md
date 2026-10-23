@@ -3,7 +3,7 @@ type: Concept
 title: "Agentic 模型的后训练"
 description: "面向 agent 的 RL、MOPD、蒸馏、LLM RL policy optimization、ARPO 这类 step-level rollout 采样、GiGPO/HGPO 这类 history-aware step 组 advantage、SAO 这类异步单 rollout，以及 Miles 这类把后训练当系统交付的实现报告。"
 tags: ["concept", "post-training-for-agentic-models"]
-timestamp: 2026-06-06
+timestamp: 2026-10-24
 ---
 
 # Agentic 模型的后训练
@@ -92,6 +92,10 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 
 **工程**：TITO API for RL actors（保 token ID 跨多轮稳定，与 [GLM-5 异步 Agent RL](asynchronous-agent-rl.md) 同动机）+ trainer↔inference 权重同步（NCCL GPUDirect RDMA，每 2 optimizer step 广播，KV-cache reset 防版本混入，staleness 上限 10 step）+ FP8 KV cache 跑 131072 context rollout（翻倍并发轨迹）。
 
+## CodeMidas：源码即环境
+
+[CodeMidas](../sources/codemidas.md) 不改 GRPO 的算法身份，改的是任务从哪来。任务专属输入只剩源码：删掉已实现功能，用参考实现的执行写测试，六容器里两个起点必须失败、四个参考解必须通过，再丢掉泄漏、verifier 与说明不一致、以及全对或全错的题。5,545 题、batch 32、每题 32 条 rollout，奖励是 0/1。Table A1 关掉 advantage 的标准差归一化，没有写 KL 系数。五张外部榜都高于初始 MiMo-V2.5；洗过的 3k 在 SWE-bench Pro、DeepSWE 和自建验证集上超过未清洗的约 8k。与上一节 Laguna 的差别是种子：Laguna 从 commit 取隐藏测试，这里不要求 commit。
+
 ## Macaron-V1：先搜索 harness，再把验证过的行为转入 LoRA
 
 [Macaron-V1](../models/macaron-v1.md) 将后训练对象显式拆成 frozen sparse base $\theta$、可训练 LoRA $\phi$ 与版本化 harness configuration $c$：$\pi_\phi(a_t \mid o_{\leq t};\theta,c)$。MindForge 的 Discovery → Expansion → Update 不把 HCP 当可微参数；它先在同一 production harness 上搜索 prompts、skills、tool exposure、hooks 等 HCP 资源，评测通过后才把选出的 trajectory 交给 GRPO 更新 LoRA。这样可以区分「能力没有」与「同一 frozen model 尚未在恰当 action surface / context 中被 elicited」。
@@ -151,6 +155,7 @@ PARL 的辅助奖励先鼓励 parallel exploration 和 sub-agent 完成率，随
 - HGPO：如何在不追加 rollout 的前提下，进一步用共同历史控制同 state step group 的 prompt 混杂。
 - SAO：如何在异步下放弃组采样，用 DIS + critic 让单条轨迹也能稳定更新。
 - Laguna：如何把模型开发本身做成工业流程——合成代码环境贯穿 SFT/RL、CISPO + length-weighted LOO、IF judge + multi-harness 防过拟合，全流程靠 Model Factory 翻配置 flag 复用。
+- [CodeMidas](../sources/codemidas.md)：如何在不依赖 issue / commit / 现成测试的前提下，把已实现功能收成带隐藏执行 verifier 的 RL 环境。算法仍是 GRPO，标准差归一化关掉；证据在任务规模和过滤，不在新的 policy update。
 - HunyuanOCR-1.5：如何用 agent 自动化数据构造（Agentic Data Flow）补长尾能力 + 三组件 reward（事实性 / 一致性判官 / 退化抑制）做 OCR 专项 RL。
 - KAT-Coder：如何把训练基础设施（可验证环境 + 沙箱可靠性 + harness 泛化）当作 agentic 能力的第一性问题。V2 用 MCLA 降 MoE RL log-prob 方差 + Tree Training 消树状轨迹冗余 + turn-level GSPO 折中；V2.5 发现 ~16% 训练失败源于沙箱而非算法，切换到 asymmetric PPO + hindsight-augmented critic，并用 harness randomization + process-aware 轨迹过滤 + 长上下文 MOPD 稳定化（cold start + drift-aware truncation）系统性重构。
 - [daVinci-Agency](../sources/davinci-agency.md)：如何在 SFT 阶段就从数据结构层面注入长周期监督。不靠 RL 或 distillation，而是用 GitHub chain-of-PRs 的跨 stage 依赖把孤立 coding 任务串成项目演化级工作流，239 样本即超过 66k 样本的 SWE-Smith。与上述 RL 路线互补--它是 RL 之前的数据层问题：训练数据本身该长什么样才能让 agent 内化 task decomposition / long-term consistency / refinement。

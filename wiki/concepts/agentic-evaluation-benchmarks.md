@@ -19,8 +19,12 @@ Agentic model 的评测不只是回答正确率。它需要覆盖代码修改、
 | SWE-bench Verified | 真实 GitHub issue 修复，经过人工验证的子集 | GLM-5、MiMo-V2-Flash、DeepSeek-V4 都用来衡量 coding agent。 |
 | SWE-bench Pro | 更偏行业级、长周期 repository repair | MiniMax-M2、Kimi K2.5 用来衡量复杂工程修复能力。 |
 | SWE-bench Multilingual | 多语言软件工程问题修复 | 用于测试模型跨语言代码维护能力。 |
+| DeepSWE v1.1 | issue repair 的通过率 | [CodeMidas](../sources/codemidas.md) 报 MiMo-V2.5 从 10.0 到 21.7，未写采样次数和 harness。[MiMo-V2.6](../sources/mimo-v2.6.md) Table 3 的 V2.5 Pro 是 19.0，两篇协议没有对齐。 |
+| ProgramBench | 从零重建程序 | CodeMidas 报 Almost Solved（至少通过该题 95% 测试）从 4.5 到 21.5。MiMo-V2.6 表的 V2.5 Pro 是 12.5，没有写是不是同一指标。不要和 [V4.1-Flash](../sources/deepseek-v41-flash.md) 的 172 题子集混算。 |
+| RepoZero C2Rust | 仓库级 C 到 Rust 的通过率 | CodeMidas 报 40.5 到 51.8。本库没有这篇基准的独立页。 |
 | Multi-SWE-bench | 多 repo / 多语言 issue resolving | MiniMax-M2 用来测试跨仓库迁移和更宽软件工程覆盖。 |
 | Terminal-Bench 2.0 | 终端环境中的任务执行 | 测试 shell、文件、环境和多步操作能力。[Pi](../sources/pi-coding-agent.md) + Claude Opus 4.5 自报约 49.8% ± 2.4（2025-12-02 榜截图第 7），但是 mixed-model 榜，不是同模型换膜。 |
+| Terminal-Bench v2.1 | 终端任务的后续切分 | [CodeMidas](../sources/codemidas.md) 上 MiMo-V2.5 从 63.7 到 72.2，未写采样次数。[MiMo-V2.6](../sources/mimo-v2.6.md) Table 3 的 V2.5 Pro 是 65.2。两列接近，仍缺同一 harness 的声明。 |
 | Terminal-Bench 3.0 | 终端环境中的更长周期任务执行 | GLM-5.3 报告 28.3；其披露为 Claude Code 2.1.207、400K context、128K max output、avg@3，单 rollout 最多 600 turns / 10 小时。 |
 | Terminal-Bench 4 | 终端任务的更新切分 | [SoL-Pi](../sources/sol-pi.md) 只跑 63 个 CPU-only 任务：Codex 18 / Pi 18 / SoL-Pi 15；GPU 任务因基础设施排除。 |
 | EdgeBench | 数小时级长周期可执行 agent 工作，51 任务 | SoL-Pi 的 held-out 主台；作者称当时公开基准里几乎只有它稳定支持约 2–12 小时连续推理和工具使用。一手报告见 [EdgeBench](../sources/edgebench.md)：134 题（公开 51）、每题 ≥12h、work/judge 双容器、平均曲线 log-sigmoid \(R^2\ge 0.997\)。官方榜混用 Codex/Claude Code，不能和 SoL-Pi 数字横比。 |

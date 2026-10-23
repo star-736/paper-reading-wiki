@@ -82,7 +82,7 @@ Mid-training（§3.2）把通用底座接到大规模 RL：agent 轨迹（代码
 
 ### 环境、harness 与 reward hacking
 
-代码任务从 GitHub issue / PR、内部日常开发、规格驱动、CodeMidas 从源码抽功能、长程工程，再加上公开集和授权数据（§4.2.1）。监督先对齐规格和测试，再用四条 rollout 加审计 agent 找假阳性和假阴性；有参考补丁的题要求 F2P / P2P 在八次重跑里稳定。
+代码任务从 GitHub issue / PR、内部日常开发、规格驱动、[CodeMidas](codemidas.md) 从源码抽功能、长程工程，再加上公开集和授权数据（§4.2.1）。CodeMidas 在该节是第四条通路，和前三条并列。监督先对齐规格和测试，再用四条 rollout 加审计 agent 找假阳性和假阴性；有参考补丁的题要求 F2P / P2P 在八次重跑里稳定。
 
 通用任务用可重置的本地沙箱：真实文件加软件 mock，原子二元 rubric，代码检查和 LLM 检查并存；RL 时 grader 是自托管的 MiMo-V2.6-SFT（§4.2.2）。视觉任务分成开放设计和高保真复现：前者点分 rubric 稳定后再做组内比较，后者以像素相似度为主、LLM 判断为辅（§4.2.3）。网络安全做真实漏洞复现：PoC 必须同时匹配 sanitizer 报告里的漏洞类型和项目内栈帧，规则字符串匹配；任务描述和验证共用这份报告。相对 CyberGym，他们把编译好的 harness 二进制也交给 agent（§4.2.4）。
 
@@ -162,7 +162,7 @@ Table 3 是 §5.6 之后的最终对比。横线表示报告未给出。前沿�
 
 > Table 3（原文 §5.6）：Comparison of MiMo-V2.6 with previous-generation and frontier models on agentic benchmarks.
 
-读这张表时有三条边界。第一，§4.1 的 DeepSWE average@3（Pro 72.6、Flash 65.7）是 RL 过程中的曲线；Table 3 的 71.9 / 67.9 写在 MOPD2 之后，正文没有写 Table 3 的采样次数。两套数字不能当成同一次测量的舍入。第二，CyberGym 脚注写明：评测环境按 §4.2.4 的验证方法修正过，不能直接当成 CyberGym 原文协议的分数。MiMo Code Bench、MiMo Cyber Bench、MiMo Visual Coding 是内部基准。第三，GDPval-AA 2.1 的量纲和其他百分比榜不同，表内原样保留。
+读这张表时有四条边界。第一，§4.1 的 DeepSWE average@3（Pro 72.6、Flash 65.7）是 RL 过程中的曲线；Table 3 的 71.9 / 67.9 写在 MOPD2 之后，正文没有写 Table 3 的采样次数。两套数字不能当成同一次测量的舍入。第二，CyberGym 脚注写明：评测环境按 §4.2.4 的验证方法修正过，不能直接当成 CyberGym 原文协议的分数。MiMo Code Bench、MiMo Cyber Bench、MiMo Visual Coding 是内部基准。第三，GDPval-AA 2.1 的量纲和其他百分比榜不同，表内原样保留。第四，V2.5 Pro 列的 DeepSWE 19.0、ProgramBench 12.5、Terminal Bench 2.1 65.2，与 [CodeMidas](codemidas.md) 里 MiMo-V2.5 的初始 10.0、Almost Solved 4.5、63.7 不是同一组数。两篇都没有把 harness 和采样次数对齐，本表的 19.0 不能当成 CodeMidas 的 10.0 或 21.7。
 
 9B 分域 GRPO 相对自身 SFT 的 Table 6（代码为单 harness）：SWE-bench Verified avg@3 61.1 → 66.2，SWE-bench Pro 44.6 → 47.6，Terminal Bench 2.1 avg@1 37.1 → 52.8，AutomationBench 30.3 → 33.1，MiMo Visual Coding (mini) 64.0 → 72.4，MiMo Cyber Bench (mini) 31.3 → 47.0。相对 Qwen3.5-9B，SWE-bench Pro 从 32.0 到 SFT 的 44.6，AutomationBench 从 5.0 到 30.3。内部音乐基准从 SFT 的 45.7 到 RL 的 52.5。Figure 17 的网页案例是定性对照，分数对应 Table 6 的 61.7 → 64.0 → 72.4 这条视觉轨迹。
 
@@ -172,6 +172,7 @@ Table 3 是 §5.6 之后的最终对比。横线表示报告未给出。前沿�
 
 - 模型：[MiMo-V2.6](../models/mimo-v2.6.md)
 - 前作：[MiMo-V2-Flash 技术报告](mimo-v2-flash.md)、[MiMo-V2-Flash](../models/mimo-v2-flash.md)
+- [CodeMidas](codemidas.md) — 在 MiMo-V2.5 上从源码造 RL 环境；其初始分与本页 Table 3 的 V2.5 Pro 列未对齐
 - [Multi-Teacher On-Policy Distillation](../concepts/multi-teacher-on-policy-distillation.md)
 - [On-Policy Distillation 跨报告对比](../comparisons/on-policy-distillation.md)
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md)

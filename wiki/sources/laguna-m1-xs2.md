@@ -198,6 +198,7 @@ M.1 在 SWE-bench Verified 79.6 领先 Devstral 2(79.0)/GLM-4.7(76.2)/DeepSeek-V
 - [零样本 RoPE 上下文扩展](../concepts/zero-shot-rope-context-extension.md) — 128K 的 YaRN（仅 GA 层）和 256K 的 RoPE scale 翻倍都属于这一轴
 - [MoE 前沿模型扩展](../concepts/moe-frontier-model-scaling.md) — M.1 225.8B/23.4B、XS.2 33.4B/3B
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) — 三阶段 + CISPO + 合成代码环境 + IF judge + multi-harness
+- [CodeMidas](codemidas.md) — 同样做 fail-to-pass 的可执行环境；任务种子是源码，不要求 commit
 - [异步 Agent RL](../concepts/asynchronous-agent-rl.md) — TITO + trainer↔inference 权重同步 + FP8 KV cache rollout
 - [LLM RL policy optimization 对比](../comparisons/llm-rl-policy-optimization.md) — CISPO（from [MiniMax-M1](minimax-m1.md)；MiniMax-M2 系列不是源头）的又一生产采用
 - [Agentic Engineering](../concepts/agentic-engineering.md) — Model Factory 工业化流程

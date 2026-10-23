@@ -130,6 +130,7 @@ Table 5（Appendix B）：不用 rejection sampling，AVG 从 0.405 暴跌到 0.
 ## 相关页面
 
 - [Agentic engineering](../concepts/agentic-engineering.md) - 长周期软件工程的趋势定位
+- [CodeMidas](codemidas.md) - 其 Table 1 的 daVinci-Env（arXiv:2603.13023）是 SWE 环境合成；本页是 chain-of-PRs 的 SFT
 - [Agentic 模型的后训练](../concepts/post-training-for-agentic-models.md) - daVinci-Agency 属于 SFT 路线，与 RL / distillation 互补
 - [Agentic 评测体系](../concepts/agentic-evaluation-benchmarks.md) - SWE-bench / Toolathlon / τ²-bench / DS-1000 / SciCode 等基准
 - [KAT-Coder](../models/kat-coder.md) - 同样关注 agentic coding 训练数据质量，但走 RL + 基础设施路线

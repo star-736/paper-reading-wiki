@@ -1,5 +1,9 @@
 # 日志
 
+## [2026-10-24] ingest | CodeMidas
+
+小米 LLM Core 等（arXiv:2609.22068v1，2026-09-18，15 页）。新增 `raw/2609.22068v1.pdf`、`sources/codemidas.md`，提取 Figure 1/5/6/7/8/9。不建模型页。Headline：任务专属输入只剩源码；5,545 题 / 3,185 仓库 / 23 语言。GRPO 训 MiMo-V2.5，标准差归一化关闭。DeepSWE 10.0→21.7，ProgramBench Almost Solved 4.5→21.5，Terminal-Bench v2.1 63.7→72.2。高质量 3k 在三张消融榜上超过未清洗的约 8k。与 MiMo-V2.6 Table 3 的 V2.5 Pro 列协议未对齐。回写 agentic engineering、后训练、评测体系，以及 MiMo-V2.6、DeepSeekMath、Laguna、daVinci-Agency。
+
 ## [2026-10-24] deepen | MiMo-V2.6 arXiv v1
 
 Xiaomi LLM-Core（arXiv:2610.11959v1，2026-10-08，43 页）。新增 `raw/2610.11959v1.pdf`。与 2026-09-22 的 HF PDF 是同一篇报告，来源页改以 arXiv 为准。重读后架构、一次混合 RL 与 Table 3 与原页一致。§4.3 把 GAR 引到 Dong et al. 2026（arXiv:2609.32577），该文未单列成页。Figure 3 的 Flash 成本份额按与 Pro 相同的图例顺序读作训练 40.9%、rollout 44.9%、grader 14.2%。图沿用既有裁剪。回写后训练概念页。
